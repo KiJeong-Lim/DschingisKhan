@@ -1,0 +1,5 @@
+-Q . DschingisKhan
+
+theories/ConstructiveTheories.v
+theories/ClassicalTheories.v
+theories/UntypedLambdaCalculus.v
