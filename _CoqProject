@@ -1,6 +1,6 @@
 -Q . DschingisKhan
 
 theories/Auxiliary.v
-theories/ConstructiveTheories.v
-theories/ClassicalTheories.v
+theories/ConstructiveTheory.v
+theories/ClassicalTheory.v
 theories/UntypedLambdaCalculus.v

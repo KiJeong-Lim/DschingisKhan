@@ -1,0 +1,2249 @@
+DIGEST f7f58fc77332c15d60288257a2cee0bf
+FDschingisKhan.theories.Auxiliary
+R15:32 Coq.Arith.PeanoNat <> <> lib
+R50:62 Coq.Bool.Bool <> <> lib
+R80:106 Coq.Classes.RelationClasses <> <> lib
+R124:137 Coq.Lists.List <> <> lib
+R155:171 Coq.micromega.Lia <> <> lib
+R189:206 Coq.Program.Basics <> <> lib
+mod 249:259 <> MyUtilities
+def 276:282 MyUtilities case_eq
+binder 285:285 <> A:1
+R308:308 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 304:304 <> x:2
+R322:322 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 318:318 <> y:3
+R350:350 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 345:346 <> x0:4
+R359:362 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R355:357 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R353:354 DschingisKhan.theories.Auxiliary <> x0:4 var
+R358:358 DschingisKhan.theories.Auxiliary <> y:3 var
+binder 332:334 <> phi:5
+R382:385 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R369:371 DschingisKhan.theories.Auxiliary <> phi:5 var
+R375:381 Coq.Init.Logic <> eq_refl constr
+R373:373 DschingisKhan.theories.Auxiliary <> y:3 var
+R398:400 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R397:397 DschingisKhan.theories.Auxiliary <> x:2 var
+R401:401 DschingisKhan.theories.Auxiliary <> y:3 var
+binder 393:393 <> H:6
+R404:406 DschingisKhan.theories.Auxiliary <> phi:5 var
+R410:410 DschingisKhan.theories.Auxiliary <> H:6 var
+R408:408 DschingisKhan.theories.Auxiliary <> x:2 var
+R427:427 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 423:423 <> x:7
+R444:444 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 440:440 <> y:8
+R475:475 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 470:471 <> x0:9
+R484:487 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R480:482 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R478:479 DschingisKhan.theories.Auxiliary <> x0:9 var
+R483:483 DschingisKhan.theories.Auxiliary <> y:8 var
+binder 457:459 <> phi:10
+R512:514 DschingisKhan.theories.Auxiliary <> phi:10 var
+R518:524 Coq.Init.Logic <> eq_refl constr
+R516:516 DschingisKhan.theories.Auxiliary <> y:8 var
+binder 504:508 <> phi_y:11
+R541:542 Coq.Init.Logic <> eq ind
+R546:546 DschingisKhan.theories.Auxiliary <> y:8 var
+R544:544 DschingisKhan.theories.Auxiliary <> x:7 var
+binder 537:537 <> H:12
+R561:561 DschingisKhan.theories.Auxiliary <> H:12 var
+R572:573 Coq.Init.Logic <> eq ind
+R613:613 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 608:609 <> x0:15
+R623:626 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R618:620 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R616:617 DschingisKhan.theories.Auxiliary <> x0:15 var
+R621:622 DschingisKhan.theories.Auxiliary <> y0:14 var
+binder 594:597 <> phi0:16
+R648:651 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R633:636 DschingisKhan.theories.Auxiliary <> phi0:16 var
+R641:647 Coq.Init.Logic <> eq_refl constr
+R638:639 DschingisKhan.theories.Auxiliary <> y0:14 var
+R652:655 DschingisKhan.theories.Auxiliary <> phi0:16 var
+R659:660 DschingisKhan.theories.Auxiliary <> H0:13 var
+R657:657 DschingisKhan.theories.Auxiliary <> x:7 var
+R673:679 Coq.Init.Logic <> eq_refl constr
+R713:713 DschingisKhan.theories.Auxiliary <> A:1 var
+binder 708:709 <> x0:17
+R722:725 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R718:720 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R716:717 DschingisKhan.theories.Auxiliary <> x0:17 var
+R721:721 DschingisKhan.theories.Auxiliary <> x:7 var
+binder 694:697 <> phi0:18
+R753:756 DschingisKhan.theories.Auxiliary <> phi0:18 var
+R760:766 Coq.Init.Logic <> eq_refl constr
+R758:758 DschingisKhan.theories.Auxiliary <> x:7 var
+binder 744:749 <> phi_y0:19
+R777:782 DschingisKhan.theories.Auxiliary <> phi_y0:19 var
+R792:794 DschingisKhan.theories.Auxiliary <> phi:10 var
+R796:800 DschingisKhan.theories.Auxiliary <> phi_y:11 var
+prf 815:832 MyUtilities div_mod_uniqueness
+R851:853 Coq.Init.Datatypes <> nat ind
+binder 847:847 <> a:20
+R871:873 Coq.Init.Datatypes <> nat ind
+binder 867:867 <> b:21
+R891:893 Coq.Init.Datatypes <> nat ind
+binder 887:887 <> q:22
+R911:913 Coq.Init.Datatypes <> nat ind
+binder 907:907 <> r:23
+R933:940 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R921:923 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R920:920 DschingisKhan.theories.Auxiliary <> a:20 var
+R929:931 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R925:927 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R924:924 DschingisKhan.theories.Auxiliary <> b:21 var
+R928:928 DschingisKhan.theories.Auxiliary <> q:22 var
+R932:932 DschingisKhan.theories.Auxiliary <> r:23 var
+R946:953 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R942:944 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R941:941 DschingisKhan.theories.Auxiliary <> r:23 var
+R945:945 DschingisKhan.theories.Auxiliary <> b:21 var
+R963:966 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R959:961 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R955:957 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R954:954 DschingisKhan.theories.Auxiliary <> a:20 var
+R958:958 DschingisKhan.theories.Auxiliary <> b:21 var
+R962:962 DschingisKhan.theories.Auxiliary <> q:22 var
+R974:976 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R968:972 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R967:967 DschingisKhan.theories.Auxiliary <> a:20 var
+R973:973 DschingisKhan.theories.Auxiliary <> b:21 var
+R977:977 DschingisKhan.theories.Auxiliary <> r:23 var
+R1058:1060 Coq.Init.Datatypes <> nat ind
+binder 1054:1054 <> x:24
+R1074:1076 Coq.Init.Datatypes <> nat ind
+binder 1070:1070 <> y:25
+R1084:1089 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R1119:1119 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R1080:1082 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R1079:1079 DschingisKhan.theories.Auxiliary <> x:24 var
+R1083:1083 DschingisKhan.theories.Auxiliary <> y:25 var
+R1090:1096 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1104:1105 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1101:1103 Coq.Init.Datatypes <> nat ind
+binder 1097:1097 <> z:26
+R1107:1109 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1106:1106 DschingisKhan.theories.Auxiliary <> x:24 var
+R1110:1110 Coq.Init.Datatypes <> S constr
+R1114:1116 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1113:1113 DschingisKhan.theories.Auxiliary <> y:25 var
+R1117:1117 DschingisKhan.theories.Auxiliary <> z:26 var
+R1058:1060 Coq.Init.Datatypes <> nat ind
+binder 1054:1054 <> x:27
+R1074:1076 Coq.Init.Datatypes <> nat ind
+binder 1070:1070 <> y:28
+R1084:1089 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R1119:1119 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R1080:1082 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R1079:1079 DschingisKhan.theories.Auxiliary <> x:27 var
+R1083:1083 DschingisKhan.theories.Auxiliary <> y:28 var
+R1090:1096 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1104:1105 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1101:1103 Coq.Init.Datatypes <> nat ind
+binder 1097:1097 <> z:29
+R1107:1109 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1106:1106 DschingisKhan.theories.Auxiliary <> x:27 var
+R1110:1110 Coq.Init.Datatypes <> S constr
+R1114:1116 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1113:1113 DschingisKhan.theories.Auxiliary <> y:28 var
+R1117:1117 DschingisKhan.theories.Auxiliary <> z:29 var
+R1244:1244 Coq.Init.Datatypes <> S constr
+R1244:1244 Coq.Init.Datatypes <> S constr
+R1351:1353 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1365:1368 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1376:1376 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1355:1358 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1364:1364 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1360:1362 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1370:1374 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1393:1403 Coq.Arith.PeanoNat Nat div_mod thm
+R1351:1353 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1365:1368 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1376:1376 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1355:1358 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1364:1364 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1360:1362 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1370:1374 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1393:1403 Coq.Arith.PeanoNat Nat div_mod thm
+R1434:1437 Coq.Init.Peano <> ::nat_scope:x_'<='_x_'<'_x not
+R1445:1447 Coq.Init.Peano <> ::nat_scope:x_'<='_x_'<'_x not
+R1439:1443 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1439:1443 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1465:1481 Coq.Arith.PeanoNat Nat mod_bound_pos thm
+R1434:1437 Coq.Init.Peano <> ::nat_scope:x_'<='_x_'<'_x not
+R1445:1447 Coq.Init.Peano <> ::nat_scope:x_'<='_x_'<'_x not
+R1439:1443 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1439:1443 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1465:1481 Coq.Arith.PeanoNat Nat mod_bound_pos thm
+R1511:1512 Coq.Init.Logic <> ::type_scope:'~'_x not
+R1514:1516 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R1518:1520 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1511:1512 Coq.Init.Logic <> ::type_scope:'~'_x not
+R1514:1516 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R1518:1520 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1561:1567 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1575:1576 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1572:1574 Coq.Init.Datatypes <> nat ind
+binder 1568:1568 <> z:30
+R1578:1580 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1581:1581 Coq.Init.Datatypes <> S constr
+R1589:1591 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1585:1587 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1592:1592 DschingisKhan.theories.Auxiliary <> z:30 var
+R1561:1567 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1575:1576 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1572:1574 Coq.Init.Datatypes <> nat ind
+binder 1568:1568 <> z:31
+R1578:1580 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1581:1581 Coq.Init.Datatypes <> S constr
+R1589:1591 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1585:1587 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1592:1592 DschingisKhan.theories.Auxiliary <> z:31 var
+R1651:1654 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R1647:1649 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1643:1645 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1668:1670 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1656:1658 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1659:1659 Coq.Init.Datatypes <> S constr
+R1663:1665 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1651:1654 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R1647:1649 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1643:1645 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1668:1670 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1656:1658 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1659:1659 Coq.Init.Datatypes <> S constr
+R1663:1665 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1700:1701 Coq.Init.Logic <> ::type_scope:'~'_x not
+R1703:1705 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R1707:1709 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1700:1701 Coq.Init.Logic <> ::type_scope:'~'_x not
+R1703:1705 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R1707:1709 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1750:1756 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1764:1765 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1761:1763 Coq.Init.Datatypes <> nat ind
+binder 1757:1757 <> z:32
+R1771:1773 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1767:1769 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1774:1774 Coq.Init.Datatypes <> S constr
+R1778:1780 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1781:1781 DschingisKhan.theories.Auxiliary <> z:32 var
+R1750:1756 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1764:1765 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R1761:1763 Coq.Init.Datatypes <> nat ind
+binder 1757:1757 <> z:33
+R1771:1773 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1767:1769 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1774:1774 Coq.Init.Datatypes <> S constr
+R1778:1780 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1781:1781 DschingisKhan.theories.Auxiliary <> z:33 var
+R1846:1849 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R1836:1838 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1832:1834 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1840:1844 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1863:1865 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1851:1853 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1854:1854 Coq.Init.Datatypes <> S constr
+R1858:1860 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1867:1871 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1846:1849 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R1836:1838 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1832:1834 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1840:1844 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1863:1865 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R1851:1853 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R1854:1854 Coq.Init.Datatypes <> S constr
+R1858:1860 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1867:1871 Coq.Arith.PeanoNat <> ::nat_scope:x_'mod'_x not
+R1897:1899 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1901:1903 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+R1897:1899 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1901:1903 Coq.Arith.PeanoNat <> ::nat_scope:x_'/'_x not
+def 1931:1939 MyUtilities first_nat
+R1943:1943 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R1955:1959 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R1947:1950 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R1944:1946 Coq.Init.Datatypes <> nat ind
+R1951:1954 Coq.Init.Datatypes <> bool ind
+R1963:1966 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R1960:1962 Coq.Init.Datatypes <> nat ind
+R1967:1969 Coq.Init.Datatypes <> nat ind
+R1989:1992 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R1986:1988 Coq.Init.Datatypes <> nat ind
+R1993:1996 Coq.Init.Datatypes <> bool ind
+binder 1982:1982 <> p:34
+R2028:2030 Coq.Init.Datatypes <> nat ind
+binder 2024:2024 <> n:35
+R2046:2048 Coq.Init.Datatypes <> nat ind
+R2063:2063 DschingisKhan.theories.Auxiliary <> n:35 var
+R2089:2089 Coq.Init.Datatypes <> S constr
+R2100:2100 DschingisKhan.theories.Auxiliary <> p:34 var
+R2103:2115 DschingisKhan.theories.Auxiliary <> first_nat_fix:36 var
+R2148:2148 DschingisKhan.theories.Auxiliary <> n:35 var
+R2126:2138 DschingisKhan.theories.Auxiliary <> first_nat_fix:36 var
+prf 2173:2195 MyUtilities well_ordering_principle
+R2218:2221 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2215:2217 Coq.Init.Datatypes <> nat ind
+R2222:2225 Coq.Init.Datatypes <> bool ind
+binder 2211:2211 <> p:38
+R2243:2245 Coq.Init.Datatypes <> nat ind
+binder 2239:2239 <> n:39
+R2262:2269 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2255:2257 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2252:2252 DschingisKhan.theories.Auxiliary <> p:38 var
+R2254:2254 DschingisKhan.theories.Auxiliary <> n:39 var
+R2258:2261 Coq.Init.Datatypes <> true constr
+R2285:2293 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2295:2295 DschingisKhan.theories.Auxiliary <> p:38 var
+R2297:2297 DschingisKhan.theories.Auxiliary <> n:39 var
+R2278:2280 Coq.Init.Datatypes <> nat ind
+binder 2274:2274 <> m:40
+R2316:2320 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R2357:2357 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R2309:2311 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2306:2306 DschingisKhan.theories.Auxiliary <> p:38 var
+R2308:2308 DschingisKhan.theories.Auxiliary <> m:40 var
+R2312:2315 Coq.Init.Datatypes <> true constr
+R2332:2334 Coq.Init.Datatypes <> nat ind
+binder 2328:2328 <> i:41
+R2347:2350 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2340:2342 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2337:2337 DschingisKhan.theories.Auxiliary <> p:38 var
+R2339:2339 DschingisKhan.theories.Auxiliary <> i:41 var
+R2343:2346 Coq.Init.Datatypes <> true constr
+R2352:2355 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R2351:2351 DschingisKhan.theories.Auxiliary <> i:41 var
+R2356:2356 DschingisKhan.theories.Auxiliary <> m:40 var
+R2483:2485 Coq.Init.Datatypes <> nat ind
+binder 2479:2479 <> x:42
+R2498:2501 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2491:2493 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2490:2490 DschingisKhan.theories.Auxiliary <> x:42 var
+R2494:2497 Coq.Init.Datatypes <> true constr
+R2519:2521 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2505:2513 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2517:2517 DschingisKhan.theories.Auxiliary <> x:42 var
+R2522:2525 Coq.Init.Datatypes <> true constr
+R2483:2485 Coq.Init.Datatypes <> nat ind
+binder 2479:2479 <> x:43
+R2498:2501 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2491:2493 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2490:2490 DschingisKhan.theories.Auxiliary <> x:43 var
+R2494:2497 Coq.Init.Datatypes <> true constr
+R2519:2521 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2505:2513 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2517:2517 DschingisKhan.theories.Auxiliary <> x:43 var
+R2522:2525 Coq.Init.Datatypes <> true constr
+R2582:2590 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2582:2590 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2667:2669 Coq.Init.Datatypes <> nat ind
+binder 2663:2663 <> x:44
+R2685:2688 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R2672:2680 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2684:2684 DschingisKhan.theories.Auxiliary <> x:44 var
+R2689:2689 DschingisKhan.theories.Auxiliary <> x:44 var
+R2667:2669 Coq.Init.Datatypes <> nat ind
+binder 2663:2663 <> x:45
+R2685:2688 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R2672:2680 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2684:2684 DschingisKhan.theories.Auxiliary <> x:45 var
+R2689:2689 DschingisKhan.theories.Auxiliary <> x:45 var
+R2716:2718 Coq.Init.Datatypes <> nat ind
+binder 2712:2712 <> x:46
+R2745:2749 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2804:2804 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2738:2740 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2724:2732 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2736:2736 DschingisKhan.theories.Auxiliary <> x:46 var
+R2741:2744 Coq.Init.Datatypes <> true constr
+R2761:2763 Coq.Init.Datatypes <> nat ind
+binder 2757:2757 <> y:47
+R2771:2774 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2767:2769 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R2766:2766 DschingisKhan.theories.Auxiliary <> x:46 var
+R2770:2770 DschingisKhan.theories.Auxiliary <> y:47 var
+R2788:2790 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2775:2783 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2787:2787 DschingisKhan.theories.Auxiliary <> x:46 var
+R2791:2799 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2803:2803 DschingisKhan.theories.Auxiliary <> y:47 var
+R2716:2718 Coq.Init.Datatypes <> nat ind
+binder 2712:2712 <> x:48
+R2745:2749 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2804:2804 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2738:2740 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2724:2732 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2736:2736 DschingisKhan.theories.Auxiliary <> x:48 var
+R2741:2744 Coq.Init.Datatypes <> true constr
+R2761:2763 Coq.Init.Datatypes <> nat ind
+binder 2757:2757 <> y:49
+R2771:2774 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2767:2769 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R2766:2766 DschingisKhan.theories.Auxiliary <> x:48 var
+R2770:2770 DschingisKhan.theories.Auxiliary <> y:49 var
+R2788:2790 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2775:2783 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2787:2787 DschingisKhan.theories.Auxiliary <> x:48 var
+R2791:2799 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2803:2803 DschingisKhan.theories.Auxiliary <> y:49 var
+R2831:2833 Coq.Init.Datatypes <> nat ind
+binder 2827:2827 <> x:50
+R2847:2849 Coq.Init.Datatypes <> nat ind
+binder 2843:2843 <> y:51
+R2862:2865 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2855:2857 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2854:2854 DschingisKhan.theories.Auxiliary <> y:51 var
+R2858:2861 Coq.Init.Datatypes <> true constr
+R2879:2882 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R2866:2874 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2878:2878 DschingisKhan.theories.Auxiliary <> x:50 var
+R2883:2883 DschingisKhan.theories.Auxiliary <> y:51 var
+R2831:2833 Coq.Init.Datatypes <> nat ind
+binder 2827:2827 <> x:52
+R2847:2849 Coq.Init.Datatypes <> nat ind
+binder 2843:2843 <> y:53
+R2862:2865 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2855:2857 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2854:2854 DschingisKhan.theories.Auxiliary <> y:53 var
+R2858:2861 Coq.Init.Datatypes <> true constr
+R2879:2882 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R2866:2874 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R2878:2878 DschingisKhan.theories.Auxiliary <> x:52 var
+R2883:2883 DschingisKhan.theories.Auxiliary <> y:53 var
+R2926:2946 Coq.Arith.Compare_dec <> le_lt_dec def
+R2926:2946 Coq.Arith.Compare_dec <> le_lt_dec def
+R2969:2980 Coq.Arith.PeanoNat Nat le_trans thm
+R2969:2980 Coq.Arith.PeanoNat Nat le_trans thm
+R3002:3010 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R3023:3031 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R3002:3010 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R3023:3031 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R3198:3206 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+R3198:3206 DschingisKhan.theories.Auxiliary MyUtilities first_nat def
+def 3244:3256 MyUtilities sum_from_0_to
+R3263:3265 Coq.Init.Datatypes <> nat ind
+binder 3259:3259 <> n:54
+R3281:3283 Coq.Init.Datatypes <> nat ind
+R3298:3298 DschingisKhan.theories.Auxiliary <> n:54 var
+R3324:3324 Coq.Init.Datatypes <> S constr
+R3333:3335 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R3332:3332 DschingisKhan.theories.Auxiliary <> n:54 var
+R3336:3348 DschingisKhan.theories.Auxiliary <> sum_from_0_to:55 def
+prf 3380:3395 MyUtilities sum_from_0_to_is
+R3414:3416 Coq.Init.Datatypes <> nat ind
+binder 3410:3410 <> n:57
+R3442:3444 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3424:3426 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R3427:3439 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R3441:3441 DschingisKhan.theories.Auxiliary <> n:57 var
+R3446:3449 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R3453:3453 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
+R3445:3445 DschingisKhan.theories.Auxiliary <> n:57 var
+R3450:3450 Coq.Init.Datatypes <> S constr
+R3452:3452 DschingisKhan.theories.Auxiliary <> n:57 var
+def 3524:3537 MyUtilities cantor_pairing
+R3544:3546 Coq.Init.Datatypes <> nat ind
+binder 3540:3540 <> n:58
+R3565:3567 Coq.Init.Datatypes <> ::type_scope:x_'*'_x not
+R3562:3564 Coq.Init.Datatypes <> nat ind
+R3568:3570 Coq.Init.Datatypes <> nat ind
+R3585:3585 DschingisKhan.theories.Auxiliary <> n:58 var
+R3603:3603 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3605:3606 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3608:3608 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3616:3616 Coq.Init.Datatypes <> S constr
+R3636:3649 DschingisKhan.theories.Auxiliary <> cantor_pairing:59 def
+R3667:3667 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3669:3670 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3672:3672 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3677:3677 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3681:3682 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3684:3684 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3678:3678 Coq.Init.Datatypes <> S constr
+R3694:3694 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3698:3699 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3701:3701 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3695:3695 Coq.Init.Datatypes <> S constr
+R3706:3706 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3708:3709 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3713:3713 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3710:3710 Coq.Init.Datatypes <> S constr
+prf 3746:3773 MyUtilities cantor_pairing_is_surjective
+R3792:3794 Coq.Init.Datatypes <> nat ind
+binder 3788:3788 <> x:61
+R3812:3814 Coq.Init.Datatypes <> nat ind
+binder 3808:3808 <> y:62
+R3827:3829 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3821:3821 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3823:3824 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3826:3826 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3822:3822 DschingisKhan.theories.Auxiliary <> x:61 var
+R3825:3825 DschingisKhan.theories.Auxiliary <> y:62 var
+R3830:3843 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R3867:3869 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R3846:3858 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R3862:3864 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R3861:3861 DschingisKhan.theories.Auxiliary <> x:61 var
+R3865:3865 DschingisKhan.theories.Auxiliary <> y:62 var
+R3870:3870 DschingisKhan.theories.Auxiliary <> y:62 var
+R3926:3928 Coq.Init.Datatypes <> nat ind
+binder 3922:3922 <> z:63
+R3942:3944 Coq.Init.Datatypes <> nat ind
+binder 3938:3938 <> y:64
+R3958:3960 Coq.Init.Datatypes <> nat ind
+binder 3954:3954 <> x:65
+R3972:3975 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R3964:3966 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3963:3963 DschingisKhan.theories.Auxiliary <> z:63 var
+R3968:3970 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R3967:3967 DschingisKhan.theories.Auxiliary <> x:65 var
+R3971:3971 DschingisKhan.theories.Auxiliary <> y:64 var
+R3982:3984 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3976:3976 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3978:3979 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3981:3981 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3977:3977 DschingisKhan.theories.Auxiliary <> x:65 var
+R3980:3980 DschingisKhan.theories.Auxiliary <> y:64 var
+R3985:3998 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4016:4018 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4001:4013 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4015:4015 DschingisKhan.theories.Auxiliary <> z:63 var
+R4019:4019 DschingisKhan.theories.Auxiliary <> y:64 var
+R3926:3928 Coq.Init.Datatypes <> nat ind
+binder 3922:3922 <> z:66
+R3942:3944 Coq.Init.Datatypes <> nat ind
+binder 3938:3938 <> y:67
+R3958:3960 Coq.Init.Datatypes <> nat ind
+binder 3954:3954 <> x:68
+R3972:3975 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R3964:3966 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3963:3963 DschingisKhan.theories.Auxiliary <> z:66 var
+R3968:3970 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R3967:3967 DschingisKhan.theories.Auxiliary <> x:68 var
+R3971:3971 DschingisKhan.theories.Auxiliary <> y:67 var
+R3982:3984 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3976:3976 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3978:3979 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3981:3981 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3977:3977 DschingisKhan.theories.Auxiliary <> x:68 var
+R3980:3980 DschingisKhan.theories.Auxiliary <> y:67 var
+R3985:3998 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4016:4018 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4001:4013 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4015:4015 DschingisKhan.theories.Auxiliary <> z:66 var
+R4019:4019 DschingisKhan.theories.Auxiliary <> y:67 var
+R4083:4085 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4083:4085 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4112:4114 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4112:4114 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4197:4199 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4200:4200 Coq.Init.Datatypes <> S constr
+R4197:4199 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4200:4200 Coq.Init.Datatypes <> S constr
+R4256:4269 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4291:4293 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4273:4275 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4276:4288 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4256:4269 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4291:4293 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4273:4275 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4276:4288 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4334:4336 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4328:4328 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4330:4331 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4333:4333 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4337:4350 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4368:4370 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4353:4365 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4334:4336 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4328:4328 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4330:4331 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4333:4333 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4337:4350 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4368:4370 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4353:4365 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4394:4404 Coq.Arith.PeanoNat Nat add_0_r thm
+R4407:4418 Coq.Arith.PeanoNat Nat add_comm thm
+R4394:4404 Coq.Arith.PeanoNat Nat add_0_r thm
+R4394:4404 Coq.Arith.PeanoNat Nat add_0_r thm
+R4407:4418 Coq.Arith.PeanoNat Nat add_comm thm
+R4407:4418 Coq.Arith.PeanoNat Nat add_comm thm
+R4533:4535 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4525:4525 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4529:4530 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4532:4532 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4526:4526 Coq.Init.Datatypes <> S constr
+R4536:4549 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4571:4573 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4552:4564 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4567:4567 Coq.Init.Datatypes <> S constr
+R4533:4535 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4525:4525 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4529:4530 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4532:4532 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4526:4526 Coq.Init.Datatypes <> S constr
+R4536:4549 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4571:4573 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4552:4564 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4567:4567 Coq.Init.Datatypes <> S constr
+R4627:4629 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4621:4623 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4603:4605 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4606:4618 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4624:4624 Coq.Init.Datatypes <> S constr
+R4649:4651 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4630:4642 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4645:4645 Coq.Init.Datatypes <> S constr
+R4627:4629 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4621:4623 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4603:4605 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4606:4618 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4624:4624 Coq.Init.Datatypes <> S constr
+R4649:4651 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4630:4642 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4645:4645 Coq.Init.Datatypes <> S constr
+R4749:4749 Coq.Init.Datatypes <> S constr
+R4749:4749 Coq.Init.Datatypes <> S constr
+prf 4774:4800 MyUtilities cantor_pairing_is_injective
+R4819:4821 Coq.Init.Datatypes <> nat ind
+binder 4815:4815 <> n:69
+R4839:4841 Coq.Init.Datatypes <> nat ind
+binder 4835:4835 <> x:70
+R4859:4861 Coq.Init.Datatypes <> nat ind
+binder 4855:4855 <> y:71
+R4893:4900 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4884:4886 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4868:4881 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R4883:4883 DschingisKhan.theories.Auxiliary <> n:69 var
+R4887:4887 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4889:4890 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4892:4892 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4888:4888 DschingisKhan.theories.Auxiliary <> x:70 var
+R4891:4891 DschingisKhan.theories.Auxiliary <> y:71 var
+R4902:4904 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4901:4901 DschingisKhan.theories.Auxiliary <> n:69 var
+R4926:4928 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4905:4917 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R4921:4923 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R4920:4920 DschingisKhan.theories.Auxiliary <> x:70 var
+R4924:4924 DschingisKhan.theories.Auxiliary <> y:71 var
+R4929:4929 DschingisKhan.theories.Auxiliary <> y:71 var
+R5069:5082 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R5069:5082 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5172:5182 Coq.Arith.PeanoNat Nat add_0_r thm
+R5227:5233 Coq.Init.Logic <> eq_refl constr
+R5237:5247 Coq.Arith.PeanoNat Nat add_0_l thm
+R5227:5233 Coq.Init.Logic <> eq_refl constr
+R5227:5233 Coq.Init.Logic <> eq_refl constr
+R5237:5247 Coq.Arith.PeanoNat Nat add_0_l thm
+R5237:5247 Coq.Arith.PeanoNat Nat add_0_l thm
+R5274:5274 Coq.Init.Datatypes <> S constr
+R5282:5288 Coq.Init.Logic <> eq_refl constr
+R5274:5274 Coq.Init.Datatypes <> S constr
+R5282:5288 Coq.Init.Logic <> eq_refl constr
+R5274:5274 Coq.Init.Datatypes <> S constr
+R5282:5288 Coq.Init.Logic <> eq_refl constr
+R5325:5327 Coq.Init.Datatypes <> nat ind
+binder 5320:5321 <> x':72
+R5339:5341 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5334:5336 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5330:5330 Coq.Init.Datatypes <> S constr
+R5332:5333 DschingisKhan.theories.Auxiliary <> x':72 var
+R5344:5346 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5342:5343 DschingisKhan.theories.Auxiliary <> x':72 var
+R5347:5347 Coq.Init.Datatypes <> S constr
+R5325:5327 Coq.Init.Datatypes <> nat ind
+binder 5320:5321 <> x':73
+R5339:5341 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5334:5336 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5330:5330 Coq.Init.Datatypes <> S constr
+R5332:5333 DschingisKhan.theories.Auxiliary <> x':73 var
+R5344:5346 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5342:5343 DschingisKhan.theories.Auxiliary <> x':73 var
+R5347:5347 Coq.Init.Datatypes <> S constr
+prf 5407:5423 MyUtilities cantor_pairing_is
+R5442:5444 Coq.Init.Datatypes <> nat ind
+binder 5438:5438 <> n:74
+R5462:5464 Coq.Init.Datatypes <> nat ind
+binder 5458:5458 <> x:75
+R5482:5484 Coq.Init.Datatypes <> nat ind
+binder 5478:5478 <> y:76
+R5516:5520 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R5507:5509 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5491:5504 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing def
+R5506:5506 DschingisKhan.theories.Auxiliary <> n:74 var
+R5510:5510 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5512:5513 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5515:5515 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5511:5511 DschingisKhan.theories.Auxiliary <> x:75 var
+R5514:5514 DschingisKhan.theories.Auxiliary <> y:76 var
+R5522:5524 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5521:5521 DschingisKhan.theories.Auxiliary <> n:74 var
+R5546:5548 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5525:5537 DschingisKhan.theories.Auxiliary MyUtilities sum_from_0_to def
+R5541:5543 Coq.Init.Peano <> ::nat_scope:x_'+'_x not
+R5540:5540 DschingisKhan.theories.Auxiliary <> x:75 var
+R5544:5544 DschingisKhan.theories.Auxiliary <> y:76 var
+R5549:5549 DschingisKhan.theories.Auxiliary <> y:76 var
+R5577:5603 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing_is_injective thm
+R5606:5633 DschingisKhan.theories.Auxiliary MyUtilities cantor_pairing_is_surjective thm
+def 5697:5699 MyUtilities S_0
+binder 5702:5702 <> A:77
+R5725:5727 Coq.Init.Datatypes <> nat ind
+binder 5721:5721 <> n:78
+R5737:5740 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R5733:5735 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5730:5730 Coq.Init.Datatypes <> S constr
+R5732:5732 DschingisKhan.theories.Auxiliary <> n:78 var
+R5741:5741 DschingisKhan.theories.Auxiliary <> A:77 var
+R5758:5760 Coq.Init.Datatypes <> nat ind
+binder 5754:5754 <> n:79
+R5781:5783 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5778:5778 Coq.Init.Datatypes <> S constr
+R5780:5780 DschingisKhan.theories.Auxiliary <> n:79 var
+binder 5773:5774 <> H0:80
+R5814:5819 Coq.Init.Logic <> eq_ind scheme
+R5821:5823 Coq.Init.Datatypes <> nat ind
+R5826:5826 Coq.Init.Datatypes <> S constr
+R5828:5828 DschingisKhan.theories.Auxiliary <> n:79 var
+R5840:5842 Coq.Init.Datatypes <> nat ind
+binder 5836:5836 <> x:81
+R5848:5850 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5847:5847 DschingisKhan.theories.Auxiliary <> x:81 var
+R5851:5851 Coq.Init.Datatypes <> S constr
+R5853:5853 DschingisKhan.theories.Auxiliary <> n:79 var
+R5856:5862 Coq.Init.Logic <> eq_refl constr
+R5866:5867 DschingisKhan.theories.Auxiliary <> H0:80 var
+R5803:5805 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5806:5806 Coq.Init.Datatypes <> S constr
+R5808:5808 DschingisKhan.theories.Auxiliary <> n:79 var
+binder 5797:5798 <> H1:82
+R5895:5900 Coq.Init.Logic <> eq_ind scheme
+R5902:5904 Coq.Init.Datatypes <> nat ind
+R5917:5919 Coq.Init.Datatypes <> nat ind
+binder 5913:5913 <> x:83
+R5927:5933 Coq.Arith.PeanoNat Nat eqb def
+R5935:5935 DschingisKhan.theories.Auxiliary <> x:83 var
+R5954:5958 Coq.Init.Logic <> False ind
+R5944:5947 Coq.Init.Logic <> True ind
+R5961:5961 Coq.Init.Logic <> I constr
+R5964:5964 Coq.Init.Datatypes <> S constr
+R5966:5966 DschingisKhan.theories.Auxiliary <> n:79 var
+R5969:5970 DschingisKhan.theories.Auxiliary <> H1:82 var
+R5885:5889 Coq.Init.Logic <> False ind
+binder 5880:5881 <> H2:84
+R5979:5988 Coq.Init.Logic <> False_rect scheme
+R5992:5993 DschingisKhan.theories.Auxiliary <> H2:84 var
+R5990:5990 DschingisKhan.theories.Auxiliary <> A:77 var
+def 6013:6015 MyUtilities S_S
+R6031:6033 Coq.Init.Datatypes <> nat ind
+binder 6026:6027 <> n1:85
+R6048:6050 Coq.Init.Datatypes <> nat ind
+binder 6043:6044 <> n2:86
+R6064:6067 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6057:6059 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6053:6053 Coq.Init.Datatypes <> S constr
+R6055:6056 DschingisKhan.theories.Auxiliary <> n1:85 var
+R6060:6060 Coq.Init.Datatypes <> S constr
+R6062:6063 DschingisKhan.theories.Auxiliary <> n2:86 var
+R6070:6072 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6068:6069 DschingisKhan.theories.Auxiliary <> n1:85 var
+R6073:6074 DschingisKhan.theories.Auxiliary <> n2:86 var
+R6092:6094 Coq.Init.Datatypes <> nat ind
+binder 6087:6088 <> n1:87
+R6112:6114 Coq.Init.Datatypes <> nat ind
+binder 6107:6108 <> n2:88
+R6136:6138 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6132:6132 Coq.Init.Datatypes <> S constr
+R6134:6135 DschingisKhan.theories.Auxiliary <> n1:87 var
+R6139:6139 Coq.Init.Datatypes <> S constr
+R6141:6142 DschingisKhan.theories.Auxiliary <> n2:88 var
+binder 6127:6128 <> H0:89
+R6152:6157 Coq.Init.Logic <> eq_ind scheme
+R6159:6161 Coq.Init.Datatypes <> nat ind
+R6164:6164 Coq.Init.Datatypes <> S constr
+R6166:6167 DschingisKhan.theories.Auxiliary <> n1:87 var
+R6179:6181 Coq.Init.Datatypes <> nat ind
+binder 6175:6175 <> x:90
+R6188:6190 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6186:6187 DschingisKhan.theories.Auxiliary <> n1:87 var
+R6191:6194 Coq.Init.Peano <> pred syndef
+R6196:6196 DschingisKhan.theories.Auxiliary <> x:90 var
+R6199:6205 Coq.Init.Logic <> eq_refl constr
+R6208:6208 Coq.Init.Datatypes <> S constr
+R6210:6211 DschingisKhan.theories.Auxiliary <> n2:88 var
+R6214:6215 DschingisKhan.theories.Auxiliary <> H0:89 var
+ind 6234:6239 MyUtilities FinSet
+constr 6261:6262 MyUtilities FZ
+constr 6300:6301 MyUtilities FS
+R6246:6249 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6243:6245 Coq.Init.Datatypes <> nat ind
+R6277:6279 Coq.Init.Datatypes <> nat ind
+binder 6273:6273 <> n:93
+R6282:6287 DschingisKhan.theories.Auxiliary <> FinSet:91 ind
+R6290:6290 Coq.Init.Datatypes <> S constr
+R6292:6292 DschingisKhan.theories.Auxiliary <> n:93 var
+R6316:6318 Coq.Init.Datatypes <> nat ind
+binder 6312:6312 <> n:94
+R6329:6332 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6321:6326 DschingisKhan.theories.Auxiliary <> FinSet:91 ind
+R6328:6328 DschingisKhan.theories.Auxiliary <> n:94 var
+R6333:6338 DschingisKhan.theories.Auxiliary <> FinSet:91 ind
+R6341:6341 Coq.Init.Datatypes <> S constr
+R6343:6343 DschingisKhan.theories.Auxiliary <> n:94 var
+def 6364:6375 MyUtilities FinSet_case0
+R6390:6393 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6382:6387 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 6378:6378 <> P:95
+R6413:6418 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 6409:6409 <> i:96
+R6423:6423 DschingisKhan.theories.Auxiliary <> P:95 var
+R6425:6425 DschingisKhan.theories.Auxiliary <> i:96 var
+R6442:6447 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 6438:6438 <> i:97
+R6464:6464 DschingisKhan.theories.Auxiliary <> i:97 var
+R6475:6480 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6498:6501 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6494:6496 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6492:6493 DschingisKhan.theories.Auxiliary <> Sn:98 var
+R6502:6502 DschingisKhan.theories.Auxiliary <> P:95 var
+R6504:6504 DschingisKhan.theories.Auxiliary <> i:97 var
+R6517:6518 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R6525:6527 DschingisKhan.theories.Auxiliary MyUtilities S_0 def
+R6537:6538 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R6548:6550 DschingisKhan.theories.Auxiliary MyUtilities S_0 def
+R6562:6568 Coq.Init.Logic <> eq_refl constr
+def 6588:6599 MyUtilities FinSet_caseS
+R6606:6608 Coq.Init.Datatypes <> nat ind
+binder 6602:6602 <> n:100
+R6628:6631 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6616:6621 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6624:6624 Coq.Init.Datatypes <> S constr
+R6626:6626 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6612:6612 <> P:101
+R6648:6651 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6640:6640 DschingisKhan.theories.Auxiliary <> P:101 var
+R6643:6644 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R6646:6646 DschingisKhan.theories.Auxiliary <> n:100 var
+R6652:6652 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6686:6691 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6720:6720 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6665:6670 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6672:6672 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6660:6661 <> i':102
+R6675:6675 DschingisKhan.theories.Auxiliary <> P:101 var
+R6678:6679 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R6681:6681 DschingisKhan.theories.Auxiliary <> n:100 var
+R6683:6684 DschingisKhan.theories.Auxiliary <> i':102 var
+R6703:6708 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6711:6711 Coq.Init.Datatypes <> S constr
+R6713:6713 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6699:6699 <> i:103
+R6717:6717 DschingisKhan.theories.Auxiliary <> P:101 var
+R6719:6719 DschingisKhan.theories.Auxiliary <> i:103 var
+R6738:6738 DschingisKhan.theories.Auxiliary <> P:101 var
+R6741:6742 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R6744:6744 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6733:6734 <> PZ:104
+R6775:6780 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6782:6782 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6770:6771 <> i':105
+R6785:6785 DschingisKhan.theories.Auxiliary <> P:101 var
+R6788:6789 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R6791:6791 DschingisKhan.theories.Auxiliary <> n:100 var
+R6793:6794 DschingisKhan.theories.Auxiliary <> i':105 var
+binder 6758:6759 <> PS:106
+R6812:6817 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6820:6820 Coq.Init.Datatypes <> S constr
+R6822:6822 DschingisKhan.theories.Auxiliary <> n:100 var
+binder 6808:6808 <> i:107
+R6838:6838 DschingisKhan.theories.Auxiliary <> i:107 var
+R6849:6854 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6874:6876 DschingisKhan.theories.Auxiliary <> Sn0:108 var
+R6902:6905 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6892:6897 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6899:6901 DschingisKhan.theories.Auxiliary <> Sn1:110 var
+R6921:6932 DschingisKhan.theories.Auxiliary MyUtilities FinSet_case0 def
+R6936:6936 Coq.Init.Datatypes <> S constr
+R6953:6958 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6961:6961 Coq.Init.Datatypes <> S constr
+binder 6948:6949 <> i1:111
+R6995:6998 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6982:6987 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R6990:6990 Coq.Init.Datatypes <> S constr
+binder 6977:6978 <> P0:112
+R7015:7018 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7005:7006 DschingisKhan.theories.Auxiliary <> P0:112 var
+R7009:7010 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R7019:7019 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7056:7060 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7032:7037 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 7027:7028 <> i':113
+R7043:7044 DschingisKhan.theories.Auxiliary <> P0:112 var
+R7047:7048 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7053:7054 DschingisKhan.theories.Auxiliary <> i':113 var
+R7061:7062 DschingisKhan.theories.Auxiliary <> P0:112 var
+R7064:7065 DschingisKhan.theories.Auxiliary <> i1:111 var
+R7072:7073 DschingisKhan.theories.Auxiliary <> i0:109 var
+R7086:7087 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R7117:7120 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7104:7109 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7112:7112 Coq.Init.Datatypes <> S constr
+binder 7099:7100 <> P0:114
+R7139:7140 DschingisKhan.theories.Auxiliary <> P0:114 var
+R7143:7144 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+binder 7133:7135 <> PZ0:115
+R7175:7180 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 7170:7171 <> i':116
+R7186:7187 DschingisKhan.theories.Auxiliary <> P0:114 var
+R7190:7191 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7196:7197 DschingisKhan.theories.Auxiliary <> i':116 var
+binder 7157:7159 <> PS0:117
+R7203:7205 DschingisKhan.theories.Auxiliary <> PZ0:115 var
+R7213:7214 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7247:7250 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7234:7239 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7242:7242 Coq.Init.Datatypes <> S constr
+binder 7229:7230 <> P0:118
+R7269:7270 DschingisKhan.theories.Auxiliary <> P0:118 var
+R7273:7274 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+binder 7263:7265 <> PZ0:119
+R7305:7310 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 7300:7301 <> i':120
+R7316:7317 DschingisKhan.theories.Auxiliary <> P0:118 var
+R7320:7321 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7326:7327 DschingisKhan.theories.Auxiliary <> i':120 var
+binder 7287:7289 <> PS0:121
+R7333:7335 DschingisKhan.theories.Auxiliary <> PS0:121 var
+R7348:7348 DschingisKhan.theories.Auxiliary <> P:101 var
+R7350:7351 DschingisKhan.theories.Auxiliary <> PZ:104 var
+R7353:7354 DschingisKhan.theories.Auxiliary <> PS:106 var
+def 7374:7385 MyUtilities FinSet_rectS
+R7403:7405 Coq.Init.Datatypes <> nat ind
+binder 7399:7399 <> n:122
+R7416:7419 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7408:7413 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7415:7415 DschingisKhan.theories.Auxiliary <> n:122 var
+binder 7388:7388 <> P:123
+R7428:7428 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7459:7463 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7440:7442 Coq.Init.Datatypes <> nat ind
+binder 7436:7436 <> n:124
+R7445:7445 DschingisKhan.theories.Auxiliary <> P:123 var
+R7454:7455 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R7457:7457 DschingisKhan.theories.Auxiliary <> n:124 var
+R7448:7448 Coq.Init.Datatypes <> S constr
+R7450:7450 DschingisKhan.theories.Auxiliary <> n:124 var
+R7464:7464 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7530:7535 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7586:7586 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7476:7478 Coq.Init.Datatypes <> nat ind
+binder 7472:7472 <> n:125
+R7493:7498 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7500:7500 DschingisKhan.theories.Auxiliary <> n:125 var
+binder 7488:7489 <> i':126
+R7509:7512 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7503:7503 DschingisKhan.theories.Auxiliary <> P:123 var
+R7507:7508 DschingisKhan.theories.Auxiliary <> i':126 var
+R7505:7505 DschingisKhan.theories.Auxiliary <> n:125 var
+R7513:7513 DschingisKhan.theories.Auxiliary <> P:123 var
+R7522:7523 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7525:7525 DschingisKhan.theories.Auxiliary <> n:125 var
+R7527:7528 DschingisKhan.theories.Auxiliary <> i':126 var
+R7516:7516 Coq.Init.Datatypes <> S constr
+R7518:7518 DschingisKhan.theories.Auxiliary <> n:125 var
+R7547:7549 Coq.Init.Datatypes <> nat ind
+binder 7543:7543 <> n:127
+R7563:7568 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7571:7571 Coq.Init.Datatypes <> S constr
+R7573:7573 DschingisKhan.theories.Auxiliary <> n:127 var
+binder 7559:7559 <> i:128
+R7577:7577 DschingisKhan.theories.Auxiliary <> P:123 var
+R7585:7585 DschingisKhan.theories.Auxiliary <> i:128 var
+R7580:7580 Coq.Init.Datatypes <> S constr
+R7582:7582 DschingisKhan.theories.Auxiliary <> n:127 var
+R7615:7617 Coq.Init.Datatypes <> nat ind
+binder 7611:7611 <> n:129
+R7620:7620 DschingisKhan.theories.Auxiliary <> P:123 var
+R7629:7630 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R7632:7632 DschingisKhan.theories.Auxiliary <> n:129 var
+R7623:7623 Coq.Init.Datatypes <> S constr
+R7625:7625 DschingisKhan.theories.Auxiliary <> n:129 var
+binder 7599:7600 <> PZ:130
+R7662:7664 Coq.Init.Datatypes <> nat ind
+binder 7658:7658 <> n:131
+R7679:7684 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7686:7686 DschingisKhan.theories.Auxiliary <> n:131 var
+binder 7674:7675 <> i':132
+R7695:7698 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7689:7689 DschingisKhan.theories.Auxiliary <> P:123 var
+R7693:7694 DschingisKhan.theories.Auxiliary <> i':132 var
+R7691:7691 DschingisKhan.theories.Auxiliary <> n:131 var
+R7699:7699 DschingisKhan.theories.Auxiliary <> P:123 var
+R7708:7709 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7711:7711 DschingisKhan.theories.Auxiliary <> n:131 var
+R7713:7714 DschingisKhan.theories.Auxiliary <> i':132 var
+R7702:7702 Coq.Init.Datatypes <> S constr
+R7704:7704 DschingisKhan.theories.Auxiliary <> n:131 var
+binder 7646:7647 <> PS:133
+R7750:7752 Coq.Init.Datatypes <> nat ind
+binder 7746:7746 <> n:134
+R7760:7765 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7768:7768 Coq.Init.Datatypes <> S constr
+R7770:7770 DschingisKhan.theories.Auxiliary <> n:134 var
+binder 7756:7756 <> i:135
+R7787:7787 DschingisKhan.theories.Auxiliary <> P:123 var
+R7795:7795 DschingisKhan.theories.Auxiliary <> i:135 var
+R7790:7790 Coq.Init.Datatypes <> S constr
+R7792:7792 DschingisKhan.theories.Auxiliary <> n:134 var
+R7810:7810 DschingisKhan.theories.Auxiliary <> i:135 var
+R7821:7826 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7839:7839 DschingisKhan.theories.Auxiliary <> P:123 var
+R7845:7846 DschingisKhan.theories.Auxiliary <> i0:138 var
+R7841:7843 DschingisKhan.theories.Auxiliary <> Sn0:137 var
+R7859:7860 DschingisKhan.theories.Auxiliary MyUtilities FZ constr
+R7868:7869 DschingisKhan.theories.Auxiliary <> PZ:130 var
+R7880:7881 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7933:7938 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R7940:7941 DschingisKhan.theories.Auxiliary <> n1:139 var
+binder 7927:7929 <> i0':140
+R7944:7944 DschingisKhan.theories.Auxiliary <> P:123 var
+R7954:7955 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R7957:7958 DschingisKhan.theories.Auxiliary <> n1:139 var
+R7960:7962 DschingisKhan.theories.Auxiliary <> i0':140 var
+R7947:7947 Coq.Init.Datatypes <> S constr
+R7949:7950 DschingisKhan.theories.Auxiliary <> n1:139 var
+R7993:7998 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 7987:7989 <> i0':141
+R8006:8017 DschingisKhan.theories.Auxiliary MyUtilities FinSet_case0 def
+R8029:8034 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+binder 8024:8025 <> i1:142
+R8041:8041 DschingisKhan.theories.Auxiliary <> P:123 var
+R8046:8047 DschingisKhan.theories.Auxiliary MyUtilities FS constr
+R8051:8052 DschingisKhan.theories.Auxiliary <> i1:142 var
+R8056:8058 DschingisKhan.theories.Auxiliary <> i0':141 var
+R8068:8068 Coq.Init.Datatypes <> S constr
+R8087:8092 DschingisKhan.theories.Auxiliary MyUtilities FinSet ind
+R8095:8095 Coq.Init.Datatypes <> S constr
+binder 8081:8083 <> i0':143
+R8105:8106 DschingisKhan.theories.Auxiliary <> PS:133 var
+R8121:8136 DschingisKhan.theories.Auxiliary <> FinSet_rectS_fix:136 var
+R8142:8144 DschingisKhan.theories.Auxiliary <> i0':143 var
+R8116:8118 DschingisKhan.theories.Auxiliary <> i0':143 var
+R8109:8109 Coq.Init.Datatypes <> S constr
+prf 8181:8196 MyUtilities forallb_true_iff
+binder 8199:8199 <> A:144
+R8215:8218 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8214:8214 DschingisKhan.theories.Auxiliary <> A:144 var
+R8219:8222 Coq.Init.Datatypes <> bool ind
+binder 8210:8210 <> p:145
+R8231:8234 Coq.Init.Datatypes <> list ind
+R8236:8236 DschingisKhan.theories.Auxiliary <> A:144 var
+binder 8226:8227 <> xs:146
+R8264:8268 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R8257:8259 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8245:8251 Coq.Lists.List <> forallb def
+R8255:8256 DschingisKhan.theories.Auxiliary <> xs:146 var
+R8253:8253 DschingisKhan.theories.Auxiliary <> p:145 var
+R8260:8263 Coq.Init.Datatypes <> true constr
+R8280:8280 DschingisKhan.theories.Auxiliary <> A:144 var
+binder 8276:8276 <> x:147
+R8290:8293 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8283:8284 Coq.Lists.List <> In def
+R8288:8289 DschingisKhan.theories.Auxiliary <> xs:146 var
+R8286:8286 DschingisKhan.theories.Auxiliary <> x:147 var
+R8297:8299 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8294:8294 DschingisKhan.theories.Auxiliary <> p:145 var
+R8296:8296 DschingisKhan.theories.Auxiliary <> x:147 var
+R8300:8303 Coq.Init.Datatypes <> true constr
+R8378:8390 Coq.Bool.Bool <> andb_true_iff thm
+R8378:8390 Coq.Bool.Bool <> andb_true_iff thm
+R8378:8390 Coq.Bool.Bool <> andb_true_iff thm
+def 8502:8517 MyUtilities fold_right_max_0
+R8529:8532 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8521:8524 Coq.Init.Datatypes <> list ind
+R8526:8528 Coq.Init.Datatypes <> nat ind
+R8533:8535 Coq.Init.Datatypes <> nat ind
+R8544:8553 Coq.Lists.List <> fold_right def
+R8555:8557 Coq.Init.Peano <> max syndef
+prf 8574:8592 MyUtilities fold_right_max_0_in
+R8612:8615 Coq.Init.Datatypes <> list ind
+R8617:8619 Coq.Init.Datatypes <> nat ind
+binder 8607:8608 <> ns:148
+R8637:8639 Coq.Init.Datatypes <> nat ind
+binder 8633:8633 <> n:149
+R8653:8660 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8646:8647 Coq.Lists.List <> In def
+R8651:8652 DschingisKhan.theories.Auxiliary <> ns:148 var
+R8649:8649 DschingisKhan.theories.Auxiliary <> n:149 var
+R8680:8683 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R8661:8676 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+R8678:8679 DschingisKhan.theories.Auxiliary <> ns:148 var
+R8684:8684 DschingisKhan.theories.Auxiliary <> n:149 var
+R8727:8742 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+R8850:8853 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R8831:8840 Coq.Lists.List <> fold_right def
+R8842:8844 Coq.Init.Peano <> max syndef
+R8850:8853 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R8831:8840 Coq.Lists.List <> fold_right def
+R8842:8844 Coq.Init.Peano <> max syndef
+prf 8876:8895 MyUtilities fold_right_max_0_app
+R8916:8919 Coq.Init.Datatypes <> list ind
+R8921:8923 Coq.Init.Datatypes <> nat ind
+binder 8910:8912 <> ns1:150
+R8943:8946 Coq.Init.Datatypes <> list ind
+R8948:8950 Coq.Init.Datatypes <> nat ind
+binder 8937:8939 <> ns2:151
+R8986:8988 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8957:8972 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+R8978:8981 Coq.Init.Datatypes <> ::list_scope:x_'++'_x not
+R8975:8977 DschingisKhan.theories.Auxiliary <> ns1:150 var
+R8982:8984 DschingisKhan.theories.Auxiliary <> ns2:151 var
+R8989:8991 Coq.Init.Peano <> max syndef
+R8994:9009 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+R9011:9013 DschingisKhan.theories.Auxiliary <> ns1:150 var
+R9017:9032 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+R9034:9036 DschingisKhan.theories.Auxiliary <> ns2:151 var
+R9080:9095 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0 def
+prf 9192:9220 MyUtilities property1_of_fold_right_max_0
+R9232:9235 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9229:9231 Coq.Init.Datatypes <> nat ind
+binder 9223:9225 <> Phi:152
+R9264:9266 Coq.Init.Datatypes <> nat ind
+binder 9260:9260 <> i:153
+R9269:9269 Coq.Init.Specif <> ::type_scope:'{'_x_'}'_'+'_'{'_x_'}' not
+R9275:9279 Coq.Init.Specif <> ::type_scope:'{'_x_'}'_'+'_'{'_x_'}' not
+R9287:9287 Coq.Init.Specif <> ::type_scope:'{'_x_'}'_'+'_'{'_x_'}' not
+R9270:9272 DschingisKhan.theories.Auxiliary <> Phi:152 var
+R9274:9274 DschingisKhan.theories.Auxiliary <> i:153 var
+R9280:9281 Coq.Init.Logic <> ::type_scope:'~'_x not
+R9282:9284 DschingisKhan.theories.Auxiliary <> Phi:152 var
+R9286:9286 DschingisKhan.theories.Auxiliary <> i:153 var
+binder 9243:9249 <> Phi_dec:154
+R9308:9311 Coq.Init.Datatypes <> list ind
+R9313:9315 Coq.Init.Datatypes <> nat ind
+binder 9303:9304 <> ns:155
+R9322:9322 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9355:9363 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9334:9336 Coq.Init.Datatypes <> nat ind
+binder 9330:9330 <> i:156
+R9344:9347 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9339:9341 DschingisKhan.theories.Auxiliary <> Phi:152 var
+R9343:9343 DschingisKhan.theories.Auxiliary <> i:156 var
+R9348:9349 Coq.Lists.List <> In def
+R9353:9354 DschingisKhan.theories.Auxiliary <> ns:155 var
+R9351:9351 DschingisKhan.theories.Auxiliary <> i:156 var
+R9375:9377 Coq.Init.Datatypes <> nat ind
+binder 9371:9371 <> n:157
+R9389:9396 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9384:9386 DschingisKhan.theories.Auxiliary <> Phi:152 var
+R9388:9388 DschingisKhan.theories.Auxiliary <> n:157 var
+R9416:9419 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9397:9406 Coq.Lists.List <> fold_right def
+R9414:9415 DschingisKhan.theories.Auxiliary <> ns:155 var
+R9408:9410 Coq.Init.Peano <> max syndef
+R9420:9420 DschingisKhan.theories.Auxiliary <> n:157 var
+R9562:9582 Coq.Arith.Compare_dec <> le_lt_dec def
+R9562:9582 Coq.Arith.Compare_dec <> le_lt_dec def
+R9625:9628 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9606:9615 Coq.Lists.List <> fold_right def
+R9617:9619 Coq.Init.Peano <> max syndef
+R9625:9628 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9606:9615 Coq.Lists.List <> fold_right def
+R9617:9619 Coq.Init.Peano <> max syndef
+R9719:9722 Coq.Init.Datatypes <> list ind
+R9724:9726 Coq.Init.Datatypes <> nat ind
+binder 9714:9715 <> ks:158
+R9740:9742 Coq.Init.Datatypes <> nat ind
+binder 9736:9736 <> k:159
+R9752:9755 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9745:9746 Coq.Lists.List <> In def
+R9750:9751 DschingisKhan.theories.Auxiliary <> ks:158 var
+R9748:9748 DschingisKhan.theories.Auxiliary <> k:159 var
+R9775:9778 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9756:9765 Coq.Lists.List <> fold_right def
+R9773:9774 DschingisKhan.theories.Auxiliary <> ks:158 var
+R9767:9769 Coq.Init.Peano <> max syndef
+R9779:9779 DschingisKhan.theories.Auxiliary <> k:159 var
+R9719:9722 Coq.Init.Datatypes <> list ind
+R9724:9726 Coq.Init.Datatypes <> nat ind
+binder 9714:9715 <> ks:160
+R9740:9742 Coq.Init.Datatypes <> nat ind
+binder 9736:9736 <> k:161
+R9752:9755 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9745:9746 Coq.Lists.List <> In def
+R9750:9751 DschingisKhan.theories.Auxiliary <> ks:160 var
+R9748:9748 DschingisKhan.theories.Auxiliary <> k:161 var
+R9775:9778 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9756:9765 Coq.Lists.List <> fold_right def
+R9773:9774 DschingisKhan.theories.Auxiliary <> ks:160 var
+R9767:9769 Coq.Init.Peano <> max syndef
+R9779:9779 DschingisKhan.theories.Auxiliary <> k:161 var
+R9916:9919 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9888:9897 Coq.Lists.List <> fold_right def
+R9899:9910 Coq.Init.Nat <> max def
+R9916:9919 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R9888:9897 Coq.Lists.List <> fold_right def
+R9899:9910 Coq.Init.Nat <> max def
+prf 10047:10075 MyUtilities property2_of_fold_right_max_0
+R10095:10098 Coq.Init.Datatypes <> list ind
+R10100:10102 Coq.Init.Datatypes <> nat ind
+binder 10090:10091 <> ns:162
+R10120:10122 Coq.Init.Datatypes <> nat ind
+binder 10116:10116 <> n:163
+R10152:10157 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R10190:10190 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R10148:10150 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10129:10138 Coq.Lists.List <> fold_right def
+R10146:10147 DschingisKhan.theories.Auxiliary <> ns:162 var
+R10140:10142 Coq.Init.Peano <> max syndef
+R10151:10151 DschingisKhan.theories.Auxiliary <> n:163 var
+R10158:10164 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R10172:10173 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R10169:10171 Coq.Init.Datatypes <> nat ind
+binder 10165:10165 <> i:164
+R10181:10184 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R10174:10175 Coq.Lists.List <> In def
+R10179:10180 DschingisKhan.theories.Auxiliary <> ns:162 var
+R10177:10177 DschingisKhan.theories.Auxiliary <> i:164 var
+R10186:10188 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10185:10185 DschingisKhan.theories.Auxiliary <> i:164 var
+R10189:10189 DschingisKhan.theories.Auxiliary <> n:163 var
+R10316:10336 Coq.Arith.Compare_dec <> le_lt_dec def
+R10341:10350 Coq.Lists.List <> fold_right def
+R10352:10363 Coq.Init.Nat <> max def
+R10316:10336 Coq.Arith.Compare_dec <> le_lt_dec def
+R10341:10350 Coq.Lists.List <> fold_right def
+R10352:10363 Coq.Init.Nat <> max def
+R10449:10451 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10421:10430 Coq.Lists.List <> fold_right def
+R10432:10443 Coq.Init.Nat <> max def
+R10449:10451 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10421:10430 Coq.Lists.List <> fold_right def
+R10432:10443 Coq.Init.Nat <> max def
+R10476:10480 Coq.Init.Logic <> proj1 thm
+R10476:10480 Coq.Init.Logic <> proj1 thm
+R10668:10670 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10649:10658 Coq.Lists.List <> fold_right def
+R10660:10662 Coq.Init.Peano <> max syndef
+R10668:10670 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10649:10658 Coq.Lists.List <> fold_right def
+R10660:10662 Coq.Init.Peano <> max syndef
+R10889:10891 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10861:10870 Coq.Lists.List <> fold_right def
+R10872:10883 Coq.Init.Nat <> max def
+R10889:10891 Coq.Init.Peano <> ::nat_scope:x_'>'_x not
+R10861:10870 Coq.Lists.List <> fold_right def
+R10872:10883 Coq.Init.Nat <> max def
+prf 10938:10966 MyUtilities property3_of_fold_right_max_0
+R10987:10990 Coq.Init.Datatypes <> list ind
+R10992:10994 Coq.Init.Datatypes <> nat ind
+binder 10981:10983 <> ns1:165
+R11014:11017 Coq.Init.Datatypes <> list ind
+R11019:11021 Coq.Init.Datatypes <> nat ind
+binder 11008:11010 <> ns2:166
+R11057:11059 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R11028:11037 Coq.Lists.List <> fold_right def
+R11049:11052 Coq.Init.Datatypes <> ::list_scope:x_'++'_x not
+R11046:11048 DschingisKhan.theories.Auxiliary <> ns1:165 var
+R11053:11055 DschingisKhan.theories.Auxiliary <> ns2:166 var
+R11039:11041 Coq.Init.Peano <> max syndef
+R11060:11062 Coq.Init.Peano <> max syndef
+R11065:11074 Coq.Lists.List <> fold_right def
+R11082:11084 DschingisKhan.theories.Auxiliary <> ns1:165 var
+R11076:11078 Coq.Init.Peano <> max syndef
+R11088:11097 Coq.Lists.List <> fold_right def
+R11105:11107 DschingisKhan.theories.Auxiliary <> ns2:166 var
+R11099:11101 Coq.Init.Peano <> max syndef
+R11130:11149 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0_app thm
+R11130:11149 DschingisKhan.theories.Auxiliary MyUtilities fold_right_max_0_app thm
+prf 11168:11196 MyUtilities property4_of_fold_right_max_0
+R11216:11219 Coq.Init.Datatypes <> list ind
+R11221:11223 Coq.Init.Datatypes <> nat ind
+binder 11211:11212 <> ns:167
+R11241:11243 Coq.Init.Datatypes <> nat ind
+binder 11237:11237 <> n:168
+R11257:11264 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R11250:11251 Coq.Lists.List <> In def
+R11255:11256 DschingisKhan.theories.Auxiliary <> ns:167 var
+R11253:11253 DschingisKhan.theories.Auxiliary <> n:168 var
+R11284:11287 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R11265:11274 Coq.Lists.List <> fold_right def
+R11282:11283 DschingisKhan.theories.Auxiliary <> ns:167 var
+R11276:11278 Coq.Init.Peano <> max syndef
+R11288:11288 DschingisKhan.theories.Auxiliary <> n:168 var
+R11412:11415 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R11393:11402 Coq.Lists.List <> fold_right def
+R11404:11406 Coq.Init.Peano <> max syndef
+R11412:11415 Coq.Init.Peano <> ::nat_scope:x_'>='_x not
+R11393:11402 Coq.Lists.List <> fold_right def
+R11404:11406 Coq.Init.Peano <> max syndef
+prf 11438:11466 MyUtilities property5_of_fold_right_max_0
+R11487:11490 Coq.Init.Datatypes <> list ind
+R11492:11494 Coq.Init.Datatypes <> nat ind
+binder 11481:11483 <> ns1:169
+R11514:11517 Coq.Init.Datatypes <> list ind
+R11519:11521 Coq.Init.Datatypes <> nat ind
+binder 11508:11510 <> ns2:170
+R11528:11528 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R11565:11573 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R11540:11542 Coq.Init.Datatypes <> nat ind
+binder 11536:11536 <> n:171
+R11553:11556 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R11545:11546 Coq.Lists.List <> In def
+R11550:11552 DschingisKhan.theories.Auxiliary <> ns1:169 var
+R11548:11548 DschingisKhan.theories.Auxiliary <> n:171 var
+R11557:11558 Coq.Lists.List <> In def
+R11562:11564 DschingisKhan.theories.Auxiliary <> ns2:170 var
+R11560:11560 DschingisKhan.theories.Auxiliary <> n:171 var
+R11594:11597 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R11574:11583 Coq.Lists.List <> fold_right def
+R11591:11593 DschingisKhan.theories.Auxiliary <> ns1:169 var
+R11585:11587 Coq.Init.Peano <> max syndef
+R11598:11607 Coq.Lists.List <> fold_right def
+R11615:11617 DschingisKhan.theories.Auxiliary <> ns2:170 var
+R11609:11611 Coq.Init.Peano <> max syndef
+R11709:11729 Coq.Arith.Compare_dec <> le_lt_dec def
+R11734:11743 Coq.Lists.List <> fold_right def
+R11745:11747 Coq.Init.Peano <> max syndef
+R11709:11729 Coq.Arith.Compare_dec <> le_lt_dec def
+R11734:11743 Coq.Lists.List <> fold_right def
+R11745:11747 Coq.Init.Peano <> max syndef
+R11792:11795 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R11772:11781 Coq.Lists.List <> fold_right def
+R11783:11785 Coq.Init.Peano <> max syndef
+R11796:11805 Coq.Lists.List <> fold_right def
+R11807:11809 Coq.Init.Peano <> max syndef
+R11792:11795 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R11772:11781 Coq.Lists.List <> fold_right def
+R11783:11785 Coq.Init.Peano <> max syndef
+R11796:11805 Coq.Lists.List <> fold_right def
+R11807:11809 Coq.Init.Peano <> max syndef
+R11836:11839 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R11840:11849 Coq.Lists.List <> fold_right def
+R11851:11853 Coq.Init.Peano <> max syndef
+R11836:11839 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R11840:11849 Coq.Lists.List <> fold_right def
+R11851:11853 Coq.Init.Peano <> max syndef
+R11877:11905 DschingisKhan.theories.Auxiliary MyUtilities property4_of_fold_right_max_0 thm
+R11877:11905 DschingisKhan.theories.Auxiliary MyUtilities property4_of_fold_right_max_0 thm
+prf 11926:11945 MyUtilities fold_right_max_0_ext
+R11966:11969 Coq.Init.Datatypes <> list ind
+R11971:11973 Coq.Init.Datatypes <> nat ind
+binder 11960:11962 <> ns1:172
+R11993:11996 Coq.Init.Datatypes <> list ind
+R11998:12000 Coq.Init.Datatypes <> nat ind
+binder 11987:11989 <> ns2:173
+R12007:12007 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12045:12053 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12019:12021 Coq.Init.Datatypes <> nat ind
+binder 12015:12015 <> n:174
+R12032:12036 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R12024:12025 Coq.Lists.List <> In def
+R12029:12031 DschingisKhan.theories.Auxiliary <> ns1:172 var
+R12027:12027 DschingisKhan.theories.Auxiliary <> n:174 var
+R12037:12038 Coq.Lists.List <> In def
+R12042:12044 DschingisKhan.theories.Auxiliary <> ns2:173 var
+R12040:12040 DschingisKhan.theories.Auxiliary <> n:174 var
+R12074:12076 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R12054:12063 Coq.Lists.List <> fold_right def
+R12071:12073 DschingisKhan.theories.Auxiliary <> ns1:172 var
+R12065:12067 Coq.Init.Peano <> max syndef
+R12077:12086 Coq.Lists.List <> fold_right def
+R12094:12096 DschingisKhan.theories.Auxiliary <> ns2:173 var
+R12088:12090 Coq.Init.Peano <> max syndef
+R12200:12203 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R12176:12179 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R12156:12165 Coq.Lists.List <> fold_right def
+R12167:12169 Coq.Init.Peano <> max syndef
+R12180:12189 Coq.Lists.List <> fold_right def
+R12191:12193 Coq.Init.Peano <> max syndef
+R12224:12227 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R12204:12213 Coq.Lists.List <> fold_right def
+R12215:12217 Coq.Init.Peano <> max syndef
+R12228:12237 Coq.Lists.List <> fold_right def
+R12239:12241 Coq.Init.Peano <> max syndef
+R12200:12203 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R12176:12179 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R12156:12165 Coq.Lists.List <> fold_right def
+R12167:12169 Coq.Init.Peano <> max syndef
+R12180:12189 Coq.Lists.List <> fold_right def
+R12191:12193 Coq.Init.Peano <> max syndef
+R12224:12227 Coq.Init.Peano <> ::nat_scope:x_'<='_x not
+R12204:12213 Coq.Lists.List <> fold_right def
+R12215:12217 Coq.Init.Peano <> max syndef
+R12228:12237 Coq.Lists.List <> fold_right def
+R12239:12241 Coq.Init.Peano <> max syndef
+R12275:12303 DschingisKhan.theories.Auxiliary MyUtilities property5_of_fold_right_max_0 thm
+R12275:12303 DschingisKhan.theories.Auxiliary MyUtilities property5_of_fold_right_max_0 thm
+R12275:12303 DschingisKhan.theories.Auxiliary MyUtilities property5_of_fold_right_max_0 thm
+R12320:12330 DschingisKhan.theories.Auxiliary MyUtilities <> mod
+mod 12341:12352 <> MyStructures
+def 12394:12401 MyStructures ensemble
+R12409:12412 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+binder 12429:12429 <> A:175
+R12445:12449 Coq.Program.Basics <> arrow def
+R12451:12451 DschingisKhan.theories.Auxiliary <> A:175 var
+def 12476:12481 MyStructures member
+binder 12484:12484 <> A:176
+R12497:12500 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12496:12496 DschingisKhan.theories.Auxiliary <> A:176 var
+R12511:12514 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12501:12508 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12510:12510 DschingisKhan.theories.Auxiliary <> A:176 var
+R12535:12535 DschingisKhan.theories.Auxiliary <> A:176 var
+binder 12531:12531 <> x:177
+R12553:12560 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12562:12562 DschingisKhan.theories.Auxiliary <> A:176 var
+binder 12548:12549 <> xs:178
+R12571:12572 DschingisKhan.theories.Auxiliary <> xs:178 var
+R12574:12574 DschingisKhan.theories.Auxiliary <> x:177 var
+R12602:12607 DschingisKhan.theories.Auxiliary MyStructures member def
+R12657:12662 DschingisKhan.theories.Auxiliary MyStructures member def
+not 12640:12640 MyStructures ::type_scope:x_'\in'_x
+def 12730:12739 MyStructures isSubsetOf
+binder 12742:12742 <> A:179
+R12764:12767 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12754:12761 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12763:12763 DschingisKhan.theories.Auxiliary <> A:179 var
+R12778:12781 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12768:12775 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12777:12777 DschingisKhan.theories.Auxiliary <> A:179 var
+R12804:12811 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12813:12813 DschingisKhan.theories.Auxiliary <> A:179 var
+binder 12798:12800 <> xs1:180
+R12832:12839 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R12841:12841 DschingisKhan.theories.Auxiliary <> A:179 var
+binder 12826:12828 <> xs2:181
+R12861:12861 DschingisKhan.theories.Auxiliary <> A:179 var
+binder 12857:12857 <> x:182
+R12880:12887 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R12868:12873 DschingisKhan.theories.Auxiliary MyStructures member def
+R12877:12879 DschingisKhan.theories.Auxiliary <> xs1:180 var
+R12875:12875 DschingisKhan.theories.Auxiliary <> x:182 var
+R12888:12893 DschingisKhan.theories.Auxiliary MyStructures member def
+R12897:12899 DschingisKhan.theories.Auxiliary <> xs2:181 var
+R12895:12895 DschingisKhan.theories.Auxiliary <> x:182 var
+R12927:12936 DschingisKhan.theories.Auxiliary MyStructures isSubsetOf def
+R12995:13004 DschingisKhan.theories.Auxiliary MyStructures isSubsetOf def
+not 12969:12969 MyStructures ::type_scope:x_'\subseteq'_x
+ind 13074:13079 MyStructures finite
+constr 13122:13130 MyStructures in_finite
+binder 13082:13082 <> A:183
+R13100:13103 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R13094:13097 Coq.Init.Datatypes <> list ind
+R13104:13111 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R13137:13137 DschingisKhan.theories.Auxiliary <> A:183 var
+binder 13133:13133 <> x:186
+R13158:13161 Coq.Init.Datatypes <> list ind
+R13163:13163 DschingisKhan.theories.Auxiliary <> A:183 var
+binder 13153:13154 <> xs:187
+R13177:13184 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R13170:13171 Coq.Lists.List <> In def
+R13175:13176 DschingisKhan.theories.Auxiliary <> xs:187 var
+R13173:13173 DschingisKhan.theories.Auxiliary <> x:186 var
+R13185:13190 DschingisKhan.theories.Auxiliary MyStructures member def
+R13195:13200 DschingisKhan.theories.Auxiliary <> finite:184 ind
+R13202:13203 DschingisKhan.theories.Auxiliary <> xs:187 var
+R13192:13192 DschingisKhan.theories.Auxiliary <> x:186 var
+R13238:13243 DschingisKhan.theories.Auxiliary <> finite ind
+def 13271:13275 MyStructures empty
+binder 13278:13278 <> A:188
+R13290:13297 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R13299:13299 DschingisKhan.theories.Auxiliary <> A:188 var
+R13308:13313 DschingisKhan.theories.Auxiliary MyStructures finite ind
+R13315:13316 Coq.Lists.List ListNotations ::list_scope:'['_']' not
+prf 13331:13342 MyStructures in_empty_iff
+binder 13345:13345 <> A:189
+R13372:13372 DschingisKhan.theories.Auxiliary <> A:189 var
+binder 13368:13368 <> x:190
+R13393:13397 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R13379:13384 DschingisKhan.theories.Auxiliary MyStructures member def
+R13388:13392 DschingisKhan.theories.Auxiliary MyStructures empty def
+R13386:13386 DschingisKhan.theories.Auxiliary <> x:190 var
+R13398:13402 Coq.Init.Logic <> False ind
+def 13568:13576 MyStructures singleton
+binder 13579:13579 <> A:191
+R13592:13595 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R13591:13591 DschingisKhan.theories.Auxiliary <> A:191 var
+R13596:13603 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R13605:13605 DschingisKhan.theories.Auxiliary <> A:191 var
+R13622:13622 DschingisKhan.theories.Auxiliary <> A:191 var
+binder 13618:13618 <> x:192
+R13627:13632 DschingisKhan.theories.Auxiliary MyStructures finite ind
+R13634:13634 Coq.Lists.List ListNotations ::list_scope:'['_x_']' not
+R13636:13636 Coq.Lists.List ListNotations ::list_scope:'['_x_']' not
+R13635:13635 DschingisKhan.theories.Auxiliary <> x:192 var
+prf 13651:13666 MyStructures in_singleton_iff
+binder 13669:13669 <> A:193
+R13696:13696 DschingisKhan.theories.Auxiliary <> A:193 var
+binder 13692:13692 <> x:194
+R13715:13715 DschingisKhan.theories.Auxiliary <> A:193 var
+binder 13710:13711 <> x1:195
+R13745:13749 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R13722:13727 DschingisKhan.theories.Auxiliary MyStructures member def
+R13732:13740 DschingisKhan.theories.Auxiliary MyStructures singleton def
+R13742:13743 DschingisKhan.theories.Auxiliary <> x1:195 var
+R13729:13729 DschingisKhan.theories.Auxiliary <> x:194 var
+R13752:13754 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R13750:13751 DschingisKhan.theories.Auxiliary <> x1:195 var
+R13755:13755 DschingisKhan.theories.Auxiliary <> x:194 var
+ind 13992:13997 MyStructures unions
+constr 14055:14063 MyStructures in_unions
+binder 14000:14000 <> A:196
+R14033:14036 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14012:14019 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14022:14029 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14037:14044 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14070:14070 DschingisKhan.theories.Auxiliary <> A:196 var
+binder 14066:14066 <> x:199
+R14091:14098 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14100:14100 DschingisKhan.theories.Auxiliary <> A:196 var
+binder 14086:14087 <> xs:200
+R14120:14127 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14130:14137 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14139:14139 DschingisKhan.theories.Auxiliary <> A:196 var
+binder 14114:14116 <> xss:201
+R14158:14165 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14147:14152 DschingisKhan.theories.Auxiliary MyStructures member def
+R14156:14157 DschingisKhan.theories.Auxiliary <> xs:200 var
+R14154:14154 DschingisKhan.theories.Auxiliary <> x:199 var
+R14179:14186 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14166:14171 DschingisKhan.theories.Auxiliary MyStructures member def
+R14176:14178 DschingisKhan.theories.Auxiliary <> xss:201 var
+R14173:14174 DschingisKhan.theories.Auxiliary <> xs:200 var
+R14187:14192 DschingisKhan.theories.Auxiliary MyStructures member def
+R14197:14202 DschingisKhan.theories.Auxiliary <> unions:197 ind
+R14204:14206 DschingisKhan.theories.Auxiliary <> xss:201 var
+R14194:14194 DschingisKhan.theories.Auxiliary <> x:199 var
+R14241:14246 DschingisKhan.theories.Auxiliary <> unions ind
+def 14274:14278 MyStructures union
+binder 14281:14281 <> A:202
+R14303:14306 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14293:14300 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14302:14302 DschingisKhan.theories.Auxiliary <> A:202 var
+R14317:14320 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14307:14314 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14316:14316 DschingisKhan.theories.Auxiliary <> A:202 var
+R14321:14328 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14330:14330 DschingisKhan.theories.Auxiliary <> A:202 var
+R14349:14356 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14358:14358 DschingisKhan.theories.Auxiliary <> A:202 var
+binder 14343:14345 <> xs1:203
+R14377:14384 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14386:14386 DschingisKhan.theories.Auxiliary <> A:202 var
+binder 14371:14373 <> xs2:204
+R14395:14400 DschingisKhan.theories.Auxiliary MyStructures unions ind
+R14403:14408 DschingisKhan.theories.Auxiliary MyStructures finite ind
+R14410:14410 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R14414:14415 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R14419:14419 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R14411:14413 DschingisKhan.theories.Auxiliary <> xs1:203 var
+R14416:14418 DschingisKhan.theories.Auxiliary <> xs2:204 var
+prf 14435:14446 MyStructures in_union_iff
+binder 14449:14449 <> A:205
+R14478:14485 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14487:14487 DschingisKhan.theories.Auxiliary <> A:205 var
+binder 14472:14474 <> xs1:206
+R14507:14514 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14516:14516 DschingisKhan.theories.Auxiliary <> A:205 var
+binder 14501:14503 <> xs2:207
+R14534:14534 DschingisKhan.theories.Auxiliary <> A:205 var
+binder 14530:14530 <> x:208
+R14565:14570 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R14599:14599 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R14541:14546 DschingisKhan.theories.Auxiliary MyStructures member def
+R14551:14555 DschingisKhan.theories.Auxiliary MyStructures union def
+R14561:14563 DschingisKhan.theories.Auxiliary <> xs2:207 var
+R14557:14559 DschingisKhan.theories.Auxiliary <> xs1:206 var
+R14548:14548 DschingisKhan.theories.Auxiliary <> x:208 var
+R14583:14586 Coq.Init.Logic <> ::type_scope:x_'\/'_x not
+R14571:14576 DschingisKhan.theories.Auxiliary MyStructures member def
+R14580:14582 DschingisKhan.theories.Auxiliary <> xs1:206 var
+R14578:14578 DschingisKhan.theories.Auxiliary <> x:208 var
+R14587:14592 DschingisKhan.theories.Auxiliary MyStructures member def
+R14596:14598 DschingisKhan.theories.Auxiliary <> xs2:207 var
+R14594:14594 DschingisKhan.theories.Auxiliary <> x:208 var
+R14809:14817 DschingisKhan.theories.Auxiliary MyStructures in_unions constr
+R14833:14841 DschingisKhan.theories.Auxiliary MyStructures in_unions constr
+R14809:14817 DschingisKhan.theories.Auxiliary MyStructures in_unions constr
+R14833:14841 DschingisKhan.theories.Auxiliary MyStructures in_unions constr
+ind 14920:14931 MyStructures intersection
+constr 14992:15006 MyStructures in_intersection
+binder 14934:14934 <> A:209
+R14956:14959 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14946:14953 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14970:14973 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R14960:14967 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R14974:14981 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15013:15013 DschingisKhan.theories.Auxiliary <> A:209 var
+binder 15009:15009 <> x:212
+R15035:15042 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15044:15044 DschingisKhan.theories.Auxiliary <> A:209 var
+binder 15029:15031 <> xs1:213
+R15064:15071 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15073:15073 DschingisKhan.theories.Auxiliary <> A:209 var
+binder 15058:15060 <> xs2:214
+R15092:15099 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15080:15085 DschingisKhan.theories.Auxiliary MyStructures member def
+R15089:15091 DschingisKhan.theories.Auxiliary <> xs1:213 var
+R15087:15087 DschingisKhan.theories.Auxiliary <> x:212 var
+R15112:15119 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15100:15105 DschingisKhan.theories.Auxiliary MyStructures member def
+R15109:15111 DschingisKhan.theories.Auxiliary <> xs2:214 var
+R15107:15107 DschingisKhan.theories.Auxiliary <> x:212 var
+R15120:15125 DschingisKhan.theories.Auxiliary MyStructures member def
+R15130:15141 DschingisKhan.theories.Auxiliary <> intersection:210 ind
+R15147:15149 DschingisKhan.theories.Auxiliary <> xs2:214 var
+R15143:15145 DschingisKhan.theories.Auxiliary <> xs1:213 var
+R15127:15127 DschingisKhan.theories.Auxiliary <> x:212 var
+R15184:15195 DschingisKhan.theories.Auxiliary <> intersection ind
+ind 15222:15225 MyStructures full
+constr 15258:15264 MyStructures in_full
+binder 15228:15228 <> A:215
+R15240:15247 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15271:15271 DschingisKhan.theories.Auxiliary <> A:215 var
+binder 15267:15267 <> x:218
+R15280:15285 DschingisKhan.theories.Auxiliary MyStructures member def
+R15289:15292 DschingisKhan.theories.Auxiliary <> full:216 ind
+R15287:15287 DschingisKhan.theories.Auxiliary <> x:218 var
+R15326:15329 DschingisKhan.theories.Auxiliary <> full ind
+ind 15356:15360 MyStructures image
+constr 15430:15437 MyStructures in_image
+binder 15363:15363 <> A:219
+binder 15374:15374 <> B:220
+R15386:15386 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15393:15397 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15388:15391 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15408:15411 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15398:15405 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15412:15419 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15444:15444 DschingisKhan.theories.Auxiliary <> A:219 var
+binder 15440:15440 <> x:223
+R15465:15468 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15464:15464 DschingisKhan.theories.Auxiliary <> A:219 var
+R15469:15469 DschingisKhan.theories.Auxiliary <> B:220 var
+binder 15460:15460 <> f:224
+R15488:15495 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15497:15497 DschingisKhan.theories.Auxiliary <> A:219 var
+binder 15483:15484 <> xs:225
+R15515:15522 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15504:15509 DschingisKhan.theories.Auxiliary MyStructures member def
+R15513:15514 DschingisKhan.theories.Auxiliary <> xs:225 var
+R15511:15511 DschingisKhan.theories.Auxiliary <> x:223 var
+R15523:15528 DschingisKhan.theories.Auxiliary MyStructures member def
+R15537:15541 DschingisKhan.theories.Auxiliary <> image:221 ind
+R15545:15546 DschingisKhan.theories.Auxiliary <> xs:225 var
+R15543:15543 DschingisKhan.theories.Auxiliary <> f:224 var
+R15531:15531 DschingisKhan.theories.Auxiliary <> f:224 var
+R15533:15533 DschingisKhan.theories.Auxiliary <> x:223 var
+R15581:15585 DschingisKhan.theories.Auxiliary <> image ind
+ind 15612:15619 MyStructures preimage
+constr 15689:15699 MyStructures in_preimage
+binder 15622:15622 <> A:226
+binder 15633:15633 <> B:227
+R15645:15645 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15652:15656 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15647:15650 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15667:15670 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15657:15664 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15671:15678 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15706:15706 DschingisKhan.theories.Auxiliary <> A:226 var
+binder 15702:15702 <> x:230
+R15727:15730 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15726:15726 DschingisKhan.theories.Auxiliary <> A:226 var
+R15731:15731 DschingisKhan.theories.Auxiliary <> B:227 var
+binder 15722:15722 <> f:231
+R15750:15757 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15759:15759 DschingisKhan.theories.Auxiliary <> B:227 var
+binder 15745:15746 <> ys:232
+R15781:15788 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15766:15771 DschingisKhan.theories.Auxiliary MyStructures member def
+R15779:15780 DschingisKhan.theories.Auxiliary <> ys:232 var
+R15774:15774 DschingisKhan.theories.Auxiliary <> f:231 var
+R15776:15776 DschingisKhan.theories.Auxiliary <> x:230 var
+R15789:15794 DschingisKhan.theories.Auxiliary MyStructures member def
+R15799:15806 DschingisKhan.theories.Auxiliary <> preimage:228 ind
+R15810:15811 DschingisKhan.theories.Auxiliary <> ys:232 var
+R15808:15808 DschingisKhan.theories.Auxiliary <> f:231 var
+R15796:15796 DschingisKhan.theories.Auxiliary <> x:230 var
+R15846:15853 DschingisKhan.theories.Auxiliary <> preimage ind
+def 15881:15888 MyStructures nonempty
+binder 15891:15891 <> A:233
+R15913:15916 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R15903:15910 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15912:15912 DschingisKhan.theories.Auxiliary <> A:233 var
+R15938:15945 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R15947:15947 DschingisKhan.theories.Auxiliary <> A:233 var
+binder 15933:15934 <> xs:234
+R15956:15962 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R15968:15969 Coq.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R15967:15967 DschingisKhan.theories.Auxiliary <> A:233 var
+binder 15963:15963 <> x:235
+R15970:15975 DschingisKhan.theories.Auxiliary MyStructures member def
+R15979:15980 DschingisKhan.theories.Auxiliary <> xs:234 var
+R15977:15977 DschingisKhan.theories.Auxiliary <> x:235 var
+R16008:16015 DschingisKhan.theories.Auxiliary MyStructures nonempty def
+rec 16038:16045 MyStructures isSetoid
+proj 16074:16079 MyStructures eqProp
+proj 16104:16129 MyStructures Setoid_requiresEquivalence
+binder 16048:16048 <> A:236
+R16084:16087 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R16083:16083 DschingisKhan.theories.Auxiliary <> A:236 var
+R16089:16092 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R16088:16088 DschingisKhan.theories.Auxiliary <> A:236 var
+R16134:16144 Coq.Classes.RelationClasses <> Equivalence class
+R16146:16151 DschingisKhan.theories.Auxiliary <> eqProp:238 meth
+R16195:16200 DschingisKhan.theories.Auxiliary MyStructures eqProp meth
+not 16182:16182 MyStructures ::type_scope:x_'=='_x
+prf 16262:16272 MyStructures Setoid_refl
+binder 16275:16275 <> A:240
+R16300:16307 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R16309:16309 DschingisKhan.theories.Auxiliary <> A:240 var
+binder 16287:16296 <> A_isSetoid:241
+R16330:16330 DschingisKhan.theories.Auxiliary <> A:240 var
+binder 16325:16326 <> x1:242
+R16339:16342 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16337:16338 DschingisKhan.theories.Auxiliary <> x1:242 var
+R16343:16344 DschingisKhan.theories.Auxiliary <> x1:242 var
+R16366:16391 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+R16366:16391 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+prf 16457:16466 MyStructures Setoid_sym
+binder 16469:16469 <> A:243
+R16494:16501 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R16503:16503 DschingisKhan.theories.Auxiliary <> A:243 var
+binder 16481:16490 <> A_isSetoid:244
+R16524:16524 DschingisKhan.theories.Auxiliary <> A:243 var
+binder 16519:16520 <> x1:245
+R16543:16543 DschingisKhan.theories.Auxiliary <> A:243 var
+binder 16538:16539 <> x2:246
+R16558:16565 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R16552:16555 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16550:16551 DschingisKhan.theories.Auxiliary <> x1:245 var
+R16556:16557 DschingisKhan.theories.Auxiliary <> x2:246 var
+R16568:16571 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16566:16567 DschingisKhan.theories.Auxiliary <> x2:246 var
+R16572:16573 DschingisKhan.theories.Auxiliary <> x1:245 var
+R16595:16620 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+R16595:16620 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+prf 16685:16696 MyStructures Setoid_trans
+binder 16699:16699 <> A:247
+R16724:16731 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R16733:16733 DschingisKhan.theories.Auxiliary <> A:247 var
+binder 16711:16720 <> A_isSetoid:248
+R16754:16754 DschingisKhan.theories.Auxiliary <> A:247 var
+binder 16749:16750 <> x1:249
+R16773:16773 DschingisKhan.theories.Auxiliary <> A:247 var
+binder 16768:16769 <> x2:250
+R16792:16792 DschingisKhan.theories.Auxiliary <> A:247 var
+binder 16787:16788 <> x3:251
+R16807:16814 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R16801:16804 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16799:16800 DschingisKhan.theories.Auxiliary <> x1:249 var
+R16805:16806 DschingisKhan.theories.Auxiliary <> x2:250 var
+R16823:16830 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R16817:16820 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16815:16816 DschingisKhan.theories.Auxiliary <> x2:250 var
+R16821:16822 DschingisKhan.theories.Auxiliary <> x3:251 var
+R16833:16836 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R16831:16832 DschingisKhan.theories.Auxiliary <> x1:249 var
+R16837:16838 DschingisKhan.theories.Auxiliary <> x3:251 var
+R16860:16885 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+R16860:16885 DschingisKhan.theories.Auxiliary MyStructures Setoid_requiresEquivalence meth
+def 16957:16971 MyStructures preservesSetoid
+binder 16974:16974 <> A:252
+binder 16985:16985 <> B:253
+R17010:17017 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17019:17019 DschingisKhan.theories.Auxiliary <> A:252 var
+binder 16997:17006 <> A_isSetoid:254
+R17037:17044 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17046:17046 DschingisKhan.theories.Auxiliary <> B:253 var
+binder 17024:17033 <> B_isSetoid:255
+R17051:17051 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17058:17062 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17053:17056 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17052:17052 DschingisKhan.theories.Auxiliary <> A:252 var
+R17057:17057 DschingisKhan.theories.Auxiliary <> B:253 var
+R17084:17087 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17083:17083 DschingisKhan.theories.Auxiliary <> A:252 var
+R17088:17088 DschingisKhan.theories.Auxiliary <> B:253 var
+binder 17079:17079 <> f:256
+R17109:17109 DschingisKhan.theories.Auxiliary <> A:252 var
+binder 17104:17105 <> x1:257
+R17128:17128 DschingisKhan.theories.Auxiliary <> A:252 var
+binder 17123:17124 <> x2:258
+R17143:17150 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17137:17140 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R17135:17136 DschingisKhan.theories.Auxiliary <> x1:257 var
+R17141:17142 DschingisKhan.theories.Auxiliary <> x2:258 var
+R17155:17158 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R17151:17151 DschingisKhan.theories.Auxiliary <> f:256 var
+R17153:17154 DschingisKhan.theories.Auxiliary <> x1:257 var
+R17159:17159 DschingisKhan.theories.Auxiliary <> f:256 var
+R17161:17162 DschingisKhan.theories.Auxiliary <> x2:258 var
+R17190:17204 DschingisKhan.theories.Auxiliary MyStructures preservesSetoid def
+inst 17245:17258 MyStructures arrow_isSetoid
+binder 17261:17261 <> A:259
+binder 17272:17272 <> B:260
+R17302:17309 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17311:17311 DschingisKhan.theories.Auxiliary <> B:260 var
+binder 17283:17298 <> B_requiresSetoid:261
+R17316:17323 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17327:17330 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R17326:17326 DschingisKhan.theories.Auxiliary <> A:259 var
+R17331:17331 DschingisKhan.theories.Auxiliary <> B:260 var
+R17343:17348 DschingisKhan.theories.Auxiliary MyStructures eqProp meth
+R17369:17372 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+binder 17363:17364 <> f1:262
+R17394:17397 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+binder 17388:17389 <> f2:263
+binder 17416:17416 <> x:264
+R17433:17436 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R17429:17430 DschingisKhan.theories.Auxiliary <> f1:262 var
+R17432:17432 DschingisKhan.theories.Auxiliary <> x:264 var
+R17437:17438 DschingisKhan.theories.Auxiliary <> f2:263 var
+R17440:17440 DschingisKhan.theories.Auxiliary <> x:264 var
+inst 17537:17553 MyStructures ensemble_isSetoid
+binder 17556:17556 <> A:265
+R17568:17575 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17578:17585 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R17587:17587 DschingisKhan.theories.Auxiliary <> A:265 var
+R17599:17604 DschingisKhan.theories.Auxiliary MyStructures eqProp meth
+R17624:17631 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+binder 17619:17620 <> X1:266
+R17653:17660 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+binder 17648:17649 <> X2:267
+binder 17680:17680 <> x:268
+R17704:17708 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R17693:17698 DschingisKhan.theories.Auxiliary MyStructures member def
+R17702:17703 DschingisKhan.theories.Auxiliary <> X1:266 var
+R17700:17700 DschingisKhan.theories.Auxiliary <> x:268 var
+R17709:17714 DschingisKhan.theories.Auxiliary MyStructures member def
+R17718:17719 DschingisKhan.theories.Auxiliary <> X2:267 var
+R17716:17716 DschingisKhan.theories.Auxiliary <> x:268 var
+inst 17828:17861 MyStructures direct_product_of_Setoids_isSetoid
+binder 17864:17864 <> A:269
+binder 17875:17875 <> B:270
+R17905:17912 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17914:17914 DschingisKhan.theories.Auxiliary <> A:269 var
+binder 17886:17901 <> A_requiresSetoid:271
+R17937:17944 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17946:17946 DschingisKhan.theories.Auxiliary <> B:270 var
+binder 17918:17933 <> B_requiresSetoid:272
+R17951:17958 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R17962:17964 Coq.Init.Datatypes <> ::type_scope:x_'*'_x not
+R17961:17961 DschingisKhan.theories.Auxiliary <> A:269 var
+R17965:17965 DschingisKhan.theories.Auxiliary <> B:270 var
+R17977:17982 DschingisKhan.theories.Auxiliary MyStructures eqProp meth
+R18003:18005 Coq.Init.Datatypes <> ::type_scope:x_'*'_x not
+binder 17997:17998 <> p1:273
+R18027:18029 Coq.Init.Datatypes <> ::type_scope:x_'*'_x not
+binder 18021:18022 <> p2:274
+R18057:18060 Coq.Init.Logic <> ::type_scope:x_'/\'_x not
+R18047:18050 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R18041:18043 Coq.Init.Datatypes <> fst def
+R18045:18046 DschingisKhan.theories.Auxiliary <> p1:273 var
+R18051:18053 Coq.Init.Datatypes <> fst def
+R18055:18056 DschingisKhan.theories.Auxiliary <> p2:274 var
+R18067:18070 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R18061:18063 Coq.Init.Datatypes <> snd def
+R18065:18066 DschingisKhan.theories.Auxiliary <> p1:273 var
+R18071:18073 Coq.Init.Datatypes <> snd def
+R18075:18076 DschingisKhan.theories.Auxiliary <> p2:274 var
+rec 18271:18277 MyStructures isPoset
+proj 18306:18311 MyStructures leProp
+proj 18336:18355 MyStructures Poset_requiresSetoid
+proj 18377:18398 MyStructures Poset_requiresPreOrder
+proj 18425:18450 MyStructures Poset_requiresPartialOrder
+binder 18280:18280 <> A:275
+R18316:18319 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R18315:18315 DschingisKhan.theories.Auxiliary <> A:275 var
+R18321:18324 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R18320:18320 DschingisKhan.theories.Auxiliary <> A:275 var
+R18360:18367 DschingisKhan.theories.Auxiliary MyStructures isSetoid class
+R18369:18369 DschingisKhan.theories.Auxiliary <> A:275 var
+R18403:18410 Coq.Classes.RelationClasses <> PreOrder class
+R18412:18417 DschingisKhan.theories.Auxiliary <> leProp:277 meth
+R18455:18466 Coq.Classes.RelationClasses <> PartialOrder class
+R18475:18480 DschingisKhan.theories.Auxiliary <> leProp:277 meth
+R18468:18473 DschingisKhan.theories.Auxiliary MyStructures eqProp meth
+R18524:18529 DschingisKhan.theories.Auxiliary MyStructures leProp meth
+not 18511:18511 MyStructures ::type_scope:x_'=<'_x
+prf 18591:18600 MyStructures Poset_refl
+binder 18603:18603 <> A:281
+R18627:18633 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R18635:18635 DschingisKhan.theories.Auxiliary <> A:281 var
+binder 18615:18623 <> A_isPoset:282
+R18656:18656 DschingisKhan.theories.Auxiliary <> A:281 var
+binder 18651:18652 <> x1:283
+R18665:18668 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R18663:18664 DschingisKhan.theories.Auxiliary <> x1:283 var
+R18669:18670 DschingisKhan.theories.Auxiliary <> x1:283 var
+R18692:18713 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPreOrder meth
+R18692:18713 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPreOrder meth
+prf 18778:18788 MyStructures Poset_refl1
+binder 18791:18791 <> A:284
+R18815:18821 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R18823:18823 DschingisKhan.theories.Auxiliary <> A:284 var
+binder 18803:18811 <> A_isPoset:285
+R18844:18844 DschingisKhan.theories.Auxiliary <> A:284 var
+binder 18839:18840 <> x1:286
+R18863:18863 DschingisKhan.theories.Auxiliary <> A:284 var
+binder 18858:18859 <> x2:287
+R18878:18885 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R18872:18875 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R18870:18871 DschingisKhan.theories.Auxiliary <> x1:286 var
+R18876:18877 DschingisKhan.theories.Auxiliary <> x2:287 var
+R18888:18891 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R18886:18887 DschingisKhan.theories.Auxiliary <> x1:286 var
+R18892:18893 DschingisKhan.theories.Auxiliary <> x2:287 var
+R18915:18940 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+R18915:18940 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+prf 19006:19016 MyStructures Poset_refl2
+binder 19019:19019 <> A:288
+R19043:19049 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R19051:19051 DschingisKhan.theories.Auxiliary <> A:288 var
+binder 19031:19039 <> A_isPoset:289
+R19072:19072 DschingisKhan.theories.Auxiliary <> A:288 var
+binder 19067:19068 <> x1:290
+R19091:19091 DschingisKhan.theories.Auxiliary <> A:288 var
+binder 19086:19087 <> x2:291
+R19106:19113 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19100:19103 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R19098:19099 DschingisKhan.theories.Auxiliary <> x1:290 var
+R19104:19105 DschingisKhan.theories.Auxiliary <> x2:291 var
+R19116:19119 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19114:19115 DschingisKhan.theories.Auxiliary <> x2:291 var
+R19120:19121 DschingisKhan.theories.Auxiliary <> x1:290 var
+R19143:19168 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+R19143:19168 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+prf 19234:19243 MyStructures Poset_asym
+binder 19246:19246 <> A:292
+R19270:19276 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R19278:19278 DschingisKhan.theories.Auxiliary <> A:292 var
+binder 19258:19266 <> A_isPoset:293
+R19299:19299 DschingisKhan.theories.Auxiliary <> A:292 var
+binder 19294:19295 <> x1:294
+R19318:19318 DschingisKhan.theories.Auxiliary <> A:292 var
+binder 19313:19314 <> x2:295
+R19333:19340 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19327:19330 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19325:19326 DschingisKhan.theories.Auxiliary <> x1:294 var
+R19331:19332 DschingisKhan.theories.Auxiliary <> x2:295 var
+R19349:19356 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19343:19346 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19341:19342 DschingisKhan.theories.Auxiliary <> x2:295 var
+R19347:19348 DschingisKhan.theories.Auxiliary <> x1:294 var
+R19359:19362 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=='_x not
+R19357:19358 DschingisKhan.theories.Auxiliary <> x1:294 var
+R19363:19364 DschingisKhan.theories.Auxiliary <> x2:295 var
+R19409:19434 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+R19409:19434 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPartialOrder meth
+prf 19541:19551 MyStructures Poset_trans
+binder 19554:19554 <> A:296
+R19578:19584 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R19586:19586 DschingisKhan.theories.Auxiliary <> A:296 var
+binder 19566:19574 <> A_isPoset:297
+R19607:19607 DschingisKhan.theories.Auxiliary <> A:296 var
+binder 19602:19603 <> x1:298
+R19626:19626 DschingisKhan.theories.Auxiliary <> A:296 var
+binder 19621:19622 <> x2:299
+R19645:19645 DschingisKhan.theories.Auxiliary <> A:296 var
+binder 19640:19641 <> x3:300
+R19660:19667 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19654:19657 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19652:19653 DschingisKhan.theories.Auxiliary <> x1:298 var
+R19658:19659 DschingisKhan.theories.Auxiliary <> x2:299 var
+R19676:19683 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19670:19673 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19668:19669 DschingisKhan.theories.Auxiliary <> x2:299 var
+R19674:19675 DschingisKhan.theories.Auxiliary <> x3:300 var
+R19686:19689 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19684:19685 DschingisKhan.theories.Auxiliary <> x1:298 var
+R19690:19691 DschingisKhan.theories.Auxiliary <> x3:300 var
+R19713:19734 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPreOrder meth
+R19713:19734 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresPreOrder meth
+def 19805:19818 MyStructures isMonotonicMap
+binder 19821:19821 <> A:301
+binder 19832:19832 <> B:302
+R19856:19862 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R19864:19864 DschingisKhan.theories.Auxiliary <> A:301 var
+binder 19844:19852 <> A_isPoset:303
+R19881:19887 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R19889:19889 DschingisKhan.theories.Auxiliary <> B:302 var
+binder 19869:19877 <> B_isPoset:304
+R19894:19894 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19901:19905 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19896:19899 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19895:19895 DschingisKhan.theories.Auxiliary <> A:301 var
+R19900:19900 DschingisKhan.theories.Auxiliary <> B:302 var
+R19927:19930 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19926:19926 DschingisKhan.theories.Auxiliary <> A:301 var
+R19931:19931 DschingisKhan.theories.Auxiliary <> B:302 var
+binder 19922:19922 <> f:305
+R19952:19952 DschingisKhan.theories.Auxiliary <> A:301 var
+binder 19947:19948 <> x1:306
+R19971:19971 DschingisKhan.theories.Auxiliary <> A:301 var
+binder 19966:19967 <> x2:307
+R19986:19993 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R19980:19983 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19978:19979 DschingisKhan.theories.Auxiliary <> x1:306 var
+R19984:19985 DschingisKhan.theories.Auxiliary <> x2:307 var
+R19998:20001 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R19994:19994 DschingisKhan.theories.Auxiliary <> f:305 var
+R19996:19997 DschingisKhan.theories.Auxiliary <> x1:306 var
+R20002:20002 DschingisKhan.theories.Auxiliary <> f:305 var
+R20004:20005 DschingisKhan.theories.Auxiliary <> x2:307 var
+R20033:20046 DschingisKhan.theories.Auxiliary MyStructures isMonotonicMap def
+prf 20069:20096 MyStructures MonotonicMap_preservesSetoid
+binder 20099:20099 <> A:308
+binder 20110:20110 <> B:309
+R20134:20140 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R20142:20142 DschingisKhan.theories.Auxiliary <> A:308 var
+binder 20122:20130 <> A_isPoset:310
+R20159:20165 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R20167:20167 DschingisKhan.theories.Auxiliary <> B:309 var
+binder 20147:20155 <> B_isPoset:311
+R20188:20191 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20187:20187 DschingisKhan.theories.Auxiliary <> A:308 var
+R20192:20192 DschingisKhan.theories.Auxiliary <> B:309 var
+binder 20183:20183 <> f:312
+R20215:20222 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20199:20212 DschingisKhan.theories.Auxiliary MyStructures isMonotonicMap def
+R20214:20214 DschingisKhan.theories.Auxiliary <> f:312 var
+R20223:20237 DschingisKhan.theories.Auxiliary MyStructures preservesSetoid def
+R20239:20239 DschingisKhan.theories.Auxiliary <> f:312 var
+R20280:20293 DschingisKhan.theories.Auxiliary MyStructures isMonotonicMap def
+R20296:20310 DschingisKhan.theories.Auxiliary MyStructures preservesSetoid def
+R20348:20357 DschingisKhan.theories.Auxiliary MyStructures Poset_asym thm
+R20348:20357 DschingisKhan.theories.Auxiliary MyStructures Poset_asym thm
+R20391:20418 DschingisKhan.theories.Auxiliary MyStructures MonotonicMap_preservesSetoid thm
+def 20446:20455 MyStructures isSupremum
+binder 20458:20458 <> A:313
+R20482:20488 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R20490:20490 DschingisKhan.theories.Auxiliary <> A:313 var
+binder 20470:20478 <> A_isPoset:314
+R20496:20499 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20495:20495 DschingisKhan.theories.Auxiliary <> A:313 var
+R20510:20513 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20500:20507 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R20509:20509 DschingisKhan.theories.Auxiliary <> A:313 var
+R20538:20538 DschingisKhan.theories.Auxiliary <> A:313 var
+binder 20530:20534 <> sup_X:315
+R20555:20562 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R20564:20564 DschingisKhan.theories.Auxiliary <> A:313 var
+binder 20551:20551 <> X:316
+R20584:20584 DschingisKhan.theories.Auxiliary <> A:313 var
+binder 20580:20580 <> a:317
+R20601:20606 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R20641:20641 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R20596:20599 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R20591:20595 DschingisKhan.theories.Auxiliary <> sup_X:315 var
+R20600:20600 DschingisKhan.theories.Auxiliary <> a:317 var
+R20618:20618 DschingisKhan.theories.Auxiliary <> A:313 var
+binder 20614:20614 <> x:318
+R20631:20634 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20621:20626 DschingisKhan.theories.Auxiliary MyStructures member def
+R20630:20630 DschingisKhan.theories.Auxiliary <> X:316 var
+R20628:20628 DschingisKhan.theories.Auxiliary <> x:318 var
+R20636:20639 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R20635:20635 DschingisKhan.theories.Auxiliary <> x:318 var
+R20640:20640 DschingisKhan.theories.Auxiliary <> a:317 var
+R20669:20678 DschingisKhan.theories.Auxiliary MyStructures isSupremum def
+def 20706:20714 MyStructures isInfimum
+binder 20717:20717 <> A:319
+R20741:20747 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R20749:20749 DschingisKhan.theories.Auxiliary <> A:319 var
+binder 20729:20737 <> A_isPoset:320
+R20755:20758 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20754:20754 DschingisKhan.theories.Auxiliary <> A:319 var
+R20769:20772 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20759:20766 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R20768:20768 DschingisKhan.theories.Auxiliary <> A:319 var
+R20797:20797 DschingisKhan.theories.Auxiliary <> A:319 var
+binder 20789:20793 <> inf_X:321
+R20814:20821 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R20823:20823 DschingisKhan.theories.Auxiliary <> A:319 var
+binder 20810:20810 <> X:322
+R20843:20843 DschingisKhan.theories.Auxiliary <> A:319 var
+binder 20839:20839 <> a:323
+R20860:20865 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R20900:20900 Coq.Init.Logic <> ::type_scope:x_'<->'_x not
+R20851:20854 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R20850:20850 DschingisKhan.theories.Auxiliary <> a:323 var
+R20855:20859 DschingisKhan.theories.Auxiliary <> inf_X:321 var
+R20877:20877 DschingisKhan.theories.Auxiliary <> A:319 var
+binder 20873:20873 <> x:324
+R20890:20893 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R20880:20885 DschingisKhan.theories.Auxiliary MyStructures member def
+R20889:20889 DschingisKhan.theories.Auxiliary <> X:322 var
+R20887:20887 DschingisKhan.theories.Auxiliary <> x:324 var
+R20895:20898 DschingisKhan.theories.Auxiliary MyStructures ::type_scope:x_'=<'_x not
+R20894:20894 DschingisKhan.theories.Auxiliary <> a:323 var
+R20899:20899 DschingisKhan.theories.Auxiliary <> x:324 var
+R20928:20936 DschingisKhan.theories.Auxiliary MyStructures isInfimum def
+inst 20977:20992 MyStructures ensemble_isPoset
+binder 20995:20995 <> A:325
+R21007:21013 DschingisKhan.theories.Auxiliary MyStructures isPoset class
+R21016:21023 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21025:21025 DschingisKhan.theories.Auxiliary <> A:325 var
+R21064:21083 DschingisKhan.theories.Auxiliary MyStructures Poset_requiresSetoid meth
+R21037:21042 DschingisKhan.theories.Auxiliary MyStructures leProp meth
+R21047:21056 DschingisKhan.theories.Auxiliary MyStructures isSubsetOf def
+R21088:21104 DschingisKhan.theories.Auxiliary MyStructures ensemble_isSetoid inst
+rec 21239:21256 MyStructures isTopologicalSpace
+proj 21285:21290 MyStructures isOpen
+proj 21319:21331 MyStructures open_for_full
+proj 21359:21373 MyStructures open_for_unions
+proj 21513:21533 MyStructures open_for_intersection
+binder 21259:21259 <> A:326
+R21304:21307 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21294:21301 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21303:21303 DschingisKhan.theories.Auxiliary <> A:326 var
+R21341:21346 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21348:21351 DschingisKhan.theories.Auxiliary MyStructures full ind
+R21396:21403 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21406:21413 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21415:21415 DschingisKhan.theories.Auxiliary <> A:326 var
+binder 21390:21392 <> xss:330
+R21425:21425 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21476:21486 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21438:21445 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21447:21447 DschingisKhan.theories.Auxiliary <> A:326 var
+binder 21433:21434 <> xs:331
+R21463:21466 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21450:21455 DschingisKhan.theories.Auxiliary MyStructures member def
+R21460:21462 DschingisKhan.theories.Auxiliary <> xss:330 var
+R21457:21458 DschingisKhan.theories.Auxiliary <> xs:331 var
+R21467:21472 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21474:21475 DschingisKhan.theories.Auxiliary <> xs:331 var
+R21487:21492 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21495:21500 DschingisKhan.theories.Auxiliary MyStructures unions ind
+R21502:21504 DschingisKhan.theories.Auxiliary <> xss:330 var
+R21556:21563 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21565:21565 DschingisKhan.theories.Auxiliary <> A:326 var
+binder 21550:21552 <> xs1:333
+R21587:21594 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21596:21596 DschingisKhan.theories.Auxiliary <> A:326 var
+binder 21581:21583 <> xs2:334
+R21615:21624 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21605:21610 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21612:21614 DschingisKhan.theories.Auxiliary <> xs1:333 var
+R21635:21644 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21625:21630 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21632:21634 DschingisKhan.theories.Auxiliary <> xs2:334 var
+R21645:21650 DschingisKhan.theories.Auxiliary <> isOpen:328 meth
+R21653:21664 DschingisKhan.theories.Auxiliary MyStructures intersection ind
+R21670:21672 DschingisKhan.theories.Auxiliary <> xs2:334 var
+R21666:21668 DschingisKhan.theories.Auxiliary <> xs1:333 var
+def 21856:21863 MyStructures isClosed
+binder 21866:21866 <> A:336
+R21901:21918 DschingisKhan.theories.Auxiliary MyStructures isTopologicalSpace class
+R21920:21920 DschingisKhan.theories.Auxiliary <> A:336 var
+binder 21878:21897 <> A_isTopologicalSpace:337
+R21935:21938 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R21925:21932 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21934:21934 DschingisKhan.theories.Auxiliary <> A:336 var
+R21959:21966 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R21968:21968 DschingisKhan.theories.Auxiliary <> A:336 var
+binder 21955:21955 <> X:338
+R21977:21982 DschingisKhan.theories.Auxiliary MyStructures isOpen meth
+R21993:21993 DschingisKhan.theories.Auxiliary <> A:336 var
+binder 21989:21989 <> x:339
+R21998:21999 Coq.Init.Logic <> ::type_scope:'~'_x not
+R22000:22005 DschingisKhan.theories.Auxiliary MyStructures member def
+R22009:22009 DschingisKhan.theories.Auxiliary <> X:338 var
+R22007:22007 DschingisKhan.theories.Auxiliary <> x:339 var
+R22038:22045 DschingisKhan.theories.Auxiliary MyStructures isClosed def
+def 22073:22087 MyStructures isContinuousMap
+binder 22090:22090 <> A:340
+binder 22101:22101 <> B:341
+R22136:22153 DschingisKhan.theories.Auxiliary MyStructures isTopologicalSpace class
+R22155:22155 DschingisKhan.theories.Auxiliary <> A:340 var
+binder 22113:22132 <> A_isTopologicalSpace:342
+R22183:22200 DschingisKhan.theories.Auxiliary MyStructures isTopologicalSpace class
+R22202:22202 DschingisKhan.theories.Auxiliary <> B:341 var
+binder 22160:22179 <> B_isTopologicalSpace:343
+R22207:22207 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22214:22218 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22209:22212 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22208:22208 DschingisKhan.theories.Auxiliary <> A:340 var
+R22213:22213 DschingisKhan.theories.Auxiliary <> B:341 var
+R22240:22243 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22239:22239 DschingisKhan.theories.Auxiliary <> A:340 var
+R22244:22244 DschingisKhan.theories.Auxiliary <> B:341 var
+binder 22235:22235 <> f:344
+R22265:22272 DschingisKhan.theories.Auxiliary MyStructures ensemble def
+R22274:22274 DschingisKhan.theories.Auxiliary <> B:341 var
+binder 22260:22261 <> ys:345
+R22290:22297 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22281:22286 DschingisKhan.theories.Auxiliary MyStructures isOpen meth
+R22288:22289 DschingisKhan.theories.Auxiliary <> ys:345 var
+R22298:22303 DschingisKhan.theories.Auxiliary MyStructures isOpen meth
+R22306:22313 DschingisKhan.theories.Auxiliary MyStructures preimage ind
+R22317:22318 DschingisKhan.theories.Auxiliary <> ys:345 var
+R22315:22315 DschingisKhan.theories.Auxiliary <> f:344 var
+R22347:22361 DschingisKhan.theories.Auxiliary MyStructures isContinuousMap def
+ind 22388:22391 MyStructures sig'
+constr 22433:22438 MyStructures exist'
+binder 22394:22394 <> A:346
+R22406:22406 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22416:22420 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22408:22411 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22446:22449 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22445:22445 DschingisKhan.theories.Auxiliary <> A:346 var
+binder 22441:22441 <> P:349
+R22473:22473 DschingisKhan.theories.Auxiliary <> A:346 var
+binder 22469:22469 <> x:350
+R22483:22490 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22480:22480 DschingisKhan.theories.Auxiliary <> P:349 var
+R22482:22482 DschingisKhan.theories.Auxiliary <> x:350 var
+R22491:22494 DschingisKhan.theories.Auxiliary <> sig':347 ind
+R22496:22496 DschingisKhan.theories.Auxiliary <> P:349 var
+def 22516:22525 MyStructures proj1_sig'
+binder 22528:22528 <> A:351
+R22544:22547 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22543:22543 DschingisKhan.theories.Auxiliary <> A:351 var
+binder 22539:22539 <> P:352
+R22562:22565 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22556:22559 DschingisKhan.theories.Auxiliary MyStructures sig' ind
+R22561:22561 DschingisKhan.theories.Auxiliary <> P:352 var
+R22566:22566 DschingisKhan.theories.Auxiliary <> A:351 var
+R22586:22589 DschingisKhan.theories.Auxiliary MyStructures sig' ind
+R22591:22591 DschingisKhan.theories.Auxiliary <> P:352 var
+binder 22579:22582 <> sigP:353
+R22606:22609 DschingisKhan.theories.Auxiliary <> sigP:353 var
+R22622:22627 DschingisKhan.theories.Auxiliary MyStructures exist' constr
+def 22664:22673 MyStructures proj2_sig'
+binder 22676:22676 <> A:355
+R22692:22695 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22691:22691 DschingisKhan.theories.Auxiliary <> A:355 var
+binder 22687:22687 <> P:356
+R22718:22721 DschingisKhan.theories.Auxiliary MyStructures sig' ind
+R22723:22723 DschingisKhan.theories.Auxiliary <> P:356 var
+binder 22711:22714 <> sigP:357
+R22726:22726 DschingisKhan.theories.Auxiliary <> P:356 var
+R22729:22738 DschingisKhan.theories.Auxiliary MyStructures proj1_sig' def
+R22740:22743 DschingisKhan.theories.Auxiliary <> sigP:357 var
+R22764:22767 DschingisKhan.theories.Auxiliary MyStructures sig' ind
+R22769:22769 DschingisKhan.theories.Auxiliary <> P:356 var
+binder 22757:22760 <> sigP:358
+R22784:22787 DschingisKhan.theories.Auxiliary <> sigP:358 var
+R22800:22805 DschingisKhan.theories.Auxiliary MyStructures exist' constr
+R22862:22865 DschingisKhan.theories.Auxiliary MyStructures sig' ind
+R22869:22872 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R22886:22889 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+binder 22881:22881 <> f:360
+R22895:22909 DschingisKhan.theories.Auxiliary MyStructures isContinuousMap def
+R22911:22911 DschingisKhan.theories.Auxiliary <> f:360 var
+not 22847:22847 MyStructures ::type_scope:x_'>=>'_x
+R22966:22977 DschingisKhan.theories.Auxiliary MyStructures <> mod

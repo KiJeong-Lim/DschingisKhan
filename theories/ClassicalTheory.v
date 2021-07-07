@@ -1,7 +1,7 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.Classical.
 Require Import DschingisKhan.theories.Auxiliary.
-Require Import DschingisKhan.theories.ConstructiveTheories.
+Require Import DschingisKhan.theories.ConstructiveTheory.
 
 Module ClassicalDomainTheory.
 
@@ -211,32 +211,5 @@ Module ClassicalDomainTheory.
         inversion H11; subst.
         exists x...
   Qed.
-
-  Inductive sig' {A : Type} : (A -> Prop) -> Type :=
-  | exist' {P : A -> Prop} :
-    forall x : A,
-    P x ->
-    sig' P
-  .
-
-  Global Hint Constructors sig' : my_hints.
-
-  Definition proj1_sig' {A : Type} {P : A -> Prop} : sig' P -> A :=
-    fun sig'_P : sig' P =>
-    match sig'_P with
-    | exist' x H => x
-    end 
-  .
-
-  Definition proj2_sig' {A : Type} {P : A -> Prop} : forall sig'_P : sig' P, P (proj1_sig' sig'_P) :=
-    fun sig'_P : sig' P =>
-    match sig'_P with
-    | exist' x H => H
-    end 
-  .
-
-  Global Notation "D1 >=> D2" := (@sig' (D1 -> D2) isContinuousMap) (at level 25, no associativity) : type_scope.
-
-  
 
 End ClassicalDomainTheory.

@@ -814,6 +814,6 @@ Module MyStructures.
     end
   .
 
-  Global Notation "A >=> B" := (@sig' (A -> B) isContinuousMap) (at level 25, no associativity) : type_scope.
+  Global Notation "A >=> B" := (@sig' (A -> B) (fun f : A -> B => isContinuousMap f)) (at level 25, no associativity) : type_scope.
 
 End MyStructures.

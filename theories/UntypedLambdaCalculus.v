@@ -3,7 +3,7 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.theories.Auxiliary.
-Require Import DschingisKhan.theories.ConstructiveTheories.
+Require Import DschingisKhan.theories.ConstructiveTheory.
 
 Module UntypedLamdbdaCalculus.
 
