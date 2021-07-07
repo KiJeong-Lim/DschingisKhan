@@ -9,6 +9,8 @@ Module ClassicalDomainTheory.
 
   Import MyStructures.
 
+  Import PosetTheory.
+
   Import DomainTheory.
 
   Definition U {D : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} : D -> ensemble D :=

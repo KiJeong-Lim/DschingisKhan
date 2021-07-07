@@ -3,29 +3,9 @@ Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import DschingisKhan.theories.Auxiliary.
 
-Module DomainTheory.
-
-  Import ListNotations.
+Module PosetTheory.
 
   Import MyStructures.
-
-  Global Program Instance direct_product_of_Posets_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
-    { leProp :=
-      fun p1 : D * D' =>
-      fun p2 : D * D' =>
-      fst p1 =< fst p2 /\ snd p1 =< snd p2
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split.
-    - intros [x1 y1]...
-    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
-  Qed.
-
-  Next Obligation with firstorder with my_hints.
-    intros [x1 y1] [x2 y2]...
-  Qed.
 
   Lemma isSupremum_upperbound {D : Type} `{D_isPoset : isPoset D} :
     forall sup_X : D,
@@ -151,16 +131,6 @@ Module DomainTheory.
 
   Global Hint Resolve isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs : my_hints.
 
-  Class isCompleteLattice (D : Type) : Type :=
-    { CompleteLattice_requiresPoset :> isPoset D
-    ; supremum_always_exists_in_CompleteLattice :
-      forall X : ensemble D,
-      {sup_X : D | isSupremum sup_X X}
-    }
-  .
-
-  Global Hint Resolve CompleteLattice_requiresPoset : my_hints.
-
   Lemma isInfimum_unique {A : Type} `{A_isPoset : isPoset A} :
     forall X : ensemble A,
     forall inf1 : A,
@@ -179,7 +149,9 @@ Module DomainTheory.
       apply H0...
   Qed.
 
-  Lemma compute_Infimum_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Global Hint Resolve isInfimum_unique : my_hints.
+
+  Lemma compute_Infimum {D : Type} `{D_isPoset: isPoset D} :
     forall X : ensemble D,
     forall inf_X : D,
     isSupremum inf_X (fun d : D => forall x : D, member x X -> d =< x) ->
@@ -194,7 +166,7 @@ Module DomainTheory.
       apply H...
   Qed.
 
-  Global Hint Resolve compute_Infimum_in_CompleteLattice : my_hints.
+  Global Hint Resolve compute_Infimum : my_hints.
 
   Lemma make_Supremum_to_Infimum_of_upper_bounds {D : Type} `{D_isPoset : isPoset D} :
     forall X : ensemble D,
@@ -212,10 +184,140 @@ Module DomainTheory.
       apply H0...
   Qed.
 
+  Definition prefixed_points {D : Type} `{D_isPoset : isPoset D} : (D -> D) -> ensemble D :=
+    fun f : D -> D =>
+    fun x : D =>
+    f x =< x
+  .
+
+  Global Hint Unfold prefixed_points : my_hints.
+
+  Definition fixed_points {D : Type} `{D_isSetoid : isSetoid D} : (D -> D) -> ensemble D :=
+    fun f : D -> D =>
+    fun x : D =>
+    x == f x
+  .
+
+  Global Hint Unfold fixed_points : my_hints.
+
+  Definition postfixed_points {D : Type} `{D_isPoset : isPoset D} : (D -> D) -> ensemble D :=
+    fun f : D -> D =>
+    fun x : D =>
+    x =< f x
+  .
+
+  Global Hint Unfold postfixed_points : my_hints.
+
+  Definition isLeastFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=
+    fun lfp : D =>
+    fun f : D -> D =>
+    member lfp (fixed_points f) /\ (forall fix_f : D, member fix_f (fixed_points f) -> lfp =< fix_f)
+  .
+
+  Global Hint Unfold isLeastFixedPoint : my_hints.
+
+  Lemma LeastFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
+    forall f : D -> D,
+    isMonotonicMap f ->
+    forall lfp : D,
+    isInfimum lfp (prefixed_points f) ->
+    isLeastFixedPoint lfp f.
+  Proof with eauto with *.
+    intros f H lfp H0.
+    split.
+    - assert (H1 : f lfp =< lfp).
+      { apply H0.
+        intros x H1.
+        transitivity (f x)...
+        apply H...
+        transitivity (f x)...
+        apply H0...
+      }
+      apply Poset_asym.
+      + apply H0...
+      + apply H1.
+    - intros fix_f H1.
+      apply H0...
+  Qed.
+
+  Definition isGreatestFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=
+    fun gfp : D =>
+    fun f : D -> D =>
+    member gfp (fixed_points f) /\ (forall fix_f : D, member fix_f (fixed_points f) -> fix_f =< gfp)
+  .
+
+  Global Hint Unfold isGreatestFixedPoint : my_hints.
+
+  Lemma GreatestFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
+    forall f : D -> D,
+    isMonotonicMap f ->
+    forall gfp : D,
+    isSupremum gfp (fun x : D => x =< f x) ->
+    isGreatestFixedPoint gfp f.
+  Proof with eauto with *.
+    intros f H gfp H0.
+    split.
+    - assert (H1 : gfp =< f gfp).
+      { apply H0.
+        intros x H1.
+        transitivity (f x)...
+      }
+      apply Poset_asym.
+      + apply H1.
+      + apply H0...
+    - intros fix_f H1.
+      apply H0...
+  Qed.
+
+  Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
+    fun sup_X : D =>
+    fun X : ensemble D =>
+    fun subPoset : ensemble D =>
+    member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
+  .
+
+End PosetTheory.
+
+Module DomainTheory.
+
+  Import ListNotations.
+
+  Import MyStructures.
+
+  Import PosetTheory.
+
+  Global Program Instance direct_product_of_Posets_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
+    { leProp :=
+      fun p1 : D * D' =>
+      fun p2 : D * D' =>
+      fst p1 =< fst p2 /\ snd p1 =< snd p2
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros [x1 y1]...
+    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
+  Qed.
+
+  Next Obligation with firstorder with my_hints.
+    intros [x1 y1] [x2 y2]...
+  Qed.
+
+  Class isCompleteLattice (D : Type) : Type :=
+    { CompleteLattice_requiresPoset :> isPoset D
+    ; supremum_always_exists_in_CompleteLattice :
+      forall X : ensemble D,
+      {sup_X : D | isSupremum sup_X X}
+    }
+  .
+
+  Global Hint Resolve CompleteLattice_requiresPoset : my_hints.
+
   Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
     fun X : ensemble D =>
     match supremum_always_exists_in_CompleteLattice (fun d : D => forall x : D, member x X -> d =< x) with
-    | exist _ inf_X H => exist _ inf_X (compute_Infimum_in_CompleteLattice X inf_X H)
+    | exist _ inf_X H => exist _ inf_X (compute_Infimum X inf_X H)
     end
   .
 
@@ -243,13 +345,6 @@ Module DomainTheory.
   .
 
   Global Notation "D1 >~> D2" := ({f : D1 -> D2 | isMonotonicMap f}) (at level 25, no associativity) : type_scope.
-
-  Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
-    fun sup_X : D =>
-    fun X : ensemble D =>
-    fun subPoset : ensemble D =>
-    member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
-  .
 
   Global Program Instance MonotonicMap_isSetoid {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isSetoid (D >~> D') :=
     { eqProp :=
@@ -281,9 +376,21 @@ Module DomainTheory.
   Next Obligation with firstorder with my_hints.
     split...
   Qed.
+  
+  Lemma const_isMonotonic {D : Type} `{D_isPoset : isPoset D} :
+    forall d : D,
+    isMonotonicMap (const d).
+  Proof with eauto with *.
+    intros d x1 x2 H...
+  Qed.
 
-  Lemma id_isMonotonic {D : Type} `{D_isPoset : isPoset D} :
-    isMonotonicMap (fun x : D => x).
+  Definition const_m {D : Type} `{D_isPoset : isPoset D} : D -> (D >~> D) :=
+    fun d : D =>
+    exist isMonotonicMap (const d) (const_isMonotonic d)
+  .
+
+  Lemma id_isMonotonic {D1 : Type} `{D1_isPoset : isPoset D1} :
+    isMonotonicMap (fun x : D1 => x).
   Proof with eauto with *.
     unfold isMonotonicMap...
   Qed.
@@ -368,53 +475,13 @@ Module DomainTheory.
     }
   .
 
-  Definition fixed_points {D : Type} `{D_isSetoid : isSetoid D} : (D -> D) -> ensemble D :=
-    fun f : D -> D =>
-    fun fix_f : D =>
-    fix_f == f fix_f
-  .
-
-  Global Hint Unfold fixed_points : my_hints.
-
-  Definition isLeastFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=
-    fun lfp : D =>
-    fun f : D -> D =>
-    member lfp (fixed_points f) /\ (forall fix_f : D, member fix_f (fixed_points f) -> lfp =< fix_f)
-  .
-
-  Global Hint Unfold isLeastFixedPoint : my_hints.
-
-  Lemma LeastFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
-    forall f : D -> D,
-    isMonotonicMap f ->
-    forall lfp : D,
-    isInfimum lfp (fun x : D => f x =< x) ->
-    isLeastFixedPoint lfp f.
-  Proof with eauto with *.
-    intros f H lfp H0.
-    split.
-    - assert (H1 : f lfp =< lfp).
-      { apply H0.
-        intros x H1.
-        transitivity (f x)...
-        apply H...
-        transitivity (f x)...
-        apply H0...
-      }
-      apply Poset_asym.
-      + apply H0...
-      + apply H1.
-    - intros fix_f H1.
-      apply H0...
-  Qed.
-
   Lemma LeastFixedPointInCompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall f : D -> D,
     isMonotonicMap f ->
-    exists lfp : D, isInfimum lfp (fun x : D => f x =< x) /\ isLeastFixedPoint lfp f.
+    exists lfp : D, isInfimum lfp (prefixed_points f) /\ isLeastFixedPoint lfp f.
   Proof with eauto with *.
     intros f H.
-    destruct (infimum_always_exists_in_CompleteLattice (fun x : D => f x =< x)) as [lfp H0].
+    destruct (infimum_always_exists_in_CompleteLattice (prefixed_points f)) as [lfp H0].
     exists lfp.
     split...
     apply LeastFixedPointOfMonotonicMaps...
@@ -432,7 +499,7 @@ Module DomainTheory.
     forall f : D -> D,
     isMonotonicMap f ->
     forall gfp : D,
-    isSupremum gfp (fun x : D => x =< f x) ->
+    isSupremum gfp (postfixed_points f) ->
     isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H gfp H0.
@@ -452,7 +519,7 @@ Module DomainTheory.
   Lemma GreatestFixedPointInCompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall f : D -> D,
     isMonotonicMap f ->
-    exists gfp : D, isSupremum gfp (fun x : D => x =< f x) /\ isGreatestFixedPoint gfp f.
+    exists gfp : D, isSupremum gfp (postfixed_points f) /\ isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H.
     destruct (supremum_always_exists_in_CompleteLattice (fun x : D => x =< f x)) as [gfp H0].
@@ -577,7 +644,7 @@ Module DomainTheory.
     fun f : D >~> D =>
     let G_f_aux : D -> D -> D := fun x : D => fun y : D => proj1_sig f (or_plus x y) in
     fun x : D =>
-    proj1_sig (nu (exist _ (G_f_aux x) (G_f_aux_isMonotonic f x)))
+    proj1_sig (nu (exist isMonotonicMap (G_f_aux x) (G_f_aux_isMonotonic f x)))
   .
 
   Lemma G_f_isMonotoinc {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -603,7 +670,7 @@ Module DomainTheory.
 
   Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >~> D) -> (D >~> D) :=
     fun f : D >~> D =>
-    exist _ (G_f f) (G_f_isMonotoinc f)
+    exist isMonotonicMap (G_f f) (G_f_isMonotoinc f)
   .
 
   Lemma ParameterizedGreatestFixedpoint_isMonotonic {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -876,6 +943,16 @@ Module DomainTheory.
   Global Hint Unfold isCompatibleFor : my_hints.
 
   Global Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
+
+  Lemma const_isCompatibleFor_iff {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >~> D,
+    forall d : D,
+    const_m d is-compatible-for b <-> d =< proj1_sig b d.
+  Proof with eauto with *.
+    intros b d.
+    unfold isCompatibleFor, const_m, const.
+    simpl...
+  Qed.
 
   Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
     forall b : D >~> D,
