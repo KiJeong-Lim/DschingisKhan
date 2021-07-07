@@ -9,7 +9,7 @@ Module DomainTheory.
 
   Import MyStructures.
 
-  Local Program Instance direct_product_of_Posets_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
+  Global Program Instance direct_product_of_Posets_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
     { leProp :=
       fun p1 : D * D' =>
       fun p2 : D * D' =>
@@ -212,15 +212,12 @@ Module DomainTheory.
       apply H0...
   Qed.
 
-  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall X : ensemble D,
-    {inf_X : D | isInfimum inf_X X}.
-  Proof.
-    intros X.
-    destruct (supremum_always_exists_in_CompleteLattice (fun d : D => forall x : D, member x X -> d =< x)) as [inf_X H].
-    exists inf_X.
-    apply compute_Infimum_in_CompleteLattice, H.
-  Defined.
+  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
+    fun X : ensemble D =>
+    match supremum_always_exists_in_CompleteLattice (fun d : D => forall x : D, member x X -> d =< x) with
+    | exist _ inf_X H => exist _ inf_X (compute_Infimum_in_CompleteLattice X inf_X H)
+    end
+  .
 
   Lemma unions_isSupremum {A : Type} :
     forall Xs : ensemble (ensemble A),
@@ -493,7 +490,7 @@ Module DomainTheory.
     x1 =< or_plus x1 x2.
   Proof.
     apply le_or_plus.
-  Defined.
+  Qed.
 
   Global Hint Resolve le_or_plus1 : my_hints.
 
@@ -503,7 +500,7 @@ Module DomainTheory.
     x2 =< or_plus x1 x2.
   Proof.
     apply le_or_plus.
-  Defined.
+  Qed.
 
   Global Hint Resolve le_or_plus2 : my_hints.
 
@@ -1027,24 +1024,15 @@ Module DomainTheory.
     }
   .
 
-  Global Program Instance CompleteLattice_isCompletePartialOrder {D : Type} (D_requiresCompleteLattice : isCompleteLattice D) : isCompletePartialOrder D :=
-    { CompletePartialOrder_requiresPoset := CompleteLattice_requiresPoset
+  Global Instance CompleteLattice_isCompletePartialOrder {D : Type} (D_requiresCompleteLattice : isCompleteLattice D) : isCompletePartialOrder D :=
+    { CompletePartialOrder_requiresPoset := @CompleteLattice_requiresPoset D D_requiresCompleteLattice
+    ; bottom_exists := exist _ bot bot_isBottom
+    ; square_up_exists :=
+      fun X : ensemble D =>
+      fun _ : isDirected X =>
+      supremum_always_exists_in_CompleteLattice X
     }
   .
-
-  Next Obligation.
-    destruct (supremum_always_exists_in_CompleteLattice empty) as [min_D H].
-    exists min_D.
-    intros x.
-    apply H.
-    intros x' H0.
-    inversion H0; subst.
-    inversion H1.
-  Defined.
-
-  Next Obligation.
-    apply supremum_always_exists_in_CompleteLattice.
-  Defined.
 
   Global Program Instance ScottTopology_isTopologicalSpace {D : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) : isTopologicalSpace D :=
     { isOpen :=
@@ -1160,7 +1148,8 @@ Module DomainTheory.
   Qed.
 
   Global Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D * D') :=
-    { bottom_exists :=
+    { CompletePartialOrder_requiresPoset := direct_product_of_Posets_isPoset (@CompletePartialOrder_requiresPoset D D_requiresCompletePartialOrder) (@CompletePartialOrder_requiresPoset D' D'_requiresCompletePartialOrder)
+    ; bottom_exists :=
       exist _ (proj1_sig bottom_exists, proj1_sig bottom_exists) bot_of_direct_product
     ; square_up_exists :=
       fun X : ensemble (D * D') =>
