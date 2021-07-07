@@ -212,4 +212,190 @@ Module ClassicalDomainTheory.
         exists x...
   Qed.
 
+  Local Program Instance ContinuousMap_isPoset {A : Type} {B : Type} (A_requiresTopologicalSpace : isTopologicalSpace A) (B_requiresTopologicalSpace : isTopologicalSpace B) (B_requiresPoset : isPoset B) : isPoset (A >=> B) :=
+    { leProp :=
+      fun f1 : A >=> B =>
+      fun f2 : A >=> B =>
+      forall x : A,
+      proj1_sig' f1 x =< proj1_sig' f2 x
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split...
+  Qed.
+
+  Next Obligation with firstorder with my_hints.
+    intros f1 f2...
+  Qed.
+
+  Definition fish_isMonotonic {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : (D >=> D') -> (D >~> D') :=
+    fun f : D >=> D' =>
+    exist isMonotonicMap (proj1_sig' f) (ContinuousMapOnCpos_isMonotonic (proj1_sig' f) (proj2_sig' f))
+  .
+
+  Global Instance fish_isSetoid {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isSetoid (D >=> D') :=
+    ContinuousMap_isSetoid (ScottTopology_isTopologicalSpace D_requiresCompletePartialOrder) (ScottTopology_isTopologicalSpace D'_requiresCompletePartialOrder) (@Poset_requiresSetoid D' (@CompletePartialOrder_requiresPoset D' D'_requiresCompletePartialOrder))
+  .
+
+  Global Instance fish_isPoset {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isPoset (D >=> D') :=
+    ContinuousMap_isPoset (ScottTopology_isTopologicalSpace D_requiresCompletePartialOrder) (ScottTopology_isTopologicalSpace D'_requiresCompletePartialOrder) (@CompletePartialOrder_requiresPoset D' D'_requiresCompletePartialOrder)
+  .
+
+  Lemma sup_of_fish_is_well_defined {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall F : ensemble (D >=> D'),
+    isDirected F ->
+    forall x : D,
+    isDirected (image (fun f_i : D >=> D' => proj1_sig' f_i x) F).
+  Proof with eauto with *.
+    intros fs [H H0] x.
+    split.
+    - destruct H as [f0].
+      exists (proj1_sig' f0 x).
+      apply (in_image (fun f : D >=> D' => proj1_sig' f x))...
+    - intros y1 H1 y2 H2.
+      inversion H1; subst.
+      inversion H2; subst.
+      rename x0 into f1, x1 into f2.
+      destruct (H0 f1 H3 f2 H4) as [f3 [H5 [H6 H7]]].
+      exists (proj1_sig' f3 x).
+      repeat split...
+      apply (in_image (fun f : D >=> D' => proj1_sig' f x))...
+  Qed.
+
+  Lemma sup_of_set_of_fish_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall F : ensemble (D >=> D'),
+    forall F_isDirected : isDirected F,
+    let f : D -> D' := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x)) in
+    isContinuousMap f.
+  Proof with eauto with *.
+    intros F F_isDirected f.
+    assert (H : isMonotonicMap f).
+    { intros x1 x2 H.
+      unfold f.
+      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x1) F) (sup_of_fish_is_well_defined F F_isDirected x1)) as [sup_F1_x H0].
+      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x2) F) (sup_of_fish_is_well_defined F F_isDirected x2)) as [sup_F2_x H1].
+      simpl.
+      apply H0.
+      intros x' H2.
+      inversion H2; subst.
+      rename x into f_i.
+      transitivity (proj1_sig' f_i x2).
+      - apply (ContinuousMapOnCpos_isMonotonic)...
+        apply (proj2_sig' f_i).
+      - apply H1...
+        apply (in_image (fun f_i' : D >=> D' => proj1_sig' f_i' x2))...
+    }
+    apply (the_main_reason_for_introducing_ScottTopology (exist isMonotonicMap f H)).
+    unfold characterization_of_ContinuousMap_on_cpos.
+    simpl.
+    intros X H0.
+    set (Y := image f X).
+    destruct (square_up_exists X H0) as [sup_X H1].
+    assert ( claim1 :
+      forall f_i : D >=> D',
+      member f_i F ->
+      isSupremum (proj1_sig' f_i sup_X) (image (fun x : D => proj1_sig' f_i x) X)
+    ).
+    { intros f_i H2.
+      assert (H3 : isContinuousMap (proj1_sig' f_i)) by apply (proj2_sig' f_i).
+      assert (H4 : characterization_of_ContinuousMap_on_cpos (proj1_sig' f_i)).
+      { apply (the_main_reason_for_introducing_ScottTopology (fish_isMonotonic f_i)).
+        apply (proj2_sig' f_i).
+      }
+      destruct (H4 X H0) as [sup_X' [sup_Y' [H5 [H6 H7]]]].
+      assert (H8 : sup_X' == sup_X) by now apply (isSupremum_unique X).
+      apply (proj2 (isSupremum_unique (image (fun x : D => proj1_sig' f_i x) X) _ H6 (proj1_sig' f_i sup_X))).
+      assert (H9 : proj1_sig' f_i sup_X' == proj1_sig' f_i sup_X).
+      { apply (MonotonicMap_preservesSetoid (proj1_sig' f_i))...
+        apply (proj2_sig (fish_isMonotonic f_i)).
+      }
+      transitivity (proj1_sig' f_i sup_X')...
+    }
+    assert (claim2 : isSupremum (f sup_X) (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F) (sup_of_fish_is_well_defined F F_isDirected sup_X))).
+    assert (claim3 : isSupremum (f sup_X) (unions (image (fun f_i : D >=> D' => image (fun x : D => proj1_sig' f_i x) X) F))).
+    { apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs.
+      - intros ys H2.
+        inversion H2; subst.
+        rename x into f_i.
+        exists (proj1_sig' f_i sup_X)...
+      - intros y.
+        split.
+        + intros H2 y' [ys [H3 H4]].
+          inversion H3; subst.
+          rename x into f_i.
+          assert (H6 := claim1 f_i H5).
+          assert (H7 : y' == proj1_sig' f_i sup_X) by now apply (isSupremum_unique (image (fun x : D => proj1_sig' f_i x) X)).
+          transitivity (proj1_sig' f_i sup_X)...
+          apply claim2...
+          apply (in_image (fun f_i0 : D >=> D' => proj1_sig' f_i0 sup_X))...
+        + intros H2.
+          apply claim2.
+          intros y' H3.
+          inversion H3; subst.
+          rename x into f_i.
+          apply H2.
+          exists (image (fun x : D => proj1_sig' f_i x) X).
+          split...
+          apply (in_image (fun f_i0 : D >=> D' => image (fun x : D => proj1_sig' f_i0 x) X))...
+    }
+    assert (claim4 : isSupremum (f sup_X) (unions (image (fun x : D => image (fun f_i : D >=> D' => proj1_sig' f_i x) F) X))).
+    { enough (H2 : forall x' : D', member x' (unions (image (fun f_i : D >=> D' => image (fun x : D => proj1_sig' f_i x) X) F)) <-> member x' (unions (image (fun x : D => image (fun f_i : D >=> D' => proj1_sig' f_i x) F) X))) by now apply (proj2 (isSupremum_ext _ _ H2 _ claim3 _) (Setoid_refl (f sup_X))).
+      intros y.
+      split.
+      - intros H2.
+        inversion H2; subst.
+        rename xs into ys.
+        inversion H4; subst.
+        rename x into f_i.
+        inversion H3; subst.
+        apply (in_unions (image (fun f_i' : D >=> D' => proj1_sig' f_i' x) F)).
+        + apply (in_image (fun f_i' : D >=> D' => proj1_sig' f_i' x))...
+        + apply (in_image (fun x0 : D => image (fun f_i0 : D >=> D' => proj1_sig' f_i0 x0) F))...
+      - intros H2.
+        inversion H2; subst.
+        rename xs into ys.
+        inversion H4; subst.
+        inversion H3; subst.
+        rename x0 into f_i.
+        apply (in_unions (image (fun x' : D => proj1_sig' f_i x') X)).
+        + apply (in_image (fun x' : D => proj1_sig' f_i x'))...
+        + apply (in_image (fun f_i0 : D >=> D' => image (fun x0 : D => proj1_sig' f_i0 x0) X))...
+    }
+    assert (claim5 : isSupremum (f sup_X) (image_sup (image (fun x : D => image (fun f_i : D >=> D' => proj1_sig' f_i x) F) X))).
+    { apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs...
+      intros ys H2.
+      inversion H2; subst.
+      exists (f x).
+      intros y.
+      split.
+      - intros H4 y' H5.
+        inversion H5; subst.
+        rename x0 into f_i.
+        apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x)))...
+      - intros H4.
+        assert (H5 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+        apply H5...
+    }
+    assert (claim6 : isSupremum (f sup_X) (image f X)).
+    { intros y.
+      split.
+      - intros H2 y' H3.
+        inversion H3; subst.
+        apply claim5...
+        exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F).
+        split.
+        + apply (in_image (fun x0 : D => image (fun f_i : D >=> D' => proj1_sig' f_i x0) F))...
+        + apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+      - intros H2.
+        apply claim5.
+        intros y' [ys [H3 H4]].
+        inversion H3; subst.
+        assert (H6 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+        assert (H7 : y' == f x) by now apply (isSupremum_unique (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)).
+        transitivity (f x)...
+    }
+    exists sup_X, (f sup_X)...
+  Qed.
+
 End ClassicalDomainTheory.

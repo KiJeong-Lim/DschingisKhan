@@ -800,6 +800,8 @@ Module MyStructures.
     sig' P
   .
 
+  Global Hint Constructors sig' : my_hints.
+
   Definition proj1_sig' {A : Type} {P : A -> Prop} : sig' P -> A :=
     fun sigP : sig' P =>
     match sigP with
@@ -815,5 +817,18 @@ Module MyStructures.
   .
 
   Global Notation "A >=> B" := (@sig' (A -> B) (fun f : A -> B => isContinuousMap f)) (at level 25, no associativity) : type_scope.
+
+  Global Program Instance ContinuousMap_isSetoid {A : Type} {B : Type} (A_requiresTopologicalSpace : isTopologicalSpace A) (B_requiresTopologicalSpace : isTopologicalSpace B) (B_requiresSetoid : isSetoid B) : isSetoid (A >=> B) :=
+    { eqProp :=
+      fun f1 : A >=> B =>
+      fun f2 : A >=> B =>
+      forall x : A,
+      proj1_sig' f1 x == proj1_sig' f2 x
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split...
+  Qed.
 
 End MyStructures.

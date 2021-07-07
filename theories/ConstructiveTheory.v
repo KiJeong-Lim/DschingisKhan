@@ -894,7 +894,7 @@ Module DomainTheory.
     forall f2 : D >~> D,
     f1 is-compatible-for b ->
     f2 is-compatible-for b ->
-    (compose_m f1 f2) is-compatible-for b.
+    compose_m f1 f2 is-compatible-for b.
   Proof with eauto with *.
     unfold isCompatibleFor, compose_m.
     simpl.
@@ -1159,7 +1159,7 @@ Module DomainTheory.
         apply H1...
   Qed.
 
-  Local Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D * D') :=
+  Global Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D * D') :=
     { bottom_exists :=
       exist _ (proj1_sig bottom_exists, proj1_sig bottom_exists) bot_of_direct_product
     ; square_up_exists :=
