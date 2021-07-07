@@ -242,7 +242,7 @@ Module ClassicalDomainTheory.
     ContinuousMap_isPoset (ScottTopology_isTopologicalSpace D_requiresCompletePartialOrder) (ScottTopology_isTopologicalSpace D'_requiresCompletePartialOrder) (@CompletePartialOrder_requiresPoset D' D'_requiresCompletePartialOrder)
   .
 
-  Lemma sup_of_fish_is_well_defined {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma sup_of_set_of_fishes_is_well_defined {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall F : ensemble (D >=> D'),
     isDirected F ->
     forall x : D,
@@ -263,18 +263,18 @@ Module ClassicalDomainTheory.
       apply (in_image (fun f : D >=> D' => proj1_sig' f x))...
   Qed.
 
-  Lemma sup_of_set_of_fish_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma sup_of_set_of_fishes_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall F : ensemble (D >=> D'),
     forall F_isDirected : isDirected F,
-    let f : D -> D' := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x)) in
+    let f : D -> D' := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x)) in
     isContinuousMap f.
   Proof with eauto with *.
     intros F F_isDirected f.
     assert (H : isMonotonicMap f).
     { intros x1 x2 H.
       unfold f.
-      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x1) F) (sup_of_fish_is_well_defined F F_isDirected x1)) as [sup_F1_x H0].
-      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x2) F) (sup_of_fish_is_well_defined F F_isDirected x2)) as [sup_F2_x H1].
+      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x1) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x1)) as [sup_F1_x H0].
+      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x2) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x2)) as [sup_F2_x H1].
       simpl.
       apply H0.
       intros x' H2.
@@ -312,7 +312,7 @@ Module ClassicalDomainTheory.
       }
       transitivity (proj1_sig' f_i sup_X')...
     }
-    assert (claim2 : isSupremum (f sup_X) (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F) (sup_of_fish_is_well_defined F F_isDirected sup_X))).
+    assert (claim2 : isSupremum (f sup_X) (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i sup_X) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected sup_X))).
     assert (claim3 : isSupremum (f sup_X) (unions (image (fun f_i : D >=> D' => image (fun x : D => proj1_sig' f_i x) X) F))).
     { apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs.
       - intros ys H2.
@@ -372,9 +372,9 @@ Module ClassicalDomainTheory.
       - intros H4 y' H5.
         inversion H5; subst.
         rename x0 into f_i.
-        apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x)))...
+        apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x)))...
       - intros H4.
-        assert (H5 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+        assert (H5 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x))).
         apply H5...
     }
     assert (claim6 : isSupremum (f sup_X) (image f X)).
@@ -386,16 +386,91 @@ Module ClassicalDomainTheory.
         exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F).
         split.
         + apply (in_image (fun x0 : D => image (fun f_i : D >=> D' => proj1_sig' f_i x0) F))...
-        + apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+        + apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x))).
       - intros H2.
         apply claim5.
         intros y' [ys [H3 H4]].
         inversion H3; subst.
-        assert (H6 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_fish_is_well_defined F F_isDirected x))).
+        assert (H6 : isSupremum (f x) (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x))).
         assert (H7 : y' == f x) by now apply (isSupremum_unique (image (fun f_i : D >=> D' => proj1_sig' f_i x) F)).
         transitivity (f x)...
     }
     exists sup_X, (f sup_X)...
   Qed.
+
+  Definition sup_of_set_of_fishes {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : forall F : ensemble (D >=> D'), isDirected F -> (D >=> D') :=
+    fun F : ensemble (D >=> D') =>
+    fun F_isDirected : isDirected F =>
+    exist' (fun x : D => proj1_sig (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x))) (sup_of_set_of_fishes_exists_if_it_is_directed F F_isDirected)
+  .
+
+  Lemma sup_of_set_of_fishes_isSupremum {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall F : ensemble (D >=> D'),
+    forall F_isDirected : isDirected F,
+    isSupremum (sup_of_set_of_fishes F F_isDirected) F.
+  Proof with eauto with *.
+    intros F F_isDirected f.
+    split.
+    - intros H f' H0.
+      assert (H1 : forall x : D, proj1_sig' f' x =< proj1_sig' (sup_of_set_of_fishes F F_isDirected) x).
+      { intros x.
+        unfold sup_of_set_of_fishes.
+        simpl.
+        destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x)) as [sup_F_x H1].
+        simpl.
+        apply H1...
+        apply (in_image (fun f_i : D >=> D' => proj1_sig' f_i x))...
+      }
+      transitivity (sup_of_set_of_fishes F F_isDirected)...
+    - intros H x.
+      unfold sup_of_set_of_fishes.
+      simpl.
+      destruct (square_up_exists (image (fun f_i : D >=> D' => proj1_sig' f_i x) F) (sup_of_set_of_fishes_is_well_defined F F_isDirected x)) as [sup_F_x H0].
+      simpl.
+      apply H0.
+      intros f' H1.
+      inversion H1; subst.
+      rename x0 into f_i.
+      apply H...
+  Qed.
+
+  Lemma bot_of_fishes_isContinuous {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompleteLattice : isCompletePartialOrder D'} :
+    isContinuousMap (fun _ : D => proj1_sig bottom_exists).
+  Proof with eauto with *.
+    intros Y [H H0].
+    split.
+    - intros x1 x2 H1 H2.
+      inversion H1; subst.
+      apply (in_preimage (fun _ : D => proj1_sig bottom_exists))...
+    - intros X [[x_0 H1] H2] sup_X H3 H4.
+      inversion H4; subst.
+      exists x_0.
+      constructor...
+  Qed.
+
+  Definition bot_of_fishes {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : D >=> D' :=
+    exist' (fun _ : D => proj1_sig (@bottom_exists D' D'_isCompletePartialOrder)) bot_of_fishes_isContinuous
+  .
+
+  Lemma bot_of_fishes_isBottom {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall f : D >=> D',
+    bot_of_fishes =< f.
+  Proof with eauto with *.
+    unfold bot_of_fishes.
+    intros f x.
+    simpl.
+    destruct bottom_exists as [bot_D' H].
+    simpl...
+  Qed.
+
+  Global Instance fish_isCompletePartialOrder {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D >=> D') :=
+    { CompletePartialOrder_requiresPoset := fish_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder
+    ; bottom_exists := exist _ bot_of_fishes bot_of_fishes_isBottom
+    ; square_up_exists :=
+      fun F : ensemble (D >=> D') =>
+      fun F_isDirected : isDirected F =>
+      exist _ (sup_of_set_of_fishes F F_isDirected) (sup_of_set_of_fishes_isSupremum F F_isDirected)
+    }
+  .
 
 End ClassicalDomainTheory.
