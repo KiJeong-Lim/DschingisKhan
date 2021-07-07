@@ -1,405 +1,7 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
-
-Global Create HintDb my_hints.
-
-Module MyStructures.
-
-  Import ListNotations.
-
-  Definition ensemble : Type -> Type :=
-    fun A : Type =>
-    arrow A Prop
-  .
-
-  Definition member {A : Type} : A -> ensemble A -> Prop :=
-    fun x : A =>
-    fun xs : ensemble A =>
-    xs x
-  .
-
-  Global Hint Unfold member : my_hints.
-
-  Global Notation "x '\in' xs" := (member x xs) (at level 70, no associativity) : type_scope.
-
-  Definition isSubsetOf {A : Type} : ensemble A -> ensemble A -> Prop :=
-    fun xs1 : ensemble A =>
-    fun xs2 : ensemble A =>
-    forall x : A,
-    member x xs1 ->
-    member x xs2
-  .
-
-  Global Hint Unfold isSubsetOf : my_hints.
-
-  Global Notation "xs1 '\subseteq' xs2" := (isSubsetOf xs1 xs2) (at level 70, no associativity) : type_scope.
-
-  Inductive finite {A : Type} : list A -> ensemble A :=
-  | in_finite {x : A} :
-    forall xs : list A,
-    In x xs ->
-    member x (finite xs)
-  .
-
-  Global Hint Constructors finite : my_hints.
-
-  Definition empty {A : Type} : ensemble A :=
-    finite []
-  .
-
-  Lemma in_empty_iff {A : Type} :
-    forall x : A,
-    member x empty <-> False.
-  Proof with eauto with *.
-    intros x.
-    split...
-    intros H.
-    inversion H; subst...
-  Qed.
-
-  Global Hint Resolve in_empty_iff : my_hints.
-
-  Definition singleton {A : Type} : A -> ensemble A :=
-    fun x : A => finite [x]
-  .
-
-  Lemma in_singleton_iff {A : Type} :
-    forall x : A,
-    forall x1 : A,
-    member x (singleton x1) <-> x1 = x.
-  Proof with eauto with *.
-    intros x x1.
-    split.
-    - intros H.
-      inversion H; subst.
-      destruct H0 as [H0 | []]...
-    - intros H.
-      subst...
-  Qed.
-
-  Global Hint Resolve in_singleton_iff : my_hints.
-
-  Inductive unions {A : Type} : ensemble (ensemble A) -> ensemble A :=
-  | in_unions {x : A} :
-    forall xs : ensemble A,
-    forall xss : ensemble (ensemble A),
-    member x xs ->
-    member xs xss ->
-    member x (unions xss)
-  .
-
-  Global Hint Constructors unions : my_hints.
-
-  Definition union {A : Type} : ensemble A -> ensemble A -> ensemble A :=
-    fun xs1 : ensemble A =>
-    fun xs2 : ensemble A =>
-    unions (finite [xs1; xs2])
-  .
-
-  Lemma in_union_iff {A : Type} :
-    forall xs1 : ensemble A,
-    forall xs2 : ensemble A,
-    forall x : A,
-    member x (union xs1 xs2) <-> (member x xs1 \/ member x xs2).
-  Proof with eauto with *.
-    intros xs1 xs2 x.
-    split.
-    - intros H.
-      inversion H; subst.
-      inversion H1; subst.
-      destruct H2 as [H2 | [H2 | []]]; subst...
-    - intros [H | H]; [apply (in_unions xs1) | apply (in_unions xs2)]...
-  Qed.
-
-  Global Hint Resolve in_union_iff : my_hints.
-
-  Inductive intersection {A : Type} : ensemble A -> ensemble A -> ensemble A :=
-  | in_intersection {x : A} :
-    forall xs1 : ensemble A,
-    forall xs2 : ensemble A,
-    member x xs1 ->
-    member x xs2 ->
-    member x (intersection xs1 xs2)
-  .
-
-  Global Hint Constructors intersection : my_hints.
-
-  Inductive full {A : Type} : ensemble A :=
-  | in_full {x : A} :
-    member x full
-  .
-
-  Global Hint Constructors full : my_hints.
-
-  Inductive image {A : Type} {B : Type} : (A -> B) -> ensemble A -> ensemble B :=
-  | in_image {x : A} :
-    forall f : A -> B,
-    forall xs : ensemble A,
-    member x xs ->
-    member (f x) (image f xs)
-  .
-
-  Global Hint Constructors image : my_hints.
-
-  Inductive preimage {A : Type} {B : Type} : (A -> B) -> ensemble B -> ensemble A :=
-  | in_preimage {x : A} :
-    forall f : A -> B,
-    forall ys : ensemble B,
-    member (f x) ys ->
-    member x (preimage f ys)
-  .
-
-  Global Hint Constructors preimage : my_hints.
-
-  Definition nonempty {A : Type} : ensemble A -> Prop :=
-    fun xs : ensemble A =>
-    exists x : A, member x xs
-  .
-
-  Global Hint Unfold nonempty : my_hints.
-
-  Class isSetoid (A : Type) : Type :=
-    { eqProp : A -> A -> Prop
-    ; Setoid_requiresEquivalence :> Equivalence eqProp
-    }
-  .
-
-  Global Notation "x == y" := (eqProp x y) (at level 70, no associativity) : type_scope.
-
-  Lemma Setoid_refl {A : Type} `{A_isSetoid : isSetoid A} :
-    forall x1 : A,
-    x1 == x1.
-  Proof.
-    apply Setoid_requiresEquivalence.
-  Qed.
-
-  Global Hint Resolve Setoid_refl : my_hints.
-
-  Lemma Setoid_sym {A : Type} `{A_isSetoid : isSetoid A} :
-    forall x1 : A,
-    forall x2 : A,
-    x1 == x2 ->
-    x2 == x1.
-  Proof.
-    apply Setoid_requiresEquivalence.
-  Qed.
-
-  Global Hint Resolve Setoid_sym : my_hints.
-
-  Lemma Setoid_trans {A : Type} `{A_isSetoid : isSetoid A} :
-    forall x1 : A,
-    forall x2 : A,
-    forall x3 : A,
-    x1 == x2 ->
-    x2 == x3 ->
-    x1 == x3.
-  Proof.
-    apply Setoid_requiresEquivalence.
-  Qed.
-
-  Global Hint Resolve Setoid_trans : my_hints.
-
-  Definition preservesSetoid {A : Type} {B : Type} `{A_isSetoid : isSetoid A} `{B_isSetoid : isSetoid B} : (A -> B) -> Prop :=
-    fun f : A -> B =>
-    forall x1 : A,
-    forall x2 : A,
-    x1 == x2 ->
-    f x1 == f x2
-  .
-
-  Global Hint Unfold preservesSetoid : my_hints.
-
-  Global Program Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (A -> B) :=
-    { eqProp :=
-      fun f1 : A -> B =>
-      fun f2 : A -> B =>
-      forall x : A,
-      f1 x == f2 x
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split...
-  Qed.
-
-  Global Program Instance ensemble_isSetoid {A : Type} : isSetoid (ensemble A) :=
-    { eqProp :=
-      fun X1 : ensemble A =>
-      fun X2 : ensemble A =>
-      forall x : A,
-      member x X1 <-> member x X2
-    }
-  .
-
-  Next Obligation with firstorder with my_hints.
-    split...
-  Qed.
-
-  Class isPoset (A : Type) : Type :=
-    { leProp : A -> A -> Prop
-    ; Poset_requiresSetoid :> isSetoid A
-    ; Poset_requiresPreOrder :> PreOrder leProp
-    ; Poset_requiresPartialOrder :> PartialOrder eqProp leProp
-    }
-  .
-
-  Global Notation "x =< y" := (leProp x y) (at level 70, no associativity) : type_scope.
-
-  Lemma Poset_refl {A : Type} `{A_isPoset : isPoset A} :
-    forall x1 : A,
-    x1 =< x1.
-  Proof.
-    apply Poset_requiresPreOrder.
-  Qed.
-
-  Global Hint Resolve Poset_refl : my_hints.
-
-  Lemma Poset_refl1 {A : Type} `{A_isPoset : isPoset A} :
-    forall x1 : A,
-    forall x2 : A,
-    x1 == x2 ->
-    x1 =< x2.
-  Proof.
-    apply Poset_requiresPartialOrder.
-  Qed.
-
-  Global Hint Resolve Poset_refl1 : my_hints.
-
-  Lemma Poset_refl2 {A : Type} `{A_isPoset : isPoset A} :
-    forall x1 : A,
-    forall x2 : A,
-    x1 == x2 ->
-    x2 =< x1.
-  Proof.
-    apply Poset_requiresPartialOrder.
-  Qed.
-
-  Global Hint Resolve Poset_refl2 : my_hints.
-
-  Lemma Poset_asym {A : Type} `{A_isPoset : isPoset A} :
-    forall x1 : A,
-    forall x2 : A,
-    x1 =< x2 ->
-    x2 =< x1 ->
-    x1 == x2.
-  Proof.
-    intros x1 x2 H H0.
-    apply Poset_requiresPartialOrder.
-    split.
-    - apply H.
-    - apply H0.
-  Qed.
-
-  Global Hint Resolve Poset_asym : my_hints.
-
-  Lemma Poset_trans {A : Type} `{A_isPoset : isPoset A} :
-    forall x1 : A,
-    forall x2 : A,
-    forall x3 : A,
-    x1 =< x2 ->
-    x2 =< x3 ->
-    x1 =< x3.
-  Proof.
-    apply Poset_requiresPreOrder.
-  Qed.
-
-  Global Hint Resolve Poset_trans : my_hints.
-
-  Definition isMonotonicMap {A : Type} {B : Type} `{A_isPoset : isPoset A} `{B_isPoset : isPoset B} : (A -> B) -> Prop :=
-    fun f : A -> B =>
-    forall x1 : A,
-    forall x2 : A,
-    x1 =< x2 ->
-    f x1 =< f x2
-  .
-
-  Global Hint Unfold isMonotonicMap : my_hints.
-
-  Lemma MonotonicMap_preservesSetoid {A : Type} {B : Type} `{A_isPoset : isPoset A} `{B_isPoset : isPoset B} :
-    forall f : A -> B,
-    isMonotonicMap f ->
-    preservesSetoid f.
-  Proof with eauto with *.
-    unfold isMonotonicMap, preservesSetoid.
-    intros f H x1 x2 H0.
-    apply Poset_asym...
-  Qed.
-
-  Global Hint Unfold MonotonicMap_preservesSetoid : my_hints.
-
-  Definition isSupremum {A : Type} `{A_isPoset : isPoset A} : A -> ensemble A -> Prop :=
-    fun sup_X : A =>
-    fun X : ensemble A =>
-    forall a : A,
-    sup_X =< a <-> (forall x : A, member x X -> x =< a)
-  .
-
-  Global Hint Unfold isSupremum : my_hints.
-
-  Definition isInfimum {A : Type} `{A_isPoset : isPoset A} : A -> ensemble A -> Prop :=
-    fun inf_X : A =>
-    fun X : ensemble A =>
-    forall a : A,
-    a =< inf_X <-> (forall x : A, member x X -> a =< x)
-  .
-
-  Global Hint Unfold isInfimum : my_hints.
-
-  Global Program Instance ensemble_isPoset {A : Type} : isPoset (ensemble A) :=
-    { leProp := isSubsetOf
-    ; Poset_requiresSetoid := ensemble_isSetoid
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split...
-  Qed.
-
-  Next Obligation with firstorder.
-    split...
-  Qed.
-
-  Class isTopologicalSpace (A : Type) : Type :=
-    { isOpen : ensemble A -> Prop
-    ; open_for_full :
-      isOpen full
-    ; open_for_unions :
-      forall xss : ensemble (ensemble A),
-      (forall xs : ensemble A, member xs xss -> isOpen xs) ->
-      isOpen (unions xss)
-    ; open_for_intersection :
-      forall xs1 : ensemble A,
-      forall xs2 : ensemble A,
-      isOpen xs1 ->
-      isOpen xs2 ->
-      isOpen (intersection xs1 xs2)
-    }
-  .
-
-  Global Hint Resolve open_for_full : my_hints.
-
-  Global Hint Resolve open_for_unions : my_hints.
-
-  Global Hint Resolve open_for_intersection : my_hints.
-
-  Definition isClosed {A : Type} `{A_isTopologicalSpace : isTopologicalSpace A} : ensemble A -> Prop :=
-    fun X : ensemble A =>
-    isOpen (fun x : A => ~ member x X)
-  .
-
-  Global Hint Unfold isClosed : my_hints.
-
-  Definition isContinuousMap {A : Type} {B : Type} `{A_isTopologicalSpace : isTopologicalSpace A} `{B_isTopologicalSpace : isTopologicalSpace B} : (A -> B) -> Prop :=
-    fun f : A -> B =>
-    forall ys : ensemble B,
-    isOpen ys ->
-    isOpen (preimage f ys)
-  .
-
-  Global Hint Unfold isContinuousMap : my_hints.
-
-End MyStructures.
+Require Import DschingisKhan.theories.Auxiliary.
 
 Module DomainTheory.
 
@@ -576,7 +178,7 @@ Module DomainTheory.
 
   Global Hint Resolve compute_Infimum_in_CompleteLattice : my_hints.
 
-  Lemma make_Supremum_to_Infimum_of_upper_bounds {D : Type} `{D_is_Poset : isPoset D} :
+  Lemma make_Supremum_to_Infimum_of_upper_bounds {D : Type} `{D_isPoset : isPoset D} :
     forall X : ensemble D,
     forall sup_X : D,
     isSupremum sup_X X ->
@@ -625,7 +227,7 @@ Module DomainTheory.
     }
   .
 
-  Global Notation "D1 >=> D2" := ({f : D1 -> D2 | isMonotonicMap f}) (at level 25, no associativity) : type_scope.
+  Global Notation "D1 >~> D2" := ({f : D1 -> D2 | isMonotonicMap f}) (at level 25, no associativity) : type_scope.
 
   Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
     fun sup_X : D =>
@@ -634,10 +236,10 @@ Module DomainTheory.
     member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
   .
 
-  Global Program Instance MonotonicMap_isSetoid {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isSetoid (D >=> D') :=
+  Global Program Instance MonotonicMap_isSetoid {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isSetoid (D >~> D') :=
     { eqProp :=
-      fun f1 : D >=> D' =>
-      fun f2 : D >=> D' =>
+      fun f1 : D >~> D' =>
+      fun f2 : D >~> D' =>
       forall x : D,
       proj1_sig f1 x == proj1_sig f2 x
     }
@@ -647,10 +249,10 @@ Module DomainTheory.
     split...
   Qed.
 
-  Global Program Instance MonotonicMap_can_be_pointwise_partially_ordered {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D >=> D') :=
+  Global Program Instance MonotonicMap_can_be_pointwise_partially_ordered {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D >~> D') :=
     { leProp :=
-      fun f1 : D >=> D' =>
-      fun f2 : D >=> D' =>
+      fun f1 : D >~> D' =>
+      fun f2 : D >~> D' =>
       forall x : D,
       proj1_sig f1 x =< proj1_sig f2 x
     ; Poset_requiresSetoid := MonotonicMap_isSetoid D_requiresPoset D'_requiresPoset
@@ -671,7 +273,7 @@ Module DomainTheory.
     unfold isMonotonicMap...
   Qed.
 
-  Definition id_m {D1 : Type} `{D1_isPoset : isPoset D1} : D1 >=> D1 :=
+  Definition id_m {D1 : Type} `{D1_isPoset : isPoset D1} : D1 >~> D1 :=
     exist isMonotonicMap (fun x : D1 => x) id_isMonotonic
   .
 
@@ -685,26 +287,26 @@ Module DomainTheory.
     unfold isMonotonicMap...
   Qed.
 
-  Definition compose_m {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} : (D2 >=> D3) -> (D1 >=> D2) -> (D1 >=> D3) :=
-    fun g : D2 >=> D3 =>
-    fun f : D1 >=> D2 =>
+  Definition compose_m {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} : (D2 >~> D3) -> (D1 >~> D2) -> (D1 >~> D3) :=
+    fun g : D2 >~> D3 =>
+    fun f : D1 >~> D2 =>
     exist isMonotonicMap (fun x : D1 => proj1_sig g (proj1_sig f x)) (compose_isMonotonic (proj1_sig f) (proj2_sig f) (proj1_sig g) (proj2_sig g))
   .
 
-  Definition supOfMonotonicMaps {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >=> D') -> D -> D' :=
-    fun fs : ensemble (D >=> D') =>
+  Definition supOfMonotonicMaps {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >~> D') -> D -> D' :=
+    fun fs : ensemble (D >~> D') =>
     fun x : D =>
-    proj1_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs))
+    proj1_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D' => proj1_sig f_i x) fs))
   .
 
   Lemma supOfMonotonicMaps_isMonotonic {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} :
-    forall fs : ensemble (D >=> D'),
+    forall fs : ensemble (D >~> D'),
     isMonotonicMap (supOfMonotonicMaps fs).
   Proof with eauto with *.
     intros fs x1 x2 H.
     unfold supOfMonotonicMaps.
-    destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x1) fs)) as [sup1 H0].
-    destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x2) fs)) as [sup2 H1].
+    destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D' => proj1_sig f_i x1) fs)) as [sup1 H0].
+    destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D' => proj1_sig f_i x2) fs)) as [sup2 H1].
     simpl.
     apply H0.
     intros x H2.
@@ -713,16 +315,16 @@ Module DomainTheory.
     transitivity (proj1_sig f_i x2).
     - apply (proj2_sig f_i)...
     - apply H1...
-      apply (in_image (fun f_i' : D >=> D' => proj1_sig f_i' x2))...
+      apply (in_image (fun f_i' : D >~> D' => proj1_sig f_i' x2))...
   Qed.
 
-  Definition supremum_m {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >=> D') -> (D >=> D') :=
-    fun F : ensemble (D >=> D') =>
+  Definition supremum_m {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >~> D') -> (D >~> D') :=
+    fun F : ensemble (D >~> D') =>
     exist isMonotonicMap (supOfMonotonicMaps F) (supOfMonotonicMaps_isMonotonic F)
   .
 
   Lemma supOfMonotonicMaps_isSupremum {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} :
-    forall fs : ensemble (D >=> D'),
+    forall fs : ensemble (D >~> D'),
     isSupremum (supremum_m fs) fs.
   Proof with eauto with *.
     unfold supremum_m.
@@ -732,22 +334,22 @@ Module DomainTheory.
       transitivity (exist isMonotonicMap (supOfMonotonicMaps fs) (supOfMonotonicMaps_isMonotonic fs))...
       intros x.
       simpl.
-      apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs)))...
-      apply (in_image (fun f_i' : D >=> D' => proj1_sig f_i' x))...
+      apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D' => proj1_sig f_i x) fs)))...
+      apply (in_image (fun f_i' : D >~> D' => proj1_sig f_i' x))...
     - intros H x.
       simpl.
-      apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs)))...
+      apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D' => proj1_sig f_i x) fs)))...
       intros f' H0.
       inversion H0; subst.
       rename x0 into f'.
       apply (H f' H1 x).
   Qed.
 
-  Global Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} (D_requiresCompleteLattice : isCompleteLattice D) (D'_requiresCompleteLattice : isCompleteLattice D') : isCompleteLattice (D >=> D') :=
+  Global Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} (D_requiresCompleteLattice : isCompleteLattice D) (D'_requiresCompleteLattice : isCompleteLattice D') : isCompleteLattice (D >~> D') :=
     { CompleteLattice_requiresPoset := MonotonicMap_can_be_pointwise_partially_ordered (@CompleteLattice_requiresPoset D D_requiresCompleteLattice) (@CompleteLattice_requiresPoset D' D'_requiresCompleteLattice)
     ; supremum_always_exists_in_CompleteLattice :=
-      fun fs : ensemble (D >=> D') =>
-      exist (fun sup_fs : D >=> D' => isSupremum sup_fs fs) (supremum_m fs) (supOfMonotonicMaps_isSupremum fs)
+      fun fs : ensemble (D >~> D') =>
+      exist (fun sup_fs : D >~> D' => isSupremum sup_fs fs) (supremum_m fs) (supOfMonotonicMaps_isSupremum fs)
     }
   .
 
@@ -844,8 +446,8 @@ Module DomainTheory.
     apply GreatestFixedPointOfMonotonicMaps...
   Qed.
 
-  Definition nu {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall f : D >=> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
-    fun f : D >=> D =>
+  Definition nu {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall f : D >~> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
+    fun f : D >~> D =>
     match supremum_always_exists_in_CompleteLattice (fun x : D => x =< proj1_sig f x) with
     | exist _ gfp H => exist _ gfp (GreatestFixedPointOfMonotonicMaps (proj1_sig f) (proj2_sig f) gfp H)
     end
@@ -906,7 +508,7 @@ Module DomainTheory.
   Qed.
 
   Lemma PrincipleOfTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall x : D,
     x =< proj1_sig f x -> x =< proj1_sig (nu f).
   Proof with eauto with *.
@@ -918,7 +520,7 @@ Module DomainTheory.
   Qed.
 
   Lemma StrongCoinduction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall x : D,
     x =< proj1_sig (nu f) <-> x =< proj1_sig f (or_plus x (proj1_sig (nu f))).
   Proof with eauto with *.
@@ -944,7 +546,7 @@ Module DomainTheory.
   Qed.
 
   Example G_f_aux_isMonotonic {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall x : D,
     isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)).
   Proof with eauto with *.
@@ -956,15 +558,15 @@ Module DomainTheory.
     - transitivity x2...
   Qed.
 
-  Definition G_f {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D -> D) :=
-    fun f : D >=> D =>
+  Definition G_f {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >~> D) -> (D -> D) :=
+    fun f : D >~> D =>
     let G_f_aux : D -> D -> D := fun x : D => fun y : D => proj1_sig f (or_plus x y) in
     fun x : D =>
     proj1_sig (nu (exist _ (G_f_aux x) (G_f_aux_isMonotonic f x)))
   .
 
   Lemma G_f_isMonotoinc {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     isMonotonicMap (G_f f).
   Proof with eauto with *.
     intros f.
@@ -984,8 +586,8 @@ Module DomainTheory.
       + apply or_plus_le_iff...
   Qed.
 
-  Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
-    fun f : D >=> D =>
+  Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >~> D) -> (D >~> D) :=
+    fun f : D >~> D =>
     exist _ (G_f f) (G_f_isMonotoinc f)
   .
 
@@ -1023,7 +625,7 @@ Module DomainTheory.
   Global Hint Resolve bot_isBottom : my_hints.
 
   Lemma initialize_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     proj1_sig (nu f) == proj1_sig (ParameterizedGreatestFixedpoint f) bot.
   Proof with eauto with *.
     intros f.
@@ -1052,7 +654,7 @@ Module DomainTheory.
   Qed.
 
   Lemma unfold_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall x : D,
     proj1_sig (ParameterizedGreatestFixedpoint f) x == proj1_sig f (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x)).
   Proof with eauto with *.
@@ -1068,7 +670,7 @@ Module DomainTheory.
   Qed.
 
   Lemma accumulate_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall x : D,
     forall y : D,
     y =< proj1_sig (ParameterizedGreatestFixedpoint f) x <-> y =< proj1_sig (ParameterizedGreatestFixedpoint f) (or_plus x y).
@@ -1099,7 +701,7 @@ Module DomainTheory.
   Qed.
 
   Theorem Compositionality_of_ParameterizedCoinduction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall r : D,
     forall r1 : D,
     forall r2 : D,
@@ -1133,8 +735,8 @@ Module DomainTheory.
   Qed.
 
   Lemma FullCharacterization_of_ParameterizedGreatestFixedPoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
-    forall G_f' : D >=> D,
+    forall f : D >~> D,
+    forall G_f' : D >~> D,
     (forall x : D, proj1_sig G_f' x == proj1_sig f (or_plus x (proj1_sig G_f' x))) ->
     (forall x : D, forall y : D, y =< proj1_sig G_f' (or_plus x y) -> y =< proj1_sig G_f' x) ->
     (G_f' == ParameterizedGreatestFixedpoint f).
@@ -1165,7 +767,7 @@ Module DomainTheory.
   Qed.
 
   Theorem KnasterTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall f : D >=> D,
+    forall f : D >~> D,
     forall fps : ensemble D,
     isSubsetOf fps (fixed_points (proj1_sig f)) ->
     {fix_f : D | isSupremumIn fix_f fps (fixed_points (proj1_sig f))}.
@@ -1226,7 +828,7 @@ Module DomainTheory.
         apply q_is_lub_of_W...
   Qed.
 
-  Lemma ConinductionPrinciple {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D) :
+  Lemma ConinductionPrinciple {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >~> D) :
     forall x : D,
     x =< proj1_sig (nu b) <-> (exists y : D, x =< y /\ y =< proj1_sig b y).
   Proof with eauto with *.
@@ -1249,34 +851,147 @@ Module DomainTheory.
       + apply PrincipleOfTarski...
   Qed.
 
-  Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
-    fun f : D >=> D =>
-    fun b : D >=> D =>
+  Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >~> D) -> (D >~> D) -> Prop :=
+    fun f : D >~> D =>
+    fun b : D >~> D =>
     forall x : D,
     proj1_sig f (proj1_sig b x) =< proj1_sig b (proj1_sig f x)
   .
 
+  Global Hint Unfold isCompatibleFor : my_hints.
+
   Global Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
 
-  Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} (b : D >=> D) :
+  Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >~> D,
     id_m is-compatible-for b.
   Proof with eauto with *.
     unfold isCompatibleFor, id_m.
     simpl...
   Qed.
 
-  Lemma compose_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} (b : D >=> D) :
-    forall f1 : D >=> D,
-    forall f2 : D >=> D,
+  Lemma compose_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >~> D,
+    forall f1 : D >~> D,
+    forall f2 : D >~> D,
     f1 is-compatible-for b ->
     f2 is-compatible-for b ->
     (compose_m f1 f2) is-compatible-for b.
   Proof with eauto with *.
     unfold isCompatibleFor, compose_m.
     simpl.
-    intros f1 f2 H H0 x.
+    intros b f1 f2 H H0 x.
     transitivity (proj1_sig f1 (proj1_sig b (proj1_sig f2 x)))...
     apply (proj2_sig f1)...
+  Qed.
+
+  Lemma supremum_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    forall F : ensemble (D >~> D),
+    (forall f : D >~> D, member f F -> f is-compatible-for b) ->
+    supremum_m F is-compatible-for b.
+  Proof with eauto with *.
+    intros b F H.
+    set (F_b := fun x : D => image (fun f_i : D >~> D => proj1_sig f_i (proj1_sig b x)) F).
+    set (sup_F_b := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (F_b x))).
+    assert (claim1 : forall x : D, proj1_sig (supremum_m F) (proj1_sig b x) =< sup_F_b x).
+    { intros x.
+      unfold sup_F_b, supremum_m, supOfMonotonicMaps.
+      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
+      simpl.
+      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D => proj1_sig f_i (proj1_sig b x)) F)) as [sup_f_i_b_x H1].
+      simpl.
+      apply H1.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      apply H0...
+    }
+    set (b_F := fun x : D => image (fun f_i : D >~> D => proj1_sig b (proj1_sig f_i x)) F).
+    set (sup_b_F := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (b_F x))).
+    assert (claim2 : forall x : D, sup_F_b x =< sup_b_F x).
+    { intros x.
+      unfold sup_F_b, sup_b_F.
+      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
+      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H1].
+      simpl.
+      apply H0.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      transitivity (proj1_sig b (proj1_sig f_i x)).
+      - apply H...
+      - apply H1...
+        apply (in_image (fun f_i' : D >~> D => proj1_sig b (proj1_sig f_i' x)))...
+    }
+    assert (claim3 : forall x : D, sup_b_F x =< proj1_sig b (proj1_sig (supremum_m F) x)).
+    { intros x.
+      unfold sup_b_F, supremum_m, supOfMonotonicMaps.
+      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H0].
+      simpl.
+      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >~> D => proj1_sig f_i x) F)) as [sup_f_i_x H1].
+      simpl.
+      apply H0.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      apply (proj2_sig b).
+      apply H1...
+      apply (in_image (fun f_i' : D >~> D => proj1_sig f_i' x) F)...
+    }
+    intros x.
+    transitivity (sup_F_b x)...
+  Qed.
+
+  Definition companion {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >~> D) -> (D >~> D) :=
+    fun b : D >~> D =>
+    exist isMonotonicMap (proj1_sig (supremum_m (fun f : D >~> D => compose_m f b =< compose_m b f))) (supOfMonotonicMaps_isMonotonic (fun f : D >~> D => compose_m f b =< compose_m b f))
+  .
+
+  Lemma companion_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    companion b is-compatible-for b.
+  Proof with eauto with *.
+    intros b.
+    apply supremum_isCompatibleFor...
+  Qed.
+
+  Lemma companion_isTheGreatestCompatibleFunction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    forall f : D >~> D,
+    f is-compatible-for b ->
+    f =< companion b.
+  Proof with eauto with *.
+    intros b f H.
+    unfold companion.
+    set (F := fun f_i : D >~> D => compose_m f_i b =< compose_m b f_i).
+    apply (supOfMonotonicMaps_isSupremum F)...
+  Qed.
+
+  Lemma b_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    b =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction...
+  Qed.
+
+  Lemma id_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    id_m =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction, id_isCompatibleFor.
+  Qed.
+
+  Lemma tt_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >~> D,
+    compose_m (companion b) (companion b) =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction.
+    apply compose_isCompatibleFor.
+    all: apply companion_isCompatibleFor.
   Qed.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=

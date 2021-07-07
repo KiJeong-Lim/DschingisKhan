@@ -1,4 +1,5 @@
 Require Import Coq.Logic.Classical.
+Require Import DschingisKhan.theories.Auxiliary.
 Require Import DschingisKhan.theories.ConstructiveTheories.
 
 Module ClassicalDomainTheory.
