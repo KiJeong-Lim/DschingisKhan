@@ -9,6 +9,24 @@ Module DomainTheory.
 
   Import MyStructures.
 
+  Local Program Instance direct_product_of_Posets_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
+    { leProp :=
+      fun p1 : D * D' =>
+      fun p2 : D * D' =>
+      fst p1 =< fst p2 /\ snd p1 =< snd p2
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros [x1 y1]...
+    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
+  Qed.
+
+  Next Obligation with firstorder with my_hints.
+    intros [x1 y1] [x2 y2]...
+  Qed.
+
   Lemma isSupremum_upperbound {D : Type} `{D_isPoset : isPoset D} :
     forall sup_X : D,
     forall X : ensemble D,
@@ -1067,5 +1085,88 @@ Module DomainTheory.
       destruct (H11 x1 H12 x2 H17) as [x [H14 [H15 H16]]].
       exists x...
   Qed.
+
+  Lemma bot_of_direct_product {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall p : D * D',
+    (proj1_sig bottom_exists, proj1_sig bottom_exists) =< p.
+  Proof with eauto with *.
+    intros p.
+    split.
+    all: simpl; apply (proj2_sig bottom_exists).
+  Qed.
+
+  Lemma directed_subset_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
+    forall X : ensemble (D * D'),
+    isDirected X ->
+    isDirected (image fst X) /\ isDirected (image snd X).
+  Proof with eauto with *.
+    intros X [[[x0 y0] H] H0].
+    split.
+    - split.
+      + exists x0.
+        apply (in_image fst X H).
+      + intros p1 H1 p2 H2.
+        inversion H1; subst.
+        rename x into x1.
+        inversion H2; subst.
+        rename x into x2.
+        destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
+        simpl in *.
+        exists x3.
+        split...
+        apply (in_image fst X H5).
+    - split.
+      + exists y0.
+        apply (in_image snd X H).
+      + intros p1 H1 p2 H2.
+        inversion H1; subst.
+        rename x into x1.
+        inversion H2; subst.
+        rename x into x2.
+        destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
+        simpl in *.
+        exists y3.
+        split...
+        apply (in_image snd X H5).
+  Qed.
+
+  Lemma square_up_of_direct_product {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall X : ensemble (D * D'),
+    forall X_isDirected : isDirected X,
+    isSupremum (proj1_sig (square_up_exists (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))), proj1_sig (square_up_exists (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected)))) X.
+  Proof with eauto with *.
+    intros X X_isDirected.
+    destruct (square_up_exists (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))) as [sup_X1 H].
+    destruct (square_up_exists (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected))) as [sup_X2 H0].
+    simpl.
+    intros [x y].
+    split.
+    - intros [H1 H2] [x' y'] H3.
+      split; simpl in *.
+      + apply H...
+        apply (in_image fst X H3).
+      + apply H0...
+        apply (in_image snd X H3).
+    - intros H1.
+      split; simpl.
+      + apply H.
+        intros x' H2.
+        inversion H2; subst.
+        apply H1...
+      + apply H0.
+        intros y' H2.
+        inversion H2; subst.
+        apply H1...
+  Qed.
+
+  Local Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D * D') :=
+    { bottom_exists :=
+      exist _ (proj1_sig bottom_exists, proj1_sig bottom_exists) bot_of_direct_product
+    ; square_up_exists :=
+      fun X : ensemble (D * D') =>
+      fun X_isDirected : isDirected X =>
+      exist _ (proj1_sig (square_up_exists (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))), proj1_sig (square_up_exists (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected)))) (square_up_of_direct_product X X_isDirected)
+    }
+  .
 
 End DomainTheory.

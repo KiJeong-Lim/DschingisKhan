@@ -1,10 +1,9 @@
-Require Import Coq.Classes.RelationClasses.
-Require Import Coq.Lists.List.
-Require Import Coq.Program.Basics.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Program.Basics.
 
 Global Create HintDb my_hints.
 
@@ -616,6 +615,21 @@ Module MyStructures.
     split...
   Qed.
 
+  Global Program Instance direct_product_of_Setoids_isSetoid {A : Type} {B : Type} (A_requiresSetoid : isSetoid A) (B_requiresSetoid : isSetoid B) : isSetoid (A * B) :=
+    { eqProp :=
+      fun p1 : A * B =>
+      fun p2 : A * B =>
+      fst p1 == fst p2 /\ snd p1 == snd p2
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros [x1 y1]...
+    - intros [x1 y1] [x2 y2] [H H0]...
+    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
+  Qed.
+
   Class isPoset (A : Type) : Type :=
     { leProp : A -> A -> Prop
     ; Poset_requiresSetoid :> isSetoid A
@@ -778,5 +792,28 @@ Module MyStructures.
   .
 
   Global Hint Unfold isContinuousMap : my_hints.
+
+  Inductive sig' {A : Type} : (A -> Prop) -> Type :=
+  | exist' {P : A -> Prop} :
+    forall x : A,
+    P x ->
+    sig' P
+  .
+
+  Definition proj1_sig' {A : Type} {P : A -> Prop} : sig' P -> A :=
+    fun sigP : sig' P =>
+    match sigP with
+    | exist' x H => x
+    end
+  .
+
+  Definition proj2_sig' {A : Type} {P : A -> Prop} : forall sigP : sig' P, P (proj1_sig' sigP) :=
+    fun sigP : sig' P =>
+    match sigP with
+    | exist' x H => H
+    end
+  .
+
+  Global Notation "A >=> B" := (@sig' (A -> B) isContinuousMap) (at level 25, no associativity) : type_scope.
 
 End MyStructures.
