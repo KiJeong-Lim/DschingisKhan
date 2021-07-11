@@ -1,6 +1,7 @@
 -Q . DschingisKhan
 
-theories/Auxiliary.v
-theories/ConstructiveTheory.v
+theories/MyUtilities.v
+theories/MyStructures.v
+theories/DomainTheory.v
 theories/ClassicalTheory.v
 theories/UntypedLambdaCalculus.v

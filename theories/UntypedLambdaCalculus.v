@@ -2,16 +2,13 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
-Require Import DschingisKhan.theories.Auxiliary.
-Require Import DschingisKhan.theories.ConstructiveTheory.
+Require Import DschingisKhan.theories.DomainTheory.
+Require Import DschingisKhan.theories.MyStructures.
+Require Import DschingisKhan.theories.MyUtilities.
 
 Module UntypedLamdbdaCalculus.
 
-  Import ListNotations.
-
-  Import MyUtilities.
-
-  Import MyStructures.
+  Import ListNotations BasicSetoidTheory BasicPosetTheory BasicTopology MyUtilities MyEnsemble ConstructiveDomainTheory.
 
   Definition ivar : Set :=
     nat
