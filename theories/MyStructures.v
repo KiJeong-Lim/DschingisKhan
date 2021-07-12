@@ -1,6 +1,8 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Setoids.Setoid.
 
 Global Create HintDb my_hints.
 
@@ -46,6 +48,12 @@ Module BasicSetoidTheory.
   Qed.
 
   Global Hint Resolve Setoid_trans : my_hints.
+
+  Add Parametric Relation (A : Type) (A_requiresSetoid : isSetoid A) : A eqProp
+    reflexivity proved by Setoid_refl
+    symmetry proved by Setoid_sym
+    transitivity proved by Setoid_trans
+  as Setoid_rel.
 
   Global Program Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp :=
@@ -159,6 +167,39 @@ Module BasicPosetTheory.
   Qed.
 
   Global Hint Resolve Poset_trans : my_hints.
+
+  Definition isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : (D -> D') -> Prop :=
+    fun f : D -> D' =>
+    forall x1 : D,
+    forall x2 : D,
+    x1 =< x2 ->
+    f x1 =< f x2
+  .
+
+  Global Hint Unfold isMonotonicMap : my_hints.
+
+  Lemma MonotonicMap_preservesSetoid {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
+    forall f : D -> D',
+    isMonotonicMap f ->
+    forall x1 : D,
+    forall x2 : D,
+    x1 == x2 ->
+    f x1 == f x2.
+  Proof with eauto with *.
+    intros f H x1 x2 H0.
+    apply Poset_asym...
+  Qed.
+
+  Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
+
+  Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
+
+  Add Parametric Morphism (A : Type) (B : Type) (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
+    f with signature (eqProp ==> eqProp)
+  as MonotonicMap_Morphism.
+  Proof.
+    apply (MonotonicMap_preservesSetoid f H).
+  Defined.
 
   Local Program Instance Prop_isPoset : isPoset Prop :=
     { leProp :=
@@ -379,7 +420,7 @@ Module MyEnsemble.
 
   Global Hint Constructors image : my_hints.
 
-  Global Notation " '{' f '}' '\left[' X '\right]' " := (image f X) (at level 55, left associativity) : type_scope.
+  Global Notation " '{' f '}' '\left[' X '\right]' " := (image f X) (at level 55, no associativity) : type_scope.
 
   Lemma in_image_iff {A : Type} {B : Type} :
     forall y : B,
@@ -406,7 +447,7 @@ Module MyEnsemble.
 
   Global Hint Constructors preimage : my_hints.
 
-  Global Notation " '{' f '}' '^{-1}' '\left[' X '\right]' " := (preimage f X) (at level 55, left associativity) : type_scope.
+  Global Notation " '{' f '}' '^{-1}' '\left[' X '\right]' " := (preimage f X) (at level 55, no associativity) : type_scope.
 
   Lemma in_preimage_iff {A : Type} {B : Type} :
     forall x : A,

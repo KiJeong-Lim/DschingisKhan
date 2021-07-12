@@ -7,30 +7,6 @@ Module PosetTheory.
 
   Import BasicSetoidTheory BasicPosetTheory MyEnsemble.
 
-  Definition isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : (D -> D') -> Prop :=
-    fun f : D -> D' =>
-    forall x1 : D,
-    forall x2 : D,
-    x1 =< x2 ->
-    f x1 =< f x2
-  .
-
-  Global Hint Unfold isMonotonicMap : my_hints.
-
-  Lemma MonotonicMap_preservesSetoid {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
-    forall f : D -> D',
-    isMonotonicMap f ->
-    forall x1 : D,
-    forall x2 : D,
-    x1 == x2 ->
-    f x1 == f x2.
-  Proof with eauto with *.
-    intros f H x1 x2 H0.
-    apply Poset_asym...
-  Qed.
-
-  Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
-
   Definition isSupremum {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> Prop :=
     fun sup_X : D =>
     fun X : ensemble D =>
@@ -342,10 +318,23 @@ Module PosetTheory.
     forall P : D -> Prop,
     forall sup_X : @sig D P,
     forall X : ensemble (@sig D P),
-    isSupremum sup_X X <-> isSupremumIn (proj1_sig sup_X) (image (@proj1_sig D P) X) P.
+    isSupremumIn (proj1_sig sup_X) (image (@proj1_sig D P) X) P <-> isSupremum sup_X X.
   Proof with eauto with *.
     intros P sup_X X.
     split.
+    - intros [H H0].
+      split.
+      + intros H1 x H2.
+        apply H0...
+        membership.
+      + intros H1.
+        apply H0.
+        * membership.
+        * intros x H2.
+          rewrite in_image_iff in H2.
+          destruct H2 as [x' [H2 H3]].
+          rewrite H2.
+          enough (H4 : x' =< d) by apply H4...
     - intros H.
       split.
       + membership.
@@ -362,19 +351,6 @@ Module PosetTheory.
           apply H1.
           intros x' H3.
           apply H2...
-    - intros [H H0].
-      split.
-      + intros H1 x H2.
-        apply H0...
-        membership.
-      + intros H1.
-        apply H0.
-        * membership.
-        * intros x H2.
-          rewrite in_image_iff in H2.
-          destruct H2 as [x' [H2 H3]].
-          rewrite H2.
-          enough (H4 : x' =< d) by apply H4...
   Qed.
 
 End PosetTheory.
@@ -419,21 +395,21 @@ Module ConstructiveDomainTheory.
 
   Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
 
-  Class isCompleteLattice (D : Type) `{D_isPoset : isPoset D} : Type :=
+  Class isCompleteLattice {D : Type} (D_isPoset : isPoset D) : Type :=
     { supremum_always_exists_in_CompleteLattice :
       forall X : ensemble D,
       {sup_X : D | isSupremum sup_X X}
     }
   .
 
-  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : isCompleteLattice D} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
+  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
     fun X : ensemble D =>
     match supremum_always_exists_in_CompleteLattice (fun d : D => forall x : D, member x X -> d =< x) with
     | exist _ inf_X inf_X_isInfimum_X => exist _ inf_X (compute_Infimum X inf_X inf_X_isInfimum_X)
     end
   .
 
-  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : isCompleteLattice D) (D'_requiresCompleteLattice : isCompleteLattice D') : isPoset (D >=> D') :=
+  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : isCompleteLattice D_isPoset) (D'_requiresCompleteLattice : isCompleteLattice D'_isPoset) : isPoset (D >=> D') :=
     @SubPoset (D -> D') (@isMonotonicMap D D' D_isPoset D'_isPoset) (arrow_isPoset D'_isPoset)
   .
 
@@ -1177,7 +1153,7 @@ Module ConstructiveDomainTheory.
       fun O : ensemble D =>
       (forall x : D, forall y : D, member x O -> x =< y -> member y O) /\ (forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O -> nonempty (intersection X O))
     }
-  .
+  . 
 
   Next Obligation with eauto with *.
     split...
@@ -1309,7 +1285,7 @@ Module ConstructiveDomainTheory.
         apply H1...
   Qed.
 
-  Global Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : isCompletePartialOrder (D * D') :=
+  Global Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D * D') (DirectProductOfPoset D_isPoset D'_isPoset) :=
     { bottom_exists :=
       exist _ (proj1_sig bottom_exists, proj1_sig bottom_exists) bot_of_direct_product
     ; square_up_exists :=

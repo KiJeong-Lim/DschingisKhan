@@ -2,6 +2,7 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import DschingisKhan.theories.ClassicalTheory.
 Require Import DschingisKhan.theories.DomainTheory.
 Require Import DschingisKhan.theories.MyStructures.
 Require Import DschingisKhan.theories.MyUtilities.
@@ -138,92 +139,37 @@ Module UntypedLamdbdaCalculus.
     all: inversion H; subst...
   Qed.
 
-  Definition occurence_rect (XP : forall z : ivar, forall M : tm, subtm (tmVar z) M -> Type) :
-    (forall x : ivar, XP x (tmVar x) (subtmRefl (tmVar x))) ->
-    (forall x : ivar, forall P1 : tm, forall P2 : tm, forall X : subtm (tmVar x) P1, XP x P1 X -> XP x (tmApp P1 P2) (subtmAppL (tmVar x) P1 P2 X)) ->
-    (forall x : ivar, forall P1 : tm, forall P2 : tm, forall X : subtm (tmVar x) P2, XP x P2 X -> XP x (tmApp P1 P2) (subtmAppR (tmVar x) P1 P2 X)) ->
-    (forall x : ivar, forall y : ivar, forall Q : tm, forall X : subtm (tmVar x) Q, XP x Q X -> XP x (tmLam y Q) (subtmLAbs (tmVar x) y Q X)) ->
-    (forall x : ivar, forall M : tm, forall X : subtm (tmVar x) M, XP x M X).
+  Definition induction_principle_of_subtm (L : tm) :
+    forall XP : forall M : tm, subtm L M -> Type,
+    XP L (subtmRefl L) ->
+    (forall P1 : tm, forall P2 : tm, forall X : subtm L P1, XP P1 X -> XP (tmApp P1 P2) (subtmAppL L P1 P2 X)) ->
+    (forall P1 : tm, forall P2 : tm, forall X : subtm L P2, XP P2 X -> XP (tmApp P1 P2) (subtmAppR L P1 P2 X)) ->
+    (forall y : ivar, forall Q : tm, forall X : subtm L Q, XP Q X -> XP (tmLam y Q) (subtmLAbs L y Q X)) ->
+    (forall M : tm, forall X : subtm L M, XP M X).
   Proof.
-    intros XP_refl XP_appl XP_appr XP_labs z.
+    intros XP case_Refl case_AppL case_AppR case_LAbs.
     assert ( XXX :
       forall N : tm,
       forall M : tm,
       forall X : subtm N M,
-      forall H : N = tmVar z,
-      XP z M (eq_rect N (fun N0 : tm => subtm N0 M) X (tmVar z) H)
+      forall H : N = L,
+      XP M (eq_rect N (fun N0 : tm => subtm N0 M) X L H)
     ).
-    { assert ( XP_Refl :
-        forall M0 : tm,
-        forall H : M0 = tmVar z,
-        XP z M0 (eq_rect M0 (fun N1 : tm => subtm N1 M0) (subtmRefl M0) (tmVar z) H)
-      ).
-      { intros M0.
-        apply (case_eq M0 (tmVar z) (fun M1 : tm => fun H0 : M1 = tmVar z => XP z M1 (eq_rect M1 (fun N1 : tm => subtm N1 M1) (subtmRefl M1) (tmVar z) H0))).
-        apply (XP_refl z).
-      }
-      assert ( XP_AppL :
-        forall M0 : tm,
-        forall P1 : tm,
-        forall P2 : tm,
-        forall H : M0 = tmVar z,
-        forall X' : subtm M0 P1,
-        (forall H' : M0 = tmVar z, XP z P1 (eq_rect M0 (fun N1 : tm => subtm N1 P1) X' (tmVar z) H')) ->
-        XP z (tmApp P1 P2) (eq_rect M0 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M0 P1 P2 X') (tmVar z) H)
-      ).
-      { intros M0 P1 P2.
-        apply (case_eq M0 (tmVar z) (fun M1 : tm => fun H0 : M1 = tmVar z => forall X' : subtm M1 P1, (forall H' : M1 = tmVar z, XP z P1 (eq_rect M1 (fun N1 : tm => subtm N1 P1) X' (tmVar z) H')) -> XP z (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M1 P1 P2 X') (tmVar z) H0))).
-        apply (fun X' : subtm (tmVar z) P1 => fun IHX' : forall H' : tmVar z = tmVar z, XP z P1 (eq_rect (tmVar z) (fun N1 : tm => subtm N1 P1) X' (tmVar z) H') => XP_appl z P1 P2 X' (IHX' eq_refl)).
-      }
-      assert ( XP_AppR :
-        forall M0 : tm,
-        forall P1 : tm,
-        forall P2 : tm,
-        forall H : M0 = tmVar z,
-        forall X' : subtm M0 P2,
-        (forall H' : M0 = tmVar z, XP z P2 (eq_rect M0 (fun N1 : tm => subtm N1 P2) X' (tmVar z) H')) ->
-        XP z (tmApp P1 P2) (eq_rect M0 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M0 P1 P2 X') (tmVar z) H)
-      ).
-      { intros M0 P1 P2.
-        apply (case_eq M0 (tmVar z) (fun M1 : tm => fun H0 : M1 = tmVar z => forall X' : subtm M1 P2, (forall H' : M1 = tmVar z, XP z P2 (eq_rect M1 (fun N1 : tm => subtm N1 P2) X' (tmVar z) H')) -> XP z (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M1 P1 P2 X') (tmVar z) H0))).
-        apply (fun X' : subtm (tmVar z) P2 => fun IHX' : forall H' : tmVar z = tmVar z, XP z P2 (eq_rect (tmVar z) (fun N1 : tm => subtm N1 P2) X' (tmVar z) H') => XP_appr z P1 P2 X' (IHX' eq_refl)).
-      }
-      assert ( XP_LAbs :
-        forall M0 : tm,
-        forall y : ivar,
-        forall Q : tm,
-        forall H : M0 = tmVar z,
-        forall X' : subtm M0 Q,
-        (forall H' : M0 = tmVar z, XP z Q (eq_rect M0 (fun N1 : tm => subtm N1 Q) X' (tmVar z) H')) ->
-        XP z (tmLam y Q) (eq_rect M0 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M0 y Q X') (tmVar z) H)
-      ).
-      { intros M0 y Q.
-        apply (case_eq M0 (tmVar z) (fun M1 : tm => fun H0 : M1 = tmVar z => forall X' : subtm M1 Q, (forall H' : M1 = tmVar z, XP z Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' (tmVar z) H')) -> XP z (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') (tmVar z) H0))).
-        apply (fun X' : subtm (tmVar z) Q => fun IHX' : forall H' : tmVar z = tmVar z, XP z Q (eq_rect (tmVar z) (fun N1 : tm => subtm N1 Q) X' (tmVar z) H') => XP_labs z y Q X' (IHX' eq_refl)).
-      }
+    { set (XP_Refl := fun M0 : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => XP M1 (eq_rect M1 (fun N1 : tm => subtm N1 M1) (subtmRefl M1) L H0)) case_Refl).
+      set (XP_AppL := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P1, (forall H' : M1 = L, XP P1 (eq_rect M1 (fun N1 : tm => subtm N1 P1) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M1 P1 P2 X') L H0)) (fun X' : subtm L P1 => fun IHX' : forall H' : L = L, XP P1 (eq_rect L (fun N1 : tm => subtm N1 P1) X' L H') => case_AppL P1 P2 X' (IHX' eq_refl))).
+      set (XP_AppR := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P2, (forall H' : M1 = L, XP P2 (eq_rect M1 (fun N1 : tm => subtm N1 P2) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M1 P1 P2 X') L H0)) (fun X' : subtm L P2 => fun IHX' : forall H' : L = L, XP P2 (eq_rect L (fun N1 : tm => subtm N1 P2) X' L H') => case_AppR P1 P2 X' (IHX' eq_refl))).
+      set (XP_LAbs := fun M0 : tm => fun y : ivar => fun Q : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 Q, (forall H' : M1 = L, XP Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' L H')) -> XP (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') L H0)) (fun X' : subtm L Q => fun IHX' : forall H' : L = L, XP Q (eq_rect L (fun N1 : tm => subtm N1 Q) X' L H') => case_LAbs y Q X' (IHX' eq_refl))).
       apply (
-        fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = tmVar z, XP z M (eq_rect N (fun N1 : tm => subtm N1 M) X (tmVar z) H) :=
-        match X as X0 in subtm N0 M0 return forall H : N0 = tmVar z, XP z M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 (tmVar z) H) with
-        | subtmRefl M0 =>
-          fun H : M0 = tmVar z =>
-          XP_Refl M0 H 
-        | subtmAppL M0 P1 P2 X' =>
-          fun H : M0 = tmVar z =>
-          XP_AppL M0 P1 P2 H X' (occurence_rect_fix M0 P1 X')
-        | subtmAppR M0 P1 P2 X' =>
-          fun H : M0 = tmVar z =>
-          XP_AppR M0 P1 P2 H X' (occurence_rect_fix M0 P2 X')
-        | subtmLAbs M0 y Q X' =>
-          fun H : M0 = tmVar z =>
-          XP_LAbs M0 y Q H X' (occurence_rect_fix M0 Q X')
+        fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
+        match X as X0 in subtm N0 M0 return forall H : N0 = L, XP M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 L H) with
+        | subtmRefl M0 => fun H : M0 = L => XP_Refl M0 H 
+        | subtmAppL M0 P1 P2 X' => fun H : M0 = L => XP_AppL M0 P1 P2 H X' (occurence_rect_fix M0 P1 X')
+        | subtmAppR M0 P1 P2 X' => fun H : M0 = L => XP_AppR M0 P1 P2 H X' (occurence_rect_fix M0 P2 X')
+        | subtmLAbs M0 y Q X' => fun H : M0 = L => XP_LAbs M0 y Q H X' (occurence_rect_fix M0 Q X')
         end
       ).
     }
-    apply (
-      fun M : tm =>
-      fun X : subtm (tmVar z) M =>
-      XXX (tmVar z) M X eq_refl
-    ).
+    apply (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
   Defined.
 
   Fixpoint getFVs (M : tm) : list ivar :=

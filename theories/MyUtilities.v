@@ -5,18 +5,16 @@ Require Import Coq.micromega.Lia.
 
 Module MyUtilities.
 
-  Definition case_eq {A : Type} : forall x : A, forall y : A, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> forall H : x = y, phi x H :=
+  Definition case_eq {A : Type} : forall x : A, forall y : A, forall H : x = y, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> phi x H :=
     fun x : A =>
     fun y : A =>
-    fun phi : forall x0 : A, x0 = y -> Type =>
-    fun phi_y : phi y eq_refl =>
     fun H : eq x y =>
     match H as H0 in eq _ y0 return forall phi0 : forall x0 : A, x0 = y0 -> Type, phi0 y0 eq_refl -> phi0 x H0 with
     | eq_refl =>
-      fun phi0 : forall x0 : A, x0 = x -> Type =>
-      fun phi_y0 : phi0 x eq_refl =>
-      phi_y0
-    end phi phi_y
+      fun phi : forall x0 : A, x0 = x -> Type =>
+      fun phi_y : phi x eq_refl =>
+      phi_y
+    end
   .
 
   Lemma div_mod_uniqueness :
