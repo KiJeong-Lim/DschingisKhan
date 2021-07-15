@@ -5,3 +5,4 @@ theories/MyStructures.v
 theories/DomainTheory.v
 theories/ClassicalTheory.v
 theories/UntypedLambdaCalculus.v
+theories/SetTheory.v
