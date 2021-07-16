@@ -13,11 +13,19 @@ Module Aczel.
 
   Import BasicSetoidTheory BasicPosetTheory MyUtilities.
 
-  Inductive Tree : Type :=
-  | RootNode (children : Type) (childtrees : children -> Tree) : Tree
+  Definition SuperiorUniversum : Type :=
+    Type
   .
 
-  Definition childrenOf : Tree -> Type :=
+  Definition InferiorUniversum : SuperiorUniversum :=
+    Type
+  .
+
+  Inductive Tree : SuperiorUniversum :=
+  | RootNode (children : InferiorUniversum) (childtrees : children -> Tree) : Tree
+  .
+
+  Definition childrenOf : Tree -> InferiorUniversum :=
     fun t : Tree =>
     match t with
     | RootNode children _ => children
@@ -30,7 +38,7 @@ Module Aczel.
     end
   .
 
-  Definition AczelSet : Type :=
+  Definition AczelSet : SuperiorUniversum :=
     Tree
   .
 
@@ -121,7 +129,7 @@ Module Aczel.
     exists key : childrenOf Y, ext_eq X (childTreeOf key)
   .
 
-  Lemma X_eq_Y_in_Z_implies :
+  Lemma eq_in_in :
     forall X : AczelSet,
     forall Y : AczelSet,
     forall Z : AczelSet,
@@ -133,9 +141,9 @@ Module Aczel.
     exists child_Z...
   Qed.
 
-  Global Hint Resolve X_eq_Y_in_Z_implies : aczel_hint.
+  Global Hint Resolve eq_in_in : aczel_hint.
 
-  Lemma X_in_Y_eq_Z_implies :
+  Lemma in_eq_in :
     forall X : AczelSet,
     forall Y : AczelSet,
     forall Z : AczelSet,
@@ -152,7 +160,7 @@ Module Aczel.
     exists new_key...
   Qed.
 
-  Global Hint Resolve X_in_Y_eq_Z_implies : aczel_hint.
+  Global Hint Resolve in_eq_in : aczel_hint.
 
   Lemma elem_intro :
     forall X : AczelSet,
@@ -207,17 +215,15 @@ Module Aczel.
 
   Global Hint Unfold subseteq : aczel_hint.
 
-  Global Program Instance AczelSet_isPoset : isPoset AczelSet :=
-    { leProp := subseteq
-    ; Poset_requiresSetoid := AczelSet_isSetoid
-    }
-  .
-
-  Next Obligation with eauto with *.
+  Global Instance subseteq_isPreOrder :
+    PreOrder subseteq.
+  Proof with eauto with *.
     split...
   Qed.
 
-  Next Obligation with eauto with *.
+  Global Instance subseteq_isPartialOrder :
+    PartialOrder ext_eq subseteq.
+  Proof with eauto with *.
     assert (claim1 : forall X : AczelSet, forall Y : AczelSet, (subseteq X Y /\ subseteq Y X) <-> (forall Z : AczelSet, elem Z X <-> elem Z Y)) by firstorder.
     split; unfold relation_conjunction, flip, predicate_intersection, pointwise_extension.
     - intros H.
@@ -226,27 +232,56 @@ Module Aczel.
       apply ext_eq_iff, claim1...
   Qed.
 
-  Definition unions {I : Type} : (I -> AczelSet) -> AczelSet :=
-    fun X_i : I -> Tree =>
-    let children : Type := {i : I & childrenOf (X_i i)} in
-    let childtrees : children -> Tree := fun child : children => @childTreeOf (X_i (projT1 child)) (projT2 child) in
+  Global Instance AczelSet_isPoset : isPoset AczelSet :=
+    { leProp := subseteq
+    ; Poset_requiresSetoid := AczelSet_isSetoid
+    ; Poset_requiresPreOrder := subseteq_isPreOrder
+    ; Poset_requiresPartialOrder := subseteq_isPartialOrder
+    }
+  .
+
+  Definition respect_ext_eq : (AczelSet -> Prop) -> Prop :=
+    fun phi : AczelSet -> Prop =>
+    forall X : AczelSet,
+    phi X ->
+    forall Y : AczelSet,
+    ext_eq X Y ->
+    phi Y
+  .
+
+  Global Hint Unfold respect_ext_eq : aczel_hint.
+
+  Lemma make_respect_ext_eq :
+    forall phi : AczelSet -> Prop,
+    respect_ext_eq (fun X : AczelSet => exists Y : AczelSet, phi Y /\ ext_eq X Y).
+  Proof with eauto with *.
+    intros phi X [Z [H H0]] Y H1...
+  Qed.
+
+  Definition filter : AczelSet -> (AczelSet -> Prop) -> AczelSet :=
+    fun X : AczelSet =>
+    fun cond : AczelSet -> Prop =>
+    let children : InferiorUniversum := {x : childrenOf X | cond (childTreeOf x)} in
+    let childtrees : children -> Tree := fun x : children => childTreeOf (proj1_sig x) in
     RootNode children childtrees
   .
 
-  Lemma in_unions_iff :
-    forall I : Type,
-    forall X_i : I -> AczelSet,
+  Lemma in_filter_iff (phi : AczelSet -> Prop) :
+    respect_ext_eq phi ->
+    forall X : AczelSet,
     forall x : AczelSet,
-    elem x (unions X_i) <-> (exists i : I, elem x (X_i i)).
+    elem x (filter X phi) <-> elem x X /\ phi x.
   Proof with eauto with *.
-    intros I X_i x.
+    intros ext_cong X x.
     split.
-    - intros [[i child_i] H0].
-      simpl in *.
-      exists i...
-    - intros [i [child_i H]].
-      exists (existT _ i child_i)...
+    - intros [[key H] H0].
+      simpl in *...
+    - intros [[key H] H0].
+      assert (H1 := ext_cong x H0 (childTreeOf key) H).
+      exists (exist _ key H1)...
   Qed.
+
+  Global Hint Resolve in_filter_iff : aczel_hint.
 
   Definition fromList : list AczelSet -> AczelSet :=
     fun Xs : list AczelSet =>
@@ -265,15 +300,17 @@ Module Aczel.
       exists i...
   Qed.
 
-  Definition Power : AczelSet -> AczelSet :=
+  Global Hint Resolve fromList : aczel_hint.
+
+  Definition power : AczelSet -> AczelSet :=
     fun X : AczelSet =>
     RootNode (childrenOf X -> Prop) (fun phi : childrenOf X -> Prop => RootNode {child_X : childrenOf X | phi child_X} (fun x : @sig (childrenOf X) phi => childTreeOf (proj1_sig x)))
   .
 
-  Lemma in_Power_iff :
+  Lemma in_power_iff :
     forall X : AczelSet,
     forall x : AczelSet,
-    elem x (Power X) <-> subseteq x X.
+    elem x (power X) <-> subseteq x X.
   Proof with eauto with *.
     intros X x.
     split.
@@ -297,74 +334,30 @@ Module Aczel.
         exists key...
   Qed.
 
-  Definition isTransitiveSet : AczelSet -> Prop :=
-    fun A : AczelSet =>
+  Global Hint Resolve in_power_iff : aczel_hint.
+
+  Definition unions {I : InferiorUniversum} : (I -> AczelSet) -> AczelSet :=
+    fun X_i : I -> Tree =>
+    let children : InferiorUniversum := {i : I & childrenOf (X_i i)} in
+    let childtrees : children -> Tree := fun child : children => @childTreeOf (X_i (projT1 child)) (projT2 child) in
+    RootNode children childtrees
+  .
+
+  Lemma in_unions_iff :
+    forall I : InferiorUniversum,
+    forall X_i : I -> AczelSet,
     forall x : AczelSet,
-    elem x A ->
-    forall y : AczelSet,
-    elem y x ->
-    elem y A
-  .
-
-  Global Hint Unfold isTransitiveSet : aczel_hint.
-
-  Definition respect_ext_eq : (AczelSet -> Prop) -> Prop :=
-    fun phi : AczelSet -> Prop =>
-    forall X : AczelSet,
-    phi X ->
-    forall Y : AczelSet,
-    ext_eq X Y ->
-    phi Y
-  .
-
-  Global Hint Unfold respect_ext_eq : aczel_hint.
-
-  Lemma ext_eq_closure_respect_ext_eq :
-    forall phi : AczelSet -> Prop,
-    respect_ext_eq (fun X : AczelSet => exists Y : AczelSet, phi Y /\ ext_eq X Y).
+    elem x (unions X_i) <-> (exists i : I, elem x (X_i i)).
   Proof with eauto with *.
-    intros phi X [Z [H H0]] Y H1...
+    intros I X_i x.
+    split.
+    - intros [[i child_i] H0].
+      simpl in *.
+      exists i...
+    - intros [i [child_i H]].
+      exists (existT _ i child_i)...
   Qed.
 
-  Inductive isOrdinal : AczelSet -> Prop :=
-  | transitive_set_of_transtive_sets :
-    forall alpha : AczelSet,
-    isTransitiveSet alpha ->
-    (forall beta : AczelSet, elem beta alpha -> isTransitiveSet beta) ->
-    isOrdinal alpha
-  .
-
-  Global Hint Constructors isOrdinal : aczel_hint.
-
-  Lemma isOrdinal_elem_isOrdinal :
-    forall Y : AczelSet,
-    isOrdinal Y ->
-    forall X : AczelSet,
-    elem X Y ->
-    isOrdinal X.
-  Proof with eauto with *.
-    intros Y H.
-    induction H as [alpha H IH]...
-  Qed.
-
-  Global Hint Resolve isOrdinal_elem_isOrdinal : aczel_hint.
-
-  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) :
-    respect_ext_eq phi ->
-    (forall alpha : AczelSet, (forall beta : AczelSet, elem beta alpha -> phi beta) -> isOrdinal alpha -> phi alpha) ->
-    forall gamma : AczelSet,
-    isOrdinal gamma ->
-    phi gamma.
-  Proof with eauto with *.
-    intros ext_cong ind_claim.
-    induction gamma as [children childtrees IH].
-    intros H.
-    apply ind_claim...
-    intros beta H0.
-    assert (H1 : isOrdinal beta) by now apply (isOrdinal_elem_isOrdinal (RootNode children childtrees)).
-    destruct H0 as [key H0].
-    apply (ext_cong (childTreeOf key))...
-    apply (IH key)...
-  Qed.
+  Global Hint Resolve in_unions_iff : aczel_hint.
 
 End Aczel.
