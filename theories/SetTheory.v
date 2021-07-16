@@ -360,4 +360,56 @@ Module Aczel.
 
   Global Hint Resolve in_unions_iff : aczel_hint.
 
+  Definition isTransitiveSet : AczelSet -> Prop :=
+    fun A : AczelSet =>
+    forall x : AczelSet,
+    elem x A ->
+    forall y : AczelSet,
+    elem y x ->
+    elem y A
+  .
+
+  Global Hint Unfold isTransitiveSet : aczel_hint.
+
+  Inductive isOrdinal : AczelSet -> Prop :=
+  | transitive_set_of_transtive_sets :
+    forall alpha : AczelSet,
+    isTransitiveSet alpha ->
+    (forall beta : AczelSet, elem beta alpha -> isTransitiveSet beta) ->
+    isOrdinal alpha
+  .
+
+  Global Hint Constructors isOrdinal : aczel_hint.
+
+  Lemma isOrdinal_member_isOrdinal :
+    forall Y : AczelSet,
+    isOrdinal Y ->
+    forall X : AczelSet,
+    elem X Y ->
+    isOrdinal X.
+  Proof with eauto with *.
+    intros Y H.
+    induction H as [alpha H IH]...
+  Qed.
+
+  Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
+
+  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) :
+    respect_ext_eq phi ->
+    (forall alpha : AczelSet, (forall beta : AczelSet, elem beta alpha -> phi beta) -> isOrdinal alpha -> phi alpha) ->
+    forall gamma : AczelSet,
+    isOrdinal gamma ->
+    phi gamma.
+  Proof with eauto with *.
+    intros ext_cong ind_claim.
+    induction gamma as [children childtrees IH].
+    intros H.
+    apply ind_claim...
+    intros beta H0.
+    assert (H1 : isOrdinal beta) by now apply (isOrdinal_member_isOrdinal (RootNode children childtrees)).
+    destruct H0 as [key H0].
+    apply (ext_cong (childTreeOf key))...
+    apply (IH key)...
+  Qed.
+
 End Aczel.
