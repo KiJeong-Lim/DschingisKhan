@@ -1,17 +1,17 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
-Require Import Coq.Vectors.Fin.
-Require Import Coq.Vectors.VectorDef.
 Require Import DschingisKhan.theories.MyStructures.
+Require Import DschingisKhan.theories.MyUtilities.
 
 Global Create HintDb aczel_hint.
 
 Module Aczel.
 
-  Import BasicSetoidTheory BasicPosetTheory.
+  Import BasicSetoidTheory BasicPosetTheory MyUtilities.
 
   Inductive Tree : Type :=
   | RootNode (children : Type) (childtrees : children -> Tree) : Tree
@@ -248,15 +248,15 @@ Module Aczel.
       exists (existT _ i child_i)...
   Qed.
 
-  Definition fromList {n : nat} : VectorDef.t AczelSet n -> AczelSet :=
-    fun Xs : VectorDef.t AczelSet n =>
-    RootNode (Fin.t n) (nth Xs)
+  Definition fromList : list AczelSet -> AczelSet :=
+    fun Xs : list AczelSet =>
+    RootNode (FinSet (length Xs)) (safe_nth Xs)
   .
 
-  Lemma in_fromList_iff {n : nat} :
-    forall Xs : VectorDef.t AczelSet n,
+  Lemma in_fromList_iff :
+    forall Xs : list AczelSet,
     forall x : AczelSet,
-    elem x (fromList Xs) <-> (exists i : Fin.t n, ext_eq x (nth Xs i)).
+    elem x (fromList Xs) <-> (exists i : FinSet (length Xs), ext_eq x (safe_nth Xs i)).
   Proof with eauto with *.
     intros Xs x.
     split.
@@ -308,6 +308,24 @@ Module Aczel.
 
   Global Hint Unfold isTransitiveSet : aczel_hint.
 
+  Definition respect_ext_eq : (AczelSet -> Prop) -> Prop :=
+    fun phi : AczelSet -> Prop =>
+    forall X : AczelSet,
+    phi X ->
+    forall Y : AczelSet,
+    ext_eq X Y ->
+    phi Y
+  .
+
+  Global Hint Unfold respect_ext_eq : aczel_hint.
+
+  Lemma ext_eq_closure_respect_ext_eq :
+    forall phi : AczelSet -> Prop,
+    respect_ext_eq (fun X : AczelSet => exists Y : AczelSet, phi Y /\ ext_eq X Y).
+  Proof with eauto with *.
+    intros phi X [Z [H H0]] Y H1...
+  Qed.
+
   Inductive isOrdinal : AczelSet -> Prop :=
   | transitive_set_of_transtive_sets :
     forall alpha : AczelSet,
@@ -332,7 +350,7 @@ Module Aczel.
   Global Hint Resolve isOrdinal_elem_isOrdinal : aczel_hint.
 
   Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) :
-    (forall alpha : AczelSet, phi alpha -> forall beta : AczelSet, ext_eq alpha beta -> phi beta) ->
+    respect_ext_eq phi ->
     (forall alpha : AczelSet, (forall beta : AczelSet, elem beta alpha -> phi beta) -> isOrdinal alpha -> phi alpha) ->
     forall gamma : AczelSet,
     isOrdinal gamma ->

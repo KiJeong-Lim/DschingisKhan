@@ -5,6 +5,8 @@ Require Import Coq.micromega.Lia.
 
 Module MyUtilities.
 
+  Import ListNotations.
+
   Definition case_eq {A : Type} : forall x : A, forall y : A, forall H : x = y, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> phi x H :=
     fun x : A =>
     fun y : A =>
@@ -229,6 +231,14 @@ Module MyUtilities.
       | 0 => fun i0' : FinSet 0 => @FinSet_case0 (fun i1 : FinSet 0 => P 1 (FS 0 i1)) i0'
       | S n0' => fun i0' : FinSet (S n0') => PS (S n0') i0' (FinSet_rectS_fix n0' i0')
       end i'
+    end
+  .
+
+  Definition safe_nth {A : Type} : forall xs : list A, FinSet (length xs) -> A :=
+    fix safe_nth_fix (xs : list A) {struct xs} : FinSet (length xs) -> A :=
+    match xs as xs0 return FinSet (length xs0) -> A with
+    | [] => FinSet_case0
+    | x :: xs' => FinSet_caseS x (safe_nth_fix xs')
     end
   .
 
