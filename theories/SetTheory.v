@@ -371,7 +371,7 @@ Module Aczel.
 
   Global Hint Unfold isTransitiveSet : aczel_hint.
 
-  Inductive isOrdinal : AczelSet -> Prop :=
+  Variant isOrdinal : AczelSet -> Prop :=
   | transitive_set_of_transtive_sets :
     forall alpha : AczelSet,
     isTransitiveSet alpha ->
@@ -389,7 +389,7 @@ Module Aczel.
     isOrdinal X.
   Proof with eauto with *.
     intros Y H.
-    induction H as [alpha H IH]...
+    destruct H as [alpha H H0]...
   Qed.
 
   Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
