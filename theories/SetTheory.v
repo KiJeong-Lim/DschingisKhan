@@ -13,19 +13,19 @@ Module Aczel.
 
   Import BasicSetoidTheory BasicPosetTheory MyUtilities.
 
-  Definition SuperiorUniversum : Type :=
+  Definition SuperiorUniverse : Type :=
     Type
   .
 
-  Definition InferiorUniversum : SuperiorUniversum :=
+  Definition InferiorUniverse : SuperiorUniverse :=
     Type
   .
 
-  Inductive Tree : SuperiorUniversum :=
-  | RootNode (children : InferiorUniversum) (childtrees : children -> Tree) : Tree
+  Inductive Tree : SuperiorUniverse :=
+  | RootNode (children : InferiorUniverse) (childtrees : children -> Tree) : Tree
   .
 
-  Definition childrenOf : Tree -> InferiorUniversum :=
+  Definition childrenOf : Tree -> InferiorUniverse :=
     fun t : Tree =>
     match t with
     | RootNode children _ => children
@@ -38,7 +38,7 @@ Module Aczel.
     end
   .
 
-  Definition AczelSet : SuperiorUniversum :=
+  Definition AczelSet : SuperiorUniverse :=
     Tree
   .
 
@@ -261,7 +261,7 @@ Module Aczel.
   Definition filter : AczelSet -> (AczelSet -> Prop) -> AczelSet :=
     fun X : AczelSet =>
     fun cond : AczelSet -> Prop =>
-    let children : InferiorUniversum := {x : childrenOf X | cond (childTreeOf x)} in
+    let children : InferiorUniverse := {x : childrenOf X | cond (childTreeOf x)} in
     let childtrees : children -> Tree := fun x : children => childTreeOf (proj1_sig x) in
     RootNode children childtrees
   .
@@ -336,15 +336,15 @@ Module Aczel.
 
   Global Hint Resolve in_power_iff : aczel_hint.
 
-  Definition unions {I : InferiorUniversum} : (I -> AczelSet) -> AczelSet :=
+  Definition unions {I : InferiorUniverse} : (I -> AczelSet) -> AczelSet :=
     fun X_i : I -> Tree =>
-    let children : InferiorUniversum := {i : I & childrenOf (X_i i)} in
+    let children : InferiorUniverse := {i : I & childrenOf (X_i i)} in
     let childtrees : children -> Tree := fun child : children => @childTreeOf (X_i (projT1 child)) (projT2 child) in
     RootNode children childtrees
   .
 
   Lemma in_unions_iff :
-    forall I : InferiorUniversum,
+    forall I : InferiorUniverse,
     forall X_i : I -> AczelSet,
     forall x : AczelSet,
     elem x (unions X_i) <-> (exists i : I, elem x (X_i i)).
@@ -389,7 +389,7 @@ Module Aczel.
     isOrdinal X.
   Proof with eauto with *.
     intros Y H.
-    destruct H as [alpha H H0]...
+    inversion H; subst...
   Qed.
 
   Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
