@@ -9,7 +9,7 @@ Require Import DschingisKhan.theories.MyUtilities.
 
 Global Create HintDb aczel_hint.
 
-Module Aczel.
+Module Aczel. (* Thanks to Hanul Jeon *)
 
   Import BasicSetoidTheory BasicPosetTheory MyUtilities.
 
@@ -251,17 +251,24 @@ Module Aczel.
 
   Global Hint Unfold respect_ext_eq : aczel_hint.
 
+  Definition ext_eq_cl : (AczelSet -> Prop) -> (AczelSet -> Prop) :=
+    fun phi : AczelSet -> Prop =>
+    fun X : AczelSet =>
+    exists Y : AczelSet, phi Y /\ ext_eq X Y
+  .
+
   Lemma make_respect_ext_eq :
     forall phi : AczelSet -> Prop,
-    respect_ext_eq (fun X : AczelSet => exists Y : AczelSet, phi Y /\ ext_eq X Y).
+    respect_ext_eq (ext_eq_cl phi).
   Proof with eauto with *.
+    unfold ext_eq_cl.
     intros phi X [Z [H H0]] Y H1...
   Qed.
 
   Definition filter : AczelSet -> (AczelSet -> Prop) -> AczelSet :=
     fun X : AczelSet =>
     fun cond : AczelSet -> Prop =>
-    let children : InferiorUniverse := {x : childrenOf X | cond (childTreeOf x)} in
+    let children : InferiorUniverse := {child_X : childrenOf X | cond (childTreeOf child_X)} in
     let childtrees : children -> Tree := fun x : children => childTreeOf (proj1_sig x) in
     RootNode children childtrees
   .
@@ -285,7 +292,9 @@ Module Aczel.
 
   Definition fromList : list AczelSet -> AczelSet :=
     fun Xs : list AczelSet =>
-    RootNode (FinSet (length Xs)) (safe_nth Xs)
+    let children : InferiorUniverse := FinSet (length Xs) in
+    let childtrees : children -> AczelSet := safe_nth Xs in
+    RootNode children childtrees
   .
 
   Lemma in_fromList_iff :
@@ -304,7 +313,9 @@ Module Aczel.
 
   Definition power : AczelSet -> AczelSet :=
     fun X : AczelSet =>
-    RootNode (childrenOf X -> Prop) (fun phi : childrenOf X -> Prop => RootNode {child_X : childrenOf X | phi child_X} (fun x : @sig (childrenOf X) phi => childTreeOf (proj1_sig x)))
+    let children : InferiorUniverse := childrenOf X -> Prop in
+    let childtrees : children -> AczelSet := fun phi : children => RootNode {child_X : childrenOf X | phi child_X} (fun x : @sig (childrenOf X) phi => childTreeOf (proj1_sig x)) in
+    RootNode children childtrees
   .
 
   Lemma in_power_iff :
@@ -360,6 +371,23 @@ Module Aczel.
 
   Global Hint Resolve in_unions_iff : aczel_hint.
 
+  Lemma claim_for_strong_collection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
+    forall psi : AczelSet -> AczelSet -> Prop,
+    (forall X : AczelSet, forall y : AczelSet, elem y (build psi X) <-> (exists x : AczelSet, elem x X /\ psi x y)) ->
+    forall X : AczelSet,
+    (forall x : AczelSet, elem x X -> exists y : AczelSet, psi x y) ->
+    (forall x : AczelSet, elem x X -> exists y : AczelSet, elem y (build psi X) /\ psi x y) /\ (forall y : AczelSet, elem y (build psi X) -> exists x : AczelSet, elem x X /\ psi x y).
+  Proof with eauto with *.
+    intros psi in_build_iff X H.
+    split.
+    - intros x H0.
+      destruct (H x H0) as [y H1].
+      assert (H2 : exists x : AczelSet, elem x X /\ psi x y) by firstorder.
+      assert (H3 := proj2 (in_build_iff X y) H2)...
+    - intros y H0.
+      apply in_build_iff...
+  Qed.
+
   Definition isTransitiveSet : AczelSet -> Prop :=
     fun A : AczelSet =>
     forall x : AczelSet,
@@ -372,7 +400,7 @@ Module Aczel.
   Global Hint Unfold isTransitiveSet : aczel_hint.
 
   Variant isOrdinal : AczelSet -> Prop :=
-  | transitive_set_of_transtive_sets :
+  | transitive_set_of_transtive_sets_isOrdinal :
     forall alpha : AczelSet,
     isTransitiveSet alpha ->
     (forall beta : AczelSet, elem beta alpha -> isTransitiveSet beta) ->
@@ -382,13 +410,13 @@ Module Aczel.
   Global Hint Constructors isOrdinal : aczel_hint.
 
   Lemma isOrdinal_member_isOrdinal :
-    forall Y : AczelSet,
-    isOrdinal Y ->
-    forall X : AczelSet,
-    elem X Y ->
-    isOrdinal X.
+    forall alpha : AczelSet,
+    isOrdinal alpha ->
+    forall beta : AczelSet,
+    elem beta alpha ->
+    isOrdinal beta.
   Proof with eauto with *.
-    intros Y H.
+    intros alpha H.
     inversion H; subst...
   Qed.
 
