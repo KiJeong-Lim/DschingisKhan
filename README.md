@@ -2,7 +2,7 @@
 
 My study notes for applied mathematics.
 
-# Build:
+# Build
 
 - With `make`:
 
@@ -19,5 +19,6 @@ coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v
+coqc -Q . DschingisKhan classical/MyAxioms.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
 ```

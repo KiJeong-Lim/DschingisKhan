@@ -6,4 +6,5 @@ pure/DomainTheory.v
 pure/UntypedLambdaCalculus.v
 pure/SetTheory.v
 
+classical/MyAxioms.v
 classical/DomainTheory.v

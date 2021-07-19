@@ -1,5 +1,5 @@
 Require Import Coq.Lists.List.
-Require Import Coq.Logic.Classical.
+Require Import DschingisKhan.classical.MyAxioms.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.DomainTheory.
 
@@ -7,7 +7,7 @@ Module ClassicalDomainTheory.
 
   Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble BasicTopology PosetTheory ConstructiveDomainTheory.
 
-  Definition U {D : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} : D -> ensemble D :=
+  Definition U {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D :=
     fun x : D =>
     fun z : D =>
     ~ z =< x
@@ -99,7 +99,6 @@ Module ClassicalDomainTheory.
     set (Y := image f X).
     assert (H3 : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
     destruct (square_up_exists Y H2) as [sup_Y H4].
-    exists sup_Y.
     assert (claim1 : sup_Y =< f sup_X).
     { apply H4.
       intros y H5.
@@ -118,7 +117,7 @@ Module ClassicalDomainTheory.
       inversion H12; subst.
       contradiction H13...
     }
-    split...
+    exists sup_Y...
   Qed.
 
   Definition characterization_of_ContinuousMap_on_cpos {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : (D -> D') -> Prop :=
@@ -133,10 +132,7 @@ Module ClassicalDomainTheory.
     forall f : D >=> D',
     isContinuousMap (proj1_sig f) <-> characterization_of_ContinuousMap_on_cpos (proj1_sig f).
   Proof with eauto with *.
-    assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2).
-    { intros f.
-      apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f)).
-    }
+    assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2) by apply (fun f : D >=> D' => ContinuousMapOnCpos_isMonotonic (proj1_sig f)).
     split.
     - intros H X H0.
       inversion H0; subst.
@@ -164,7 +160,7 @@ Module ClassicalDomainTheory.
           - exists x1...
           - intros x1' H2 x2' H3.
             exists x2.
-            enough (x1' =< x2 /\ x2' =< x2)...
+            enough (H4 : x1' =< x2 /\ x2' =< x2)...
         }
         destruct (H X H2) as [sup_X H3].
         destruct H3 as [sup_Y [H3 [H4 H5]]].
@@ -274,17 +270,11 @@ Module ClassicalDomainTheory.
     ).
     { intros f_i H2.
       assert (H3 : isContinuousMap (proj1_sig f_i)) by apply (proj2_sig f_i).
-      assert (H4 : characterization_of_ContinuousMap_on_cpos (proj1_sig f_i)).
-      { apply (the_main_reason_for_introducing_ScottTopology (squig_isMonotonic f_i)).
-        apply (proj2_sig f_i).
-      }
+      assert (H4 : characterization_of_ContinuousMap_on_cpos (proj1_sig f_i)) by apply (the_main_reason_for_introducing_ScottTopology (squig_isMonotonic f_i)), (proj2_sig f_i).
       destruct (H4 X H0) as [sup_X' [sup_Y' [H5 [H6 H7]]]].
       assert (H8 : sup_X' == sup_X) by now apply (isSupremum_unique X).
       apply (proj2 (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X) _ H6 (proj1_sig f_i sup_X))).
-      assert (H9 : proj1_sig f_i sup_X' == proj1_sig f_i sup_X).
-      { apply (MonotonicMap_preservesSetoid (proj1_sig f_i))...
-        apply (proj2_sig (squig_isMonotonic f_i)).
-      }
+      assert (H9 : proj1_sig f_i sup_X' == proj1_sig f_i sup_X) by apply (MonotonicMap_preservesSetoid (proj1_sig f_i) (proj2_sig (squig_isMonotonic f_i)) sup_X' sup_X H8).
       transitivity (proj1_sig f_i sup_X')...
     }
     assert (claim2 : isSupremum (f sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected sup_X))).
@@ -301,11 +291,8 @@ Module ClassicalDomainTheory.
           rename x into f_i.
           assert (H6 := claim1 f_i H5).
           assert (H7 : y' == proj1_sig f_i sup_X) by now apply (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X)).
-          assert (H8 : proj1_sig f_i sup_X =< y).
-          { apply claim2...
-            apply (in_image f_i (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X))...
-          }
-          transitivity (proj1_sig f_i sup_X)...
+          assert (H8 : member (proj1_sig f_i sup_X) (image (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X) F)) by now apply (in_image f_i (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X)).
+          assert (H9 : proj1_sig f_i sup_X =< y)...
         + intros H2.
           apply claim2.
           intros y' H3.
@@ -441,7 +428,8 @@ Module ClassicalDomainTheory.
   Qed.
 
   Local Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@SubPoset (D -> D') isContinuousMap (arrow_isPoset D'_isPoset)) :=
-    { bottom_exists := exist _ bot_of_squigs bot_of_squigs_isBottom
+    { bottom_exists :=
+      exist _ bot_of_squigs bot_of_squigs_isBottom
     ; square_up_exists :=
       fun F : ensemble (D ~> D') =>
       fun F_isDirected : isDirected F =>

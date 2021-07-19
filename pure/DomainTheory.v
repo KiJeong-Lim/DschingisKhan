@@ -56,8 +56,8 @@ Module PosetTheory.
     isSupremum sup_X2 X2 <-> sup_X1 == sup_X2.
   Proof with eauto with *.
     intros X1 X2 H sup_X1 H0 sup_X2.
-    assert (claim1 := fun x : D => fun H1 : member x X1 => proj1 (H x) H1).
-    assert (claim2 := fun x : D => fun H1 : member x X2 => proj2 (H x) H1).
+    assert (claim1 := fun x : D => proj1 (H x)).
+    assert (claim2 := fun x : D => proj2 (H x)).
     split...
     intros H1.
     intros x.
@@ -310,7 +310,7 @@ Module PosetTheory.
     member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
   .
 
-  Local Instance BoPeep {D : Type} {P : D -> Prop} (D_requiresPoset : isPoset D) : isPoset (@sig D P) :=
+  Local Instance SubPoset' {D : Type} {P : D -> Prop} (D_requiresPoset : isPoset D) : isPoset (@sig D P) :=
     SubPoset D_requiresPoset
   .
 
@@ -919,8 +919,7 @@ Module ConstructiveDomainTheory.
     { apply H0.
       intros x [H1 H2].
       transitivity (proj1_sig f x).
-      + apply (proj2_sig f).
-        apply H0...
+      + apply (proj2_sig f), H0...
       + apply H1.
     }
     assert (claim5 : q =< fix_f).
@@ -1131,7 +1130,8 @@ Module ConstructiveDomainTheory.
   .
 
   Class isCompletePartialOrder (D : Type) `{D_isPoset : isPoset D} : Type :=
-    { bottom_exists : {min_D : D | forall x : D, min_D =< x}
+    { bottom_exists :
+      {min_D : D | forall x : D, min_D =< x}
     ; square_up_exists :
       forall X : ensemble D,
       isDirected X ->
@@ -1140,7 +1140,8 @@ Module ConstructiveDomainTheory.
   .
 
   Local Instance CompleteLattice_isCompletePartialOrder {D : Type} `{D_isPoset : isPoset D} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) : @isCompletePartialOrder D D_isPoset :=
-    { bottom_exists := exist _ bot bot_isBottom
+    { bottom_exists :=
+      exist _ bot bot_isBottom
     ; square_up_exists :=
       fun X : ensemble D =>
       fun _ : isDirected X =>

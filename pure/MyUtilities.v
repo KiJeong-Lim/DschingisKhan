@@ -29,7 +29,8 @@ Module MyUtilities.
     a / b = q /\ a mod b = r.
   Proof with try (lia || now (firstorder; eauto)).
     assert (H : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))).
-    { intros x y; constructor.
+    { intros x y.
+      split.
       - intros H.
         induction H...
         destruct IHle as [z H0].
@@ -52,7 +53,7 @@ Module MyUtilities.
       destruct H6 as [z H6].
       enough (b * q + a mod b >= b * S (a / b) + a mod b)...
     }
-    enough (q = a / b)...
+    enough (therefore : q = a / b)...
   Qed.
 
   Definition first_nat : (nat -> bool) -> nat -> nat :=
@@ -243,7 +244,7 @@ Module MyUtilities.
   .
 
   Lemma forallb_true_iff {A : Type} {p : A -> bool} (xs : list A) :
-    forallb p xs = true <-> forall x : A, In x xs -> p x = true.
+    forallb p xs = true <-> (forall x : A, In x xs -> p x = true).
   Proof with try now firstorder.
     induction xs; simpl...
     rewrite andb_true_iff.
