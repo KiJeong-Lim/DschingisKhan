@@ -1,7 +1,7 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
-Require Import DschingisKhan.theories.MyStructures.
+Require Import DschingisKhan.pure.MyStructures.
 
 Module PosetTheory.
 

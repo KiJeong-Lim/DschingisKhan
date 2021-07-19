@@ -1,7 +1,7 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.Classical.
-Require Import DschingisKhan.theories.MyStructures.
-Require Import DschingisKhan.theories.DomainTheory.
+Require Import DschingisKhan.pure.MyStructures.
+Require Import DschingisKhan.pure.DomainTheory.
 
 Module ClassicalDomainTheory.
 

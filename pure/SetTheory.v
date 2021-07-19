@@ -4,8 +4,8 @@ Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
-Require Import DschingisKhan.theories.MyStructures.
-Require Import DschingisKhan.theories.MyUtilities.
+Require Import DschingisKhan.pure.MyStructures.
+Require Import DschingisKhan.pure.MyUtilities.
 
 Global Create HintDb aczel_hint.
 

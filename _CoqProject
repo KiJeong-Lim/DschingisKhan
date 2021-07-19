@@ -1,8 +1,9 @@
 -Q . DschingisKhan
 
-theories/MyUtilities.v
-theories/MyStructures.v
-theories/DomainTheory.v
-theories/ClassicalTheory.v
-theories/UntypedLambdaCalculus.v
-theories/SetTheory.v
+pure/MyUtilities.v
+pure/MyStructures.v
+pure/DomainTheory.v
+pure/UntypedLambdaCalculus.v
+pure/SetTheory.v
+
+classical/DomainTheory.v

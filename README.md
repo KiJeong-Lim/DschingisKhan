@@ -14,10 +14,10 @@ make
 - By hands:
 
 ```
-coqc -Q . DschingisKhan theories/MyUtilities.v
-coqc -Q . DschingisKhan theories/MyStructures.v
-coqc -Q . DschingisKhan theories/DomainTheory.v
-coqc -Q . DschingisKhan theories/ClassicalTheory.v
-coqc -Q . DschingisKhan theories/UntypedLambdaCalculus.v
-coqc -Q . DschingisKhan theories/SetTheory.v
+coqc -Q . DschingisKhan pure/MyUtilities.v
+coqc -Q . DschingisKhan pure/MyStructures.v
+coqc -Q . DschingisKhan pure/DomainTheory.v
+coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
+coqc -Q . DschingisKhan pure/SetTheory.v
+coqc -Q . DschingisKhan classical/DomainTheory.v
 ```
