@@ -245,7 +245,7 @@ Module PosetTheory.
   Proof with eauto with *.
     intros f H lfp H0.
     split.
-    - assert (H1 : f lfp =< lfp).
+    - assert (claim1 : f lfp =< lfp).
       { apply H0.
         intros x H1.
         assert (H2 : lfp =< x).
@@ -257,7 +257,7 @@ Module PosetTheory.
       }
       apply Poset_asym.
       + apply H0...
-      + apply H1.
+      + apply claim1.
     - intros fix_f H1.
       apply H0...
   Qed.
@@ -778,9 +778,7 @@ Module ConstructiveDomainTheory.
       assert (claim1 : proj1_sig (ParameterizedGreatestFixedpoint f) (or_plus x y) == proj1_sig f (or_plus (or_plus x y) (G_f f (or_plus x y)))) by now apply unfold_cofixpoint.
       assert (claim2 : proj1_sig f (or_plus (or_plus x y) (G_f f (or_plus x y))) =< proj1_sig f (or_plus x (G_f f (or_plus x y)))).
       { apply (proj2_sig f), or_plus_le_iff.
-        split.
-        - apply or_plus_le_iff...
-        - apply le_or_plus.
+        split; [apply or_plus_le_iff | apply le_or_plus]...
       }
       assert (claim3 : G_f f (or_plus x y) =< G_f f x).
       { apply PrincipleOfTarski.
@@ -808,9 +806,7 @@ Module ConstructiveDomainTheory.
     { transitivity (G_f f r1).
       - apply H.
       - apply G_f_isMonotoinc.
-        transitivity (or_plus r g2).
-        + apply H1.
-        + apply or_plus_le_iff...
+        transitivity (or_plus r g2); [apply H1 | apply or_plus_le_iff]...
     }
     assert (H4 : g2 =< G_f f (or_plus r (or_plus g1 g2))).
     { transitivity (G_f f r2).
@@ -846,8 +842,7 @@ Module ConstructiveDomainTheory.
           split; transitivity (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))...
         + apply Poset_refl2...
     }
-    intros x.
-    apply Poset_asym...
+    intros x...
   Qed.
 
   Theorem KnasterTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -863,11 +858,7 @@ Module ConstructiveDomainTheory.
     set (W_hat := fun w : D => q =< w).
     assert (claim1 := make_Supremum_to_Infimum_of_upper_bounds W q q_is_lub_of_W).
     assert (claim2 : member q W_hat) by apply Poset_refl.
-    assert ( claim3 :
-      forall x : D,
-      member x W_hat ->
-      member (proj1_sig f x) W_hat
-    ).
+    assert (claim3 : forall x : D, member x W_hat -> member (proj1_sig f x) W_hat).
     { intros x H.
       apply q_is_lub_of_W.
       intros w H0.
@@ -882,8 +873,8 @@ Module ConstructiveDomainTheory.
     { apply H0.
       intros x [H1 H2].
       transitivity (proj1_sig f x).
-      + apply (proj2_sig f), H0...
-      + apply H1.
+      - apply (proj2_sig f), H0...
+      - apply H1.
     }
     assert (claim5 : q =< fix_f).
     { apply H0.
@@ -892,9 +883,7 @@ Module ConstructiveDomainTheory.
     assert (claim6 : fix_f == proj1_sig f fix_f).
     { apply Poset_asym.
       - apply H0...
-        split.
-        + apply (proj2_sig f)...
-        + apply claim3...
+        split; [apply (proj2_sig f) | apply claim3]...
       - apply claim4.
     }
     exists fix_f.
@@ -1022,8 +1011,7 @@ Module ConstructiveDomainTheory.
       intros x' H2.
       inversion H2; subst.
       rename x0 into f_i.
-      apply (proj2_sig b).
-      apply H1...
+      apply (proj2_sig b), H1...
       apply (in_image f_i (fun f_i' : D >=> D => proj1_sig f_i' x))...
     }
     intros x...
@@ -1145,8 +1133,7 @@ Module ConstructiveDomainTheory.
       assert (H6 := proj1 (H1 x) H4).
       revert H6.
       repeat (rewrite in_intersection_iff).
-      intros [H6 H7].
-      split...
+      intros [H6 H7]...
     - intros.
       inversion H4; subst.
       assert (H9 := proj1 (H1 sup_X) H6).
@@ -1159,12 +1146,8 @@ Module ConstructiveDomainTheory.
       destruct H11 as [H11 H13].
       destruct H12 as [H12 H14].
       destruct (H8 x1 H11 x2 H12) as [x [H15 [H16 H17]]].
-      assert (H18 : member x xs).
-      { apply H1.
-        apply in_intersection_iff.
-        split...
-      }
-      exists x...
+      enough (H18 : member x xs) by now exists x.
+      apply H1, in_intersection_iff...
   Qed.
 
   Lemma bot_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
