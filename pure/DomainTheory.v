@@ -904,7 +904,7 @@ Module ConstructiveDomainTheory.
       split.
       + intros H2 x' H3.
         transitivity q...
-      + intros H2...
+      + intros H2.
         apply H0...
         split...
         apply q_is_lub_of_W...
@@ -925,9 +925,7 @@ Module ConstructiveDomainTheory.
       exists gfp.
       split; [apply H1 | apply Poset_refl1, H0].
     - intros [gfp [H H0]].
-      transitivity gfp.
-      + apply H.
-      + apply PrincipleOfTarski...
+      transitivity gfp; [apply H | apply PrincipleOfTarski]...
   Qed.
 
   Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
@@ -1114,7 +1112,7 @@ Module ConstructiveDomainTheory.
 
   Next Obligation with eauto with *.
     split.
-    - firstorder.
+    - now firstorder.
     - intros X [[x H0] H1] sup_X H2 H3...
   Qed.
 
@@ -1330,7 +1328,6 @@ Module PowerSetLattice.
     isSubsetOf (F (or_plus (PaCo F Y) Y)) (PaCo F Y).
   Proof with eauto with *.
     intros F H Y.
-    cofix CIH.
     apply mkPaCo.
     intros a H0.
     apply in_union_iff in H0...
@@ -1422,11 +1419,10 @@ Module PowerSetLattice.
     - intros H_star.
       assert (claim1 := PaCo_unfold F F_mon (MyUnion X Y)).
       assert (claim2 : isSubsetOf (F (or_plus (PaCo F (MyUnion X Y)) (MyUnion X Y))) (F (or_plus (PaCo F (MyUnion X Y)) X))).
-      { apply F_mon.
-        intros a H.
-        apply in_union_iff in H.
-        apply in_union_iff.
-        destruct H as [H | [H | H]]; [left | right | left]...
+      { apply F_mon, or_plus_le_iff.
+        split.
+        - apply le_or_plus.
+        - intros a [H | H]; apply in_union_iff; [right | left]...
       }
       assert (claim3 : or_plus (PaCo F (MyUnion X Y)) X =< MyUnion X (PaCo F (MyUnion X Y))).
       { intros a H.
@@ -1459,12 +1455,10 @@ Module PowerSetLattice.
       }
       destruct (GreatestFixedPointOfMonotonicMaps (fun Z : ensemble A => F (MyUnion X Z)) claim9 nu0 claim5) as [claim10 claim11].
       assert (claim12 : nu0 =< F (MyUnion X nu0)) by now apply Poset_refl1.
-      assert (claim13 : nu0 =< PaCo F X).
-      { transitivity (F (MyUnion X nu0)).
-        - apply claim12.
-        - cofix CIH.
-          apply mkPaCo.
-          intros a [H | H]; [right | left; apply CIH, claim12]...
+      assert (claim13 : F (MyUnion X nu0) =< PaCo F X).
+      { cofix CIH.
+        apply mkPaCo.
+        intros a [H | H]; [right | left; apply CIH, claim12]...
       }
       assert (claim14 : Y =< PaCo F (MyUnion X Y)) by apply H_star.
       enough (therefore_we_can_conclude : Y =< PaCo F X)...
@@ -1492,8 +1486,7 @@ Module PowerSetLattice.
     split.
     - intros acc_hyp.
       apply (proj2 (PaCo_acc F F_mon Y X)), acc_hyp; intros a H; [left | right]...
-    - intros acc_con.
-      intros Z H H0.
+    - intros acc_con Z H H0.
       enough (it_is_sufficient_to_show : X =< (PaCo F Z)) by apply it_is_sufficient_to_show.
       transitivity (PaCo F (MyUnion Y X)).
       + apply (proj1 (PaCo_acc F F_mon Y X) acc_con).
