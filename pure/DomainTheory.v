@@ -878,9 +878,7 @@ Module ConstructiveDomainTheory.
         transitivity (proj1_sig f (or_plus (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x)) (proj1_sig G_f' (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))))).
         + apply (proj2_sig f).
           apply or_plus_le_iff.
-          split.
-          * transitivity (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))...
-          * transitivity (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))...
+          split; transitivity (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))...
         + apply Poset_refl2...
     }
     intros x.
@@ -1011,8 +1009,8 @@ Module ConstructiveDomainTheory.
     unfold isCompatibleFor, compose_m.
     simpl.
     intros b f1 f2 H H0 x.
+    assert (H1 := proj2_sig f1).
     transitivity (proj1_sig f1 (proj1_sig b (proj1_sig f2 x)))...
-    apply (proj2_sig f1)...
   Qed.
 
   Lemma supremum_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -1069,8 +1067,7 @@ Module ConstructiveDomainTheory.
       apply H1...
       apply (in_image f_i (fun f_i' : D >=> D => proj1_sig f_i' x))...
     }
-    intros x.
-    transitivity (sup_F_b x)...
+    intros x...
   Qed.
 
   Definition companion {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
@@ -1119,8 +1116,7 @@ Module ConstructiveDomainTheory.
     compose_m (companion b) (companion b) =< companion b.
   Proof with eauto with *.
     intros b.
-    apply companion_isTheGreatestCompatibleFunction.
-    apply compose_isCompatibleFor.
+    apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor.
     all: apply companion_isCompatibleFor.
   Qed.
 
@@ -1218,8 +1214,7 @@ Module ConstructiveDomainTheory.
     (proj1_sig bottom_exists, proj1_sig bottom_exists) =< p.
   Proof with eauto with *.
     intros p.
-    split; simpl.
-    all: apply (proj2_sig bottom_exists).
+    split; simpl; apply (proj2_sig bottom_exists).
   Qed.
 
   Lemma directed_subset_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
@@ -1230,7 +1225,7 @@ Module ConstructiveDomainTheory.
     intros X [[[x0 y0] H] H0].
     split.
     - split.
-      + exists x0.
+      + exists x0...
         apply (in_image (x0, y0) fst)...
       + intros p1 H1 p2 H2.
         inversion H1; subst.
@@ -1398,7 +1393,7 @@ Module PowerSetLattice.
     apply H5, H3...
   Qed.
 
-  Lemma PaCo_preseves_monotonicity :
+  Lemma PaCo_preserves_monotonicity :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     isMonotonicMap (PaCo F).
@@ -1415,7 +1410,7 @@ Module PowerSetLattice.
       + apply H1...
   Qed.
 
-  Lemma PaCo_init_aux :
+  Lemma PaCo_init :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     forall nu0 : ensemble A,
@@ -1450,7 +1445,7 @@ Module PowerSetLattice.
     apply Poset_asym...
   Qed.
 
-  Lemma PaCo_acc_aux :
+  Lemma PaCo_acc :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     forall X : ensemble A,
@@ -1460,16 +1455,13 @@ Module PowerSetLattice.
     intros F F_mon X Y.
     split.
     - intros H0.
-      assert (claim1 : X =< MyUnion X Y).
-      { intros a H1.
-        left...
-      }
-      assert (H1 := PaCo_preseves_monotonicity F F_mon X (MyUnion X Y) claim1).
-      intros a H2.
-      apply H1, H0...
+      assert (H1 : X =< MyUnion X Y) by now constructor 1.
+      assert (H2 := PaCo_preserves_monotonicity F F_mon X (MyUnion X Y) H1).
+      intros a H3.
+      apply H2, H0...
     - intros H_star.
       assert (claim1 := PaCo_unfold F F_mon (MyUnion X Y)).
-      assert (claim2 : isSubsetOf (F (or_plus (PaCo F (MyUnion X Y)) (MyUnion X Y))) (F (or_plus (PaCo F (MyUnion X Y)) (X)))).
+      assert (claim2 : isSubsetOf (F (or_plus (PaCo F (MyUnion X Y)) (MyUnion X Y))) (F (or_plus (PaCo F (MyUnion X Y)) X))).
       { apply F_mon.
         intros a H.
         apply in_union_iff in H.
@@ -1515,24 +1507,43 @@ Module PowerSetLattice.
           intros a [H | H]; [right | left; apply CIH, claim12]...
       }
       assert (claim14 : Y =< PaCo F (MyUnion X Y)) by apply H_star.
-      enough (therefore_we_can_conclude : Y =< PaCo F X) by apply therefore_we_can_conclude...
+      enough (therefore_we_can_conclude : Y =< PaCo F X)...
   Qed.
 
-  Theorem PaCo_acc :
+  Definition accPaCo : ensemble A -> (ensemble A -> ensemble A) -> ensemble A -> Prop :=
+    fun X : ensemble A =>
+    fun F : ensemble A -> ensemble A =>
+    fun Y : ensemble A =>
+    forall Z : ensemble A,
+    isSubsetOf Y Z ->
+    isSubsetOf X Z ->
+    isSubsetOf X (PaCo F Z)
+  .
+
+  Theorem accPaCo_iff :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     forall X : ensemble A,
     forall Y : ensemble A,
-    (forall Z : ensemble A, isSubsetOf Y Z -> isSubsetOf X Z -> isSubsetOf X (PaCo F Z)) ->
-    isSubsetOf X (PaCo F Y).
+    accPaCo X F Y <-> isSubsetOf X (PaCo F Y).
   Proof with eauto with *.
-    intros F H X Y acc_claim.
-    apply (proj2 (PaCo_acc_aux F H Y X)), acc_claim; intros a H1; [left | right]...
+    unfold accPaCo.
+    intros F F_mon X Y.
+    split.
+    - intros acc_hyp.
+      apply (proj2 (PaCo_acc F F_mon Y X)), acc_hyp; intros a H; [left | right]...
+    - intros acc_con.
+      intros Z H H0.
+      enough (it_is_sufficient_to_show : X =< (PaCo F Z)) by apply it_is_sufficient_to_show.
+      transitivity (PaCo F (MyUnion Y X)).
+      + apply (proj1 (PaCo_acc F F_mon Y X) acc_con).
+      + apply (PaCo_preserves_monotonicity F F_mon).
+        intros a [H1 | H1]; [apply H | apply H0]...
   Qed.
 
   Definition paco : (ensemble A >=> ensemble A) -> (ensemble A >=> ensemble A) :=
     fun F : ensemble A >=> ensemble A =>
-    exist isMonotonicMap (PaCo (proj1_sig F)) (PaCo_preseves_monotonicity (proj1_sig F) (proj2_sig F))
+    exist isMonotonicMap (PaCo (proj1_sig F)) (PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F))
   .
 
   Theorem paco_ParameterizedGreatestFixedpoint :
@@ -1551,14 +1562,13 @@ Module PowerSetLattice.
         * apply (PaCo_fold (proj1_sig F) (proj2_sig F) X).
     - intros X Y H.
       assert (claim1 : (proj1_sig (paco F) (or_plus X Y)) =< (PaCo (proj1_sig F) (MyUnion X Y))).
-      { apply (PaCo_preseves_monotonicity (proj1_sig F) (proj2_sig F) (or_plus X Y) (MyUnion X Y)). 
+      { apply (PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F) (or_plus X Y) (MyUnion X Y)). 
         intros a H0.
         apply in_union_iff in H0.
         destruct H0 as [H0 | H0]; [left | right]...
       }
-      apply PaCo_acc_aux.
-      + apply (proj2_sig F).
-      + enough (claim2 : Y =< (PaCo (proj1_sig F) (MyUnion X Y))) by apply claim2...
+      apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y)).
+      enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply claim2...
   Qed.
 
   End PACO.

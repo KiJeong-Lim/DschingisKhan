@@ -9,7 +9,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Global Create HintDb aczel_hint.
 
-Module Aczel. (* Thanks to Hanul Jeon *)
+Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Import BasicSetoidTheory BasicPosetTheory MyUtilities.
 
@@ -440,4 +440,4 @@ Module Aczel. (* Thanks to Hanul Jeon *)
     apply (IH key)...
   Qed.
 
-End Aczel.
+End ConstructiveSetTheory.
