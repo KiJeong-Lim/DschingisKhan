@@ -59,8 +59,7 @@ Module PosetTheory.
     assert (claim1 := fun x : D => proj1 (H x)).
     assert (claim2 := fun x : D => proj2 (H x)).
     split...
-    intros H1.
-    intros x.
+    intros H1 x.
     split.
     - intros H2 x' H3.
       apply H0...
@@ -99,8 +98,7 @@ Module PosetTheory.
     member X Xs ->
     member sup_X (image_sup Xs).
   Proof with eauto with *.
-    intros X sup_X H Xs H0.
-    exists X...
+    intros X sup_X H Xs H0...
   Qed.
 
   Global Hint Resolve sup_in_image_sup : my_hints.
@@ -115,8 +113,7 @@ Module PosetTheory.
     isSupremum sup_X X ->
     sup_X =< sup.
   Proof with eauto with *.
-    intros Xs sup H X H0 sup_X H1.
-    apply H...
+    intros Xs sup H X H0 sup_X H1...
   Qed.
 
   Global Hint Resolve sup_image_sup_isGreaterThan : my_hints.
@@ -131,20 +128,17 @@ Module PosetTheory.
     split.
     - intros H0 x.
       split.
-      + intros H1 x' [X [H2 H3]].
-        apply H3...
+      + intros H1 x' [X [H2 H3]]...
       + intros H1.
         apply H0.
         intros x' H2.
         inversion H2; subst.
-        destruct (H X H4) as [sup_xs H5].
-        apply H5...
+        destruct (H X H4) as [sup_xs H5]...
     - intros H0 x.
       split.
       + intros H1 x' H2.
         inversion H2; subst.
-        destruct (H X H4) as [sup_X H5].
-        apply H5...
+        destruct (H X H4) as [sup_X H5]...
       + intros H1.
         apply H0.
         intros x' [X [H2 H3]].
@@ -191,11 +185,8 @@ Module PosetTheory.
     intros X inf_X H d.
     split.
     - intros H0 x H1.
-      transitivity inf_X.
-      + apply H0.
-      + apply H...
-    - intros H0.
-      apply H...
+      transitivity inf_X; [apply H0 | apply H]...
+    - intros H0...
   Qed.
 
   Global Hint Resolve compute_Infimum : my_hints.
@@ -209,11 +200,8 @@ Module PosetTheory.
     intros X sup_X H d.
     split.
     - intros H0 x H1.
-      transitivity sup_X.
-      + apply H0.
-      + apply H...
-    - intros H0.
-      apply H0...
+      transitivity sup_X...
+    - intros H0...
   Qed.
 
   Definition prefixed_points {D : Type} `{D_isPoset : isPoset D} : (D -> D) -> ensemble D :=
@@ -551,8 +539,7 @@ Module ConstructiveDomainTheory.
       apply Poset_asym.
       + apply H1.
       + apply H0...
-    - intros fix_f H1.
-      apply H0...
+    - intros fix_f H1...
   Qed.
 
   Lemma GreatestFixedPointInCompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -636,7 +623,6 @@ Module ConstructiveDomainTheory.
     intros f x H.
     unfold nu.
     destruct (supremum_always_exists_in_CompleteLattice (fun x0 : D => x0 =< proj1_sig f x0)) as [gfp H0].
-    simpl.
     apply H0...
   Qed.
 
@@ -649,8 +635,7 @@ Module ConstructiveDomainTheory.
     destruct (proj2_sig (nu f)) as [H H0].
     assert (claim1 : forall x : D, proj1_sig f (proj1_sig (nu f)) =< proj1_sig f (or_plus x (proj1_sig (nu f)))).
     { intros x.
-      apply (proj2_sig f).
-      apply le_or_plus.
+      apply (proj2_sig f)...
     }
     intros x.
     split.
@@ -660,8 +645,7 @@ Module ConstructiveDomainTheory.
       enough (claim2 : or_plus x (proj1_sig (nu f)) =< proj1_sig f (or_plus x (proj1_sig (nu f)))).
       { transitivity (proj1_sig f (or_plus x (proj1_sig (nu f)))).
         - apply H1.
-        - apply PrincipleOfTarski.
-          apply (proj2_sig f)... 
+        - apply PrincipleOfTarski, (proj2_sig f)... 
       }
       apply or_plus_le_iff...
   Qed.
@@ -672,11 +656,7 @@ Module ConstructiveDomainTheory.
     isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)).
   Proof with eauto with *.
     intros f d x1 x2 H.
-    apply (proj2_sig f).
-    apply or_plus_le_iff.
-    split.
-    - apply le_or_plus.
-    - transitivity x2...
+    apply (proj2_sig f), or_plus_le_iff...
   Qed.
 
   Definition G_f {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D -> D) :=
@@ -702,9 +682,7 @@ Module ConstructiveDomainTheory.
     transitivity (proj1_sig f (or_plus x1 (G_f f x1))).
     - apply Poset_refl1...
     - apply (proj2_sig f).
-      transitivity (or_plus x2 (G_f f x1)).
-      + apply or_plus_le_iff...
-      + apply or_plus_le_iff...
+      transitivity (or_plus x2 (G_f f x1)); apply or_plus_le_iff...
   Qed.
 
   Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
@@ -721,11 +699,7 @@ Module ConstructiveDomainTheory.
     simpl.
     destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f1 (or_plus x y))) as [gfp1 H0].
     destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f2 (or_plus x y))) as [gfp2 H1].
-    simpl.
-    apply H0.
-    unfold member.
-    intros y H2.
-    apply H1...
+    apply H0...
   Qed.
 
   Definition bot {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : D :=
@@ -735,12 +709,11 @@ Module ConstructiveDomainTheory.
   Lemma bot_isBottom {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall x : D,
     bot =< x.
-  Proof.
+  Proof with easy.
     intros x.
     apply (proj2_sig (supremum_always_exists_in_CompleteLattice (finite []))).
     intros x' H.
-    inversion H; subst.
-    contradiction H0.
+    inversion H; subst...
   Qed.
 
   Global Hint Resolve bot_isBottom : my_hints.
@@ -763,8 +736,7 @@ Module ConstructiveDomainTheory.
       unfold member in *.
       transitivity (proj1_sig f (or_plus bot x)).
       + apply H1.
-      + apply (proj2_sig f).
-        apply or_plus_le_iff...
+      + apply (proj2_sig f), or_plus_le_iff...
     - apply H0.
       intros x H1.
       apply H...
@@ -785,9 +757,7 @@ Module ConstructiveDomainTheory.
     unfold G_f, nu.
     simpl.
     destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f (or_plus x y))) as [gfp1 H].
-    simpl.
-    assert (claim1 := GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x) gfp1 H).
-    apply claim1.
+    apply (GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))...
   Qed.
 
   Lemma accumulate_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -807,8 +777,7 @@ Module ConstructiveDomainTheory.
     - intros H.
       assert (claim1 : proj1_sig (ParameterizedGreatestFixedpoint f) (or_plus x y) == proj1_sig f (or_plus (or_plus x y) (G_f f (or_plus x y)))) by now apply unfold_cofixpoint.
       assert (claim2 : proj1_sig f (or_plus (or_plus x y) (G_f f (or_plus x y))) =< proj1_sig f (or_plus x (G_f f (or_plus x y)))).
-      { apply (proj2_sig f).
-        apply or_plus_le_iff.
+      { apply (proj2_sig f), or_plus_le_iff.
         split.
         - apply or_plus_le_iff...
         - apply le_or_plus.
@@ -847,9 +816,7 @@ Module ConstructiveDomainTheory.
     { transitivity (G_f f r2).
       - apply H0.
       - apply G_f_isMonotoinc.
-        transitivity (or_plus r g1).
-        + apply H2.
-        + apply or_plus_le_iff...
+        transitivity (or_plus r g1); [apply H2 | apply or_plus_le_iff]...
     }
     assert (H5 : or_plus g1 g2 =< G_f f (or_plus r (or_plus g1 g2))) by now apply or_plus_le_iff.
     apply accumulate_cofixpoint...
@@ -872,12 +839,10 @@ Module ConstructiveDomainTheory.
     assert (claim3 : forall x : D, proj1_sig (ParameterizedGreatestFixedpoint f) x =< proj1_sig G_f' (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))).
     { intros x.
       transitivity (proj1_sig f (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))).
-      - apply Poset_refl1.
-        apply unfold_cofixpoint.
+      - apply Poset_refl1, unfold_cofixpoint.
       - assert (H1 := H (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))).
         transitivity (proj1_sig f (or_plus (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x)) (proj1_sig G_f' (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))))).
-        + apply (proj2_sig f).
-          apply or_plus_le_iff.
+        + apply (proj2_sig f), or_plus_le_iff.
           split; transitivity (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x))...
         + apply Poset_refl2...
     }
@@ -922,8 +887,7 @@ Module ConstructiveDomainTheory.
     }
     assert (claim5 : q =< fix_f).
     { apply H0.
-      intros x [H1 H2].
-      apply H2.
+      intros x [H1 H2]...
     }
     assert (claim6 : fix_f == proj1_sig f fix_f).
     { apply Poset_asym.
@@ -940,7 +904,7 @@ Module ConstructiveDomainTheory.
       split.
       + intros H2 x' H3.
         transitivity q...
-      + intros H2.
+      + intros H2...
         apply H0...
         split...
         apply q_is_lub_of_W...
@@ -959,10 +923,7 @@ Module ConstructiveDomainTheory.
       simpl.
       intros H1.
       exists gfp.
-      split.
-      + apply H1.
-      + apply Poset_refl1.
-        apply H0.
+      split; [apply H1 | apply Poset_refl1, H0].
     - intros [gfp [H H0]].
       transitivity gfp.
       + apply H.
@@ -1116,8 +1077,7 @@ Module ConstructiveDomainTheory.
     compose_m (companion b) (companion b) =< companion b.
   Proof with eauto with *.
     intros b.
-    apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor.
-    all: apply companion_isCompatibleFor.
+    apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor; apply companion_isCompatibleFor.
   Qed.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
@@ -1153,16 +1113,16 @@ Module ConstructiveDomainTheory.
   . 
 
   Next Obligation with eauto with *.
-    split...
-    intros X H0 sup_X H1 H2.
-    destruct H0 as [[x H0] H3]...
+    split.
+    - firstorder.
+    - intros X [[x H0] H1] sup_X H2 H3...
   Qed.
 
   Next Obligation with eauto with *.
     split.
     - intros x y H1 H2.
       assert (H3 := proj1 (H0 x) H1).
-      rewrite in_unions_iff in H3.
+      apply in_unions_iff in H3.
       destruct H3 as [X [H3 H4]].
       assert (H5 := proj1 (H X H4) x y).
       apply H0, in_unions_iff...
