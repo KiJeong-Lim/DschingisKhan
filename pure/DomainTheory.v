@@ -1298,7 +1298,7 @@ Module ConstructiveDomainTheory.
 
 End ConstructiveDomainTheory.
 
-Module PowerSetCompleteLattice.
+Module PowerSetLattice.
 
   Import BasicSetoidTheory BasicPosetTheory MyEnsemble PosetTheory ConstructiveDomainTheory.
 
@@ -1346,6 +1346,19 @@ Module PowerSetCompleteLattice.
     fun a : A =>
     member a X \/ member a Y
   .
+
+  Lemma MyUnion_eq_or_plus :
+    forall X : ensemble A,
+    forall Y : ensemble A,
+    MyUnion X Y == or_plus X Y.
+  Proof with eauto with *.
+    intros X Y.
+    apply Poset_asym.
+    - intros a [H | H]; apply in_union_iff; [left | right]...
+    - intros a H.
+      apply in_union_iff in H.
+      destruct H as [H | H]; [left | right]...
+  Qed.
 
   CoInductive PaCo (F : ensemble A -> ensemble A) : ensemble A -> ensemble A :=
   | mkPaCo :
@@ -1402,7 +1415,7 @@ Module PowerSetCompleteLattice.
       + apply H1...
   Qed.
 
-  Lemma PaCo_init :
+  Lemma PaCo_init_aux :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     forall nu0 : ensemble A,
@@ -1437,7 +1450,7 @@ Module PowerSetCompleteLattice.
     apply Poset_asym...
   Qed.
 
-  Lemma PaCo_cofix :
+  Lemma PaCo_acc_aux :
     forall F : ensemble A -> ensemble A,
     isMonotonicMap F ->
     forall X : ensemble A,
@@ -1514,7 +1527,7 @@ Module PowerSetCompleteLattice.
     isSubsetOf X (PaCo F Y).
   Proof with eauto with *.
     intros F H X Y acc_claim.
-    apply (proj2 (PaCo_cofix F H Y X)), acc_claim; intros a H1; [left | right]...
+    apply (proj2 (PaCo_acc_aux F H Y X)), acc_claim; intros a H1; [left | right]...
   Qed.
 
   Definition paco : (ensemble A >=> ensemble A) -> (ensemble A >=> ensemble A) :=
@@ -1543,11 +1556,11 @@ Module PowerSetCompleteLattice.
         apply in_union_iff in H0.
         destruct H0 as [H0 | H0]; [left | right]...
       }
-      apply PaCo_cofix.
+      apply PaCo_acc_aux.
       + apply (proj2_sig F).
       + enough (claim2 : Y =< (PaCo (proj1_sig F) (MyUnion X Y))) by apply claim2...
   Qed.
 
   End PACO.
 
-End PowerSetCompleteLattice.
+End PowerSetLattice.
