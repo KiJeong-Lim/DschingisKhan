@@ -1351,38 +1351,34 @@ Module PowerSetLattice.
   Qed.
 
   Lemma PaCo_init :
-    forall F : ensemble A -> ensemble A,
-    isMonotonicMap F ->
-    forall nu0 : ensemble A,
-    isSupremum nu0 (postfixed_points F) ->
-    nu0 == PaCo F bot.
+    forall F : ensemble A >=> ensemble A,
+    proj1_sig (nu F) == PaCo (proj1_sig F) bot.
   Proof with eauto with *.
-    intros F H nu0 H0.
-    assert (H1 := PaCo_fold F H bot).
-    assert (H2 := PaCo_unfold F H bot).
-    assert (claim1 : PaCo F bot == F (PaCo F bot)).
+    intros F.
+    assert (claim1 := PaCo_fold (proj1_sig F) (proj2_sig F) bot).
+    assert (claim2 := PaCo_unfold (proj1_sig F) (proj2_sig F) bot).
+    assert (claim3 : PaCo (proj1_sig F) bot == proj1_sig F (PaCo (proj1_sig F) bot)).
     { apply Poset_asym.
-      - transitivity (F (or_plus (PaCo F bot) bot)).
-        + apply H2.
-        + apply (H (or_plus (PaCo F bot) bot)), or_plus_le_iff...
-      - transitivity (F (or_plus (PaCo F bot) bot)).
-        + apply (H (PaCo F bot))...
-        + apply H1.
+      - transitivity (proj1_sig F (or_plus (PaCo (proj1_sig F) bot) bot)).
+        + apply claim2.
+        + apply (proj2_sig F (or_plus (PaCo (proj1_sig F) bot) bot)), or_plus_le_iff...
+      - transitivity ((proj1_sig F) (or_plus (PaCo (proj1_sig F) bot) bot)).
+        + apply (proj2_sig F (PaCo (proj1_sig F) bot))...
+        + apply claim1.
     }
-    assert (claim2 := GreatestFixedPointOfMonotonicMaps F H nu0 H0).
-    assert (claim3 : F nu0 =< PaCo F bot).
+    assert (claim4 : isSupremum (proj1_sig (nu F)) (postfixed_points (proj1_sig F))).
+    { unfold nu.
+      destruct (supremum_always_exists_in_CompleteLattice (fun x : ensemble A => x =< proj1_sig F x)) as [gfp H]...
+    }
+    destruct (GreatestFixedPointOfMonotonicMaps (proj1_sig F) (proj2_sig F) (proj1_sig (nu F)) claim4) as [claim5 claim6].
+    assert (claim7 : proj1_sig F (proj1_sig (nu F)) =< PaCo (proj1_sig F) bot).
     { cofix CIH.
       apply mkPaCo.
-      intros a H3.
+      intros a H.
       left.
-      apply CIH, H0...
+      apply CIH, claim5...
     }
-    assert (claim4 : nu0 =< PaCo F bot).
-    { transitivity (F nu0).
-      - apply H0...
-      - apply claim3.
-    }
-    apply Poset_asym...
+    enough (therefore_we_can_conclude : proj1_sig (nu F) =< PaCo (proj1_sig F) bot)...
   Qed.
 
   Lemma PaCo_acc :
@@ -1414,12 +1410,17 @@ Module PowerSetLattice.
       }
       assert (claim4 : member (PaCo F (MyUnion X Y)) (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))).
       { intros a H.
-        apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim3), claim2... 
+        apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim3), claim2...
       }
-      destruct (supremum_always_exists_in_CompleteLattice (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))) as [nu0 claim5].
+      assert (claim5 : isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z))).
+      { intros X1 X2 H.
+        apply F_mon.
+        intros a [H0 | H0]; [left | right; apply H]...
+      }
+      set (nu0 := proj1_sig (nu (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5))).
       assert (tarski : forall Z : ensemble A, Z =< F (MyUnion X Z) -> Z =< nu0).
       { intros Z H.
-        apply claim5...
+        apply PrincipleOfTarski, H.
       }
       assert (claim6 : or_plus (PaCo F (MyUnion X Y)) X =< MyUnion X (PaCo F (MyUnion X Y))).
       { intros a H.
@@ -1431,12 +1432,11 @@ Module PowerSetLattice.
         apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim6), claim2, claim1...
       }
       assert (claim8 := tarski (PaCo F (MyUnion X Y)) claim7).
-      assert (claim9 : isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z))).
-      { intros X1 X2 H.
-        apply F_mon.
-        intros a [H0 | H0]; [left | right; apply H]...
+      assert (claim9 : isSupremum nu0 (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))).
+      { unfold nu0, nu.
+        destruct (supremum_always_exists_in_CompleteLattice (fun x : ensemble A => x =< proj1_sig (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5) x)) as [gfp H]...
       }
-      destruct (GreatestFixedPointOfMonotonicMaps (fun Z : ensemble A => F (MyUnion X Z)) claim9 nu0 claim5) as [claim10 claim11].
+      destruct (GreatestFixedPointOfMonotonicMaps (fun Z : ensemble A => F (MyUnion X Z)) claim5 nu0 claim9) as [claim10 claim11].
       assert (claim12 : nu0 =< F (MyUnion X nu0)) by now apply Poset_refl1.
       assert (claim13 : F (MyUnion X nu0) =< PaCo F X).
       { cofix CIH.
