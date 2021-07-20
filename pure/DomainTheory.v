@@ -286,7 +286,7 @@ Module PosetTheory.
     forall f : D -> D,
     isMonotonicMap f ->
     forall gfp : D,
-    isSupremum gfp (fun x : D => x =< f x) ->
+    isSupremum gfp (postfixed_points f) ->
     isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H gfp H0.
@@ -310,7 +310,7 @@ Module PosetTheory.
     member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
   .
 
-  Local Instance SubPoset' {D : Type} {P : D -> Prop} (D_requiresPoset : isPoset D) : isPoset (@sig D P) :=
+  Local Instance SubPoset0 {D : Type} {P : D -> Prop} (D_requiresPoset : isPoset D) : isPoset (@sig D P) :=
     SubPoset D_requiresPoset
   .
 
@@ -590,7 +590,7 @@ Module ConstructiveDomainTheory.
     split...
   Qed.
 
-  Lemma le_or_plus1 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma le_or_plus_intro1 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall x1 : D,
     forall x2 : D,
     x1 =< or_plus x1 x2.
@@ -598,9 +598,9 @@ Module ConstructiveDomainTheory.
     apply le_or_plus.
   Qed.
 
-  Global Hint Resolve le_or_plus1 : my_hints.
+  Global Hint Resolve le_or_plus_intro1 : my_hints.
 
-  Lemma le_or_plus2 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma le_or_plus_intro2 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall x1 : D,
     forall x2 : D,
     x2 =< or_plus x1 x2.
@@ -608,7 +608,7 @@ Module ConstructiveDomainTheory.
     apply le_or_plus.
   Qed.
 
-  Global Hint Resolve le_or_plus2 : my_hints.
+  Global Hint Resolve le_or_plus_intro2 : my_hints.
 
   Lemma or_plus_le_iff {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall x1 : D,
@@ -1297,3 +1297,270 @@ Module ConstructiveDomainTheory.
   .
 
 End ConstructiveDomainTheory.
+
+Module DomainTheoryInstance.
+
+  Import BasicSetoidTheory BasicPosetTheory MyEnsemble PosetTheory ConstructiveDomainTheory.
+
+  Section PACO.
+
+  Context {A : Type}.
+
+  Instance ensemble_isPoset : isPoset (ensemble A) :=
+    arrow_isPoset Prop_isPoset
+  .
+
+  Lemma unions_isSupremum :
+    forall Xs : ensemble (ensemble A),
+    isSupremum (unions Xs) Xs.
+  Proof with eauto with *.
+    intros Xs X.
+    split.
+    - intros H X_i H0 x H1.
+      assert (H2 : exists X : ensemble A, member x X /\ member X Xs) by firstorder.
+      assert (H3 := proj2 (in_unions_iff x Xs) H2).
+      apply H...
+    - intros H x H0.
+      destruct (proj1 (in_unions_iff x Xs) H0) as [X_i [H1 H2]].
+      apply (H X_i H2)...
+  Qed.
+
+  Instance ensemble_isCompleteLattice : isCompleteLattice ensemble_isPoset :=
+    { supremum_always_exists_in_CompleteLattice :=
+      fun Xs : ensemble (ensemble A) =>
+      exist _ (unions Xs) (unions_isSupremum Xs)
+    }
+  .
+
+  Lemma isSubsetOf_le :
+    forall X : ensemble A,
+    forall Y : ensemble A,
+    X =< Y <-> isSubsetOf X Y.
+  Proof with eauto with *.
+    intros X Y.
+    split.
+    all: intros H a H0; apply H...
+  Qed.
+
+  Local Hint Resolve isSubsetOf_le : my_hints.
+
+  Let MyUnion : ensemble A -> ensemble A -> ensemble A :=
+    fun X : ensemble A =>
+    fun Y : ensemble A =>
+    fun a : A =>
+    member a X \/ member a Y
+  .
+
+  CoInductive PaCo (F : ensemble A -> ensemble A) : ensemble A -> ensemble A :=
+  | mkPaCo : 
+    forall X : ensemble A,
+    forall Y : ensemble A,
+    isSubsetOf X (MyUnion (PaCo F Y) Y) ->
+    isSubsetOf (F X) (PaCo F Y)
+  .
+
+  Local Hint Constructors PaCo : core.
+
+  Lemma PaCo_fold :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    forall Y : ensemble A,
+    isSubsetOf (F (or_plus (PaCo F Y) Y)) (PaCo F Y).
+  Proof with eauto with *.
+    intros F H Y.
+    cofix CIH.
+    apply mkPaCo.
+    intros a H0.
+    apply in_union_iff in H0...
+  Qed.
+
+  Lemma PaCo_unfold :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    forall Y : ensemble A,
+    isSubsetOf (PaCo F Y) (F (or_plus (PaCo F Y) Y)).
+  Proof with eauto with *.
+    intros F H Y a H0.
+    inversion H0; subst.
+    assert (H3 : isSubsetOf (F X) (F (MyUnion (PaCo F Y) Y))) by now apply (H X (MyUnion (PaCo F Y) Y)).
+    assert (H4 : isSubsetOf (MyUnion (PaCo F Y) Y) (or_plus (PaCo F Y) Y)).
+    { intros a' H'.
+      apply in_union_iff in H'...
+    }
+    assert (H5 := H (MyUnion (PaCo F Y) Y) (or_plus (PaCo F Y) Y) H4).
+    apply (H5 a), H3...
+  Qed.
+
+  Lemma Paco_preseves_monotonicity :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    isMonotonicMap (PaCo F).
+  Proof with eauto with *.
+    intros F H X1 X2 H0.
+    assert (H1 := PaCo_unfold F H X1).
+    cofix CIH.
+    intros a H2.
+    apply (mkPaCo F (MyUnion (PaCo F X1) X1) X2).
+    - intros a' [H2' | H2'].
+      + left.
+        apply CIH...
+      + right.
+        apply H0...
+    - apply (H (or_plus (PaCo F X1) X1)).
+      + apply or_plus_le_iff.
+        split.
+        * intros a' H2'.
+          left...
+        * intros a' H2'.
+          right...
+      + apply H1...
+  Qed.
+
+  Lemma PaCo_init :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    forall nu_F : ensemble A,
+    isSupremum nu_F (postfixed_points F) ->
+    nu_F == PaCo F bot.
+  Proof with eauto with *.
+    intros F H nu_F H0.
+    assert (H1 := PaCo_fold F H bot).
+    assert (H2 := PaCo_unfold F H bot).
+    assert (claim1 : PaCo F bot == F (PaCo F bot)).
+    { apply Poset_asym.
+      - transitivity (F (or_plus (PaCo F bot) bot)).
+        + apply H2.
+        + apply (H (or_plus (PaCo F bot) bot)), or_plus_le_iff...
+      - transitivity (F (or_plus (PaCo F bot) bot)).
+        + apply (H (PaCo F bot))...
+        + apply H1.
+    }
+    assert (claim2 := GreatestFixedPointOfMonotonicMaps F H nu_F H0).
+    assert (claim3 : F nu_F =< PaCo F bot).
+    { cofix CIH.
+      apply mkPaCo.
+      intros a H3.
+      left.
+      apply CIH, H0...
+    }
+    assert (claim4 : nu_F =< PaCo F bot).
+    { transitivity (F nu_F).
+      - apply H0...
+      - apply claim3.
+    }
+    apply Poset_asym...
+  Qed.
+
+  Lemma PaCo_cofix :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    forall X : ensemble A,
+    forall Y : ensemble A,
+    isSubsetOf Y (PaCo F X) <-> isSubsetOf Y (PaCo F (MyUnion X Y)).
+  Proof with eauto with *.
+    intros F F_mon X Y.
+    split.
+    - intros H0.
+      assert (claim1 : X =< MyUnion X Y).
+      { intros a H1.
+        left...
+      }
+      assert (H1 := Paco_preseves_monotonicity F F_mon X (MyUnion X Y) claim1).
+      intros a H2.
+      apply H1, H0...
+    - intros H_star.
+      assert (claim1 := PaCo_unfold F F_mon (MyUnion X Y)).
+      assert (claim2 : isSubsetOf (F (or_plus (PaCo F (MyUnion X Y)) (MyUnion X Y))) (F (or_plus (PaCo F (MyUnion X Y)) (X)))).
+      { apply F_mon.
+        intros a H.
+        apply in_union_iff in H.
+        apply in_union_iff.
+        destruct H as [H | [H | H]].
+        - left...
+        - right...
+        - left... 
+      }
+      assert (claim3 : or_plus (PaCo F (MyUnion X Y)) X =< MyUnion X (PaCo F (MyUnion X Y))).
+      { intros a H.
+        apply in_union_iff in H.
+        destruct H as [H | H]; [right | left]...
+      }
+      assert (claim4 : member (PaCo F (MyUnion X Y)) (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))).
+      { intros a H.
+        apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim3), claim2... 
+      }
+      destruct (supremum_always_exists_in_CompleteLattice (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))) as [nu_F claim5].
+      assert (tarski : forall Z : ensemble A, Z =< F (MyUnion X Z) -> Z =< nu_F).
+      { intros Z H.
+        apply claim5...
+      }
+      assert (claim6 : or_plus (PaCo F (MyUnion X Y)) X =< MyUnion X (PaCo F (MyUnion X Y))).
+      { intros a H.
+        apply in_union_iff in H.
+        destruct H as [H | H].
+        - right...
+        - left...
+      }
+      assert (claim7 : PaCo F (MyUnion X Y) =< F (MyUnion X (PaCo F (MyUnion X Y)))).
+      { intros a H.
+        apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim6), claim2, claim1...
+      }
+      assert (claim8 := tarski (PaCo F (MyUnion X Y)) claim7).
+      assert (claim9 : isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z))).
+      { intros X1 X2 H.
+        apply F_mon.
+        intros a [H0 | H0].
+        - left...
+        - right.
+          apply H...
+      }
+      destruct (GreatestFixedPointOfMonotonicMaps (fun Z : ensemble A => F (MyUnion X Z)) claim9 nu_F claim5) as [claim10 claim11].
+      assert (claim12 : nu_F =< F (MyUnion X nu_F)) by now apply Poset_refl1.
+      assert (claim13 : nu_F =< PaCo F X).
+      { transitivity (F (MyUnion X nu_F)).
+        - apply claim12.
+        - cofix CIH.
+          apply mkPaCo.
+          intros a [H | H].
+          + right...
+          + left.
+            apply CIH.
+            apply claim12...
+      }
+      assert (claim14 : nu_F == PaCo F X).
+      { apply Poset_asym.
+        - apply claim13.
+        - apply tarski.
+          transitivity (F (or_plus (PaCo F X) X)).
+          + apply PaCo_unfold...
+          + apply F_mon, or_plus_le_iff.
+            split.
+            * intros a H.
+              right...
+            * intros a H.
+              left...
+      }
+      assert (claim15 : Y =< PaCo F (MyUnion X Y)) by apply H_star.
+      enough (claim16 : Y =< PaCo F X) by apply claim16.
+      transitivity (F (MyUnion X nu_F))...
+  Qed.
+
+  Theorem PaCo_acc :
+    forall F : ensemble A -> ensemble A,
+    isMonotonicMap F ->
+    forall X : ensemble A,
+    forall Y : ensemble A,
+    (forall Z : ensemble A, isSubsetOf Y Z -> isSubsetOf X Z -> isSubsetOf X (PaCo F Z)) ->
+    isSubsetOf X (PaCo F Y).
+  Proof with eauto with *.
+    intros F H X Y acc_claim.
+    apply (proj2 (PaCo_cofix F H Y X)), acc_claim.
+    - intros a H1.
+      left...
+    - intros a H1.
+      right...
+  Qed.
+
+  End PACO.
+
+End DomainTheoryInstance.

@@ -371,7 +371,7 @@ Module Aczel. (* Thanks to Hanul Jeon *)
 
   Global Hint Resolve in_unions_iff : aczel_hint.
 
-  Lemma claim_for_strong_collection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
+  Lemma claim_for_StrongCollection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
     forall psi : AczelSet -> AczelSet -> Prop,
     (forall X : AczelSet, forall y : AczelSet, elem y (build psi X) <-> (exists x : AczelSet, elem x X /\ psi x y)) ->
     forall X : AczelSet,

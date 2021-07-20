@@ -19,6 +19,20 @@ Module MyUtilities.
     end
   .
 
+  Lemma strong_induction (P : nat -> Prop) :
+    (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
+    forall l : nat,
+    P l.
+  Proof with try lia.
+    intros ind_claim l.
+    apply ind_claim.
+    induction l...
+    intros m H.
+    apply ind_claim.
+    intros n H0.
+    apply IHl...
+  Qed.
+
   Lemma div_mod_uniqueness :
     forall a : nat,
     forall b : nat,

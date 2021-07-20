@@ -429,7 +429,7 @@ Module ClassicalDomainTheory.
 
   Local Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@SubPoset (D -> D') isContinuousMap (arrow_isPoset D'_isPoset)) :=
     { bottom_exists :=
-      exist _ bot_of_squigs bot_of_squigs_isBottom
+    exist _ bot_of_squigs bot_of_squigs_isBottom
     ; square_up_exists :=
       fun F : ensemble (D ~> D') =>
       fun F_isDirected : isDirected F =>
