@@ -1418,10 +1418,6 @@ Module PowerSetLattice.
         intros a [H0 | H0]; [left | right; apply H]...
       }
       set (nu0 := proj1_sig (nu (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5))).
-      assert (tarski : forall Z : ensemble A, Z =< F (MyUnion X Z) -> Z =< nu0).
-      { intros Z H.
-        apply PrincipleOfTarski, H.
-      }
       assert (claim6 : or_plus (PaCo F (MyUnion X Y)) X =< MyUnion X (PaCo F (MyUnion X Y))).
       { intros a H.
         apply in_union_iff in H.
@@ -1431,7 +1427,7 @@ Module PowerSetLattice.
       { intros a H.
         apply (F_mon (or_plus (PaCo F (MyUnion X Y)) X) _ claim6), claim2, claim1...
       }
-      assert (claim8 := tarski (PaCo F (MyUnion X Y)) claim7).
+      assert (claim8 : PaCo F (MyUnion X Y) =< nu0) by now apply PrincipleOfTarski.
       assert (claim9 : isSupremum nu0 (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))).
       { unfold nu0, nu.
         destruct (supremum_always_exists_in_CompleteLattice (fun x : ensemble A => x =< proj1_sig (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5) x)) as [gfp H]...
