@@ -1242,14 +1242,6 @@ Module PowerSetLattice.
     arrow_isPoset Prop_isPoset
   .
 
-  Lemma isSubsetOf_le {A : Type} :
-    forall X : ensemble A,
-    forall Y : ensemble A,
-    (X =< Y) = (isSubsetOf X Y).
-  Proof with eauto with *.
-    reflexivity.
-  Qed.
-
   Lemma unions_isSupremum {A : Type} :
     forall Xs : ensemble (ensemble A),
     isSupremum (unions Xs) Xs.
@@ -1468,7 +1460,7 @@ Module PowerSetLattice.
     - intros acc_con Z H H0.
       enough (it_is_sufficient_to_show : X =< (PaCo F Z)) by apply it_is_sufficient_to_show.
       transitivity (PaCo F (MyUnion Y X)).
-      + apply (proj1 (PaCo_acc F F_mon Y X) acc_con).
+      + apply (proj1 (PaCo_acc F F_mon Y X))...
       + apply (PaCo_preserves_monotonicity F F_mon).
         intros a [H1 | H1]; [apply H | apply H0]...
   Qed.
@@ -1478,7 +1470,7 @@ Module PowerSetLattice.
     exist isMonotonicMap (PaCo (proj1_sig F)) (PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F))
   .
 
-  Theorem paco_ParameterizedGreatestFixedpoint :
+  Theorem paco_is :
     forall F : ensemble A >=> ensemble A,
     paco F == ParameterizedGreatestFixedpoint F.
   Proof with eauto with *.

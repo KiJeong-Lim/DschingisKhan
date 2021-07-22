@@ -257,6 +257,8 @@ End BasicPosetTheory.
 
 Module MyEnsemble.
 
+  Import BasicSetoidTheory.
+
   Definition ensemble : Type -> Type :=
     fun A : Type =>
     arrow A Prop
@@ -482,6 +484,18 @@ Module MyEnsemble.
   .
 
   Global Hint Unfold isSubsetOf : my_hints.
+
+  Global Instance isSubsetOf_PreOrder {A : Type} :
+    PreOrder (@isSubsetOf A).
+  Proof with eauto with *.
+    split...
+  Qed.
+
+  Global Instance isSubsetOf_PartialOrder {A : Type} :
+    PartialOrder (@eqProp (ensemble A) (arrow_isSetoid Prop_isSetoid)) (@isSubsetOf A).
+  Proof with firstorder.
+    intros X1 X2...
+  Qed.
 
   Definition nonempty {A : Type} : ensemble A -> Prop :=
     fun X : ensemble A =>

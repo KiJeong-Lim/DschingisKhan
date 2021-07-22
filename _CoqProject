@@ -8,3 +8,5 @@ pure/SetTheory.v
 
 classical/MyAxioms.v
 classical/DomainTheory.v
+
+app/PaCo.v
