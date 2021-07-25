@@ -217,6 +217,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     PartialOrder ext_eq subseteq.
   Proof with eauto with *.
     assert (claim1 : forall X : AczelSet, forall Y : AczelSet, (subseteq X Y /\ subseteq Y X) <-> (forall Z : AczelSet, elem Z X <-> elem Z Y)) by firstorder.
+    intros x1 x2.
     split; unfold relation_conjunction, flip, predicate_intersection, pointwise_extension.
     - intros H.
       apply claim1...

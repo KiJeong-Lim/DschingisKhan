@@ -274,7 +274,7 @@ Module MyEnsemble.
 
   Global Notation " X1 '\subseteq' X2 " := (forall x : _, member x X1 -> member x X2) (at level 70, no associativity) : type_scope.
 
-  Inductive finite {A : Type} : list A -> ensemble A :=
+  Variant finite {A : Type} : list A -> ensemble A :=
   | in_finite {xs : list A} :
     forall x : A,
     In x xs ->
@@ -336,7 +336,7 @@ Module MyEnsemble.
 
   Global Hint Resolve in_finite_iff : my_hints.
 
-  Inductive unions {A : Type} : ensemble (ensemble A) -> ensemble A :=
+  Variant unions {A : Type} : ensemble (ensemble A) -> ensemble A :=
   | in_unions {Xs : ensemble (ensemble A)} :
     forall x : A,
     forall X : ensemble A,
@@ -396,7 +396,7 @@ Module MyEnsemble.
 
   Global Hint Resolve in_union_iff : my_hints.
 
-  Inductive intersection {A : Type} : ensemble A -> ensemble A -> ensemble A :=
+  Variant intersection {A : Type} : ensemble A -> ensemble A -> ensemble A :=
   | in_intersection {X1 : ensemble A} {X2 : ensemble A} :
     forall x : A,
     x \in X1 ->
@@ -424,7 +424,7 @@ Module MyEnsemble.
 
   Global Hint Resolve in_intersection_iff : my_hints.
 
-  Inductive image {A : Type} {B : Type} : (A -> B) -> ensemble A -> ensemble B :=
+  Variant image {A : Type} {B : Type} : (A -> B) -> ensemble A -> ensemble B :=
   | in_image {X : ensemble A} :
     forall x : A,
     forall f : A -> B,
@@ -453,7 +453,7 @@ Module MyEnsemble.
 
   Global Hint Resolve in_image_iff : my_hints.
 
-  Inductive preimage {A : Type} {B : Type} : (A -> B) -> ensemble B -> ensemble A :=
+  Variant preimage {A : Type} {B : Type} : (A -> B) -> ensemble B -> ensemble A :=
   | in_preimage {Y : ensemble B} :
     forall x : A,
     forall f : A -> B,

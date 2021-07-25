@@ -408,8 +408,7 @@ Module ClassicalDomainTheory.
       apply (in_preimage x2 (fun _ : D => proj1_sig bottom_exists))...
     - intros X [[x_0 H1] H2] sup_X H3 H4.
       inversion H4; subst.
-      exists x_0.
-      constructor...
+      exists x_0...
   Qed.
 
   Definition bot_of_squigs {D : Type} {D' : Type} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : D ~> D' :=
@@ -423,8 +422,7 @@ Module ClassicalDomainTheory.
     unfold bot_of_squigs.
     intros f x.
     simpl.
-    destruct bottom_exists as [bot_D' H].
-    simpl...
+    destruct bottom_exists as [bot_D' H]...
   Qed.
 
   Local Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@SubPoset (D -> D') isContinuousMap (arrow_isPoset D'_isPoset)) :=
@@ -576,7 +574,7 @@ Module ClassicalDomainTheory.
         transitivity (proj1_sig f (sup_X1', x2)).
         - symmetry...
         - apply MonotonicMap_preservesSetoid.
-          + apply (proj2_sig f).
+          + membership.
           + split.
             * apply (isSupremum_unique X1)...
             * apply Setoid_refl.
@@ -621,10 +619,8 @@ Module ClassicalDomainTheory.
           + apply H3.
           + destruct x as [x1 x2].
             apply (in_unions _ (image (fun x1' : D1 => proj1_sig f (x1', x2)) X1)).
-            * apply (in_image _ (fun x1' : D1 => proj1_sig f (x1', x2))).
-              apply (in_image (x1, x2) fst)...
-            * apply (in_image _ (fun x0 : D2 => image (fun x3 : D1 => proj1_sig f (x3, x0)) X1)).
-              apply (in_image (x1, x2) snd)...
+            * apply (in_image _ (fun x1' : D1 => proj1_sig f (x1', x2))), (in_image (x1, x2) fst)...
+            * apply (in_image _ (fun x0 : D2 => image (fun x3 : D1 => proj1_sig f (x3, x0)) X1)), (in_image (x1, x2) snd)...
         - intros H3.
           apply claim10.
           intros y' H4.
@@ -699,38 +695,36 @@ Module ClassicalDomainTheory.
         }
         assert (claim3 : proj1_sig f (x1, sup_X2) == proj1_sig f sup_X).
         { apply MonotonicMap_preservesSetoid.
-          - apply (proj2_sig f).
+          - membership.
           - apply claim2.
         }
         assert (XXX : exists sup_X' : D1 * D2, exists sup_Y' : D3, isSupremum sup_X' X /\ isSupremum sup_Y' (image (proj1_sig f) X) /\ proj1_sig f sup_X' == sup_Y') by now apply the_main_reason_for_introducing_ScottTopology.
         destruct XXX as [sup_X' [sup_Y' [H3 [H4 H5]]]].
-        assert (claim4 : isSupremum (proj1_sig f sup_X) Y).
-        { assert (H6 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X) <-> sup_Y' == proj1_sig f sup_X) by now apply (isSupremum_unique (image (proj1_sig f) X)).
-          assert (H7 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X)).
-          { apply H6.
-            transitivity (proj1_sig f sup_X').
-            - symmetry...
-            - enough (H7 : sup_X' == sup_X).
-              + apply MonotonicMap_preservesSetoid.
-                * apply (proj2_sig f).
-                * apply H7.
-              + apply (isSupremum_unique X)...
-          }
-          assert (H8 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
-          { intros y.
-            split.
-            - intros H8.
-              inversion H8; subst.
-              inversion H9; subst.
-              rename x0 into x2.
-              apply (in_image _ (fun x2 : D2 => proj1_sig f (x1, x2)))...
-            - intros H8.
-              inversion H8; subst.
-              rename x into x2.
-              apply (in_image _ (proj1_sig f))...
-          }
-          apply (proj2 (isSupremum_ext _ _ H8 _ H7 _) (Setoid_refl _)).
+        assert (claim4 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X) <-> sup_Y' == proj1_sig f sup_X) by now apply (isSupremum_unique (image (proj1_sig f) X)).
+        assert (claim5 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X)).
+        { apply claim4.
+          transitivity (proj1_sig f sup_X').
+          - symmetry...
+          - enough (H6 : sup_X' == sup_X).
+            + apply MonotonicMap_preservesSetoid.
+              * membership.
+              * apply H6.
+            + apply (isSupremum_unique X)...
         }
+        assert (claim6 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
+        { intros y.
+          split.
+          - intros H6.
+            inversion H6; subst.
+            inversion H7; subst.
+            rename x0 into x2.
+            apply (in_image _ (fun x2 : D2 => proj1_sig f (x1, x2)))...
+          - intros H6.
+            inversion H6; subst.
+            rename x into x2.
+            apply (in_image _ (proj1_sig f))...
+        }
+        assert (claim7 : isSupremum (proj1_sig f sup_X) Y) by apply (proj2 (isSupremum_ext _ _ claim6 _ claim5 _) (Setoid_refl _)).
         exists sup_X2, (proj1_sig f sup_X)...
       + intros x2.
         apply (the_main_reason_for_introducing_ScottTopology (exist _ (fun x1 : D1 => proj1_sig f (x1, x2)) (XXX2 x2))).
@@ -774,38 +768,36 @@ Module ClassicalDomainTheory.
         }
         assert (claim3 : proj1_sig f (sup_X1, x2) == proj1_sig f sup_X).
         { apply MonotonicMap_preservesSetoid.
-          - apply (proj2_sig f).
+          - membership.
           - apply claim2.
         }
         assert (XXX : exists sup_X' : D1 * D2, exists sup_Y' : D3, isSupremum sup_X' X /\ isSupremum sup_Y' (image (proj1_sig f) X) /\ proj1_sig f sup_X' == sup_Y') by now apply the_main_reason_for_introducing_ScottTopology.
         destruct XXX as [sup_X' [sup_Y' [H3 [H4 H5]]]].
-        assert (claim4 : isSupremum (proj1_sig f sup_X) Y).
-        { assert (H6 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X) <-> sup_Y' == proj1_sig f sup_X) by now apply (isSupremum_unique (image (proj1_sig f) X)).
-          assert (H7 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X)).
-          { apply H6.
-            transitivity (proj1_sig f sup_X').
-            - symmetry...
-            - enough (H7 : sup_X' == sup_X).
-              + apply MonotonicMap_preservesSetoid.
-                * apply (proj2_sig f).
-                * apply H7.
-              + apply (isSupremum_unique X)...
-          }
-          assert (H8 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
-          { intros y.
-            split.
-            - intros H8.
-              inversion H8; subst.
-              inversion H9; subst.
-              rename x0 into x1.
-              apply (in_image _ (fun x1 : D1 => proj1_sig f (x1, x2)))...
-            - intros H8.
-              inversion H8; subst.
-              rename x into x1.
-              apply (in_image _ (proj1_sig f))...
-          }
-          apply (proj2 (isSupremum_ext _ _ H8 _ H7 _) (Setoid_refl _)).
+        assert (claim4 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X) <-> sup_Y' == proj1_sig f sup_X) by now apply (isSupremum_unique (image (proj1_sig f) X)).
+        assert (claim5 : isSupremum (proj1_sig f sup_X) (image (proj1_sig f) X)).
+        { apply claim4.
+          transitivity (proj1_sig f sup_X').
+          - symmetry...
+          - enough (H6 : sup_X' == sup_X).
+            + apply MonotonicMap_preservesSetoid.
+              * membership.
+              * apply H6.
+            + apply (isSupremum_unique X)...
         }
+        assert (claim6 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
+        { intros y.
+          split.
+          - intros H6.
+            inversion H6; subst.
+            inversion H7; subst.
+            rename x0 into x1.
+            apply (in_image _ (fun x1 : D1 => proj1_sig f (x1, x2)))...
+          - intros H6.
+            inversion H6; subst.
+            rename x into x1.
+            apply (in_image _ (proj1_sig f))...
+        }
+        assert (claim7 : isSupremum (proj1_sig f sup_X) Y) by apply (proj2 (isSupremum_ext _ _ claim6 _ claim5 _) (Setoid_refl _)).
         exists sup_X1, (proj1_sig f sup_X)...
   Qed.
 
@@ -816,7 +808,7 @@ Module ClassicalDomainTheory.
     simpl in *.
     transitivity (proj1_sig f1 x2).
     - apply ContinuousMapOnCpos_isMonotonic.
-      + apply (proj2_sig f1).
+      + membership.
       + apply H0.
     - apply H.
   Qed.
