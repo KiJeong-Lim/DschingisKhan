@@ -298,6 +298,8 @@ Module MyEnsemble.
       econstructor...
   Qed.
 
+  Global Hint Resolve in_empty_iff : my_hints.
+
   Global Notation " '\left\{' x1 '\right\}' " := (finite (cons x1 nil)) (at level 0) : type_scope.
 
   Lemma in_singleton_iff {A : Type} :
@@ -315,6 +317,8 @@ Module MyEnsemble.
       simpl...
   Qed.
 
+  Global Hint Resolve in_singleton_iff : my_hints.
+
   Global Notation " '\left\{' x1 , x2 , .. , xn '\right\}' " := (finite (cons x1 (cons x2 .. (cons xn nil) ..))) (at level 0) : type_scope.
 
   Lemma in_finite_iff {A : Type} :
@@ -329,6 +333,8 @@ Module MyEnsemble.
     - intros H.
       econstructor...
   Qed.
+
+  Global Hint Resolve in_finite_iff : my_hints.
 
   Inductive unions {A : Type} : ensemble (ensemble A) -> ensemble A :=
   | in_unions {Xs : ensemble (ensemble A)} :
@@ -355,6 +361,8 @@ Module MyEnsemble.
     - intros [X [H H0]].
       econstructor...
   Qed.
+
+  Global Hint Resolve in_unions_iff : my_hints.
 
   Definition union {A : Type} : ensemble A -> ensemble A -> ensemble A :=
     fun X1 : ensemble A =>
@@ -386,6 +394,8 @@ Module MyEnsemble.
         simpl...
   Qed.
 
+  Global Hint Resolve in_union_iff : my_hints.
+
   Inductive intersection {A : Type} : ensemble A -> ensemble A -> ensemble A :=
   | in_intersection {X1 : ensemble A} {X2 : ensemble A} :
     forall x : A,
@@ -411,6 +421,8 @@ Module MyEnsemble.
     - intros [H H0].
       econstructor...
   Qed.
+
+  Global Hint Resolve in_intersection_iff : my_hints.
 
   Inductive image {A : Type} {B : Type} : (A -> B) -> ensemble A -> ensemble B :=
   | in_image {X : ensemble A} :
@@ -439,6 +451,8 @@ Module MyEnsemble.
       econstructor...
   Qed.
 
+  Global Hint Resolve in_image_iff : my_hints.
+
   Inductive preimage {A : Type} {B : Type} : (A -> B) -> ensemble B -> ensemble A :=
   | in_preimage {Y : ensemble B} :
     forall x : A,
@@ -464,6 +478,8 @@ Module MyEnsemble.
     - intros H.
       econstructor...
   Qed.
+
+  Global Hint Resolve in_preimage_iff : my_hints.
 
   Global Ltac membership :=
     let claim := fresh "H" in
@@ -533,6 +549,12 @@ Module BasicTopology.
     }
   .
 
+  Global Hint Resolve open_full : my_hints.
+
+  Global Hint Resolve open_unions : my_hints.
+
+  Global Hint Resolve open_intersection : my_hints.
+
   Definition isContinuousMap {A : Type} {B : Type} `{A_isTopologicalSpace : isTopologicalSpace A} `{B_isTopologicalSpace : isTopologicalSpace B} : (A -> B) -> Prop :=
     fun f : A -> B =>
     forall ys : ensemble B,
@@ -553,11 +575,7 @@ Module BasicTopology.
 
   Next Obligation with eauto with *.
     exists (fun x : A => x = x).
-    split.
-    - apply open_full.
-      reflexivity.
-    - intros x.
-      split...
+    split...
   Qed.
 
   Next Obligation with eauto with *.

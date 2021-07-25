@@ -284,11 +284,8 @@ Module PosetTheory.
         intros x H1.
         transitivity (f x)...
       }
-      apply Poset_asym.
-      + apply H1.
-      + apply H0...
-    - intros fix_f H1.
-      apply H0...
+      apply Poset_asym...
+    - intros fix_f H1...
   Qed.
 
   Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
@@ -319,7 +316,7 @@ Module PosetTheory.
         apply H0.
         * membership.
         * intros x H2.
-          rewrite in_image_iff in H2.
+          apply in_image_iff in H2.
           destruct H2 as [x' [H2 H3]].
           rewrite H2.
           enough (H4 : x' =< d) by apply H4...
@@ -331,7 +328,7 @@ Module PosetTheory.
         assert (H1 : sup_X =< d' <-> (forall x' : @sig D P, member x' X -> x' =< d')) by apply H.
         split.
         * intros H2 x H3.
-          rewrite in_image_iff in H3.
+          apply in_image_iff in H3.
           destruct H3 as [x' [H3 H4]].
           rewrite H3.
           enough (H5 : x' =< d') by apply H5...
@@ -618,7 +615,8 @@ Module ConstructiveDomainTheory.
   Lemma PrincipleOfTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
     forall f : D >=> D,
     forall x : D,
-    x =< proj1_sig f x -> x =< proj1_sig (nu f).
+    x =< proj1_sig f x ->
+    x =< proj1_sig (nu f).
   Proof with eauto with *.
     intros f x H.
     unfold nu.
@@ -1154,7 +1152,7 @@ Module ConstructiveDomainTheory.
     forall p : D * D',
     (proj1_sig bottom_exists, proj1_sig bottom_exists) =< p.
   Proof with eauto with *.
-    intros p.
+    intros [x y].
     split; simpl; apply (proj2_sig bottom_exists).
   Qed.
 

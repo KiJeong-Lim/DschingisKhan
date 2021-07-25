@@ -146,7 +146,7 @@ Module MyUtilities.
         inversion H1; subst...
       + intros x H.
         enough (H0 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)).
-        { assert (H1 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl...
+        { assert (H1 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl.
           simpl.
           rewrite H1, <- H0...
         }
@@ -217,7 +217,7 @@ Module MyUtilities.
     fun PZ : P (FZ n) =>
     fun PS : forall i' : FinSet n, P (FS n i') =>
     fun i : FinSet (S n) =>
-    match i as i0 in FinSet Sn0 return (match Sn0 as Sn1 return FinSet Sn1 -> Type with 0 => fun i1 : FinSet O => Set | S n0 => fun i1 : FinSet (S n0) => forall P0 : FinSet (S n0) -> Type, P0 (FZ n0) -> (forall i' : FinSet n0, P0 (FS n0 i')) -> P0 i1 end) i0 with
+    match i as i0 in FinSet Sn0 return (match Sn0 as Sn1 return FinSet Sn1 -> Type with O => fun i1 : FinSet O => Set | S n0 => fun i1 : FinSet (S n0) => forall P0 : FinSet (S n0) -> Type, P0 (FZ n0) -> (forall i' : FinSet n0, P0 (FS n0 i')) -> P0 i1 end) i0 with
     | FZ n0 =>
       fun P0 : FinSet (S n0) -> Type =>
       fun PZ0 : P0 (FZ n0) =>
@@ -406,4 +406,39 @@ Module MyUtilities.
     end
   .
 
+
 End MyUtilities.
+
+Module MyUniverses.
+
+  Definition SuperiorUniverse : Type :=
+    Type
+  .
+
+  Definition InferiorUniverse : SuperiorUniverse :=
+    Type
+  .
+
+End MyUniverses.
+
+Module MyCoinductive.
+
+  Import MyUniverses.
+
+  Record Container : SuperiorUniverse :=
+    { shape : InferiorUniverse
+    ; position : shape -> InferiorUniverse
+    }
+  .
+
+  Definition runContainer : Container -> InferiorUniverse -> InferiorUniverse :=
+    fun c : Container =>
+    fun X : InferiorUniverse =>
+    {s : shape c & (position c s -> X)}
+  .
+
+  CoInductive M (c : Container) : InferiorUniverse :=
+    go { observe : runContainer c (M c) }
+  .
+  
+End MyCoinductive.

@@ -11,15 +11,7 @@ Global Create HintDb aczel_hint.
 
 Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
-  Import BasicSetoidTheory BasicPosetTheory MyUtilities.
-
-  Definition SuperiorUniverse : Type :=
-    Type
-  .
-
-  Definition InferiorUniverse : SuperiorUniverse :=
-    Type
-  .
+  Import BasicSetoidTheory BasicPosetTheory MyUtilities MyUniverses.
 
   Inductive Tree : SuperiorUniverse :=
   | RootNode (children : InferiorUniverse) (childtrees : children -> Tree) : Tree
@@ -347,18 +339,19 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Resolve in_power_iff : aczel_hint.
 
-  Definition unions {I : InferiorUniverse} : (I -> AczelSet) -> AczelSet :=
+  Definition unions_I : forall I : InferiorUniverse, (I -> AczelSet) -> AczelSet :=
+    fun I : InferiorUniverse =>
     fun X_i : I -> Tree =>
     let children : InferiorUniverse := {i : I & childrenOf (X_i i)} in
     let childtrees : children -> Tree := fun child : children => @childTreeOf (X_i (projT1 child)) (projT2 child) in
     RootNode children childtrees
   .
 
-  Lemma in_unions_iff :
+  Lemma in_unions_I_iff :
     forall I : InferiorUniverse,
     forall X_i : I -> AczelSet,
     forall x : AczelSet,
-    elem x (unions X_i) <-> (exists i : I, elem x (X_i i)).
+    elem x (unions_I I X_i) <-> (exists i : I, elem x (X_i i)).
   Proof with eauto with *.
     intros I X_i x.
     split.
@@ -369,9 +362,29 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
       exists (existT _ i child_i)...
   Qed.
 
+  Global Hint Resolve in_unions_I_iff : aczel_hint.
+
+  Definition unions : AczelSet -> AczelSet :=
+    fun Xs : AczelSet =>
+    unions_I (childrenOf Xs) (@childTreeOf Xs)
+  .
+
+  Lemma in_unions_iff :
+    forall Xs : AczelSet,
+    forall x : AczelSet,
+    elem x (unions Xs) <-> (exists X_i : AczelSet, elem x X_i /\ elem X_i Xs).
+  Proof with eauto with *.
+    intros Xs x.
+    unfold unions.
+    rewrite in_unions_I_iff.
+    split.
+    - intros [i [X_i H]]...
+    - intros [X_i [[child_i H] [i H0]]]...
+  Qed.
+
   Global Hint Resolve in_unions_iff : aczel_hint.
 
-  Lemma claim_for_StrongCollection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
+  Lemma hyp_StrongCollection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
     forall psi : AczelSet -> AczelSet -> Prop,
     (forall X : AczelSet, forall y : AczelSet, elem y (build psi X) <-> (exists x : AczelSet, elem x X /\ psi x y)) ->
     forall X : AczelSet,
@@ -418,6 +431,16 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Proof with eauto with *.
     intros alpha H.
     inversion H; subst...
+(* [An Alternative Proof]
+  Proof with eauto with *.
+    intros alpha H.
+    inversion H; subst.
+    intros beta H2.
+    constructor.
+    - apply H1...
+    - intros gamma H3.
+      apply H1, (H0 beta)...
+*)
   Qed.
 
   Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
