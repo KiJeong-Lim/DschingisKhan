@@ -406,7 +406,6 @@ Module MyUtilities.
     end
   .
 
-
 End MyUtilities.
 
 Module MyUniverses.
@@ -423,12 +422,16 @@ End MyUniverses.
 
 Module MyCoinductive.
 
+  Set Primitive Projections.
+
   Import MyUniverses.
 
+  Definition SmallerUniverse : InferiorUniverse :=
+    Type
+  .
+
   Record Container : SuperiorUniverse :=
-    { shape : InferiorUniverse
-    ; position : shape -> InferiorUniverse
-    }
+    { shape : SmallerUniverse; position : shape -> InferiorUniverse }
   .
 
   Definition runContainer : Container -> InferiorUniverse -> InferiorUniverse :=
@@ -438,7 +441,7 @@ Module MyCoinductive.
   .
 
   CoInductive M (c : Container) : InferiorUniverse :=
-    go { observe : runContainer c (M c) }
+    { observe : runContainer c (M c) }
   .
-  
+
 End MyCoinductive.

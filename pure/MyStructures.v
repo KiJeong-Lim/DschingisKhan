@@ -488,7 +488,7 @@ Module MyEnsemble.
     | H : sig ?X |- _ => now (assert (claim : X (proj1_sig H)) by apply (proj2_sig H))
     end
   .
-  
+
   Global Hint Unfold member : my_hints.
 
   Definition isSubsetOf {A : Type} : ensemble A -> ensemble A -> Prop :=
@@ -566,19 +566,29 @@ Module BasicTopology.
 
   Global Notation "D1 ~> D2" := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
 
-  Local Program Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
-    { isOpen :=
-      fun O_sub : ensemble (@sig A P) =>
-      exists O : ensemble A, isOpen O /\ (forall x : sig P, member (proj1_sig x) O <-> member x O_sub)
-    }
+  Definition isOpen_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} : ensemble (sig P) -> Prop :=    
+    fun O_sub : ensemble (@sig A P) =>
+    exists O : ensemble A, isOpen O /\ (forall x : sig P, member (proj1_sig x) O <-> member x O_sub)
   .
 
-  Next Obligation with eauto with *.
+  Lemma open_full_SubspaceTopolgy {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+    forall xs : ensemble (sig P),
+    (forall x : sig P, member x xs) ->
+    isOpen_SubspaceTopology xs.
+  Proof with eauto with *.
+    intros xs H.
     exists (fun x : A => x = x).
     split...
   Qed.
 
-  Next Obligation with eauto with *.
+  Lemma open_unions_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+    forall Xs : ensemble (ensemble (sig P)),
+    (forall X : ensemble (sig P), member X Xs -> isOpen_SubspaceTopology X) ->
+    forall xs : ensemble (sig P),
+    (forall x : sig P, member x xs <-> member x (unions Xs)) ->
+    isOpen_SubspaceTopology xs.
+  Proof with eauto with *.
+    intros Xs H xs H0.
     set (xss := fun O : ensemble A => isOpen O /\ (exists X : ensemble (@sig A P), member X Xs /\ (forall x : sig P, member (proj1_sig x) O <-> member x X))).
     exists (unions xss).
     split.
@@ -589,8 +599,7 @@ Module BasicTopology.
       split.
       + intros [X [H1 H2]].
         destruct H2 as [H2 [xs' [H3 H4]]].
-        apply H0.
-        rewrite in_unions_iff.
+        apply H0, in_unions_iff.
         exists xs'.
         split...
         apply H4...
@@ -605,26 +614,39 @@ Module BasicTopology.
         * split... 
   Qed.
 
-  Next Obligation with eauto with *.
-    exists (intersection H H0).
+  Lemma open_intersection_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+    forall X1 : ensemble (sig P),
+    forall X2 : ensemble (sig P),
+    isOpen_SubspaceTopology X1 ->
+    isOpen_SubspaceTopology X2 ->
+    forall xs : ensemble (sig P),
+    (forall x : sig P, member x xs <-> member x (intersection X1 X2)) ->
+    isOpen_SubspaceTopology xs.
+  Proof with eauto with *.
+    unfold isOpen_SubspaceTopology.
+    intros X1 X2 [X1' [H H0]] [X2' [H1 H2]] xs H3.
+    exists (intersection X1' X2').
     split.
-    - apply (open_intersection H H0)...
+    - apply (open_intersection X1' X2')...
     - intros x.
       rewrite in_intersection_iff.
       split.
-      + intros [H6 H7].
-        apply H1.
-        rewrite in_intersection_iff.
-        split.
-        * apply H5...
-        * apply H3...
-      + intros H6.
-        assert (H7 := proj1 (H1 x) H6).
-        rewrite in_intersection_iff in H7.
-        destruct H7 as [H7 H8].
-        split.
-        * apply H5...
-        * apply H3...
+      + intros [H4 H5].
+        apply H3, in_intersection_iff.
+        split; [apply H0 | apply H2]...
+      + intros H4.
+        assert (H5 := proj1 (H3 x) H4).
+        apply in_intersection_iff in H5.
+        destruct H5 as [H5 H6].
+        split; [apply H0 | apply H2]...
   Qed.
+
+  Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
+    { isOpen := isOpen_SubspaceTopology
+    ; open_full := open_full_SubspaceTopolgy
+    ; open_unions := open_unions_SubspaceTopology
+    ; open_intersection := open_intersection_SubspaceTopology
+    }
+  .
 
 End BasicTopology.

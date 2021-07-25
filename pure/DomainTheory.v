@@ -270,7 +270,7 @@ Module PosetTheory.
 
   Global Hint Unfold isGreatestFixedPoint : my_hints.
 
-  Theorem GreatestFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
+  Lemma GreatestFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
     forall f : D -> D,
     isMonotonicMap f ->
     forall gfp : D,
@@ -278,13 +278,13 @@ Module PosetTheory.
     isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H gfp H0.
+    assert (claim1 : gfp =< f gfp).
+    { apply H0.
+      intros x H1.
+      transitivity (f x)...
+    }
     split.
-    - assert (H1 : gfp =< f gfp).
-      { apply H0.
-        intros x H1.
-        transitivity (f x)...
-      }
-      apply Poset_asym...
+    - apply Poset_asym...
     - intros fix_f H1...
   Qed.
 
@@ -375,7 +375,7 @@ Module ConstructiveDomainTheory.
   Qed.
   
   Next Obligation with firstorder with my_hints.
-    split...
+    intros [x1 y1] [x2 y2]...
   Qed.
 
   Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
@@ -402,7 +402,7 @@ Module ConstructiveDomainTheory.
     forall d : D,
     isMonotonicMap (const d).
   Proof with eauto with *.
-    intros d x1 x2 H...
+    unfold isMonotonicMap...
   Qed.
 
   Definition const_m {D : Type} `{D_isPoset : isPoset D} : D -> (D >=> D) :=
