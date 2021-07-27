@@ -474,7 +474,7 @@ Module ConstructiveDomainTheory.
     intros fs f.
     split.
     - intros H0 f' H1.
-      assert (H2 : f' =< exist isMonotonicMap (supOfMonotonicMaps fs) (supOfMonotonicMaps_isMonotonic fs)).
+      assert (claim1 : f' =< exist isMonotonicMap (supOfMonotonicMaps fs) (supOfMonotonicMaps_isMonotonic fs)).
       { intros x.
         simpl.
         apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs)))...
@@ -483,7 +483,7 @@ Module ConstructiveDomainTheory.
       transitivity (exist isMonotonicMap (supOfMonotonicMaps fs) (supOfMonotonicMaps_isMonotonic fs))...
     - intros H x.
       simpl.
-      assert (claim1 : forall x' : D', member x' (image (fun f_i : D >=> D' => proj1_sig f_i x) fs) -> x' =< proj1_sig f x).
+      assert (claim2 : forall x' : D', member x' (image (fun f_i : D >=> D' => proj1_sig f_i x) fs) -> x' =< proj1_sig f x).
       { intros x' H0.
         inversion H0; subst.
         rename x0 into f'.
@@ -915,155 +915,6 @@ Module ConstructiveDomainTheory.
       transitivity gfp; [apply H | apply PrincipleOfTarski]...
   Qed.
 
-  Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
-    fun f : D >=> D =>
-    fun b : D >=> D =>
-    forall x : D,
-    proj1_sig f (proj1_sig b x) =< proj1_sig b (proj1_sig f x)
-  .
-
-  Global Hint Unfold isCompatibleFor : my_hints.
-
-  Global Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
-
-  Lemma const_isCompatibleFor_iff {D : Type} `{D_isPoset : isPoset D} :
-    forall b : D >=> D,
-    forall d : D,
-    const_m d is-compatible-for b <-> d =< proj1_sig b d.
-  Proof with eauto with *.
-    intros b d.
-    unfold isCompatibleFor, const_m, const.
-    simpl...
-  Qed.
-
-  Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
-    forall b : D >=> D,
-    id_m is-compatible-for b.
-  Proof with eauto with *.
-    unfold isCompatibleFor, id_m.
-    simpl...
-  Qed.
-
-  Lemma compose_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
-    forall b : D >=> D,
-    forall f1 : D >=> D,
-    forall f2 : D >=> D,
-    f1 is-compatible-for b ->
-    f2 is-compatible-for b ->
-    compose_m f1 f2 is-compatible-for b.
-  Proof with eauto with *.
-    unfold isCompatibleFor, compose_m.
-    simpl.
-    intros b f1 f2 H H0 x.
-    assert (H1 := proj2_sig f1).
-    transitivity (proj1_sig f1 (proj1_sig b (proj1_sig f2 x)))...
-  Qed.
-
-  Lemma supremum_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    forall F : ensemble (D >=> D),
-    (forall f : D >=> D, member f F -> f is-compatible-for b) ->
-    supremum_m F is-compatible-for b.
-  Proof with eauto with *.
-    intros b F H.
-    set (F_b := fun x : D => image (fun f_i : D >=> D => proj1_sig f_i (proj1_sig b x)) F).
-    set (sup_F_b := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (F_b x))).
-    assert (claim1 : forall x : D, proj1_sig (supremum_m F) (proj1_sig b x) =< sup_F_b x).
-    { intros x.
-      unfold sup_F_b, supremum_m, supOfMonotonicMaps.
-      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
-      simpl.
-      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D => proj1_sig f_i (proj1_sig b x)) F)) as [sup_f_i_b_x H1].
-      simpl.
-      apply H1.
-      intros x' H2.
-      inversion H2; subst.
-      rename x0 into f_i.
-      apply H0...
-    }
-    set (b_F := fun x : D => image (fun f_i : D >=> D => proj1_sig b (proj1_sig f_i x)) F).
-    set (sup_b_F := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (b_F x))).
-    assert (claim2 : forall x : D, sup_F_b x =< sup_b_F x).
-    { intros x.
-      unfold sup_F_b, sup_b_F.
-      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
-      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H1].
-      simpl.
-      apply H0.
-      intros x' H2.
-      inversion H2; subst.
-      rename x0 into f_i.
-      transitivity (proj1_sig b (proj1_sig f_i x)).
-      - apply H...
-      - apply H1...
-        apply (in_image f_i (fun f_i' : D >=> D => proj1_sig b (proj1_sig f_i' x)))...
-    }
-    assert (claim3 : forall x : D, sup_b_F x =< proj1_sig b (proj1_sig (supremum_m F) x)).
-    { intros x.
-      unfold sup_b_F, supremum_m, supOfMonotonicMaps.
-      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H0].
-      simpl.
-      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D => proj1_sig f_i x) F)) as [sup_f_i_x H1].
-      simpl.
-      apply H0.
-      intros x' H2.
-      inversion H2; subst.
-      rename x0 into f_i.
-      apply (proj2_sig b), H1...
-      apply (in_image f_i (fun f_i' : D >=> D => proj1_sig f_i' x))...
-    }
-    intros x...
-  Qed.
-
-  Definition companion {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
-    fun b : D >=> D =>
-    exist isMonotonicMap (proj1_sig (supremum_m (fun f : D >=> D => compose_m f b =< compose_m b f))) (supOfMonotonicMaps_isMonotonic (fun f : D >=> D => compose_m f b =< compose_m b f))
-  .
-
-  Lemma companion_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    companion b is-compatible-for b.
-  Proof with eauto with *.
-    intros b.
-    apply supremum_isCompatibleFor...
-  Qed.
-
-  Lemma companion_isTheGreatestCompatibleFunction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    forall f : D >=> D,
-    f is-compatible-for b ->
-    f =< companion b.
-  Proof with eauto with *.
-    intros b f H.
-    unfold companion.
-    set (F := fun f_i : D >=> D => compose_m f_i b =< compose_m b f_i).
-    apply (supOfMonotonicMaps_isSupremum F)...
-  Qed.
-
-  Lemma b_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    b =< companion b.
-  Proof with eauto with *.
-    intros b.
-    apply companion_isTheGreatestCompatibleFunction...
-  Qed.
-
-  Lemma id_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    id_m =< companion b.
-  Proof with eauto with *.
-    intros b.
-    apply companion_isTheGreatestCompatibleFunction, id_isCompatibleFor.
-  Qed.
-
-  Lemma tt_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
-    compose_m (companion b) (companion b) =< companion b.
-  Proof with eauto with *.
-    intros b.
-    apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor; apply companion_isCompatibleFor.
-  Qed.
-
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
     fun X : ensemble D =>
     nonempty X /\ (forall x1 : D, member x1 X -> forall x2 : D, member x2 X -> exists x3 : D, member x3 X /\ x1 =< x3 /\ x2 =< x3)
@@ -1231,6 +1082,161 @@ Module ConstructiveDomainTheory.
   .
 
 End ConstructiveDomainTheory.
+
+Module CAWU.
+
+  Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble PosetTheory ConstructiveDomainTheory.
+
+  Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
+    fun f : D >=> D =>
+    fun b : D >=> D =>
+    forall x : D,
+    proj1_sig f (proj1_sig b x) =< proj1_sig b (proj1_sig f x)
+  .
+
+  Global Hint Unfold isCompatibleFor : my_hints.
+
+  Global Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
+
+  Lemma const_isCompatibleFor_iff {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >=> D,
+    forall d : D,
+    const_m d is-compatible-for b <-> d =< proj1_sig b d.
+  Proof with eauto with *.
+    intros b d.
+    unfold isCompatibleFor, const_m, const.
+    simpl...
+  Qed.
+
+  Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >=> D,
+    id_m is-compatible-for b.
+  Proof with eauto with *.
+    unfold isCompatibleFor, id_m.
+    simpl...
+  Qed.
+
+  Lemma compose_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
+    forall b : D >=> D,
+    forall f1 : D >=> D,
+    forall f2 : D >=> D,
+    f1 is-compatible-for b ->
+    f2 is-compatible-for b ->
+    compose_m f1 f2 is-compatible-for b.
+  Proof with eauto with *.
+    unfold isCompatibleFor, compose_m.
+    simpl.
+    intros b f1 f2 H H0 x.
+    assert (H1 := proj2_sig f1).
+    transitivity (proj1_sig f1 (proj1_sig b (proj1_sig f2 x)))...
+  Qed.
+
+  Lemma supremum_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    forall F : ensemble (D >=> D),
+    (forall f : D >=> D, member f F -> f is-compatible-for b) ->
+    supremum_m F is-compatible-for b.
+  Proof with eauto with *.
+    intros b F H.
+    set (F_b := fun x : D => image (fun f_i : D >=> D => proj1_sig f_i (proj1_sig b x)) F).
+    set (sup_F_b := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (F_b x))).
+    assert (claim1 : forall x : D, proj1_sig (supremum_m F) (proj1_sig b x) =< sup_F_b x).
+    { intros x.
+      unfold sup_F_b, supremum_m, supOfMonotonicMaps.
+      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
+      simpl.
+      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D => proj1_sig f_i (proj1_sig b x)) F)) as [sup_f_i_b_x H1].
+      simpl.
+      apply H1.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      apply H0...
+    }
+    set (b_F := fun x : D => image (fun f_i : D >=> D => proj1_sig b (proj1_sig f_i x)) F).
+    set (sup_b_F := fun x : D => proj1_sig (supremum_always_exists_in_CompleteLattice (b_F x))).
+    assert (claim2 : forall x : D, sup_F_b x =< sup_b_F x).
+    { intros x.
+      unfold sup_F_b, sup_b_F.
+      destruct (supremum_always_exists_in_CompleteLattice (F_b x)) as [sup_F_b_x H0].
+      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H1].
+      simpl.
+      apply H0.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      transitivity (proj1_sig b (proj1_sig f_i x)).
+      - apply H...
+      - apply H1...
+        apply (in_image f_i (fun f_i' : D >=> D => proj1_sig b (proj1_sig f_i' x)))...
+    }
+    assert (claim3 : forall x : D, sup_b_F x =< proj1_sig b (proj1_sig (supremum_m F) x)).
+    { intros x.
+      unfold sup_b_F, supremum_m, supOfMonotonicMaps.
+      destruct (supremum_always_exists_in_CompleteLattice (b_F x)) as [sup_b_F_x H0].
+      simpl.
+      destruct (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D => proj1_sig f_i x) F)) as [sup_f_i_x H1].
+      simpl.
+      apply H0.
+      intros x' H2.
+      inversion H2; subst.
+      rename x0 into f_i.
+      apply (proj2_sig b), H1...
+      apply (in_image f_i (fun f_i' : D >=> D => proj1_sig f_i' x))...
+    }
+    intros x...
+  Qed.
+
+  Definition companion {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
+    fun b : D >=> D =>
+    exist isMonotonicMap (proj1_sig (supremum_m (fun f : D >=> D => compose_m f b =< compose_m b f))) (supOfMonotonicMaps_isMonotonic (fun f : D >=> D => compose_m f b =< compose_m b f))
+  .
+
+  Lemma companion_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    companion b is-compatible-for b.
+  Proof with eauto with *.
+    intros b.
+    apply supremum_isCompatibleFor...
+  Qed.
+
+  Lemma companion_isTheGreatestCompatibleFunction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    forall f : D >=> D,
+    f is-compatible-for b ->
+    f =< companion b.
+  Proof with eauto with *.
+    intros b f H.
+    unfold companion.
+    set (F := fun f_i : D >=> D => compose_m f_i b =< compose_m b f_i).
+    apply (supOfMonotonicMaps_isSupremum F)...
+  Qed.
+
+  Lemma b_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    b =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction...
+  Qed.
+
+  Lemma id_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    id_m =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction, id_isCompatibleFor.
+  Qed.
+
+  Lemma tt_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall b : D >=> D,
+    compose_m (companion b) (companion b) =< companion b.
+  Proof with eauto with *.
+    intros b.
+    apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor; apply companion_isCompatibleFor.
+  Qed.
+
+End CAWU.
 
 Module PowerSetLattice.
 
@@ -1489,8 +1495,7 @@ Module PowerSetLattice.
         apply in_union_iff in H0.
         destruct H0 as [H0 | H0]; [left | right]...
       }
-      apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y)).
-      enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply claim2...
+      enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y) claim2)...
   Qed.
 
   End PACO.

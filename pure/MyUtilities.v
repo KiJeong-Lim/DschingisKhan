@@ -398,7 +398,7 @@ Module MyUtilities.
     fun x : A =>
     fun y : A =>
     fun H : eq x y =>
-    match H as H0 in eq _ y0 return forall phi0 : forall x0 : A, x0 = y0 -> Type, phi0 y0 eq_refl -> phi0 x H0 with
+    match H as H0 in eq _ y0 return forall phi : forall x0 : A, x0 = y0 -> Type, phi y0 eq_refl -> phi x H0 with
     | eq_refl =>
       fun phi : forall x0 : A, x0 = x -> Type =>
       fun phi_y : phi x eq_refl =>
@@ -407,6 +407,22 @@ Module MyUtilities.
   .
 
 End MyUtilities.
+
+Module EqElim.
+
+  Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
+    fun x : A =>
+    fun y : A =>
+    fun H : eq x y =>
+    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 eq_refl -> phi x y0 H0 with
+    | eq_refl =>
+      fun phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type =>
+      fun phi_y : phi x x eq_refl =>
+      phi_y
+    end phi'
+  .
+
+End EqElim.
 
 Module MyUniverses.
 
@@ -426,22 +442,31 @@ Module MyCoinductive.
 
   Import MyUniverses.
 
-  Definition SmallerUniverse : InferiorUniverse :=
-    Type
+  Record IndexedContainer (I : InferiorUniverse) (O : InferiorUniverse) : SuperiorUniverse :=
+    { putCommand : O -> InferiorUniverse
+    ; getResponse : forall output : O, putCommand output -> InferiorUniverse
+    ; goToNext : forall output : O, forall comm : putCommand output, getResponse output comm -> I
+    }
   .
 
-  Record Container : SuperiorUniverse :=
-    { shape : SmallerUniverse; position : shape -> InferiorUniverse }
+  Arguments putCommand {I} {O} _ _.
+
+  Arguments getResponse {I} {O} _ _ _.
+
+  Arguments goToNext {I} {O} _ _ _ _.
+
+  Definition runIndexedContainer {I : InferiorUniverse} {O : InferiorUniverse} (con : IndexedContainer I O) : (I -> InferiorUniverse) -> (O -> InferiorUniverse) :=
+    fun input_obj : I -> Type =>
+    fun output : O =>
+    {comm : con.(putCommand) output & forall res : con.(getResponse) output comm, input_obj (con.(goToNext) output comm res)}
   .
 
-  Definition runContainer : Container -> InferiorUniverse -> InferiorUniverse :=
-    fun c : Container =>
-    fun X : InferiorUniverse =>
-    {s : shape c & (position c s -> X)}
-  .
-
-  CoInductive M (c : Container) : InferiorUniverse :=
-    { observe : runContainer c (M c) }
+  Definition fmap {I : InferiorUniverse} {O : InferiorUniverse} {X : I -> InferiorUniverse} {Y : I -> InferiorUniverse} {con : IndexedContainer I O} : (forall i : I, X i -> Y i) -> (forall o : O, runIndexedContainer con X o -> runIndexedContainer con Y o) :=
+    fun f : forall i : I, X i -> Y i =>
+    fun o : O =>
+    fun A : runIndexedContainer con X o =>
+    let (com, H) := A in
+    existT _ com (fun res : getResponse con o com => f (goToNext con o com res) (H res))
   .
 
 End MyCoinductive.

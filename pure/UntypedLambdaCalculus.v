@@ -718,9 +718,8 @@ Module UntypedLamdbdaCalculus.
       contradiction n...
   Qed.
 
-  Class isPreLambdaStructure (Dom : Type) : Type :=
-    { PreLambdaStructure_requiresSetoid :> isSetoid Dom
-    ; runApp : Dom -> (Dom -> Dom)
+  Class isPreLambdaStructure (Dom : Type) `{Dom_isSetoid : isSetoid Dom} : Type :=
+    { runApp : Dom -> (Dom -> Dom)
     ; runLam : (Dom -> Dom) -> Dom
     ; runApp_ext :
       forall v1 : Dom,
