@@ -17,6 +17,19 @@ Module AxiomK.
 
   Export Eq_rect_eq EqElim.
 
+  Proposition RuleK {A : Type} :
+    forall x : A,
+    forall phi : x = x -> Type,
+    phi eq_refl ->
+    forall eq_id : x = x,
+    phi eq_id.
+  Proof with eauto with *.
+    intros x phi phi_refl eq_id.
+    replace eq_id with (@eq_refl A x)...
+    rewrite (eq_rect_eq A x (eq x) (@eq_refl A x) eq_id).
+    destruct eq_id...
+  Qed.
+
   Definition run_identity {A : Type} {B : A -> Type} : forall x : A, forall y : B x, forall H : x = x, eq_rect x B y x H = y :=
     fun x : A =>
     fun y : B x =>
@@ -34,19 +47,5 @@ Module AxiomK.
     fun H : existT B x y1 = existT B x y2 =>
     phi (existT B x y1) (existT B x y2) H (run_identity x y2) eq_refl
   .
-
-  Proposition RuleK {A : Type} :
-    forall x : A,
-    forall phi : x = x -> Type,
-    phi eq_refl ->
-    forall eq_id : x = x,
-    phi eq_id.
-  Proof with eauto with *.
-    intros x phi phi_refl eq_id.
-    replace eq_id with (@eq_refl A x)...
-    symmetry.
-    rewrite (eq_rect_eq A x (eq x) (@eq_refl A x) eq_id).
-    destruct eq_id...
-  Qed.
 
 End AxiomK.
