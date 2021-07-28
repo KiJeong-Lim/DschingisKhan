@@ -443,6 +443,22 @@ Module MyUtilities.
     end
   .
 
+  Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
+    fun f : {i : I & prod (A i) (B i)} -> C =>
+    fun i : I =>
+    fun x : A i =>
+    fun y : B i =>
+    f (existT _ i (x, y))
+  .
+
+  Definition uncurry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : (forall i : I, A i -> B i -> C) -> ({i : I & prod (A i) (B i)} -> C) :=
+    fun f : forall i : I, A i -> B i -> C =>
+    fun p : {i : I & prod (A i) (B i)} =>
+    match p with
+    | existT _ i (x, y) => f i x y
+    end
+  .
+
 End MyUtilities.
 
 Module EqElim.
@@ -459,7 +475,7 @@ Module EqElim.
     end phi'
   .
 
-  Definition sym_eq {A : Type} : forall x : A, forall y : A, x = y -> y = x :=
+  Definition eq_symmetry {A : Type} : forall x : A, forall y : A, x = y -> y = x :=
     fun x : A =>
     eq_ind x (fun z : A => z = x) eq_refl
   .

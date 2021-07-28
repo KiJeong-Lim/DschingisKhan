@@ -139,9 +139,8 @@ Module ClassicalDomainTheory.
       set (Y := image (proj1_sig f) X).
       assert (H3 : isDirected Y) by now apply ContinuousMapOnCpos_preservesDirected.
       destruct (square_up_exists X H0) as [sup_X H4].
-      exists sup_X.
       destruct (ContinuousMaps_preservesSupremum (proj1_sig f) H X H0 sup_X H4 H3) as [sup_Y H5].
-      exists sup_Y...
+      exists sup_X, sup_Y...
     - intros H.
       assert (claim2 : forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2).
       { intros x1 x2 H0.
