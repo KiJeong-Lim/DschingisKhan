@@ -9,8 +9,6 @@ Module MyCoInductive.
 
   Import MyUtilities BasicSetoidTheory BasicPosetTheory MyEnsemble PosetTheory ConstructiveDomainTheory PowerSetLattice.
 
-  (* Section 1 *)
-
   Record Container (Idx_in : Type) (Idx_out : Type) : Type :=
     { _Coefficient : Idx_out -> Type
     ; _GetDegreeOf : forall o : Idx_out, _Coefficient o -> Type
@@ -30,11 +28,11 @@ Module MyCoInductive.
     _ObtainIndex Idx_in Idx_out
   .
 
-  Global Notation "c '->coefficient' " := (coefficient c) (at level 5, left associativity) : type_scope.
+  Global Notation " c '->coefficient' " := (coefficient c) (at level 5, left associativity) : type_scope.
 
-  Global Notation "c '->getDegreeOf' " := (getDegreeOf c) (at level 5, left associativity) : type_scope.
+  Global Notation " c '->getDegreeOf' " := (getDegreeOf c) (at level 5, left associativity) : type_scope.
 
-  Global Notation "c '->obtainIndex' " := (obtainIndex c) (at level 5, left associativity) : type_scope.
+  Global Notation " c '->obtainIndex' " := (obtainIndex c) (at level 5, left associativity) : type_scope.
 
   Definition runContainer {Idx_in : Type} {Idx_out : Type} : Container Idx_in Idx_out -> (Idx_in -> Type) -> (Idx_out -> Type) :=
     fun c : Container Idx_in Idx_out =>
@@ -43,36 +41,38 @@ Module MyCoInductive.
     {a : c->coefficient o & forall n : c->getDegreeOf o a, X_i (c->obtainIndex o a n)}
   .
 
-  Global Notation "c '->runContainer' " := (runContainer c) (at level 5, left associativity) : type_scope.
+  Global Notation " c '->runContainer' " := (runContainer c) (at level 5, left associativity) : type_scope.
 
-  (* Section 2 *)
+  Section GeneralBisimilarityMap.
 
-  Variant bisimilarity {Idx_in : Type} {Idx_out : Type} : forall c : Container Idx_in Idx_out, forall LHS : Idx_in -> Type, forall RHS : Idx_in -> Type, (forall i : Idx_in, LHS i -> RHS i -> Prop) -> (forall o : Idx_out, c->runContainer LHS o -> c->runContainer RHS o -> Prop) :=
-  | Bisimilar :
+  Context {Idx_in : Type} {Idx_out : Type}.
+
+  Variant BisimilarityF : forall c : Container Idx_in Idx_out, forall LHS : Idx_in -> Type, forall RHS : Idx_in -> Type, (forall i : Idx_in, LHS i -> RHS i -> Prop) -> (forall o : Idx_out, c->runContainer LHS o -> c->runContainer RHS o -> Prop) :=
+  | Bisimilar1 :
     forall c : Container Idx_in Idx_out,
     forall LHS : Idx_in -> Type,
     forall RHS : Idx_in -> Type,
-    forall R : forall i : Idx_in, LHS i -> RHS i -> Prop,
+    forall sim : forall i : Idx_in, LHS i -> RHS i -> Prop,
     forall o : Idx_out,
-    forall lhs : c->runContainer LHS o,
-    forall rhs : c->runContainer RHS o,
-    forall projT1_eqn : projT1 lhs = projT1 rhs,
-    forall projT2_sim : forall n : c->getDegreeOf o (projT1 lhs), R (c->obtainIndex o (projT1 rhs) (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn)) (match projT1_eqn as H in eq _ projT1rhs return LHS (c->obtainIndex o projT1rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n projT1rhs H)) with eq_refl => projT2 lhs n end) (projT2 rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn)),
-    bisimilarity c LHS RHS R o lhs rhs
+    forall a : c->coefficient o,
+    forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n),
+    forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n),
+    (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> 
+    BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd)
   .
 
-  Definition bisimilarity_intro {Idx_in : Type} {Idx_out : Type} {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {R : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : forall projT1_eqn : projT1 lhs = projT1 rhs, (forall n : c->getDegreeOf o (projT1 lhs), R (c->obtainIndex o (projT1 rhs) (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn)) (match projT1_eqn as H in eq _ projT1rhs return LHS (c->obtainIndex o projT1rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n projT1rhs H)) with eq_refl => projT2 lhs n end) (projT2 rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn))) -> bisimilarity c LHS RHS R o lhs rhs :=
-    Bisimilar c LHS RHS R o lhs rhs
+  Definition BisimilarityF_intro {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} : forall a : c->coefficient o, forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd) :=
+    Bisimilar1 c LHS RHS sim o
   .
 
-  Definition bisimilarity_elim {Idx_in : Type} {Idx_out : Type} {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {R : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : bisimilarity c LHS RHS R o lhs rhs -> exists projT1_eqn : projT1 lhs = projT1 rhs, (forall n : c->getDegreeOf o (projT1 lhs), R (c->obtainIndex o (projT1 rhs) (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn)) (match projT1_eqn as H in eq _ projT1rhs return LHS (c->obtainIndex o projT1rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n projT1rhs H)) with eq_refl => projT2 lhs n end) (projT2 rhs (eq_rect (projT1 lhs) (c->getDegreeOf o) n (projT1 rhs) projT1_eqn))) :=
-    fun Hb : bisimilarity c LHS RHS R o lhs rhs =>
-    match Hb as Hb' in bisimilarity c' LHS' RHS' R' o' lhs' rhs' return exists projT1_eqn' : projT1 lhs' = projT1 rhs', (forall n : c'->getDegreeOf o' (projT1 lhs'), R' (c'->obtainIndex o' (projT1 rhs') (eq_rect (projT1 lhs') (c'->getDegreeOf o') n (projT1 rhs') projT1_eqn')) (match projT1_eqn' as H in eq _ projT1rhs return LHS' (c'->obtainIndex o' projT1rhs (eq_rect (projT1 lhs') (c'->getDegreeOf o') n projT1rhs H)) with eq_refl => projT2 lhs' n end) (projT2 rhs' (eq_rect (projT1 lhs') (c'->getDegreeOf o') n (projT1 rhs') projT1_eqn'))) with
-    | Bisimilar c' LHS' RHS' R' o' lhs' rhs' projT1_eqn' projT2_sim' => ex_intro _ projT1_eqn' projT2_sim'
+  Definition BisimilarityF_elim {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : BisimilarityF c LHS RHS sim o lhs rhs -> exists a : c->coefficient o, exists lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), exists rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) /\ lhs = existT _ a lhs_snd /\ rhs = existT _ a rhs_snd :=
+    fun Hb : BisimilarityF c LHS RHS sim o lhs rhs =>
+    match Hb with
+    | Bisimilar1 c' LHS' RHS' sim' o' a' lhs_snd' rhs_snd' H_sim' => ex_intro _ a' (ex_intro _ lhs_snd' (ex_intro _ rhs_snd' (conj H_sim' (conj eq_refl eq_refl))))
     end
   .
 
-  (* Section 3 *)
+  End GeneralBisimilarityMap.
 
   Definition mapContainer {Idx : Type} {src : Idx -> Type} {tgt : Idx -> Type} : forall c : Container Idx Idx, (forall i : Idx, src i -> tgt i) -> (forall o : Idx, c->runContainer src o -> c->runContainer tgt o) :=
     fun c : Container Idx Idx =>
@@ -84,56 +84,67 @@ Module MyCoInductive.
     end
   .
 
-  Global Notation "c '->mapContainer' " := (mapContainer c) (at level 5, left associativity) : type_scope.
+  Global Notation " c '->mapContainer' " := (mapContainer c) (at level 5, left associativity) : type_scope.
 
   CoInductive _M (Idx : Type) (c : Container Idx Idx) (i : Idx) : Type :=
-    _FoldM { _UnfoldM : c->runContainer (_M Idx c) i }
+    fold_M { unfold_M : c->runContainer (_M Idx c) i }
   .
 
   Definition myM {Idx : Type} : Container Idx Idx -> Idx -> Type :=
     _M Idx
   .
 
-  Definition myFoldM {Idx : Type} : forall c : Container Idx Idx, forall i : Idx, c->runContainer (myM c) i -> myM c i :=
-    _FoldM Idx
+  Global Notation " c '->myM' " := (myM c) (at level 5, left associativity) : type_scope.
+
+  Definition fold_myM {Idx : Type} : forall c : Container Idx Idx, forall i : Idx, c->runContainer c->myM i -> c->myM i :=
+    fold_M Idx
   .
 
-  Definition myUnfoldM {Idx : Type} : forall c : Container Idx Idx, forall i : Idx, myM c i -> c->runContainer (myM c) i:=
-    _UnfoldM Idx
+  Global Notation " c '->fold_myM' " := (fold_myM c) (at level 5, left associativity) : type_scope.
+
+  Definition unfold_myM {Idx : Type} : forall c : Container Idx Idx, forall i : Idx, c->myM i -> c->runContainer c->myM i:=
+    unfold_M Idx
   .
 
-  CoFixpoint cofixM {Idx : Type} {X : Idx -> Type} : forall c : Container Idx Idx, (forall i : Idx, X i -> c->runContainer X i) -> (forall i : Idx, X i -> myM c i) :=
+  Global Notation " c '->unfold_myM' " := (unfold_myM c) (at level 5, left associativity) : type_scope.
+
+  Definition acc_myM {Idx : Type} {X : Idx -> Type} : forall c : Container Idx Idx, (forall i : Idx, X i -> c->runContainer X i) -> (forall i : Idx, X i -> c->myM i) :=
     fun c : Container Idx Idx =>
     fun coalg : forall i : Idx, X i -> c->runContainer X i =>
+    cofix acc_myM_cofix : forall i : Idx, X i -> c->myM i :=
     fun i : Idx =>
     fun src : X i =>
-    myFoldM c i (c->mapContainer (cofixM c coalg) i (coalg i src))
+    c->fold_myM i (c->mapContainer acc_myM_cofix i (coalg i src))
   .
 
-  Definition bisimF {Idx : Type} : forall c : Container Idx Idx, ensemble {i : Idx & prod (myM c i) (myM c i)} -> ensemble {i : Idx & prod (myM c i) (myM c i)} :=
-    fun c : Container Idx Idx =>
-    fun R : {i : Idx & prod (myM c i) (myM c i)} -> Prop =>
-    uncurry' (fun i : Idx => fun lhs : myM c i => fun rhs : myM c i => bisimilarity c (myM c) (myM c) (curry' R) i (myUnfoldM c i lhs) (myUnfoldM c i rhs))
+  Global Notation " c '->acc_myM' " := (acc_myM c) (at level 5, left associativity) : type_scope.
+
+  Section GeneralBisimilarity.
+
+  Context {Idx : Type} (c : Container Idx Idx).
+
+  Definition bisimF : ensemble {i : Idx & prod (c->myM i) (c->myM i)} -> ensemble {i : Idx & prod (c->myM i) (c->myM i)} :=
+    fun sim : {i : Idx & prod (c->myM i) (c->myM i)} -> Prop =>
+    uncurry' (fun i : Idx => fun lhs : c->myM i => fun rhs : c->myM i => BisimilarityF c c->myM c->myM (curry' sim) i (c->unfold_myM i lhs) (c->unfold_myM i rhs))
   .
 
-  Lemma bisimF_isMonotonic {Idx : Type} :
-    forall c : Container Idx Idx,
-    isMonotonicMap (bisimF c).
-  Proof.
-    intros c R1 R2 H_incl [i [lhs rhs]] Hb.
+  Lemma bisimF_isMonotonicMap :
+    isMonotonicMap bisimF.
+  Proof with eauto.
+    intros sim1 sim2 H_incl [i [lhs rhs]] Hb.
     simpl in *.
-    destruct (bisimilarity_elim Hb) as [projT1_eqn projT2_sim].
-    apply (bisimilarity_intro projT1_eqn).
+    destruct (BisimilarityF_elim Hb) as [a [lhs_snd [rhs_snd [H_sim [Heq1 Heq2]]]]].
+    rewrite Heq1, Heq2.
+    apply (BisimilarityF_intro a lhs_snd rhs_snd).
     intros n.
     apply H_incl.
-    exact (projT2_sim n).
+    exact (H_sim n).
   Qed.
 
-  Definition bisim {Idx : Type} : forall c : Container Idx Idx, ensemble {i : Idx & prod (myM c i) (myM c i)} >=> ensemble {i : Idx & prod (myM c i) (myM c i)} :=
-    fun c : Container Idx Idx =>
-    paco (exist isMonotonicMap (bisimF c) (bisimF_isMonotonic c))
+  Definition bisim : ensemble {i : Idx & prod (c->myM i) (c->myM i)} >=> ensemble {i : Idx & prod (c->myM i) (c->myM i)} :=
+    paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)
   .
 
-  (* Section 4 *)
+  End GeneralBisimilarity.
 
 End MyCoInductive.
