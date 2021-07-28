@@ -57,9 +57,9 @@ Module BasicSetoidTheory.
 
   Global Program Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp :=
-      fun p : Prop =>
-      fun q : Prop =>
-      p <-> q
+      fun P : Prop =>
+      fun Q : Prop =>
+      P <-> Q
     }
   .
 
@@ -195,17 +195,17 @@ Module BasicPosetTheory.
   Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
 
   Add Parametric Morphism (A : Type) (B : Type) (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
-    f with signature (eqProp ==> eqProp)
+    f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
   as MonotonicMap_Morphism.
   Proof.
-    apply (MonotonicMap_preservesSetoid f H).
+    exact (MonotonicMap_preservesSetoid f H).
   Defined.
 
   Local Program Instance Prop_isPoset : isPoset Prop :=
     { leProp :=
-      fun p : Prop =>
-      fun q : Prop =>
-      p -> q
+      fun P : Prop =>
+      fun Q : Prop =>
+      P -> Q
     ; Poset_requiresSetoid := Prop_isSetoid
     }
   .
@@ -233,7 +233,7 @@ Module BasicPosetTheory.
   Qed.
 
   Next Obligation with firstorder with my_hints.
-    split; simpl...
+    intros f1 f2...
   Qed.
 
   Local Program Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
@@ -250,7 +250,7 @@ Module BasicPosetTheory.
   Qed.
 
   Next Obligation with firstorder with my_hints.
-    split; unfold flip...
+    intros [x1 H] [x2 H0]; unfold flip...
   Qed.
 
 End BasicPosetTheory.

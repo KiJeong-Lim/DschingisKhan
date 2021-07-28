@@ -249,6 +249,43 @@ Module MyUtilities.
     end
   .
 
+  Definition lt_0 {A : Type} : forall n : nat, n < 0 -> A :=
+    fun n : nat =>
+    fun H : S n <= 0 =>
+    let H2 : False := le_ind (S n) (fun x : nat => if Nat.eqb 0 x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb 0 m then False else True => I) 0 H in
+    False_rect A H2
+  .
+
+  Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
+    let lt_S_aux : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
+      fix lt_S_aux_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
+      match H as H0 in le _ n2' return n1 <= pred n2' with
+      | le_n _ => le_n n1
+      | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ _ => eq_refl end)
+      end
+    in
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun H : S n1 < S n2 =>
+    lt_S_aux (S n1) (S n2) H
+  .
+
+  Fixpoint mkFinSet (n : nat) {struct n} : forall i : nat, i < n -> FinSet n :=
+    match n with
+    | 0 => lt_0
+    | S n' =>
+      fun i : nat =>
+      match i with
+      | 0 =>
+        fun H : 0 < S n' =>
+        FZ n'
+      | S i' =>
+        fun H : S i' < S n' =>
+        FS n' (mkFinSet n' i' (lt_S i' n' H))
+      end
+    end
+  .
+
   Definition safe_nth {A : Type} : forall xs : list A, FinSet (length xs) -> A :=
     fix safe_nth_fix (xs : list A) {struct xs} : FinSet (length xs) -> A :=
     match xs as xs0 return FinSet (length xs0) -> A with
@@ -422,6 +459,11 @@ Module EqElim.
     end phi'
   .
 
+  Definition sym_eq {A : Type} : forall x : A, forall y : A, x = y -> y = x :=
+    fun x : A =>
+    eq_ind x (fun z : A => z = x) eq_refl
+  .
+
 End EqElim.
 
 Module MyUniverses.
@@ -435,38 +477,3 @@ Module MyUniverses.
   .
 
 End MyUniverses.
-
-Module MyCoinductive.
-
-  Set Primitive Projections.
-
-  Import MyUniverses.
-
-  Record IndexedContainer (I : InferiorUniverse) (O : InferiorUniverse) : SuperiorUniverse :=
-    { putCommand : O -> InferiorUniverse
-    ; getResponse : forall output : O, putCommand output -> InferiorUniverse
-    ; goToNext : forall output : O, forall comm : putCommand output, getResponse output comm -> I
-    }
-  .
-
-  Arguments putCommand {I} {O} _ _.
-
-  Arguments getResponse {I} {O} _ _ _.
-
-  Arguments goToNext {I} {O} _ _ _ _.
-
-  Definition runIndexedContainer {I : InferiorUniverse} {O : InferiorUniverse} (con : IndexedContainer I O) : (I -> InferiorUniverse) -> (O -> InferiorUniverse) :=
-    fun input_obj : I -> Type =>
-    fun output : O =>
-    {comm : con.(putCommand) output & forall res : con.(getResponse) output comm, input_obj (con.(goToNext) output comm res)}
-  .
-
-  Definition fmap {I : InferiorUniverse} {O : InferiorUniverse} {X : I -> InferiorUniverse} {Y : I -> InferiorUniverse} {con : IndexedContainer I O} : (forall i : I, X i -> Y i) -> (forall o : O, runIndexedContainer con X o -> runIndexedContainer con Y o) :=
-    fun f : forall i : I, X i -> Y i =>
-    fun o : O =>
-    fun A : runIndexedContainer con X o =>
-    let (com, H) := A in
-    existT _ com (fun res : getResponse con o com => f (goToNext con o com res) (H res))
-  .
-
-End MyCoinductive.

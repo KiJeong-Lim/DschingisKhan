@@ -244,22 +244,23 @@ Module PosetTheory.
     isLeastFixedPoint lfp f.
   Proof with eauto with *.
     intros f H lfp H0.
-    split.
-    - assert (claim1 : f lfp =< lfp).
-      { apply H0.
-        intros x H1.
-        assert (H2 : lfp =< x).
-        { transitivity (f x).
-          - apply H0...
-          - apply H1.
-        }
-        transitivity (f x)...
+    assert (claim1 : f lfp =< lfp).
+    { apply H0.
+      intros x H1.
+      assert (H2 : lfp =< x).
+      { transitivity (f x).
+        - apply H0...
+        - apply H1.
       }
-      apply Poset_asym.
-      + apply H0...
-      + apply claim1.
-    - intros fix_f H1.
-      apply H0...
+      transitivity (f x)...
+    }
+    enough (claim2 : lfp =< f lfp).
+    { split.
+      - apply Poset_asym...
+      - intros fix_f H1.
+        apply H0...
+    }
+    apply H0...
   Qed.
 
   Definition isGreatestFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=

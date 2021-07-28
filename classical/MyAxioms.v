@@ -3,13 +3,13 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module AxiomOfChoice.
 
-  Section AC_Statement.
+  Section StatementOfAC.
 
   Context {A : Type} {B : Type} (phi : A -> B -> Prop).
 
   Axiom AC : (forall x : A, forall y : B, phi x y) -> (exists f : A -> B, forall x : A, phi x (f x)).
 
-  End AC_Statement.
+  End StatementOfAC.
 
 End AxiomOfChoice.
 

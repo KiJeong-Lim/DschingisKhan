@@ -117,8 +117,7 @@ Module UntypedLamdbdaCalculus.
     subtm M1 M3.
   Proof with eauto.
     enough (claim1 : forall L : tm, forall N : tm, forall M : tm, subtm N L -> subtm M N -> subtm M L)...
-    induction L.
-    all: intros; inversion H; subst...
+    induction L; intros N M H H0; inversion H; subst...
     - constructor 2...
     - constructor 3...
     - constructor 4...
@@ -133,8 +132,7 @@ Module UntypedLamdbdaCalculus.
   Proof with try now (firstorder; eauto).
     intros XXX.
     enough (claim1 : forall M : tm, forall L : tm, subtm L M -> phi L)...
-    induction M.
-    all: intros L H; apply XXX; intros N H0 H1; inversion H0; subst...
+    induction M; intros L H; apply XXX; intros N H0 H1; inversion H0; subst...
     all: inversion H; subst...
   Qed.
 
@@ -158,7 +156,7 @@ Module UntypedLamdbdaCalculus.
       set (XP_AppL := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P1, (forall H' : M1 = L, XP P1 (eq_rect M1 (fun N1 : tm => subtm N1 P1) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M1 P1 P2 X') L H0)) (fun X' : subtm L P1 => fun IHX' : forall H' : L = L, XP P1 (eq_rect L (fun N1 : tm => subtm N1 P1) X' L H') => case_AppL P1 P2 X' (IHX' eq_refl))).
       set (XP_AppR := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P2, (forall H' : M1 = L, XP P2 (eq_rect M1 (fun N1 : tm => subtm N1 P2) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M1 P1 P2 X') L H0)) (fun X' : subtm L P2 => fun IHX' : forall H' : L = L, XP P2 (eq_rect L (fun N1 : tm => subtm N1 P2) X' L H') => case_AppR P1 P2 X' (IHX' eq_refl))).
       set (XP_LAbs := fun M0 : tm => fun y : ivar => fun Q : tm => fun H : M0 = L => case_eq M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 Q, (forall H' : M1 = L, XP Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' L H')) -> XP (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') L H0)) (fun X' : subtm L Q => fun IHX' : forall H' : L = L, XP Q (eq_rect L (fun N1 : tm => subtm N1 Q) X' L H') => case_LAbs y Q X' (IHX' eq_refl))).
-      apply (
+      exact (
         fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
         match X as X0 in subtm N0 M0 return forall H : N0 = L, XP M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 L H) with
         | subtmRefl M0 => fun H : M0 = L => XP_Refl M0 H 
@@ -168,7 +166,7 @@ Module UntypedLamdbdaCalculus.
         end
       ).
     }
-    apply (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
+    exact (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
   Defined.
 
   Fixpoint getFVs (M : tm) : list ivar :=
@@ -432,7 +430,7 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   Definition compose_substitution : substitution -> substitution -> substitution :=
-    fun sigma1 : substitution => fun sigma2 : substitution => fun x : ivar => run_substitution_on_tm sigma1 (sigma2 x)
+    fun sigma2 : substitution => fun sigma1 : substitution => fun x : ivar => run_substitution_on_tm sigma2 (sigma1 x)
   .
 
   Lemma distri_compose_cons :
