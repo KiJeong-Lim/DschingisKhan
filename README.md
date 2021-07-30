@@ -1,6 +1,6 @@
 # DschingisKhan
 
-Coq Practice
+My scratch pad
 
 # Build
 

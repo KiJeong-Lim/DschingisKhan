@@ -340,7 +340,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Resolve in_power_iff : aczel_hint.
 
-  Definition unions_I : forall I : InferiorUniverse, (I -> AczelSet) -> AczelSet :=
+  Definition unions' : forall I : InferiorUniverse, (I -> AczelSet) -> AczelSet :=
     fun I : InferiorUniverse =>
     fun X_i : I -> Tree =>
     let children : InferiorUniverse := {i : I & childrenOf (X_i i)} in
@@ -348,11 +348,11 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     RootNode children childtrees
   .
 
-  Lemma in_unions_I_iff :
+  Lemma in_unions'_iff :
     forall I : InferiorUniverse,
     forall X_i : I -> AczelSet,
     forall x : AczelSet,
-    elem x (unions_I I X_i) <-> (exists i : I, elem x (X_i i)).
+    elem x (unions' I X_i) <-> (exists i : I, elem x (X_i i)).
   Proof with eauto with *.
     intros I X_i x.
     split.
@@ -363,11 +363,11 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
       exists (existT _ i child_i)...
   Qed.
 
-  Global Hint Resolve in_unions_I_iff : aczel_hint.
+  Global Hint Resolve in_unions'_iff : aczel_hint.
 
   Definition unions : AczelSet -> AczelSet :=
     fun Xs : AczelSet =>
-    unions_I (childrenOf Xs) (@childTreeOf Xs)
+    unions' (childrenOf Xs) (@childTreeOf Xs)
   .
 
   Lemma in_unions_iff :
@@ -377,7 +377,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Proof with eauto with *.
     intros Xs x.
     unfold unions.
-    rewrite in_unions_I_iff.
+    rewrite in_unions'_iff.
     split.
     - intros [i [X_i H]]...
     - intros [X_i [[child_i H] [i H0]]]...

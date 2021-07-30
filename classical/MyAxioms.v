@@ -24,9 +24,9 @@ Module AxiomK.
     forall eq_val0 : x = x,
     phi eq_val0.
   Proof with eauto.
-    intros x phi.
+    intros x.
     set (eq_val := @eq_refl A x). 
-    intros phi_val0 eq_val0.
+    intros phi phi_val0 eq_val0.
     replace eq_val0 with eq_val...
     rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
     destruct eq_val0...

@@ -188,8 +188,8 @@ Module MyUtilities.
   Definition S_0 {A : Type} : forall n : nat, S n = O -> A :=
     fun n : nat =>
     fun H0 : S n = O =>
-    let H1 : O = S n := @eq_ind nat (S n) (fun x : nat => x = S n) eq_refl O H0 in
-    let H2 : False := @eq_ind nat O (fun x : nat => if Nat.eqb x O then True else False) I (S n) H1 in
+    let H1 : O = S n := eq_ind (S n) (fun x : nat => x = S n) eq_refl O H0 in
+    let H2 : False := eq_ind O (fun x : nat => if Nat.eqb x O then True else False) I (S n) H1 in
     False_rect A H2
   .
 
@@ -197,7 +197,7 @@ Module MyUtilities.
     fun n1 : nat =>
     fun n2 : nat =>
     fun H0 : S n1 = S n2 =>
-    @eq_ind nat (S n1) (fun x : nat => n1 = pred x) eq_refl (S n2) H0
+    eq_ind (S n1) (fun x : nat => n1 = pred x) eq_refl (S n2) H0
   .
 
   Inductive FinSet : nat -> Set :=
