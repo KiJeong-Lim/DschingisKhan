@@ -19,17 +19,18 @@ Module ClassicalDomainTheory.
     forall x : D,
     isOpen (U x).
   Proof with eauto with *.
-    intros x.
     assert ( claim1 :
+      forall x : D,
       forall y : D,
       forall z : D,
       member y (U x) ->
       y =< z ->
       member z (U x)
     ).
-    { intros y z H H0 H1.
+    { intros x y z H H0 H1.
       contradiction H...
     }
+    intros x.
     split...
     intros X H sup_X H0 H1.
     inversion H; subst.
@@ -60,8 +61,7 @@ Module ClassicalDomainTheory.
     assert (H3 : member x1 (preimage f (U (f x2)))) by now constructor.
     assert (H4 : isOpen (preimage f (U (f x2)))) by now apply H, U_x_isOpen.
     assert (H5 : member x2 (preimage f (U (f x2)))) by now apply (proj1 H4 x1 x2).
-    enough (H6 : member (f x2) (U (f x2)))...
-    inversion H5...
+    assert (H6 : member (f x2) (U (f x2))) by now inversion H5...
   Qed.
 
   Lemma ContinuousMapOnCpos_preservesDirected {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
@@ -252,7 +252,7 @@ Module ClassicalDomainTheory.
       rename x into f_i.
       transitivity (proj1_sig f_i x2).
       - apply (ContinuousMapOnCpos_isMonotonic)...
-        apply (proj2_sig f_i).
+        membership.
       - apply H1...
         apply (in_image f_i (fun f_i' : D ~> D' => proj1_sig f_i' x2))...
     }

@@ -61,11 +61,13 @@ Module MyCoInductive.
     BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd)
   .
 
-  Definition BisimilarityF_intro {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} : forall a : c->coefficient o, forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd) :=
+  Context {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out}.
+
+  Definition BisimilarityF_intro : forall a : c->coefficient o, forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd) :=
     Bisimilar1 c LHS RHS sim o
   .
 
-  Definition BisimilarityF_elim {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out} {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : BisimilarityF c LHS RHS sim o lhs rhs -> exists a : c->coefficient o, exists lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), exists rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) /\ lhs = existT _ a lhs_snd /\ rhs = existT _ a rhs_snd :=
+  Definition BisimilarityF_elim {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : BisimilarityF c LHS RHS sim o lhs rhs -> exists a : c->coefficient o, exists lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), exists rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) /\ lhs = existT _ a lhs_snd /\ rhs = existT _ a rhs_snd :=
     fun Hb : BisimilarityF c LHS RHS sim o lhs rhs =>
     match Hb with
     | Bisimilar1 c' LHS' RHS' sim' o' a' lhs_snd' rhs_snd' H_sim' => ex_intro _ a' (ex_intro _ lhs_snd' (ex_intro _ rhs_snd' (conj H_sim' (conj eq_refl eq_refl))))
@@ -80,7 +82,7 @@ Module MyCoInductive.
     fun o : Idx =>
     fun input : c->runContainer src o =>
     match input with
-    | existT _ coeff pow => existT _ coeff (fun n : c->getDegreeOf o coeff => hom (c->obtainIndex o coeff n) (pow n))
+    | existT _ a pow => existT _ a (fun n : c->getDegreeOf o a => hom (c->obtainIndex o a n) (pow n))
     end
   .
 
@@ -108,12 +110,12 @@ Module MyCoInductive.
 
   Global Notation " c '->unfold_myM' " := (unfold_myM c) (at level 5, left associativity) : type_scope.
 
-  Definition acc_myM {Idx : Type} {X : Idx -> Type} : forall c : Container Idx Idx, (forall i : Idx, X i -> c->runContainer X i) -> (forall i : Idx, X i -> c->myM i) :=
+  Definition acc_myM {Idx : Type} {X_i : Idx -> Type} : forall c : Container Idx Idx, (forall i : Idx, X_i i -> c->runContainer X_i i) -> (forall i : Idx, X_i i -> c->myM i) :=
     fun c : Container Idx Idx =>
-    fun coalg : forall i : Idx, X i -> c->runContainer X i =>
-    cofix acc_myM_cofix : forall i : Idx, X i -> c->myM i :=
+    fun coalg : forall i : Idx, X_i i -> c->runContainer X_i i =>
+    cofix acc_myM_cofix : forall i : Idx, X_i i -> c->myM i :=
     fun i : Idx =>
-    fun src : X i =>
+    fun src : X_i i =>
     c->fold_myM i (c->mapContainer acc_myM_cofix i (coalg i src))
   .
 

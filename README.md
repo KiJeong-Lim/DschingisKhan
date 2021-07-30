@@ -1,6 +1,6 @@
 # DschingisKhan
 
-My study notes for applied mathematics.
+Coq Practice
 
 # Build
 
