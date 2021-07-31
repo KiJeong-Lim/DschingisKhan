@@ -249,10 +249,10 @@ Module MyUtilities.
     end
   .
 
-  Definition lt_0 {A : Type} : forall n : nat, n < 0 -> A :=
+  Definition lt_0 {A : Type} : forall n : nat, n < O -> A :=
     fun n : nat =>
-    fun H : S n <= 0 =>
-    False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb 0 x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb 0 m then False else True => I) 0 H)
+    fun H : S n <= O =>
+    False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
   .
 
   Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=

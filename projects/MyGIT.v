@@ -172,7 +172,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     exists E : mathcalE, isGoedelSentence E A.
   Proof with eauto with *.
     intros the_first_goal_holds A A_is_expressible.
-    apply A_Diagonal_Lemma_a, the_first_goal_holds...
+    apply A_Diagonal_Lemma_a...
   Qed.
 
   Inductive T : ensemble nat :=
@@ -189,7 +189,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Proof with (tauto || eauto with *).
     intros [E [n [n_is_g_E E_is_true_iff_n_is_in_complement_T]]].
     assert (E_is_true_iff_n_is_not_in_T : isTrue E <-> ~ member n T) by firstorder.
-    assert (E_is_true_iff_n_is_in_T : isTrue E <-> member n T)...
+    enough (E_is_true_iff_n_is_in_T : isTrue E <-> member n T) by firstorder.
     split.
     - intros E_is_true.
       constructor.
@@ -204,7 +204,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Proof with eauto with *.
     intros StarOf_T_is_expressible.
     destruct (A_Diagonal_Lemma_a (completement T) StarOf_T_is_expressible) as [H H_is_GoedelSentence_for_complement_of_T].
-    contradiction (there_is_no_GoedelSentence_of_complement_of_T)...
+    contradiction there_is_no_GoedelSentence_of_complement_of_T...
   Qed.
 
   Theorem After_Tarski_2 :
@@ -212,7 +212,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     ~ is_expressible (completement T).
   Proof with eauto.
     intros the_first_goal_holds completement_of_T_is_expressible.
-    apply After_Tarski_1, the_first_goal_holds...
+    apply After_Tarski_1...
   Qed.
 
   Theorem After_Tarski_3 :
@@ -221,7 +221,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     ~ is_expressible T.
   Proof with eauto.
     intros the_first_goal_holds the_second_goal_holds T_is_expressible.
-    apply (After_Tarski_2 the_first_goal_holds), the_second_goal_holds...
+    apply After_Tarski_2...
   Qed.
 
   End Chapter1.
@@ -584,6 +584,156 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Proof with eauto.
     induction n; simpl; intros sigma...
     rewrite (IHn sigma)...
+  Qed.
+
+  Lemma occursFreeIn_tm_make_numeral :
+    forall val : nat,
+    forall x : vr,
+    occursFreeIn_tm x (make_numeral val) = false.
+  Proof with eauto.
+    induction val; simpl...
+  Qed.
+
+  Lemma vr_eq_dec_is_Nat_eq_dec {A : Type} :
+    forall x1 : A,
+    forall x2 : A,
+    forall z1 : vr,
+    forall z2 : vr,
+    (if vr_eq_dec z1 z2 then x1 else x2) = (if Nat.eq_dec z1 z2 then x1 else x2).
+  Proof with firstorder.
+    intros x1 x2 z1 z2.
+    destruct (vr_eq_dec z1 z2); destruct (Nat.eq_dec z1 z2)...
+  Qed.
+
+  Ltac eval_vr_eq_dec :=
+    repeat (rewrite vr_eq_dec_is_Nat_eq_dec; simpl)
+  .
+
+  Ltac simpl_eval_tm_make_numeral :=
+    repeat (rewrite substitute_tm_make_numeral); repeat (rewrite eval_tm_make_numeral)
+  .
+
+  Ltac simpl_in_eval_tm_make_numeral H := 
+    repeat (rewrite substitute_tm_make_numeral in H); repeat (rewrite eval_tm_make_numeral in H)
+  .
+
+  Ltac simplify_make_numeral := repeat (rewrite substitute_tm_make_numeral); repeat (apply occursFreeIn_tm_make_numeral).
+
+  Ltac eval_in_vr_eq_dec H :=
+    repeat (rewrite vr_eq_dec_is_Nat_eq_dec in H; simpl in H)
+  .
+
+  Ltac auto_show_it_is_sentence_loop :=
+    tryif (apply orb_false_iff; constructor) then auto_show_it_is_sentence_loop else (eval_vr_eq_dec; simplify_make_numeral)
+  .
+
+  Ltac auto_show_it_is_sentence :=
+    repeat intro; auto_show_it_is_sentence_loop
+  .
+
+  Fixpoint relation_of_arity (n : nat) : Type :=
+    match n with
+    | 0 => Prop
+    | S n' => nat -> relation_of_arity n'
+    end
+  .
+
+  Fixpoint lift_relation (n : nat) : relation_of_arity (S n) -> nat -> relation_of_arity n :=
+    match n as n0 return relation_of_arity (S n0) -> nat -> relation_of_arity n0 with
+    | 0 =>
+      fun pred : nat -> Prop =>
+      fun val : nat =>
+      pred val
+    | S n' =>
+      fun pred : nat -> nat -> relation_of_arity n' =>
+      fun val : nat =>
+      fun val' : nat =>
+      lift_relation n' (pred val') val 
+    end
+  .
+
+  Fixpoint express_relation (n : nat) : form -> relation_of_arity n -> Prop :=
+    match n as n0 return form -> relation_of_arity n0 -> Prop with
+    | 0 =>
+      fun f : form =>
+      fun pred : Prop =>
+      (forall x : vr, occursFreeIn_form x f = false) /\ (~ ~ pred <-> forall va : value_assignment, eval_form va f)
+    | S n' =>
+      fun f : form =>
+      fun pred : nat -> relation_of_arity n' =>
+      forall val : nat, express_relation n' (substitute_form [(n', make_numeral val)] f) (lift_relation n' pred val)
+    end
+  .
+
+  Example express_relation_example1 :
+    express_relation 2 (leq_form (ivar_tm 0) (ivar_tm 1)) (fun x0 : nat => fun x1 : nat => x0 <= x1).
+  Proof with eauto.
+    simpl.
+    intros val1 val2.
+    split.
+    - auto_show_it_is_sentence.
+    - split.
+      + intros H va.
+        eval_vr_eq_dec.
+        simpl_eval_tm_make_numeral...
+        lia.
+      + intros H.
+        assert (H0 := H (fun _ : vr => 0)).
+        eval_in_vr_eq_dec H0.
+        simpl_in_eval_tm_make_numeral H0...
+  Qed.
+
+  Fixpoint function_of_arity (n : nat) : Type :=
+    match n with
+    | 0 => nat
+    | S n' => nat -> function_of_arity n'
+    end
+  .
+
+  Fixpoint lift_function (n : nat) : function_of_arity (S n) -> nat -> function_of_arity n :=
+    match n as n0 return function_of_arity (S n0) -> nat -> function_of_arity n0 with
+    | 0 =>
+      fun func : nat -> nat =>
+      fun val : nat =>
+      func val
+    | S n' =>
+      fun func : nat -> nat -> function_of_arity n' =>
+      fun val : nat =>
+      fun val' : nat =>
+      lift_function n' (func val') val 
+    end
+  .
+
+  Fixpoint express_function (n : nat) : form -> function_of_arity n -> Prop :=
+    match n as n0 return form -> function_of_arity n0 -> Prop with
+    | 0 =>
+      fun f : form =>
+      fun func : nat =>
+      forall val : nat,
+      let f' : form := substitute_form [(0, make_numeral val)] f in
+      (forall x : vr, occursFreeIn_form x f' = false) /\ (val = func <-> forall va : value_assignment, eval_form va f')
+    | S n' =>
+      fun f : form =>
+      fun func : nat -> function_of_arity n' =>
+      forall val : nat, express_function n' (substitute_form [(n, make_numeral val)] f) (lift_function n' func val)
+    end
+  .
+
+  Example express_function_example1 :
+    express_function 3 (eqn_form (ivar_tm 0) (plus_tm (ivar_tm 1) (plus_tm (ivar_tm 2) (ivar_tm 3)))) (fun x1 : nat => fun x2 : nat => fun x3 : nat => x1 + (x2 + x3)).
+  Proof with eauto.
+    simpl.
+    intros val3 val2 val1 val0.
+    split.
+    - auto_show_it_is_sentence.
+    - split.
+      + intros H va.
+        eval_vr_eq_dec.
+        simpl_eval_tm_make_numeral...
+      + intros H.
+        assert (H0 := H (fun _ : vr => 0)).
+        eval_in_vr_eq_dec H0.
+        simpl_in_eval_tm_make_numeral H0...
   Qed.
 
   End Chapter2.

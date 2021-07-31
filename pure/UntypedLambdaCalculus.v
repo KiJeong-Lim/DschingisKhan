@@ -803,10 +803,10 @@ Module UntypedLamdbdaCalculus.
       { intros z H0.
         unfold cons_substitution.
         destruct (ivar_eq_dec y z).
-        + unfold eval_tm.
+        - unfold eval_tm.
           destruct (ivar_eq_dec (chi sigma (tmLam y M)) (chi sigma (tmLam y M)))...
           contradiction.
-        + apply eval_tm_ext.
+        - apply eval_tm_ext.
           intros z' H1.
           destruct (ivar_eq_dec (chi sigma (tmLam y M)) z')...
           subst.
