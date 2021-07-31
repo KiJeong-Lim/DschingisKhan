@@ -917,18 +917,18 @@ Module BasicTopology.
 
   Context {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A).
 
-  Let is_sub_rep : ensemble A -> ensemble (sig P) -> Prop :=
-    fun O : ensemble A =>
+  Let is_subset_rep : ensemble (sig P) -> ensemble A -> Prop :=
     fun O_sub : ensemble (sig P) =>
+    fun O : ensemble A =>
     forall x : sig P,
     member (proj1_sig x) O <-> member x O_sub
   .
 
-  Local Hint Unfold is_sub_rep : core.
+  Local Hint Unfold is_subset_rep : core.
 
   Definition isOpen_SubspaceTopology : ensemble (sig P) -> Prop :=
     fun O_sub : ensemble (@sig A P) =>
-    exists O : ensemble A, isOpen O /\ is_sub_rep O O_sub
+    exists O : ensemble A, isOpen O /\ is_subset_rep O_sub O
   .
 
   Local Hint Unfold isOpen_SubspaceTopology : core.
@@ -945,11 +945,8 @@ Module BasicTopology.
     isOpen_SubspaceTopology (unions Xs).
   Proof with try now firstorder; eauto with *.
     intros Xs H.
-    exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_sub_rep O O_sub /\ isOpen O)).
-    split.
-    - apply open_unions...
-    - intros x.
-      do 2 rewrite in_unions_iff...
+    exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_subset_rep O_sub O /\ isOpen O)).
+    split; [apply open_unions | intros x; do 2 rewrite in_unions_iff]...
   Qed.
 
   Lemma open_intersection_SubspaceTopology :
@@ -961,9 +958,7 @@ Module BasicTopology.
   Proof with try now firstorder; eauto with *.
     intros X1 X2 [O1 [H H0]] [O2 [H1 H2]].
     exists (intersection O1 O2).
-    split...
-    intros x.
-    do 2 rewrite in_intersection_iff...
+    split; [apply open_intersection | intros x; do 2 rewrite in_intersection_iff]...
   Qed.
 
   End BuildSubspaceTopology.
