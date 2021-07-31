@@ -39,7 +39,7 @@ Module ClassicalCpoTheory.
       contradiction H1.
       apply (proj2 (H0 x)).
       intros x0 H5.
-      destruct (H4 x0); [apply H6 | contradiction].
+      destruct (H4 x0) as [H6 | H6]; [apply H6 | contradiction].
     }
     apply not_all_ex_not in claim2.
     destruct claim2 as [x1 H4].
@@ -85,15 +85,15 @@ Module ClassicalCpoTheory.
       repeat split...
   Qed.
 
-  Lemma ContinuousMaps_preservesSupremum {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma square_up_image {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall f : D -> D',
     isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    isDirected (image f X) ->
-    {sup_Y : D' | isSupremum sup_Y (image f X) /\ f sup_X == sup_Y}.
+    forall H2 : isDirected (image f X),
+    f sup_X == proj1_sig (square_up_exists (image f X) H2).
   Proof with eauto with *.
     intros f H X H0 sup_X H1 H2.
     set (Y := image f X).
@@ -117,8 +117,28 @@ Module ClassicalCpoTheory.
       inversion H12; subst.
       contradiction H13...
     }
-    exists sup_Y...
+    apply Poset_asym...
   Qed.
+
+  Definition ContinuousMaps_preservesSupremum {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+    forall f : D -> D',
+    isContinuousMap f ->
+    forall X : ensemble D,
+    isDirected X ->
+    forall sup_X : D,
+    isSupremum sup_X X ->
+    isDirected (image f X) ->
+    {sup_Y : D' | isSupremum sup_Y (image f X) /\ f sup_X == sup_Y}.
+  Proof.
+    intros f H X H0 sup_X H1 H2.
+    destruct (square_up_exists (image f X) H2) as [sup_Y H4] eqn: H5.
+    exists sup_Y.
+    split.
+    - exact H4.
+    - assert (H6 := square_up_image f H X H0 sup_X H1 H2).
+      rewrite H5 in H6.
+      exact H6.
+  Defined.
 
   Definition characterization_of_ContinuousMap_on_cpos {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : (D -> D') -> Prop :=
     fun f : D -> D' =>
@@ -189,7 +209,7 @@ Module ClassicalCpoTheory.
         }
         assert (claim4 : nonempty (intersection (image (proj1_sig f) X) O)).
         { apply (proj2 H0 (image (proj1_sig f) X) claim3 (proj1_sig f sup_X))...
-          assert (claim4_aux : sup_Y == proj1_sig f sup_X).
+          assert (claim4_aux1 : sup_Y == proj1_sig f sup_X).
           { transitivity (proj1_sig f sup_X').
             - symmetry...
             - apply Poset_asym; apply (proj2_sig f)...
@@ -798,11 +818,8 @@ Module ClassicalCpoTheory.
   Proof with eauto with *.
     intros [f1 x1] [f2 x2] [H H0].
     simpl in *.
-    transitivity (proj1_sig f1 x2).
-    - apply ContinuousMapOnCpos_isMonotonic.
-      + membership.
-      + apply H0.
-    - apply H.
+    assert (H1 : isContinuousMap (proj1_sig f1)) by membership.
+    transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonic | apply H]...
   Qed.
 
   Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : ((D ~> D') * D) >=> D' :=
@@ -817,7 +834,7 @@ Module ClassicalCpoTheory.
     - unfold ScottApp.
       simpl.
       intros f.
-      apply (proj2_sig f).
+      membership.
     - intros x.
       assert (XXX : isMonotonicMap (fun f : D ~> D' => proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (f, x))).
       { intros f1 f2 H.

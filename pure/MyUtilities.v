@@ -11,14 +11,10 @@ Module MyUtilities.
     (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
     forall l : nat,
     P l.
-  Proof with try lia.
+  Proof with eauto.
     intros ind_claim l.
     apply ind_claim.
-    induction l...
-    intros m H.
-    apply ind_claim.
-    intros n H0.
-    apply IHl...
+    induction l; intros m H; inversion H; subst...
   Qed.
 
   Lemma div_mod_uniqueness :
@@ -30,29 +26,28 @@ Module MyUtilities.
     r < b ->
     a / b = q /\ a mod b = r.
   Proof with try (lia || now (firstorder; eauto)).
-    assert (H : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))).
+    assert (claim1 : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))).
     { intros x y.
       split.
       - intros H.
         induction H...
         destruct IHle as [z H0].
         exists (S z)...
-      - intros H.
-        destruct H as [z H]...
+      - intros [z H]...
     }
-    intros a b q r H0 H1.
-    assert (H2 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
-    assert (H3 : 0 <= a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
-    assert (claim1 : ~ q > a / b).
-    { intros H4.
-      enough (H5 : exists z : nat, q = S (a / b + z))...
-      destruct H5 as [z H5].
+    intros a b q r H H0.
+    assert (H1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
+    assert (H2 : 0 <= a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
+    assert (claim2 : ~ q > a / b).
+    { intros H3.
+      assert (H4 : exists z : nat, q = S (a / b + z)) by firstorder.
+      destruct H4 as [z H4].
       enough (so_we_obatain : b * q + r >= b * S (a / b) + r)...
     }
-    assert (claim2 : ~ q < a / b).
-    { intros H5.
-      enough (H6 : exists z : nat, a / b = S (q + z))...
-      destruct H6 as [z H6].
+    assert (claim3 : ~ q < a / b).
+    { intros H3.
+      assert (H4 : exists z : nat, a / b = S (q + z)) by firstorder.
+      destruct H4 as [z H4].
       enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
     }
     enough (therefore : q = a / b)...
@@ -114,10 +109,10 @@ Module MyUtilities.
 
   Fixpoint cantor_pairing (n : nat) {struct n} : nat * nat :=
     match n with
-    | 0 => (0, 0)
+    | O => (O, O)
     | S n' =>
       match cantor_pairing n' with
-      | (0, y) => (S y, 0)
+      | (O, y) => (S y, O)
       | (S x, y) => (x, S y)
       end
     end
@@ -134,9 +129,8 @@ Module MyUtilities.
       assert (H0 : x = 0) by lia.
       assert (H1 : y = 0) by lia.
       subst...
-    - induction y.
-      + intros x H.
-        assert (H0 : x = S z) by lia.
+    - induction y; intros x H.
+      + assert (Heq : x = S z) by lia.
         subst.
         simpl.
         destruct (cantor_pairing (z + sum_from_0_to z + 0)) as [x y] eqn: H0.
@@ -144,8 +138,7 @@ Module MyUtilities.
         rewrite Nat.add_0_r, Nat.add_comm in H0.
         rewrite H0 in H1.
         inversion H1; subst...
-      + intros x H.
-        assert (H0 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)) by now apply (IHy (S x)); lia.
+      + assert (H0 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)) by now apply (IHy (S x)); lia.
         assert (H1 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl.
         simpl.
         rewrite H1, <- H0...
@@ -162,14 +155,12 @@ Module MyUtilities.
     - intros x y H.
       inversion H; subst...
     - intros x y H.
-      destruct (cantor_pairing n) as [x' y'] eqn: H0.
-      destruct x'; inversion H; subst.
-      + repeat (rewrite Nat.add_0_r).
+      destruct (cantor_pairing n) as [[| x'] y'] eqn: H0; inversion H; subst.
+      + do 2 rewrite Nat.add_0_r.
         simpl.
         rewrite (IHn 0 y' eq_refl), Nat.add_0_l...
-      + rewrite (IHn (S x) y' eq_refl).
-        assert (H1 : forall x' : nat, S x' + y' = x' + S y') by lia.
-        repeat (rewrite H1)...
+      + assert (H1 : forall x' : nat, S x' + y' = x' + S y') by lia.
+        rewrite (IHn (S x) y' eq_refl), (H1 x)...
   Qed.
 
   Corollary cantor_pairing_is :
@@ -194,8 +185,7 @@ Module MyUtilities.
   Definition S_S : forall n1 : nat, forall n2 : nat, S n1 = S n2 -> n1 = n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    fun H0 : S n1 = S n2 =>
-    eq_ind (S n1) (fun x : nat => n1 = pred x) eq_refl (S n2) H0
+    eq_ind (S n1) (fun x : nat => n1 = pred x) eq_refl (S n2)
   .
 
   Inductive FinSet : nat -> Set :=
@@ -335,65 +325,51 @@ Module MyUtilities.
     forall n : nat,
     Phi n ->
     fold_right max 0 ns >= n.
-  Proof with (lia || eauto).
-    induction ns; simpl.
-    - intros H n H0.
-      contradiction (H n).
-    - intros H n H0.
-      destruct (Compare_dec.le_lt_dec n a)...
-      enough (fold_right max 0 ns >= n)...
-      destruct (Phi_dec n).
-      + destruct (H n p)...
-        enough (forall ks : list nat, forall k : nat, In k ks -> fold_right max 0 ks >= k) by firstorder.
-        induction ks; simpl...
-        intros k [H2 | H2]...
-        enough (fold_right Init.Nat.max 0 ks >= k)...
-      + apply IHns...
-        intros.
-        destruct (H i H1)...
-        firstorder.
+  Proof with try now (lia || firstorder; eauto).
+    induction ns; simpl...
+    intros H n H0.
+    destruct (Compare_dec.le_lt_dec n a)...
+    enough (fold_right max 0 ns >= n)...
+    destruct (Phi_dec n)...
+    destruct (H n p)...
+    enough (forall ks : list nat, forall k : nat, In k ks -> fold_right max 0 ks >= k)...
+    induction ks; simpl...
+    intros k [H2 | H2]...
+    enough (fold_right Init.Nat.max 0 ks >= k)...
   Qed.
 
   Lemma property2_of_fold_right_max_0 :
     forall ns : list nat,
     forall n : nat,
     fold_right max 0 ns > n <-> (exists i : nat, In i ns /\ i > n).
-  Proof with (lia || eauto).
-    induction ns; simpl.
-    - split...
-      now firstorder.
-    - intros n.
-      destruct (Compare_dec.le_lt_dec a (fold_right Init.Nat.max 0 ns)); split...
-      + intros H.
-        assert (H0 : fold_right Init.Nat.max 0 ns > n)...
-        destruct (proj1 (IHns n) H0) as [i [H1 H2]].
-        now firstorder.
-      + intros [i [[H | H] H0]].
-        * subst...
-        * enough (fold_right max 0 ns > n)...
-          apply IHns...
-      + intros H.
-        exists a...
-      + intros [i [[H | H] H0]].
-        * subst...
-        * enough (fold_right Init.Nat.max 0 ns > n)...
-          apply IHns...
+  Proof with try now (lia || firstorder; eauto).
+    induction ns; simpl...
+    intros n.
+    destruct (Compare_dec.le_lt_dec a (fold_right Init.Nat.max 0 ns)); split.
+    - intros H.
+      assert (H0 : fold_right Init.Nat.max 0 ns > n)...
+    - intros [i [[H | H] H0]]...
+      enough (fold_right max 0 ns > n)...
+    - intros H.
+      exists a...
+    - intros [i [[H | H] H0]]...
+      enough (fold_right Init.Nat.max 0 ns > n)...
   Qed.
 
-  Lemma property3_of_fold_right_max_0 :
+  Definition property3_of_fold_right_max_0 :
     forall ns1 : list nat,
     forall ns2 : list nat,
     fold_right max 0 (ns1 ++ ns2) = max (fold_right max 0 ns1) (fold_right max 0 ns2).
   Proof.
-    apply fold_right_max_0_app.
-  Qed.
+    exact fold_right_max_0_app.
+  Defined.
 
   Lemma property4_of_fold_right_max_0 :
     forall ns : list nat,
     forall n : nat,
     In n ns ->
     fold_right max 0 ns >= n.
-  Proof with (lia || eauto).
+  Proof with try now (lia || firstorder; eauto).
     induction ns; simpl...
     intros n [H | H]...
     enough (fold_right max 0 ns >= n)...
@@ -404,7 +380,7 @@ Module MyUtilities.
     forall ns2 : list nat,
     (forall n : nat, In n ns1 -> In n ns2) ->
     fold_right max 0 ns1 <= fold_right max 0 ns2.
-  Proof with (lia || eauto).
+  Proof with try now (lia || firstorder; eauto).
     induction ns1; simpl...
     intros ns2 H.
     destruct (Compare_dec.le_lt_dec a (fold_right max 0 ns1)).

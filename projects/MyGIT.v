@@ -155,7 +155,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
       - intros H_n_is_true.
         assert (n_is_in_StarOfA : member n (StarOf A)) by firstorder.
         inversion n_is_in_StarOfA as [A' n' d_n_is_in_A A_is_A' n_is_n']; subst...
-      - firstorder.
+      - now firstorder.
     }
     assert (d_n_is_g_H_n : enum_mathcalE (diagonalizer n) = appnat H n).
     { unfold diagonalizer.
@@ -188,7 +188,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Proof with (tauto || eauto with *).
     intros [E [n [n_is_g_E E_is_true_iff_n_is_in_complement_T]]].
     assert (E_is_true_iff_n_is_not_in_T : isTrue E <-> ~ member n T) by firstorder.
-    enough (E_is_true_iff_n_is_in_T : isTrue E <-> member n T) by firstorder.
+    enough (E_is_true_iff_n_is_in_T : isTrue E <-> member n T) by tauto.
     split.
     - intros E_is_true.
       constructor.
@@ -355,12 +355,10 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     - auto_rewrite.
     - auto_rewrite.
     - intros x.
-      split.
-      + intros H.
-        assert (H0 : In x (getFreeVars_form f) /\ x <> v) by now apply (in_remove vr_eq_dec (getFreeVars_form f) x v).
+      split; intros H.
+      + assert (H0 : In x (getFreeVars_form f) /\ x <> v) by now apply (in_remove vr_eq_dec (getFreeVars_form f) x v).
         simpl_vr_eq_dec.
-      + intros H.
-        simpl_vr_eq_dec.
+      + simpl_vr_eq_dec.
         apply in_in_remove...
   Qed.
 
@@ -490,7 +488,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     assert (claim1 : forall v : vr, forall x : vr, max v 0 < x -> (if vr_eq_dec x v then true else false) = false) by now simpl_vr_eq_dec; lia.
     unfold getMaxNumOfFreeVars_tm.
     induction t; simpl...
-    all: auto_rewrite; rewrite fold_right_max_0_app in H; (split; [apply IHt1 | apply IHt2])...
+    all: auto_rewrite; rewrite fold_right_max_0_app in H; split; [apply IHt1 | apply IHt2]...
   Qed.
 
   Definition isFreshVarIn_substitute_tm (sigma : substitution) (z : vr) (t : tm) : Prop :=
@@ -624,15 +622,15 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     repeat (rewrite vr_eq_dec_is_Nat_eq_dec in H; simpl in H)
   .
 
-  Ltac auto_show_it_is_sentence_aux :=
+  Ltac auto_show_it_is_sentence_aux1 :=
     tryif (apply orb_false_iff; split)
-    then auto_show_it_is_sentence_aux
+    then auto_show_it_is_sentence_aux1
     else (eval_vr_eq_dec; simplify_make_numeral)
   .
 
   Ltac auto_show_it_is_sentence :=
     repeat intro;
-    auto_show_it_is_sentence_aux
+    auto_show_it_is_sentence_aux1
   .
 
   Fixpoint relation_of_arity (n : nat) : Type :=

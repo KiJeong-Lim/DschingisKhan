@@ -480,7 +480,7 @@ Module BasicPosetTheory.
 
   Global Notation " D1 >=> D2 " := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
 
-  Add Parametric Morphism (A : Type) (B : Type) (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
+  Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
   as MonotonicMap_Morphism.
   Proof.

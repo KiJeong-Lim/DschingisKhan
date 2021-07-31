@@ -1059,7 +1059,6 @@ Module ConstructiveCpoTheory.
   Lemma open_full_ScottTopology :
     isOpen_ScottTopology full.
   Proof with eauto with *.
-    unfold isOpen_ScottTopology.
     split.
     - now firstorder.
     - unfold full.
@@ -1071,18 +1070,16 @@ Module ConstructiveCpoTheory.
     (forall X : ensemble D, member X Xs -> isOpen_ScottTopology X) ->
     isOpen_ScottTopology (unions Xs).
   Proof with firstorder.
-    unfold isOpen_ScottTopology.
     intros Xs H.
     split.
     - intros x y.
-      do 2 rewrite in_unions_iff...
+      repeat (rewrite in_unions_iff)...
     - intros X H1 sup_X.
       rewrite in_unions_iff.
       intros H2 [X_i [H3 H4]].
       destruct (proj2 (H X_i H4) X H1 sup_X H2 H3) as [x H5].
       exists x.
-      try rewrite in_intersection_iff in *.
-      rewrite in_unions_iff...
+      rewrite in_intersection_iff, in_unions_iff in *...
   Qed.
 
   Lemma open_intersection_ScottTopology :
@@ -1092,7 +1089,6 @@ Module ConstructiveCpoTheory.
     isOpen_ScottTopology X2 ->
     isOpen_ScottTopology (intersection X1 X2).
   Proof with firstorder.
-    unfold isOpen_ScottTopology.
     intros X1 X2 H H0.
     split.
     - intros x y.
