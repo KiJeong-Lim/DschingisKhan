@@ -18,7 +18,7 @@ Module ClassicalCpoTheory.
   Lemma U_x_isOpen {D : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} :
     forall x : D,
     isOpen (U x).
-  Proof with eauto with *.
+  Proof with eauto with *. (* Thanks to Clare Jang *)
     assert ( claim1 :
       forall x : D,
       forall y : D,

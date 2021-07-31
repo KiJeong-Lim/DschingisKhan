@@ -1022,12 +1022,39 @@ Module ConstructiveCpoTheory.
 
   Section BuildScottTopology.
 
-  Context {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset).
+  Context {D : Type} `{D_isPoset : isPoset D}.
+
+  Let ScottOpen_cond1 : ensemble D -> Prop :=
+    fun O : ensemble D =>
+    forall x : D,
+    forall y : D,
+    member x O ->
+    x =< y ->
+    member y O
+  .
+
+  Local Hint Unfold ScottOpen_cond1 : core.
+
+  Let ScottOpen_cond2 : ensemble D -> Prop :=
+    fun O : ensemble D =>
+    forall X : ensemble D,
+    isDirected X ->
+    forall sup_X : D,
+    isSupremum sup_X X ->
+    member sup_X O ->
+    nonempty (intersection X O)
+  .
+
+  Local Hint Unfold ScottOpen_cond2 : core.
 
   Definition isOpen_ScottTopology : ensemble D -> Prop :=
     fun O : ensemble D =>
-    (forall x : D, forall y : D, member x O -> x =< y -> member y O) /\ (forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O -> nonempty (intersection X O))
+    ScottOpen_cond1 O /\ ScottOpen_cond2 O
   .
+
+  Local Hint Unfold isOpen_ScottTopology : core.
+
+  Context (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset).
 
   Lemma open_full_ScottTopology :
     isOpen_ScottTopology full.

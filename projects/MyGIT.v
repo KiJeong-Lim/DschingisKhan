@@ -9,8 +9,6 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Import ListNotations MyUtilities MyEnsemble.
 
-  Section Chapter1.
-
   Class GoedelianLanguage (mathcalE : Type) : Type :=
     { enum_mathcalE : nat -> mathcalE
     ; mathcalE_is_denumerable : forall E : mathcalE, {n : nat | enum_mathcalE n = E}
@@ -27,6 +25,8 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     }
   .
 
+  Section An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
+
   Context (mathcalE : Type) `{mathcalE_is_goedelian : GoedelianLanguage mathcalE}.
 
   Definition diagonalizer : nat -> nat :=
@@ -34,7 +34,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     proj1_sig (mathcalE_is_denumerable (appnat (enum_mathcalE n) n))
   .
 
-  Local Hint Unfold diagonalizer : my_hints.
+  Local Hint Unfold diagonalizer : core.
 
   Lemma diagonalizer_diagonalizes :
     forall n : nat,
@@ -43,7 +43,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     enum_mathcalE (diagonalizer n) = appnat E n.
   Proof with eauto with *.
     unfold diagonalizer.
-    intros n E H'.
+    intros n E H_eqE.
     subst.
     destruct (mathcalE_is_denumerable (appnat (enum_mathcalE n) n)) as [d_n H]...
   Qed.
@@ -55,14 +55,14 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     isTrue (appnat H n) <-> member n A
   .
 
-  Local Hint Unfold expressPredicate : my_hints.
+  Local Hint Unfold expressPredicate : core.
 
   Definition is_expressible : ensemble nat -> Prop :=
     fun A : ensemble nat =>
     exists H : mathcalE, expressPredicate H A
   .
 
-  Local Hint Unfold is_expressible : my_hints.
+  Local Hint Unfold is_expressible : core.
 
   Inductive StarOf : ensemble nat -> ensemble nat :=
   | InStarOf :
@@ -72,7 +72,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     member n (StarOf ns)
   .
 
-  Local Hint Constructors StarOf : my_hints.
+  Local Hint Constructors StarOf : core.
 
   Definition isCorrect : Prop :=
     isSubsetOf isProvable isTrue /\ isSubsetOf (intersection isRefutable isTrue) \emptyset
@@ -155,8 +155,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
       - intros H_n_is_true.
         assert (n_is_in_StarOfA : member n (StarOf A)) by firstorder.
         inversion n_is_in_StarOfA as [A' n' d_n_is_in_A A_is_A' n_is_n']; subst...
-      - intros d_n_is_in_A.
-        apply H_express_StarOf_A...
+      - firstorder.
     }
     assert (d_n_is_g_H_n : enum_mathcalE (diagonalizer n) = appnat H n).
     { unfold diagonalizer.
@@ -224,9 +223,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     apply After_Tarski_2...
   Qed.
 
-  End Chapter1.
-
-  Section Chapter2.
+  End An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
 
   Definition vr : Set :=
     nat
@@ -329,12 +326,10 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     In x (getFreeVars_tm t) <-> occursFreeIn_tm x t = true.
   Proof with try now eauto.
     induction t; simpl.
-    - simpl_vr_eq_dec.
-    - split...
-    - intros x...
-    - auto_rewrite.
-    - auto_rewrite.
-    - auto_rewrite.
+    1: simpl_vr_eq_dec.
+    1: split...
+    1: intros x...
+    all: auto_rewrite.
   Qed.
 
   Fixpoint getFreeVars_form (f : form) : list vr :=
@@ -352,11 +347,12 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     forall x : vr,
     In x (getFreeVars_form f) <-> occursFreeIn_form x f = true.
   Proof with try now firstorder.
-    induction f; simpl...
+    induction f; simpl.
     - auto_rewrite.
       do 2 rewrite the_rule_of_getFreeVars_tm...
     - auto_rewrite.
       do 2 rewrite the_rule_of_getFreeVars_tm...
+    - auto_rewrite.
     - auto_rewrite.
     - intros x.
       split.
@@ -375,7 +371,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Fixpoint eval_tm (va : value_assignment) (t : tm) : nat :=
     match t with
     | ivar_tm x => va x
-    | zero_tm => 0
+    | zero_tm => O
     | succ_tm t1 => S (eval_tm va t1)
     | plus_tm t1 t2 => eval_tm va t1 + eval_tm va t2
     | mult_tm t1 t2 => eval_tm va t1 * eval_tm va t2
@@ -422,21 +418,17 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     (forall x : vr, occursFreeIn_form x f = true -> va1 x = va2 x) ->
     eval_form va1 f <-> eval_form va2 f.
   Proof with (reflexivity || eauto).
-    induction f; simpl...
-    - intros va1 va2 H; rewrite (eval_tm_extensionality t va1 va2), (eval_tm_extensionality t0 va1 va2)...
-      all: intros x H0; apply H, orb_true_iff...
-    - intros va1 va2 H; rewrite (eval_tm_extensionality t va1 va2), (eval_tm_extensionality t0 va1 va2)...
-      all: intros x H0; apply H, orb_true_iff...
-    - intros va1 va2 H; rewrite (IHf va1 va2)...
-    - intros va1 va2 H; rewrite (IHf1 va1 va2), (IHf2 va1 va2)...
-      all: intros x H0; apply H, orb_true_iff...
-    - intros va1 va2 H.
-      enough (claim1 : forall n : nat, eval_form (fun z : vr => if vr_eq_dec v z then n else va1 z) f <->  eval_form (fun z : vr => if vr_eq_dec v z then n else va2 z) f) by firstorder.
-      intros n.
-      rewrite (IHf (fun z : vr => if vr_eq_dec v z then n else va1 z) (fun z : vr => if vr_eq_dec v z then n else va2 z))...
-      simpl_vr_eq_dec.
-      apply H.
-      simpl_vr_eq_dec.
+    induction f; simpl; intros va1 va2 H.
+    1, 2: rewrite (eval_tm_extensionality t va1 va2), (eval_tm_extensionality t0 va1 va2)...
+    5: rewrite (IHf va1 va2)...
+    5: rewrite (IHf1 va1 va2), (IHf2 va1 va2)...
+    1, 2, 3, 4, 5, 6: intros x H0; apply H, orb_true_iff...
+    enough (claim1 : forall n : nat, eval_form (fun z : vr => if vr_eq_dec v z then n else va1 z) f <->  eval_form (fun z : vr => if vr_eq_dec v z then n else va2 z) f) by firstorder.
+    intros n.
+    rewrite (IHf (fun z : vr => if vr_eq_dec v z then n else va1 z) (fun z : vr => if vr_eq_dec v z then n else va2 z))...
+    simpl_vr_eq_dec.
+    apply H.
+    simpl_vr_eq_dec.
   Qed.
 
   Fixpoint make_numeral (n : nat) : tm :=
@@ -568,7 +560,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
       simpl.
       case_vr_eq_dec v x.
       + case_vr_eq_dec v v.
-        now destruct (vr_eq_dec (chi sigma (all_form v f)) (chi sigma (all_form v f))).
+        now case_vr_eq_dec (chi sigma (all_form v f)) (chi sigma (all_form v f)).
       + case_vr_eq_dec x v.
         apply eval_tm_extensionality.
         intros x' H2.
@@ -580,8 +572,6 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
         apply claim1_aux1, the_rule_of_getFreeVars_form.
         simpl_vr_eq_dec.
   Qed.
-
-(* [Trash]
 
   Lemma substitute_tm_make_numeral :
     forall n : nat,
@@ -616,25 +606,33 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   .
 
   Ltac simpl_eval_tm_make_numeral :=
-    repeat (rewrite substitute_tm_make_numeral); repeat (rewrite eval_tm_make_numeral)
+    repeat (rewrite substitute_tm_make_numeral);
+    repeat (rewrite eval_tm_make_numeral)
   .
 
   Ltac simpl_in_eval_tm_make_numeral H := 
-    repeat (rewrite substitute_tm_make_numeral in H); repeat (rewrite eval_tm_make_numeral in H)
+    repeat (rewrite substitute_tm_make_numeral in H);
+    repeat (rewrite eval_tm_make_numeral in H)
   .
 
-  Ltac simplify_make_numeral := repeat (rewrite substitute_tm_make_numeral); repeat (apply occursFreeIn_tm_make_numeral).
+  Ltac simplify_make_numeral :=
+    repeat (rewrite substitute_tm_make_numeral);
+    repeat (apply occursFreeIn_tm_make_numeral)
+  .
 
   Ltac eval_in_vr_eq_dec H :=
     repeat (rewrite vr_eq_dec_is_Nat_eq_dec in H; simpl in H)
   .
 
-  Ltac auto_show_it_is_sentence_loop :=
-    tryif (apply orb_false_iff; constructor) then auto_show_it_is_sentence_loop else (eval_vr_eq_dec; simplify_make_numeral)
+  Ltac auto_show_it_is_sentence_aux :=
+    tryif (apply orb_false_iff; split)
+    then auto_show_it_is_sentence_aux
+    else (eval_vr_eq_dec; simplify_make_numeral)
   .
 
   Ltac auto_show_it_is_sentence :=
-    repeat intro; auto_show_it_is_sentence_loop
+    repeat intro;
+    auto_show_it_is_sentence_aux
   .
 
   Fixpoint relation_of_arity (n : nat) : Type :=
@@ -670,23 +668,6 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
       forall val : nat, express_relation n' (substitute_form [(n', make_numeral val)] f) (lift_relation n' pred val)
     end
   .
-
-  Example express_relation_example1 :
-    express_relation 2 (leq_form (ivar_tm 0) (ivar_tm 1)) (fun x0 : nat => fun x1 : nat => x0 <= x1).
-  Proof with (lia || eauto).
-    simpl.
-    intros val1 val2.
-    split.
-    - auto_show_it_is_sentence.
-    - split.
-      + intros H va.
-        eval_vr_eq_dec.
-        simpl_eval_tm_make_numeral...
-      + intros H.
-        assert (H0 := H (fun _ : vr => 0)).
-        eval_in_vr_eq_dec H0.
-        simpl_in_eval_tm_make_numeral H0...
-  Qed.
 
   Fixpoint function_of_arity (n : nat) : Type :=
     match n with
@@ -724,6 +705,23 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     end
   .
 
+  Example express_relation_example1 :
+    express_relation 2 (leq_form (ivar_tm 0) (ivar_tm 1)) (fun x0 : nat => fun x1 : nat => x0 <= x1).
+  Proof with (lia || eauto).
+    simpl.
+    intros val1 val2.
+    split.
+    - auto_show_it_is_sentence.
+    - split.
+      + intros H va.
+        eval_vr_eq_dec.
+        simpl_eval_tm_make_numeral...
+      + intros H.
+        assert (H0 := H (fun _ : vr => 0)).
+        eval_in_vr_eq_dec H0.
+        simpl_in_eval_tm_make_numeral H0...
+  Qed.
+
   Example express_function_example1 :
     express_function 3 (eqn_form (ivar_tm 0) (plus_tm (ivar_tm 1) (plus_tm (ivar_tm 2) (ivar_tm 3)))) (fun x1 : nat => fun x2 : nat => fun x3 : nat => x1 + (x2 + x3)).
   Proof with eauto.
@@ -740,8 +738,5 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
         eval_in_vr_eq_dec H0.
         simpl_in_eval_tm_make_numeral H0...
   Qed.
-*)
-
-  End Chapter2.
 
 End Smullyan's_Goedel's_Incompleteness_Theorems.

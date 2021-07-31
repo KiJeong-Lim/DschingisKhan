@@ -3,6 +3,7 @@ Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
+Require Import DschingisKhan.pure.MyUtilities.
 
 Global Create HintDb my_hints.
 
@@ -14,7 +15,7 @@ Module BasicSetoidTheory.
     }
   .
 
-  Global Notation "x == y" := (eqProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x == y " := (eqProp x y) (at level 70, no associativity) : type_scope.
 
   Lemma Setoid_refl {A : Type} `{A_isSetoid : isSetoid A} :
     forall x1 : A,
@@ -391,7 +392,7 @@ Module BasicPosetTheory.
     }
   .
 
-  Global Notation "x =< y" := (leProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x =< y " := (leProp x y) (at level 70, no associativity) : type_scope.
 
   Lemma Poset_refl {A : Type} `{A_isPoset : isPoset A} :
     forall x1 : A,
@@ -477,7 +478,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
 
-  Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 >=> D2 " := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
 
   Add Parametric Morphism (A : Type) (B : Type) (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
@@ -911,7 +912,7 @@ Module BasicTopology.
 
   Global Hint Unfold isContinuousMap : my_hints.
 
-  Global Notation "D1 ~> D2" := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 ~> D2 " := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
