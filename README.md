@@ -21,5 +21,6 @@ coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v
 coqc -Q . DschingisKhan classical/MyAxioms.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
-coqc -Q . DschingisKhan app/MyCoin.v
+coqc -Q . DschingisKhan projects/MyCoin.v
+coqc -Q . DschingisKhan projects/MyGIT.v
 ```

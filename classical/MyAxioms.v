@@ -5,9 +5,9 @@ Module AxiomOfChoice.
 
   Section StatementOfAC.
 
-  Context {A : Type} {B : Type} (phi : A -> B -> Prop).
+  Context {A : Type} {B : Type} (psi : A -> B -> Prop).
 
-  Axiom AC : (forall x : A, forall y : B, phi x y) -> (exists f : A -> B, forall x : A, phi x (f x)).
+  Axiom AC : (forall x : A, forall y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
 
   End StatementOfAC.
 

@@ -239,7 +239,7 @@ Module MyUtilities.
     | FZ n0 => PZ n0
     | FS n0 i' =>
       match n0 as n1 return forall i0' : FinSet n1, P (S n1) (FS n1 i0') with
-      | 0 =>
+      | O =>
         fun i0' : FinSet O =>
         @FinSet_case0 (fun i1 : FinSet O => P 1 (FS O i1)) i0'
       | S n0' =>
@@ -252,8 +252,7 @@ Module MyUtilities.
   Definition lt_0 {A : Type} : forall n : nat, n < 0 -> A :=
     fun n : nat =>
     fun H : S n <= 0 =>
-    let H2 : False := le_ind (S n) (fun x : nat => if Nat.eqb 0 x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb 0 m then False else True => I) 0 H in
-    False_rect A H2
+    False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb 0 x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb 0 m then False else True => I) 0 H)
   .
 
   Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
@@ -294,7 +293,8 @@ Module MyUtilities.
     end
   .
 
-  Lemma forallb_true_iff {A : Type} {p : A -> bool} (xs : list A) :
+  Lemma forallb_true_iff {A : Type} (p : A -> bool) :
+    forall xs : list A,
     forallb p xs = true <-> (forall x : A, In x xs -> p x = true).
   Proof with try now firstorder.
     induction xs; simpl...

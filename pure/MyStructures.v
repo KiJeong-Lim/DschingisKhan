@@ -320,6 +320,24 @@ Module MyEnsemble.
 
   Global Hint Resolve in_preimage_iff : my_hints.
 
+  Definition completement {A : Type} : ensemble A -> ensemble A :=
+    fun X : ensemble A =>
+    fun x : A =>
+    ~ member x X
+  .
+
+  Global Hint Unfold completement : my_hints.
+
+  Global Notation " X '^c' " := (completement X) (at level 15, right associativity) : type_scope.
+
+  Lemma in_complement_iff {A : Type} :
+    forall x : A,
+    forall X : ensemble A,
+    member x (completement X) <-> ~ member x X.
+  Proof with reflexivity.
+    intros x X...
+  Qed.
+
   Global Ltac membership :=
     let claim := fresh "H" in
     match goal with
@@ -505,8 +523,8 @@ Module BasicPosetTheory.
 
   Local Program Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
     { leProp :=
-      fun x1 : @sig A P =>
-      fun x2 : @sig A P =>
+      fun x1 : sig P =>
+      fun x2 : sig P =>
       proj1_sig x1 =< proj1_sig x2
     ; Poset_requiresSetoid := SubSetoid (@Poset_requiresSetoid A A_requiresPoset)
     }
@@ -805,8 +823,8 @@ Module BasicPosetTheory.
   Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
     fun sup_X : D =>
     fun X : ensemble D =>
-    fun subPoset : ensemble D =>
-    member sup_X subPoset /\ (forall d : D, member d subPoset -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
+    fun P : ensemble D =>
+    member sup_X P /\ (forall d : D, member d P -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
   .
 
   Lemma isSupremumIn_iff {D : Type} `{D_isPoset : isPoset D} :
@@ -899,7 +917,7 @@ Module BasicTopology.
     exists O : ensemble A, isOpen O /\ (forall x : sig P, member (proj1_sig x) O <-> member x O_sub)
   .
 
-  Lemma open_full_SubspaceTopolgy {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+  Lemma open_full_SubspaceTopolgy {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
     forall xs : ensemble (sig P),
     (forall x : sig P, member x xs) ->
     isOpen_SubspaceTopology xs.
@@ -909,7 +927,7 @@ Module BasicTopology.
     split...
   Qed.
 
-  Lemma open_unions_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+  Lemma open_unions_SubspaceTopology {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
     forall Xs : ensemble (ensemble (sig P)),
     (forall X : ensemble (sig P), member X Xs -> isOpen_SubspaceTopology X) ->
     forall xs : ensemble (sig P),
@@ -942,7 +960,7 @@ Module BasicTopology.
         * split... 
   Qed.
 
-  Lemma open_intersection_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} :
+  Lemma open_intersection_SubspaceTopology {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
     forall X1 : ensemble (sig P),
     forall X2 : ensemble (sig P),
     isOpen_SubspaceTopology X1 ->
@@ -971,9 +989,9 @@ Module BasicTopology.
 
   Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
     { isOpen := isOpen_SubspaceTopology
-    ; open_full := open_full_SubspaceTopolgy
-    ; open_unions := open_unions_SubspaceTopology
-    ; open_intersection := open_intersection_SubspaceTopology
+    ; open_full := open_full_SubspaceTopolgy A_requiresTopologicalSpace
+    ; open_unions := open_unions_SubspaceTopology A_requiresTopologicalSpace
+    ; open_intersection := open_intersection_SubspaceTopology A_requiresTopologicalSpace
     }
   .
 

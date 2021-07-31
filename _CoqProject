@@ -9,4 +9,5 @@ pure/SetTheory.v
 classical/MyAxioms.v
 classical/DomainTheory.v
 
-app/MyCoin.v
+projects/MyCoin.v
+projects/MyGIT.v

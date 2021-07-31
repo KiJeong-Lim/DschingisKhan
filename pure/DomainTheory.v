@@ -689,49 +689,46 @@ Module CAWU.
     exist isMonotonicMap (proj1_sig (supremum_m (fun f : D >=> D => compose_m f b =< compose_m b f))) (supOfMonotonicMaps_isMonotonic (fun f : D >=> D => compose_m f b =< compose_m b f))
   .
 
-  Lemma companion_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
+  Section companion_properties.
+
+  Context {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D).
+
+  Lemma companion_isCompatibleFor :
     companion b is-compatible-for b.
   Proof with eauto with *.
-    intros b.
     apply supremum_isCompatibleFor...
   Qed.
 
-  Lemma companion_isTheGreatestCompatibleFunction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
+  Lemma companion_isTheGreatestCompatibleFunction :
     forall f : D >=> D,
     f is-compatible-for b ->
     f =< companion b.
   Proof with eauto with *.
-    intros b f H.
+    intros f H.
     unfold companion.
     set (F := fun f_i : D >=> D => compose_m f_i b =< compose_m b f_i).
     apply (supOfMonotonicMaps_isSupremum F)...
   Qed.
 
-  Lemma b_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
+  Lemma b_le_t :
     b =< companion b.
   Proof with eauto with *.
-    intros b.
     apply companion_isTheGreatestCompatibleFunction...
   Qed.
 
-  Lemma id_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
+  Lemma id_le_t :
     id_m =< companion b.
   Proof with eauto with *.
-    intros b.
     apply companion_isTheGreatestCompatibleFunction, id_isCompatibleFor.
   Qed.
 
-  Lemma tt_le_t {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
-    forall b : D >=> D,
+  Lemma tt_le_t :
     compose_m (companion b) (companion b) =< companion b.
   Proof with eauto with *.
-    intros b.
     apply companion_isTheGreatestCompatibleFunction, compose_isCompatibleFor; apply companion_isCompatibleFor.
   Qed.
+
+  End companion_properties.
 
 End CAWU.
 
@@ -996,7 +993,7 @@ End PowerSetCoLa.
 
 Module ConstructiveCpoTheory.
 
-  Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory BasicTopology.
+  Import BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory BasicTopology.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
     fun X : ensemble D =>

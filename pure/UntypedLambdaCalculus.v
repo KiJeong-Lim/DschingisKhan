@@ -74,7 +74,7 @@ Module UntypedLamdbdaCalculus.
     M = N.
   Proof with lia.
     intros M N X.
-    destruct X; intros.
+    destruct X; intros H.
     - reflexivity.
     - assert (H0 := subtm_getRank M P1 X).
       simpl in *...
@@ -100,7 +100,7 @@ Module UntypedLamdbdaCalculus.
     subtm M2 M1 ->
     M1 = M2.
   Proof with eauto.
-    intros.
+    intros M1 M2 H H0.
     apply subtm_and_same_rank_implies_same_term...
     enough (getRank M1 <= getRank M2 /\ getRank M2 <= getRank M1) by lia.
     split; apply subtm_getRank...
@@ -129,7 +129,7 @@ Module UntypedLamdbdaCalculus.
     (forall M : tm, (forall N : tm, subtm N M -> N <> M -> phi N) -> phi M) ->
     forall M : tm,
     phi M.
-  Proof with try now (firstorder; eauto).
+  Proof with (congruence || eauto).
     intros XXX.
     enough (claim1 : forall M : tm, forall L : tm, subtm L M -> phi L)...
     induction M; intros L H; apply XXX; intros N H0 H1; inversion H0; subst...
@@ -207,7 +207,11 @@ Module UntypedLamdbdaCalculus.
   .
 
   Definition cons_substitution : ivar -> tm -> substitution -> substitution :=
-    fun x : ivar => fun M : tm => fun sigma : substitution => fun y : ivar => if ivar_eq_dec x y then M else sigma y
+    fun x : ivar =>
+    fun M : tm =>
+    fun sigma : substitution =>
+    fun y : ivar =>
+    if ivar_eq_dec x y then M else sigma y
   .
 
   Fixpoint mk_substitution (sigma : list (ivar * tm)) {struct sigma} : substitution :=
@@ -229,7 +233,7 @@ Module UntypedLamdbdaCalculus.
     intros x.
     enough (get_max_ivar M < x -> ~ In x (getFVs M)) by now rewrite getFVs_isFreeIn, not_true_iff_false in H.
     assert (H1 : In x (getFVs M) -> fold_right_max_0 (getFVs M) >= x) by apply fold_right_max_0_in.
-    enough (fold_right_max_0 (getFVs M) >= x -> fold_right_max_0 (getFVs M) < x -> False) by now eauto...
+    enough (fold_right_max_0 (getFVs M) >= x -> fold_right_max_0 (getFVs M) < x -> False) by eauto...
   Qed.
 
   Definition isFreshIn_substitution : ivar -> substitution -> tm -> bool :=
@@ -351,7 +355,12 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   Definition equiv_substitution_wrt : substitution -> substitution -> tm -> Prop :=
-    fun sigma1 : substitution => fun sigma2 : substitution => fun M : tm => forall x : ivar, isFreeIn x M = true -> sigma1 x = sigma2 x
+    fun sigma1 : substitution =>
+    fun sigma2 : substitution =>
+    fun M : tm =>
+    forall x : ivar,
+    isFreeIn x M = true ->
+    sigma1 x = sigma2 x
   .
 
   Lemma property1_of_equiv_substitution_wrt :
@@ -392,23 +401,23 @@ Module UntypedLamdbdaCalculus.
       simpl.
       rewrite Nat.eqb_eq...
     - intros sigma1 sigma2 H.
-      assert (H1 : equiv_substitution_wrt sigma1 sigma2 M1).
+      assert (claim1 : equiv_substitution_wrt sigma1 sigma2 M1).
       { intros x H0.
         apply H.
         simpl.
         rewrite orb_true_iff...
       }
-      assert (H2 : equiv_substitution_wrt sigma1 sigma2 M2).
+      assert (claim2 : equiv_substitution_wrt sigma1 sigma2 M2).
       { intros x H0.
         apply H.
         simpl.
         rewrite orb_true_iff...
       }
       simpl.
-      rewrite (IHM1 sigma1 sigma2 H1), (IHM2 sigma1 sigma2 H2)...
+      rewrite (IHM1 sigma1 sigma2 claim1), (IHM2 sigma1 sigma2 claim2)...
     - intros sigma1 sigma2 H.
       simpl.
-      assert (H0 : equiv_substitution_wrt (cons_substitution y (tmVar (chi sigma1 (tmLam y M))) sigma1) (cons_substitution y (tmVar (chi sigma2 (tmLam y M))) sigma2) M).
+      assert (claim3 : equiv_substitution_wrt (cons_substitution y (tmVar (chi sigma1 (tmLam y M))) sigma1) (cons_substitution y (tmVar (chi sigma2 (tmLam y M))) sigma2) M).
       { intros x H0.
         unfold cons_substitution.
         destruct (ivar_eq_dec y x).
@@ -417,8 +426,8 @@ Module UntypedLamdbdaCalculus.
           simpl.
           rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq...
       }
-      assert (H1 : chi sigma1 (tmLam y M) = chi sigma2 (tmLam y M)) by now apply chi_equiv_substitution_wrt.
-      rewrite (IHM (cons_substitution y (tmVar (chi sigma1 (tmLam y M))) sigma1) (cons_substitution y (tmVar (chi sigma2 (tmLam y M))) sigma2) H0), H1...
+      assert (claim4 : chi sigma1 (tmLam y M) = chi sigma2 (tmLam y M)) by now apply chi_equiv_substitution_wrt.
+      rewrite (IHM (cons_substitution y (tmVar (chi sigma1 (tmLam y M))) sigma1) (cons_substitution y (tmVar (chi sigma2 (tmLam y M))) sigma2) claim3), claim4...
   Qed.
 
   Lemma trivial_substitution :
@@ -459,21 +468,21 @@ Module UntypedLamdbdaCalculus.
       destruct (ivar_eq_dec y y)...
     - unfold isFreshIn_substitution in H.
       rewrite forallb_true_iff in H.
-      assert (H1 : isFreeIn y (sigma1 z) = false).
+      assert (claim1 : isFreeIn y (sigma1 z) = false).
       { apply negb_true_iff, H, getFVs_isFreeIn.
         simpl.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq...
       }
-      assert ( claim1 :
+      assert ( claim2 :
         forall u : ivar,
         isFreeIn u (sigma1 z) = true ->
         cons_substitution y N sigma2 u = sigma2 u
       ).
       { unfold cons_substitution.
-        intros u H2.
+        intros u H1.
         destruct (ivar_eq_dec y u)...
         subst.
-        rewrite H1 in H2...
+        rewrite claim1 in H1...
       }
       apply main_property_of_equiv_substitution_wrt...
   Qed.
@@ -493,7 +502,10 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   Definition FreeIn_wrt : ivar -> substitution -> tm -> Prop :=
-    fun x : ivar => fun sigma : substitution => fun M : tm => exists y : ivar, isFreeIn y M = true /\ isFreeIn x (sigma y) = true
+    fun x : ivar =>
+    fun sigma : substitution =>
+    fun M : tm =>
+    exists y : ivar, isFreeIn y M = true /\ isFreeIn x (sigma y) = true
   .
 
   Theorem isFreeIn_wrt_true_iff (M : tm) :
@@ -523,8 +535,7 @@ Module UntypedLamdbdaCalculus.
       split; intros H.
       + destruct H.
         assert (H1 := proj1 (IHM x (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma)) H).
-        destruct H1 as [w].
-        destruct H1.
+        destruct H1 as [w [H1 H2]].
         set (z := chi sigma (tmLam y M)).
         fold z in H, H0, H2.
         destruct (ivar_eq_dec y w).
@@ -538,8 +549,7 @@ Module UntypedLamdbdaCalculus.
           unfold cons_substitution in H2.
           destruct (ivar_eq_dec y w)...
       + rename y into z.
-        destruct H as [y].
-        destruct H.
+        destruct H as [y [H H0]].
         set (w := chi sigma (tmLam z M)).
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq in H.
         destruct (ivar_eq_dec w x).
@@ -567,7 +577,6 @@ Module UntypedLamdbdaCalculus.
     (forall z : ivar, FreeIn_wrt z sigma M <-> FreeIn_wrt z sigma' M') ->
     chi sigma M = chi sigma' M'.
   Proof with try now firstorder.
-    Ltac aux_tac H x H0 := apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
     unfold chi, FreeIn_wrt.
     intros sigma sigma' M M' H.
     enough (fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma x)) (getFVs M)) = fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma' x)) (getFVs M'))) by lia.
@@ -577,10 +586,9 @@ Module UntypedLamdbdaCalculus.
     ).
     { intros z.
       repeat (rewrite in_flat_map).
-      split; intros.
-      all: destruct H0 as [x H0]; rewrite getFVs_isFreeIn in H0.
-      1: assert (H1 : exists y : ivar, isFreeIn y M' = true /\ isFreeIn z (sigma' y) = true) by now aux_tac H x H0.
-      2: assert (H1 : exists y : ivar, isFreeIn y M = true /\ isFreeIn z (sigma y) = true) by now aux_tac H x H0.
+      split; intros [x H0]; rewrite getFVs_isFreeIn in H0.
+      1: assert (H1 : exists y : ivar, isFreeIn y M' = true /\ isFreeIn z (sigma' y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
+      2: assert (H1 : exists y : ivar, isFreeIn y M = true /\ isFreeIn z (sigma y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
       all: destruct H1 as [y [H1 H2]]; exists y; repeat (rewrite getFVs_isFreeIn)...
     }
     assert (H0 : fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma y)) (getFVs M)) = fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma' y)) (getFVs M'))) by now apply fold_right_max_0_ext.
@@ -644,9 +652,7 @@ Module UntypedLamdbdaCalculus.
         (exists x' : ivar, isFreeIn x' (tmLam x M) = true /\ isFreeIn y' (compose_substitution sigma2 sigma1 x') = true) ->
         (exists u : ivar, isFreeIn u (tmLam y (run_substitution_on_tm (cons_substitution x (tmVar y) sigma1) M)) = true /\ isFreeIn y' (sigma2 u) = true)
       ).
-      { intros y' H.
-        destruct H as [x'].
-        destruct H.
+      { intros y' [x' [H H0]].
         simpl in H.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq in H.
         destruct H.
@@ -700,7 +706,7 @@ Module UntypedLamdbdaCalculus.
     isFreeIn z (tmLam x M) = false ->
     run_substitution_on_tm (cons_substitution x N sigma) M = run_substitution_on_tm (cons_substitution z N sigma) (run_substitution_on_tm (cons_substitution x (tmVar z) nil_subtitution) M).
   Proof with try now firstorder.
-    intros.
+    intros x z M N sigma H.
     rewrite (main_property_of_compose_substitution M (cons_substitution x (tmVar z) nil_subtitution) (cons_substitution z N sigma)).
     apply main_property_of_equiv_substitution_wrt.
     intros w H0.

@@ -585,11 +585,7 @@ Module ClassicalCpoTheory.
           rename x into x2.
           assert (H7 : isSupremum (proj1_sig f (sup_X1, x2)) (image (fun x1 : D1 => proj1_sig f (x1, x2)) X1)) by now apply claim8.
           assert (H8 : y' == proj1_sig f (sup_X1, x2)) by now apply (isSupremum_unique (image (fun x1 : D1 => proj1_sig f (x1, x2)) X1)).
-          assert (H9 : proj1_sig f (sup_X1, x2) =< proj1_sig f (sup_X1, sup_X2)).
-          { apply (ContinuousMapOnCpos_isMonotonic (fun x2' : D2 => proj1_sig f (sup_X1, x2')) (H sup_X1)).
-            apply claim6...
-          }
-          transitivity (proj1_sig f (sup_X1, x2))...
+          assert (H9 : proj1_sig f (sup_X1, x2) =< proj1_sig f (sup_X1, sup_X2)) by now apply (ContinuousMapOnCpos_isMonotonic (fun x2' : D2 => proj1_sig f (sup_X1, x2')) (H sup_X1)), claim6...
         - intros H7.
           apply claim7.
           intros y' H8.
@@ -703,12 +699,10 @@ Module ClassicalCpoTheory.
         { apply claim4.
           transitivity (proj1_sig f sup_X').
           - symmetry...
-          - enough (H6 : sup_X' == sup_X).
-            { apply MonotonicMap_preservesSetoid.
-              - membership.
-              - apply H6.
-            }
-            apply (isSupremum_unique X)...
+          - assert (H6 : sup_X' == sup_X) by now apply (isSupremum_unique X).
+            apply MonotonicMap_preservesSetoid.
+            + membership.
+            + apply H6.
         }
         assert (claim6 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
         { intros y.
@@ -777,11 +771,10 @@ Module ClassicalCpoTheory.
         { apply claim4.
           transitivity (proj1_sig f sup_X').
           - symmetry...
-          - enough (H6 : sup_X' == sup_X).
-            + apply MonotonicMap_preservesSetoid.
-              * membership.
-              * apply H6.
-            + apply (isSupremum_unique X)...
+          - assert (H6 : sup_X' == sup_X) by now apply (isSupremum_unique X).
+            apply MonotonicMap_preservesSetoid.
+            + membership.
+            + apply H6.
         }
         assert (claim6 : forall y : D3, member y (image (proj1_sig f) X) <-> member y Y).
         { intros y.
