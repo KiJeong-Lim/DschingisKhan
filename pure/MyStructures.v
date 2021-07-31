@@ -913,7 +913,7 @@ Module BasicTopology.
 
   Global Notation "D1 ~> D2" := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
 
-  Section BuildSubspaceTopology.
+  Section BuildSubspaceTopology. (* Referring to "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
   Context {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A).
 
@@ -931,30 +931,27 @@ Module BasicTopology.
 
   Lemma open_full_SubspaceTopolgy :
     isOpen_SubspaceTopology full.
-  Proof with eauto with *.
+  Proof with ((now firstorder) || eauto with *).
     unfold isOpen_SubspaceTopology.
     exists full.
     split...
-    firstorder.
   Qed.
 
   Lemma open_unions_SubspaceTopology :
     forall Xs : ensemble (ensemble (sig P)),
     (forall X : ensemble (sig P), member X Xs -> isOpen_SubspaceTopology X) ->
     isOpen_SubspaceTopology (unions Xs).
-  Proof with eauto with *.
+  Proof with ((now firstorder) || eauto with *).
     unfold isOpen_SubspaceTopology.
     intros Xs H.
     exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_sub_rep O O_sub /\ isOpen O)).
     split.
     - apply open_unions.
-      unfold member.
-      firstorder.
+      unfold member...
     - unfold is_sub_rep.
       intros x.
       do 2 rewrite in_unions_iff.
-      unfold member at 2.
-      firstorder.
+      unfold member at 2...
   Qed.
 
   Lemma open_intersection_SubspaceTopology :
@@ -963,15 +960,14 @@ Module BasicTopology.
     isOpen_SubspaceTopology X1 ->
     isOpen_SubspaceTopology X2 ->
     isOpen_SubspaceTopology (intersection X1 X2).
-  Proof with eauto with *.
+  Proof with ((now firstorder) || eauto with *).
     unfold isOpen_SubspaceTopology.
     intros X1 X2 [O1 [H H0]] [O2 [H1 H2]].
     exists (intersection O1 O2).
     split...
     unfold is_sub_rep.
     intros x.
-    do 2 rewrite in_intersection_iff.
-    firstorder.
+    do 2 rewrite in_intersection_iff...
   Qed.
 
   End BuildSubspaceTopology.
