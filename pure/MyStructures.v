@@ -946,8 +946,7 @@ Module BasicTopology.
     exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_sub_rep O O_sub /\ isOpen O)).
     split.
     - apply open_unions...
-    - unfold is_sub_rep.
-      intros x.
+    - intros x.
       do 2 rewrite in_unions_iff...
   Qed.
 
@@ -962,7 +961,6 @@ Module BasicTopology.
     intros X1 X2 [O1 [H H0]] [O2 [H1 H2]].
     exists (intersection O1 O2).
     split...
-    unfold is_sub_rep.
     intros x.
     do 2 rewrite in_intersection_iff...
   Qed.
