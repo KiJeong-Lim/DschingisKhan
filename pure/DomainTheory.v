@@ -1020,86 +1020,71 @@ Module ConstructiveCpoTheory.
     }
   .
 
-  Definition isOpen_ScottTopology {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} : ensemble D -> Prop :=
+  Section BuildScottTopology.
+
+  Context {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset).
+
+  Definition isOpen_ScottTopology : ensemble D -> Prop :=
     fun O : ensemble D =>
     (forall x : D, forall y : D, member x O -> x =< y -> member y O) /\ (forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O -> nonempty (intersection X O))
   .
 
-  Global Hint Unfold isOpen_ScottTopology : my_hints.
-
-  Lemma open_full_ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset) :
-    forall xs : ensemble D,
-    (forall x : D, member x xs) ->
-    isOpen_ScottTopology xs.
+  Lemma open_full_ScottTopology :
+    isOpen_ScottTopology full.
   Proof with eauto with *.
-    intros xs H.
+    unfold isOpen_ScottTopology.
     split.
     - now firstorder.
-    - intros X [[x H0] H1] sup_X H2 H3...
+    - unfold full.
+      intros X [[x H] H0] sup_X H1 H2...
   Qed.
 
-  Lemma open_unions_ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset) :
+  Lemma open_unions_ScottTopology :
     forall Xs : ensemble (ensemble D),
     (forall X : ensemble D, member X Xs -> isOpen_ScottTopology X) ->
-    forall xs : ensemble D,
-    (forall x : D, member x xs <-> member x (unions Xs)) ->
-    isOpen_ScottTopology xs.
-  Proof with eauto with *.
-    intros Xs H xs H0.
+    isOpen_ScottTopology (unions Xs).
+  Proof with firstorder.
+    unfold isOpen_ScottTopology.
+    intros Xs H.
     split.
-    - intros x y H1 H2.
-      assert (H3 := proj1 (H0 x) H1).
-      apply in_unions_iff in H3.
-      destruct H3 as [X [H3 H4]].
-      assert (H5 := proj1 (H X H4) x y).
-      apply H0, in_unions_iff...
-    - intros X H1 sup_X H2 H3.
-      inversion H1; subst.
-      assert (H6 := proj1 (H0 sup_X) H3).
-      rewrite in_unions_iff in H6.
-      destruct H6 as [X' [H6 H7]].
-      destruct (proj2 (H X' H7) X H1 sup_X H2 H6) as [x H8].
+    - intros x y.
+      do 2 rewrite in_unions_iff...
+    - intros X H1 sup_X.
+      rewrite in_unions_iff.
+      intros H2 [X_i [H3 H4]].
+      destruct (proj2 (H X_i H4) X H1 sup_X H2 H3) as [x H5].
       exists x.
-      revert H8.
-      repeat (rewrite in_intersection_iff).
-      intros [H8 H9].
-      split...
-      apply H0...
+      try rewrite in_intersection_iff in *.
+      rewrite in_unions_iff...
   Qed.
 
-  Lemma open_intersection_ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset) :
+  Lemma open_intersection_ScottTopology :
     forall X1 : ensemble D,
     forall X2 : ensemble D,
     isOpen_ScottTopology X1 ->
     isOpen_ScottTopology X2 ->
-    forall xs : ensemble D,
-    (forall x : D, member x xs <-> member x (intersection X1 X2)) ->
-    isOpen_ScottTopology xs.
-  Proof with eauto with *.
-    intros X1 X2 H H0 xs H1.
+    isOpen_ScottTopology (intersection X1 X2).
+  Proof with firstorder.
+    unfold isOpen_ScottTopology.
+    intros X1 X2 H H0.
     split.
-    - intros x y H2 H3.
-      apply H1.
-      assert (H4 := proj1 (H1 x) H2).
-      revert H4.
+    - intros x y.
+      repeat (rewrite in_intersection_iff)...
+    - intros X H1 sup_X.
       repeat (rewrite in_intersection_iff).
-      intros [H4 H5].
-      split; [apply (proj1 H x y) | apply (proj1 H0 x y)]...
-    - intros X H2 sup_X H3 H4.
-      assert (H5 := proj1 (H1 sup_X) H4).
-      revert H5.
+      intros H2 [H3 H4].
+      destruct (proj2 H X H1 sup_X H2 H3) as [x1 H5].
+      destruct (proj2 H0 X H1 sup_X H2 H4) as [x2 H6].
+      revert H5 H6.
       repeat (rewrite in_intersection_iff).
-      intros [H5 H6].
-      destruct (proj2 H X H2 sup_X H3 H5) as [x1 H7].
-      destruct (proj2 H0 X H2 sup_X H3 H6) as [x2 H8].
-      revert H7 H8.
-      repeat (rewrite in_intersection_iff).
-      intros [H7 H8] [H9 H10].
-      destruct (proj2 H2 x1 H7 x2 H9) as [x [H11 [H12 H13]]].
-      enough (H14 : member x xs) by now exists x.
-      apply H1, in_intersection_iff.
-      split; [apply (proj1 H x1 x) | apply (proj1 H0 x2 x)]...
+      intros [H5 H6] [H7 H8].
+      destruct (proj2 H1 x1 H5 x2 H7) as [x [H9 [H10 H11]]].
+      unfold nonempty.
+      exists x.
+      repeat (rewrite in_intersection_iff)...
   Qed.
+
+  End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
     { isOpen := isOpen_ScottTopology

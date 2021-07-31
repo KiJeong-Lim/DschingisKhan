@@ -872,26 +872,27 @@ Module BasicTopology.
 
   Import MyEnsemble.
 
+  Definition full {A : Type} : ensemble A :=
+    fun x : A =>
+    x = x
+  .
+
+  Global Hint Unfold full : my_hints.
+
   Class isTopologicalSpace (A : Type) : Type :=
     { isOpen : ensemble A -> Prop
     ; open_full :
-      forall xs : ensemble A,
-      (forall x : A, member x xs) ->
-      isOpen xs
+      isOpen full
     ; open_unions :
       forall Xs : ensemble (ensemble A),
       (forall X : ensemble A, member X Xs -> isOpen X) ->
-      forall xs : ensemble A,
-      (forall x : A, member x xs <-> member x (unions Xs)) ->
-      isOpen xs
+      isOpen (unions Xs)
     ; open_intersection :
       forall X1 : ensemble A,
       forall X2 : ensemble A,
       isOpen X1 ->
       isOpen X2 ->
-      forall xs : ensemble A,
-      (forall x : A, member x xs <-> member x (intersection X1 X2)) ->
-      isOpen xs
+      isOpen (intersection X1 X2)
     }
   .
 
@@ -912,83 +913,71 @@ Module BasicTopology.
 
   Global Notation "D1 ~> D2" := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
 
-  Definition isOpen_SubspaceTopology {A : Type} {P : A -> Prop} `{A_isTopologicalSpace : isTopologicalSpace A} : ensemble (sig P) -> Prop :=    
-    fun O_sub : ensemble (@sig A P) =>
-    exists O : ensemble A, isOpen O /\ (forall x : sig P, member (proj1_sig x) O <-> member x O_sub)
+  Section BuildSubspaceTopology.
+
+  Context {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A).
+
+  Let is_sub_rep : ensemble A -> ensemble (sig P) -> Prop :=
+    fun O : ensemble A =>
+    fun O_sub : ensemble (sig P) =>
+    forall x : sig P,
+    member (proj1_sig x) O <-> member x O_sub
   .
 
-  Lemma open_full_SubspaceTopolgy {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
-    forall xs : ensemble (sig P),
-    (forall x : sig P, member x xs) ->
-    isOpen_SubspaceTopology xs.
+  Definition isOpen_SubspaceTopology : ensemble (sig P) -> Prop :=
+    fun O_sub : ensemble (@sig A P) =>
+    exists O : ensemble A, isOpen O /\ is_sub_rep O O_sub
+  .
+
+  Lemma open_full_SubspaceTopolgy :
+    isOpen_SubspaceTopology full.
   Proof with eauto with *.
-    intros xs H.
-    exists (fun x : A => x = x).
+    unfold isOpen_SubspaceTopology.
+    exists full.
     split...
+    firstorder.
   Qed.
 
-  Lemma open_unions_SubspaceTopology {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
+  Lemma open_unions_SubspaceTopology :
     forall Xs : ensemble (ensemble (sig P)),
     (forall X : ensemble (sig P), member X Xs -> isOpen_SubspaceTopology X) ->
-    forall xs : ensemble (sig P),
-    (forall x : sig P, member x xs <-> member x (unions Xs)) ->
-    isOpen_SubspaceTopology xs.
+    isOpen_SubspaceTopology (unions Xs).
   Proof with eauto with *.
-    intros Xs H xs H0.
-    set (xss := fun O : ensemble A => isOpen O /\ (exists X : ensemble (@sig A P), member X Xs /\ (forall x : sig P, member (proj1_sig x) O <-> member x X))).
-    exists (unions xss).
+    unfold isOpen_SubspaceTopology.
+    intros Xs H.
+    exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_sub_rep O O_sub /\ isOpen O)).
     split.
-    - apply (open_unions xss)...
-      intros X [H1 H2]...
-    - intros x.
-      rewrite in_unions_iff.
-      split.
-      + intros [X [H1 H2]].
-        destruct H2 as [H2 [xs' [H3 H4]]].
-        apply H0, in_unions_iff.
-        exists xs'.
-        split...
-        apply H4...
-      + intros H1.
-        assert (H2 : member x (unions Xs)) by now apply H0.
-        rewrite in_unions_iff in H2.
-        destruct H2 as [X [H2 H3]].
-        destruct (H X H3) as [O [H4 H5]].
-        exists O.
-        split.
-        * apply H5...
-        * split... 
+    - apply open_unions.
+      unfold member.
+      firstorder.
+    - unfold is_sub_rep.
+      intros x.
+      do 2 rewrite in_unions_iff.
+      unfold member at 2.
+      firstorder.
   Qed.
 
-  Lemma open_intersection_SubspaceTopology {A : Type} {P : A -> Prop} (A_isTopologicalSpace : isTopologicalSpace A) :
+  Lemma open_intersection_SubspaceTopology :
     forall X1 : ensemble (sig P),
     forall X2 : ensemble (sig P),
     isOpen_SubspaceTopology X1 ->
     isOpen_SubspaceTopology X2 ->
-    forall xs : ensemble (sig P),
-    (forall x : sig P, member x xs <-> member x (intersection X1 X2)) ->
-    isOpen_SubspaceTopology xs.
+    isOpen_SubspaceTopology (intersection X1 X2).
   Proof with eauto with *.
     unfold isOpen_SubspaceTopology.
-    intros X1 X2 [X1' [H H0]] [X2' [H1 H2]] xs H3.
-    exists (intersection X1' X2').
-    split.
-    - apply (open_intersection X1' X2')...
-    - intros x.
-      rewrite in_intersection_iff.
-      split.
-      + intros [H4 H5].
-        apply H3, in_intersection_iff.
-        split; [apply H0 | apply H2]...
-      + intros H4.
-        assert (H5 := proj1 (H3 x) H4).
-        apply in_intersection_iff in H5.
-        destruct H5 as [H5 H6].
-        split; [apply H0 | apply H2]...
+    intros X1 X2 [O1 [H H0]] [O2 [H1 H2]].
+    exists (intersection O1 O2).
+    split...
+    unfold is_sub_rep.
+    intros x.
+    do 2 rewrite in_intersection_iff.
+    firstorder.
   Qed.
 
+  End BuildSubspaceTopology.
+
   Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
-    { isOpen := isOpen_SubspaceTopology
+    { isOpen := isOpen_SubspaceTopology A_requiresTopologicalSpace
     ; open_full := open_full_SubspaceTopolgy A_requiresTopologicalSpace
     ; open_unions := open_unions_SubspaceTopology A_requiresTopologicalSpace
     ; open_intersection := open_intersection_SubspaceTopology A_requiresTopologicalSpace
