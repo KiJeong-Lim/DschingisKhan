@@ -78,7 +78,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     isSubsetOf isProvable isTrue /\ isSubsetOf (intersection isRefutable isTrue) \emptyset
   .
 
-  Local Hint Unfold isCorrect : my_hints.
+  Local Hint Unfold isCorrect : core.
 
   Inductive P : ensemble nat :=
   | InP :
@@ -87,7 +87,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     member n P
   .
 
-  Local Hint Constructors P : my_hints.
+  Local Hint Constructors P : core.
 
   Theorem After_Goedel_with_shades_of_Tarski :
     isCorrect ->
@@ -181,7 +181,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     member n T
   .
 
-  Local Hint Constructors T : my_hints.
+  Local Hint Constructors T : core.
 
   Theorem there_is_no_GoedelSentence_of_complement_of_T :
     ~ (exists E : mathcalE, isGoedelSentence E (completement T)).
