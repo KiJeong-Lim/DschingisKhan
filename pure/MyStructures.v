@@ -916,7 +916,7 @@ Module BasicTopology.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
-  Context {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A).
+  Context {A : Type} (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
 
   Let is_subset_rep : ensemble (sig P) -> ensemble A -> Prop :=
     fun O_sub : ensemble (sig P) =>
@@ -965,10 +965,10 @@ Module BasicTopology.
   End BuildSubspaceTopology.
 
   Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
-    { isOpen := isOpen_SubspaceTopology A_requiresTopologicalSpace
-    ; open_full := open_full_SubspaceTopolgy A_requiresTopologicalSpace
-    ; open_unions := open_unions_SubspaceTopology A_requiresTopologicalSpace
-    ; open_intersection := open_intersection_SubspaceTopology A_requiresTopologicalSpace
+    { isOpen := isOpen_SubspaceTopology P A_requiresTopologicalSpace
+    ; open_full := open_full_SubspaceTopolgy P A_requiresTopologicalSpace
+    ; open_unions := open_unions_SubspaceTopology P A_requiresTopologicalSpace
+    ; open_intersection := open_intersection_SubspaceTopology P A_requiresTopologicalSpace
     }
   .
 

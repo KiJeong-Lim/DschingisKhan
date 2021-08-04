@@ -9,7 +9,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Import ListNotations MyUtilities MyEnsemble.
 
-  Class GoedelianLanguage (mathcalE : Type) : Type :=
+  Class isGoedelianLanguage (mathcalE : Type) : Type :=
     { enum_mathcalE : nat -> mathcalE
     ; mathcalE_is_denumerable : forall E : mathcalE, {n : nat | enum_mathcalE n = E}
     ; isSentence : ensemble mathcalE
@@ -27,7 +27,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Section An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
 
-  Context (mathcalE : Type) `{mathcalE_is_goedelian : GoedelianLanguage mathcalE}.
+  Context (mathcalE : Type) `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
 
   Definition diagonalizer : nat -> nat :=
     fun n : nat =>
@@ -65,7 +65,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Local Hint Unfold is_expressible : core.
 
   Inductive StarOf : ensemble nat -> ensemble nat :=
-  | InStarOf :
+  | in_StarOf :
     forall ns : ensemble nat,
     forall n : nat,
     member (diagonalizer n) ns ->
@@ -75,13 +75,13 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Local Hint Constructors StarOf : core.
 
   Definition isCorrect : Prop :=
-    isSubsetOf isProvable isTrue /\ isSubsetOf (intersection isRefutable isTrue) \emptyset
+    isProvable \subseteq isTrue /\ isRefutable \cap isTrue \subseteq \emptyset
   .
 
   Local Hint Unfold isCorrect : core.
 
   Inductive P : ensemble nat :=
-  | InP :
+  | in_P :
     forall n : nat,
     isProvable (enum_mathcalE n) ->
     member n P
@@ -93,46 +93,39 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     isCorrect ->
     is_expressible (StarOf (completement P)) ->
     exists E : mathcalE, isTrue E /\ ~ isProvable E.
-  Proof with eauto with *.
+  Proof with try now firstorder.
     intros mathcalE_is_correct [H H_express_StarOf_complement_P].
     destruct (mathcalE_is_denumerable H) as [n n_is_the_goedel_number_of_H].
     assert (diagonalization_of_n_is_true_iff_n_is_in_StarOf_complement_of_P : isTrue (enum_mathcalE (diagonalizer n)) <-> member n (StarOf (completement P))).
     { unfold expressPredicate in H_express_StarOf_complement_P.
       rewrite (diagonalizer_diagonalizes n H n_is_the_goedel_number_of_H)...
     }
-    assert (n_in_StarOf_complement_of_P_iff_diagonalization_of_n_is_not_Provable : member n (StarOf (completement P)) <-> ~ isProvable (enum_mathcalE (diagonalizer n))).
+    assert (n_is_in_StarOf_complement_of_P_iff_diagonalization_of_n_is_not_Provable : member n (StarOf (completement P)) <-> ~ isProvable (enum_mathcalE (diagonalizer n))).
     { split.
       - intros n_in_StarOf_complement_of_P diagonalization_of_n_is_not_Provable.
-        inversion n_in_StarOf_complement_of_P as [A n' diagonalization_of_n_is_in_A A_is_complement_of_P n_is_n']; subst n'.
-        contradiction diagonalization_of_n_is_in_A...
+        inversion n_in_StarOf_complement_of_P as [A n' diagonalization_of_n_is_in_A A_is_complement_of_P n_is_n']; subst n'...
       - intros diagonalization_of_n_is_not_Provable.
         constructor.
         intros diagonalization_of_n_is_in_P.
         contradiction diagonalization_of_n_is_not_Provable.
         inversion diagonalization_of_n_is_in_P as [n' diagonalization_of_n_is_Provable n_is_n']; subst n'...
     }
-    assert (diagonalization_of_n_is_not_Provable : ~ isProvable (enum_mathcalE (diagonalizer n))).
-    { intros diagonalization_of_n_is_Provable.
-      destruct mathcalE_is_correct as [Provable_implies_true Refutable_implies_false].
-      assert (diagonalization_of_n_is_True : isTrue (enum_mathcalE (diagonalizer n))) by firstorder.
-      tauto.
-    }
-    now firstorder.
+    assert (diagonalization_of_n_is_not_Provable : ~ isProvable (enum_mathcalE (diagonalizer n)))...
   Qed.
 
-  Definition the_first_goal : Prop :=
+  Let the_first_goal : Prop :=
     forall A : ensemble nat,
     is_expressible A ->
     is_expressible (StarOf A)
   .
 
-  Definition the_second_goal : Prop :=
+  Let the_second_goal : Prop :=
     forall A : ensemble nat,
     is_expressible A ->
     is_expressible (completement A)
   .
 
-  Definition the_third_goal : Prop :=
+  Let the_third_goal : Prop :=
     is_expressible P
   .
 
@@ -146,22 +139,19 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     forall A : ensemble nat,
     is_expressible (StarOf A) ->
     exists E : mathcalE, isGoedelSentence E A.
-  Proof with eauto with *.
+  Proof with try now firstorder.
     intros A [H H_express_StarOf_A].
     destruct (mathcalE_is_denumerable H) as [n g_H_is_n].
-    exists (appnat H n).
     assert (H_n_is_true_iff_d_n_is_in_A : isTrue (appnat H n) <-> member (diagonalizer n) A).
-    { split.
-      - intros H_n_is_true.
-        assert (n_is_in_StarOfA : member n (StarOf A)) by firstorder.
-        inversion n_is_in_StarOfA as [A' n' d_n_is_in_A A_is_A' n_is_n']; subst...
-      - now firstorder.
+    { split...
+      intros H_n_is_true.
+      enough (n_is_in_StarOfA : member n (StarOf A)) by now inversion n_is_in_StarOfA...
     }
     assert (d_n_is_g_H_n : enum_mathcalE (diagonalizer n) = appnat H n).
     { unfold diagonalizer.
       rewrite (proj2_sig (mathcalE_is_denumerable (appnat (enum_mathcalE n) n))), g_H_is_n...
     }
-    now firstorder.
+    exists (appnat H n)...
   Qed.
 
   Lemma A_Diagonal_Lemma_b :
@@ -175,7 +165,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Qed.
 
   Inductive T : ensemble nat :=
-  | InT :
+  | in_T :
     forall n : nat,
     isTrue (enum_mathcalE n) ->
     member n T
@@ -185,10 +175,10 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Theorem there_is_no_GoedelSentence_of_complement_of_T :
     ~ (exists E : mathcalE, isGoedelSentence E (completement T)).
-  Proof with (tauto || eauto with *).
+  Proof with try now firstorder.
     intros [E [n [n_is_g_E E_is_true_iff_n_is_in_complement_T]]].
-    assert (E_is_true_iff_n_is_not_in_T : isTrue E <-> ~ member n T) by firstorder.
-    enough (E_is_true_iff_n_is_in_T : isTrue E <-> member n T) by tauto.
+    assert (E_is_true_iff_n_is_not_in_T : isTrue E <-> ~ member n T)...
+    enough (E_is_true_iff_n_is_in_T : isTrue E <-> member n T)...
     split.
     - intros E_is_true.
       constructor.
