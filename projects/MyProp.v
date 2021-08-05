@@ -122,7 +122,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     }
   .
 
-  Section CBA_theory.
+  Section Section2OfChapter1.
 
   Context {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid}.
 
@@ -459,14 +459,14 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with eauto with *.
     induction bs1 as [| b1 bs1 IH]; simpl...
     intros bs2 H n H0.
-    assert (claim1 := lemma1_of_1_2_11 n bs2 H).
-    assert (claim2 : member b1 (improveFilter bs2 n) \/ member b1 (insertion (improveFilter bs2 n) n)) by now apply in_union_iff, H0; left.
-    assert (claim3 := leCBA_andB_fold_right bs1 (improveFilter bs2 n) claim1).
-    assert (claim4 : forall b2 : B, In b2 bs1 -> member b2 (union (improveFilter bs2 n) (insertion (improveFilter bs2 n) n))) by firstorder.
-    destruct (IH bs2 H n claim4) as [claim5 | [b2 [claim5 claim6]]].
-    - destruct claim2 as [claim2 | claim2].
+    assert (H1 := lemma1_of_1_2_11 n bs2 H).
+    assert (H2 : member b1 (improveFilter bs2 n) \/ member b1 (insertion (improveFilter bs2 n) n)) by now apply in_union_iff, H0; left.
+    assert (H3 := leCBA_andB_fold_right bs1 (improveFilter bs2 n) H1).
+    assert (H4 : forall b2 : B, In b2 bs1 -> member b2 (union (improveFilter bs2 n) (insertion (improveFilter bs2 n) n))) by firstorder.
+    destruct (IH bs2 H n H4) as [H5 | [b2 [H5 H6]]].
+    - destruct H2 as [H2 | H2].
       + left.
-        apply (proj2 (proj2 claim1) b1 (fold_right andB trueB bs1))...
+        apply (proj2 (proj2 H1) b1 (fold_right andB trueB bs1))...
       + right.
         exists b1...
     - right.
@@ -598,16 +598,16 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       + apply fact3_of_1_2_8, in_insert_iff...
       + apply H2.
     - intros H1.
+      assert (H2 := lemma1_of_1_2_13 n bs H).
+      assert (H3 := lemma3_of_1_2_13 bs H). 
       assert (claim1 : inconsistent (Cl (insert (enumB n) (CompleteFilter bs)))).
       { apply (inconsistent_subset (Cl (insert (enumB n) (improveFilter bs n))))...
         apply fact4_of_1_2_8.
         intros b.
         do 2 rewrite in_insert_iff.
-        intros [Heq | H2]...
+        intros [Heq | H4]...
       }
-      assert (claim2 := proj2 H0 claim1).
-      assert (claim3 := lemma1_of_1_2_13 n bs H).
-      assert (claim4 := lemma3_of_1_2_13 bs H). 
+      assert (H4 := proj2 H0 claim1).
       now firstorder.
   Qed.
 
@@ -680,14 +680,14 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     inconsistent (Cl (insert b (CompleteFilter bs1))) ->
     inconsistent (Cl (insert b bs2)).
   Proof with eauto with *.
-    intros bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6.
+    intros bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5.
     assert (claim1 : isSubsetOf (insert b (CompleteFilter bs1)) (insert b bs2)).
     { intros b'.
       do 2 rewrite in_insert_iff.
       intros [Heq | H7]; [subst | right]... 
     }
-    destruct H6 as [b' [H6 H7]].
-    assert (claim2 : isSubsetOf (Cl (insert b (CompleteFilter bs1))) (Cl (insert b bs2))) by apply fact4_of_1_2_8, claim1.
+    intros [b' [H6 H7]].
+    assert (H8 : isSubsetOf (Cl (insert b (CompleteFilter bs1))) (Cl (insert b bs2))) by apply fact4_of_1_2_8, claim1.
     exists b'...
   Qed.
 
@@ -707,6 +707,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     equiconsistent (CompleteFilter bs1) (Cl (insert b (CompleteFilter bs1))).
   Proof with eauto with *.
     intros bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5.
+    assert (claim1 : isSubsetOf (Cl (insert b bs2)) (Cl bs2)).
+    { apply fact4_of_1_2_8.
+      intros b'.
+      rewrite in_insert_iff.
+      intros [Heq | H6]; [subst | apply H6]...
+    }
     split.
     - intros [b' [H6 H7]].
       exists b'.
@@ -714,12 +720,6 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       + apply fact3_of_1_2_8, in_union_iff...
       + apply H7.
     - intros H6.
-      assert (claim1 : isSubsetOf (Cl (insert b bs2)) (Cl bs2)).
-      { apply fact4_of_1_2_8.
-        intros b'.
-        rewrite in_insert_iff.
-        intros [Heq | H7]; [subst | apply H7]...
-      }
       destruct (corollary_of_1_2_16_aux1 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6) as [b' [H7 H8]].
       apply (proj2 H3).
       exists b'.
@@ -742,7 +742,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       apply (corollary_of_1_2_16_aux2 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5).
   Qed.
 
-  End CBA_theory.
+  End Section2OfChapter1.
 
 End CountableBooleanAlgebra.
 

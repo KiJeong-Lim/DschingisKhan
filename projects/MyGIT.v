@@ -27,7 +27,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Section An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
 
-  Context (mathcalE : Type) `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
+  Context {mathcalE : Type} `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
 
   Definition diagonalizer : nat -> nat :=
     fun n : nat =>

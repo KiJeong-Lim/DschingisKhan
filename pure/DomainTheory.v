@@ -1118,7 +1118,7 @@ Module ConstructiveCpoTheory.
     (proj1_sig bottom_exists, proj1_sig bottom_exists) =< p.
   Proof with eauto with *.
     intros [x y].
-    split; simpl; apply (proj2_sig bottom_exists).
+    split; apply (proj2_sig bottom_exists).
   Qed.
 
   Lemma directed_subset_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
@@ -1127,33 +1127,31 @@ Module ConstructiveCpoTheory.
     isDirected (image fst X) /\ isDirected (image snd X).
   Proof with eauto with *.
     intros X [[[x0 y0] H] H0].
-    split.
-    - split.
-      + exists x0...
-        apply (in_image (x0, y0) fst)...
-      + intros p1 H1 p2 H2.
-        inversion H1; subst.
-        rename x into x1.
-        inversion H2; subst.
-        rename x into x2.
-        destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
-        simpl in *.
-        exists x3.
-        split...
-        apply (in_image (x3, y3) fst)...
-    - split.
-      + exists y0.
-        apply (in_image (x0, y0) snd)...
-      + intros p1 H1 p2 H2.
-        inversion H1; subst.
-        rename x into x1.
-        inversion H2; subst.
-        rename x into x2.
-        destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
-        simpl in *.
-        exists y3.
-        split...
-        apply (in_image (x3, y3) snd)...
+    split; split.
+    - exists x0...
+      apply (in_image (x0, y0) fst)...
+    - intros p1 H1 p2 H2.
+      inversion H1; subst.
+      rename x into x1.
+      inversion H2; subst.
+      rename x into x2.
+      destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
+      simpl in *.
+      exists x3.
+      split...
+      apply (in_image (x3, y3) fst)...
+    - exists y0.
+      apply (in_image (x0, y0) snd)...
+    - intros p1 H1 p2 H2.
+      inversion H1; subst.
+      rename x into x1.
+      inversion H2; subst.
+      rename x into x2.
+      destruct (H0 x1 H3 x2 H4) as [[x3 y3] [H5 [[H6 H7] [H8 H9]]]].
+      simpl in *.
+      exists y3.
+      split...
+      apply (in_image (x3, y3) snd)...
   Qed.
 
   Lemma square_up_of_direct_product {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :

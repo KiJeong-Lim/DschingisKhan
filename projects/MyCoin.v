@@ -45,32 +45,28 @@ Module MyCoInductive.
 
   Section GeneralBisimilarityMap.
 
-  Context {Idx_in : Type} {Idx_out : Type}.
+  Context {Idx_in : Type} {Idx_out : Type} {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type}.
 
-  Variant BisimilarityF : forall c : Container Idx_in Idx_out, forall LHS : Idx_in -> Type, forall RHS : Idx_in -> Type, (forall i : Idx_in, LHS i -> RHS i -> Prop) -> (forall o : Idx_out, c->runContainer LHS o -> c->runContainer RHS o -> Prop) :=
+  Variant BisimilarityF (sim : forall i : Idx_in, LHS i -> RHS i -> Prop) : (forall o : Idx_out, c->runContainer LHS o -> c->runContainer RHS o -> Prop) :=
   | Bisimilar1 :
-    forall c : Container Idx_in Idx_out,
-    forall LHS : Idx_in -> Type,
-    forall RHS : Idx_in -> Type,
-    forall sim : forall i : Idx_in, LHS i -> RHS i -> Prop,
     forall o : Idx_out,
     forall a : c->coefficient o,
     forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n),
     forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n),
     (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> 
-    BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd)
+    BisimilarityF sim o (existT _ a lhs_snd) (existT _ a rhs_snd)
   .
 
-  Context {c : Container Idx_in Idx_out} {LHS : Idx_in -> Type} {RHS : Idx_in -> Type} {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out}.
+  Context {sim : forall i : Idx_in, LHS i -> RHS i -> Prop} {o : Idx_out}.
 
-  Definition BisimilarityF_intro : forall a : c->coefficient o, forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> BisimilarityF c LHS RHS sim o (existT _ a lhs_snd) (existT _ a rhs_snd) :=
-    Bisimilar1 c LHS RHS sim o
+  Definition BisimilarityF_intro : forall a : c->coefficient o, forall lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), forall rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) -> BisimilarityF sim o (existT _ a lhs_snd) (existT _ a rhs_snd) :=
+    Bisimilar1 sim o
   .
 
-  Definition BisimilarityF_elim {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : BisimilarityF c LHS RHS sim o lhs rhs -> exists a : c->coefficient o, exists lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), exists rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) /\ lhs = existT _ a lhs_snd /\ rhs = existT _ a rhs_snd :=
-    fun Hb : BisimilarityF c LHS RHS sim o lhs rhs =>
+  Definition BisimilarityF_elim {lhs : c->runContainer LHS o} {rhs : c->runContainer RHS o} : BisimilarityF sim o lhs rhs -> exists a : c->coefficient o, exists lhs_snd : forall n : c->getDegreeOf o a, LHS (c->obtainIndex o a n), exists rhs_snd : forall n : c->getDegreeOf o a, RHS (c->obtainIndex o a n), (forall n : c->getDegreeOf o a, sim (c->obtainIndex o a n) (lhs_snd n) (rhs_snd n)) /\ lhs = existT _ a lhs_snd /\ rhs = existT _ a rhs_snd :=
+    fun Hb : BisimilarityF sim o lhs rhs =>
     match Hb with
-    | Bisimilar1 c' LHS' RHS' sim' o' a' lhs_snd' rhs_snd' H_sim' => ex_intro _ a' (ex_intro _ lhs_snd' (ex_intro _ rhs_snd' (conj H_sim' (conj eq_refl eq_refl))))
+    | Bisimilar1 _ o' a' lhs_snd' rhs_snd' H_sim' => ex_intro _ a' (ex_intro _ lhs_snd' (ex_intro _ rhs_snd' (conj H_sim' (conj eq_refl eq_refl))))
     end
   .
 
@@ -127,7 +123,7 @@ Module MyCoInductive.
 
   Definition bisimF : ensemble {i : Idx & prod (c->myM i) (c->myM i)} -> ensemble {i : Idx & prod (c->myM i) (c->myM i)} :=
     fun sim : {i : Idx & prod (c->myM i) (c->myM i)} -> Prop =>
-    uncurry' (fun i : Idx => fun lhs : c->myM i => fun rhs : c->myM i => BisimilarityF c c->myM c->myM (curry' sim) i (c->unfold_myM i lhs) (c->unfold_myM i rhs))
+    uncurry' (fun i : Idx => fun lhs : c->myM i => fun rhs : c->myM i => BisimilarityF (curry' sim) i (c->unfold_myM i lhs) (c->unfold_myM i rhs))
   .
 
   Lemma bisimF_isMonotonicMap :
