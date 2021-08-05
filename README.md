@@ -1,8 +1,8 @@
 # DschingisKhan
 
-He Reiter - Ho Reiter - He Reiter - Immer weiter!
+> He Reiter - Ho Reiter - He Reiter - Immer weiter!
 
-# Build
+## BUILD
 
 - With `make`:
 
@@ -26,17 +26,17 @@ coqc -Q . DschingisKhan projects/MyGIT.v
 coqc -Q . DschingisKhan projects/MyProp.v
 ```
 
-# THANKS TO
+## THANKS TO
 
-- Junyoung Jang: `https://github.com/Ailrun`
+- Junyoung Jang: [https://github.com/Ailrun]
 
-- Taeseung Sohn: `https://github.com/paulsohn`
+- Taeseung Sohn: [https://github.com/paulsohn]
 
-- Hanul Jeon: `https://github.com/hanuljeon95`
+- Hanul Jeon: [https://github.com/hanuljeon95]
 
-- Soonwon Moon: `https://github.com/damhiya`
+- Soonwon Moon: [https://github.com/damhiya]
 
-# License
+## LICENSE
 
 ```
 This is free and unencumbered software released into the public domain.
