@@ -5,7 +5,7 @@ Require Import DschingisKhan.pure.DomainTheory.
 
 Module ClassicalCpoTheory.
 
-  Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble BasicTopology ConstructiveCpoTheory.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory.
 
   Definition U {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D :=
     fun x : D =>
@@ -822,7 +822,7 @@ Module ClassicalCpoTheory.
     transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonic | apply H]...
   Qed.
 
-  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : isCompletePartialOrder D) (D'_requiresCompletePartialOrder : isCompletePartialOrder D') : ((D ~> D') * D) >=> D' :=
+  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : ((D ~> D') * D) >=> D' :=
     exist _ (@uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)) ScottApp_isMontonic
   .
 

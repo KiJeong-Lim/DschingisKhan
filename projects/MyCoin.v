@@ -7,7 +7,7 @@ Module MyCoInductive.
 
   Set Primitive Projections.
 
-  Import MyUtilities BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory PowerSetCoLa.
+  Import MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa.
 
   Record Container (Idx_in : Type) (Idx_out : Type) : Type :=
     { _Coefficient : Idx_out -> Type

@@ -7,7 +7,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
-  Import ListNotations MyUtilities MyEnsemble.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova.
 
   Class isGoedelianLanguage (mathcalE : Type) : Type :=
     { enum_mathcalE : nat -> mathcalE

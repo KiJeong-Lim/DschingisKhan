@@ -61,12 +61,9 @@ Module BasicSetoidTheory.
       fun P : Prop =>
       fun Q : Prop =>
       P <-> Q
+    ; Setoid_requiresEquivalence := iff_equivalence
     }
   .
-
-  Next Obligation with tauto.
-    split; red...
-  Qed.
 
   Local Program Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (arrow A B) :=
     { eqProp :=
@@ -338,6 +335,8 @@ Module MyEnsemble.
   Proof with reflexivity.
     intros x X...
   Qed.
+
+  Global Hint Resolve in_complement_iff : my_hints.
 
   Global Ltac membership :=
     let claim := fresh "H" in
@@ -869,7 +868,7 @@ Module BasicPosetTheory.
 
 End BasicPosetTheory.
 
-Module BasicTopology.
+Module MyEnsembleNova.
 
   Import MyEnsemble.
 
@@ -879,6 +878,364 @@ Module BasicTopology.
   .
 
   Global Hint Unfold full : my_hints.
+
+  Lemma in_full_iff {A : Type} :
+    forall x : A,
+    member x full <-> True.
+  Proof with firstorder.
+    unfold full...
+  Qed.
+
+  Definition insert {A : Type} : A -> ensemble A -> ensemble A :=
+    fun x1 : A =>
+    fun xs2 : ensemble A =>
+    xs2 \cup \left\{ x1 \right\}
+  .
+
+  Global Hint Unfold insert : my_hints.
+
+  Lemma in_insert_iff {A : Type} :
+    forall x : A,
+    forall x1 : A,
+    forall xs2 : ensemble A,
+    member x (insert x1 xs2) <-> x = x1 \/ member x xs2.
+  Proof with firstorder.
+    unfold insert.
+    intros x x1 xs2.
+    rewrite in_union_iff, in_singleton_iff...
+  Qed.
+
+  Definition difference {A : Type} : ensemble A -> ensemble A -> ensemble A :=
+    fun xs1 : ensemble A =>
+    fun xs2 : ensemble A =>
+    xs1 \cap xs2^c
+  .
+  
+  Global Hint Unfold difference : my_hints.
+
+  Lemma in_difference_iff {A : Type} :
+    forall x : A,
+    forall xs1 : ensemble A,
+    forall xs2 : ensemble A,
+    member x (difference xs1 xs2) <-> member x xs1 /\ ~ member x xs2.
+  Proof with firstorder.
+    unfold difference.
+    intros x xs1 xs2.
+    rewrite in_intersection_iff, in_complement_iff...
+  Qed.
+
+  Definition delete {A : Type} : A -> ensemble A -> ensemble A :=
+    fun x1 : A =>
+    fun xs2 : ensemble A =>
+    xs2 \cap \left\{ x1 \right\}^c
+  .
+  
+  Global Hint Unfold delete : my_hints.
+
+  Lemma in_delete_iff {A : Type} :
+    forall x : A,
+    forall x1 : A,
+    forall xs2 : ensemble A,
+    member x (delete x1 xs2) <-> member x xs2 /\ x <> x1.
+  Proof with firstorder.
+    unfold delete.
+    intros x x1 xs2.
+    rewrite in_intersection_iff, in_complement_iff, in_singleton_iff...
+  Qed.
+
+  Section ExtraFacts.
+
+  Context {A : Type}.
+
+  Lemma isSubsetOf_insert :
+    forall x0 : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    isSubsetOf X1 X2 ->
+    isSubsetOf (insert x0 X1) (insert x0 X2).
+  Proof with firstorder.
+    unfold isSubsetOf, insert.
+    intros x0 X1 X2 H_incl x.
+    do 2 rewrite in_union_iff, in_singleton_iff...
+  Qed.
+
+  Lemma in_append_implies :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    forall X : ensemble A,
+    (forall x : A, In x xs1 -> member x X) ->
+    (forall x : A, In x xs2 -> member x X) ->
+    forall x : A,
+    In x (xs1 ++ xs2) ->
+    member x X.
+  Proof with firstorder.
+    intros xs1 xs2 X H_incl1 H_incl2 x.
+    rewrite in_app_iff...
+  Qed.
+
+  Lemma in_append_iff :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    (forall x : A, In x xs1 <-> member x X1) ->
+    (forall x : A, In x xs2 <-> member x X2) ->
+    forall x : A,
+    In x (xs1 ++ xs2) <-> member x (union X1 X2).
+  Proof with firstorder.
+    intros xs1 xs2 X1 X2 H_equiv1 H_equiv2 x.
+    rewrite in_app_iff, in_union_iff...
+  Qed.
+
+  Hypothesis A_eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}.
+
+  Lemma in_remove_implies :
+    forall x0 : A,
+    forall xs1 : list A,
+    forall X2 : ensemble A,
+    (forall x : A, In x xs1 -> member x (insert x0 X2)) ->
+    forall x : A,
+    In x (remove A_eq_dec x0 xs1) ->
+    member x X2.
+  Proof with firstorder.
+    intros x0 xs1 X2 H_incl x H.
+    destruct (in_remove A_eq_dec xs1 x x0 H) as [H0 H1].
+    assert (H2 := H_incl x H0).
+    apply in_insert_iff in H2...
+  Qed.
+
+  Lemma in_remove_iff_member_delete :
+    forall x1 : A,
+    forall xs2 : list A,
+    forall X2 : ensemble A,
+    (forall x : A, In x xs2 <-> member x X2) ->
+    forall x : A,
+    In x (remove A_eq_dec x1 xs2) <-> member x (delete x1 X2).
+  Proof with firstorder.
+    intros x1 xs2 X2 H x.
+    assert (H0 := in_remove A_eq_dec xs2 x x1).
+    assert (H1 := in_in_remove A_eq_dec xs2).
+    rewrite in_delete_iff...
+  Qed.
+
+  End ExtraFacts.
+
+  Lemma in_empty_elim {A : Type} :
+    forall x : A,
+    ~ member x (finite nil).
+  Proof.
+    intros x H.
+    contradiction (proj1 (in_empty_iff x) H).
+  Qed.
+
+  Lemma in_singleton_intro {A : Type} :
+    forall x : A,
+    member x (finite (cons x nil)).
+  Proof.
+    intros x.
+    apply in_singleton_iff.
+    reflexivity.
+  Qed.
+
+  Lemma in_singleton_elim {A : Type} :
+    forall x : A,
+    forall x0 : A,
+    member x (finite (cons x0 nil)) ->
+    x = x0.
+  Proof.
+    intros x x0 H.
+    apply in_singleton_iff in H.
+    symmetry.
+    apply H.
+  Qed.
+
+  Lemma in_finite_intro {A : Type} :
+    forall x : A,
+    forall xs : list A,
+    In x xs ->
+    member x (finite xs).
+  Proof.
+    intros x xs.
+    apply in_finite_iff.
+  Qed.
+
+  Lemma in_finite_elim {A : Type} :
+    forall x : A,
+    forall xs : list A,
+    member x (finite xs) ->
+    In x xs.
+  Proof.
+    intros x xs.
+    apply in_finite_iff.
+  Qed.
+
+  Lemma in_unions_intro {A : Type} :
+    forall x : A,
+    forall Xs : ensemble (ensemble A),
+    forall X : ensemble A,
+    member X Xs ->
+    member x X ->
+    member x (unions Xs).
+  Proof.
+    intros x Xs X H H0.
+    apply in_unions_iff.
+    exists X.
+    exact (conj H0 H).
+  Qed.
+
+  Lemma in_unions_elim {A : Type} :
+    forall x : A,
+    forall Xs : ensemble (ensemble A),
+    member x (unions Xs) ->
+    exists X : ensemble A, member x X /\ member X Xs.
+  Proof.
+    intros x Xs.
+    apply in_unions_iff.
+  Qed.
+
+  Lemma in_union_intro1 {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x X1 ->
+    member x (union X1 X2).
+  Proof.
+    intros x X1 X2 H.
+    apply in_union_iff.
+    exact (or_introl H).
+  Qed.
+
+  Lemma in_union_intro2 {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x X2 ->
+    member x (union X1 X2).
+  Proof.
+    intros x X1 X2 H.
+    apply in_union_iff.
+    exact (or_intror H).
+  Qed.
+
+  Lemma in_union_elim {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x (union X1 X2) ->
+    member x X1 \/ member x X2.
+  Proof.
+    intros x X1 X2.
+    apply in_union_iff.
+  Qed.
+
+  Lemma in_intersection_intro {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x X1 ->
+    member x X2 ->
+    member x (intersection X1 X2).
+  Proof.
+    intros x X1 X2 H H0.
+    apply in_intersection_iff.
+    exact (conj H H0).
+  Qed.
+
+  Lemma in_intersection_elim1 {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x (intersection X1 X2) ->
+    member x X1.
+  Proof.
+    intros x X1 X2 H.
+    apply in_intersection_iff in H.
+    apply H.
+  Qed.
+
+  Lemma in_intersection_elim2 {A : Type} :
+    forall x : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    member x (intersection X1 X2) ->
+    member x X2.
+  Proof.
+    intros x X1 X2 H.
+    apply in_intersection_iff in H.
+    apply H.
+  Qed.
+
+  Lemma in_image_intro {A : Type} {B : Type} :
+    forall x : A,
+    forall f : A -> B,
+    forall X : ensemble A,
+    member x X ->
+    member (f x) (image f X).
+  Proof.
+    intros x f X H.
+    apply in_image_iff.
+    exists x.
+    exact (conj eq_refl H).
+  Qed.
+
+  Lemma in_image_elim {A : Type} {B : Type} :
+    forall f : A -> B,
+    forall y : B,
+    forall X : ensemble A,
+    member y (image f X) ->
+    exists x : A, y = f x /\ member x X.
+  Proof.
+    intros f y X.
+    apply in_image_iff.
+  Qed.
+
+  Lemma in_preimage_intro {A : Type} {B : Type} :
+    forall x : A,
+    forall f : A -> B,
+    forall Y : ensemble B,
+    member (f x) Y ->
+    member x (preimage f Y).
+  Proof.
+    intros x f Y.
+    apply in_preimage_iff.
+  Qed.
+
+  Lemma in_preimage_elim {A : Type} {B : Type} :
+    forall x : A,
+    forall f : A -> B,
+    forall Y : ensemble B,
+    member x (preimage f Y) ->
+    member (f x) Y.
+  Proof.
+    intros x f Y.
+    apply in_preimage_iff.
+  Qed.
+
+  Lemma in_complement_intro {A : Type} :
+    forall x : A,
+    forall X : ensemble A,
+    ~ member x X ->
+    member x (completement X).
+  Proof.
+    intros x X.
+    apply in_complement_iff.
+  Qed.
+
+  Lemma in_complement_elim {A : Type} :
+    forall x : A,
+    forall X : ensemble A,
+    member x (completement X) ->
+    ~ member x X.
+  Proof.
+    intros x X.
+    apply in_complement_iff.
+  Qed.
+
+End MyEnsembleNova.
+
+Module BasicTopology.
+
+  Import MyEnsemble MyEnsembleNova.
 
   Class isTopologicalSpace (A : Type) : Type :=
     { isOpen : ensemble A -> Prop
@@ -916,18 +1273,16 @@ Module BasicTopology.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
-  Context {A : Type} (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
+  Context (A : Type) (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
 
-  Let is_subset_rep : ensemble (sig P) -> ensemble A -> Prop :=
-    fun O_sub : ensemble (sig P) =>
+  Let is_subset_rep : ensemble (@sig A P) -> ensemble A -> Prop :=
+    fun O_sub : ensemble (@sig A P) =>
     fun O : ensemble A =>
-    forall x : sig P,
+    forall x : @sig A P,
     member (proj1_sig x) O <-> member x O_sub
   .
 
-  Local Hint Unfold is_subset_rep : core.
-
-  Definition isOpen_SubspaceTopology : ensemble (sig P) -> Prop :=
+  Definition isOpen_SubspaceTopology : ensemble (@sig A P) -> Prop :=
     fun O_sub : ensemble (@sig A P) =>
     exists O : ensemble A, isOpen O /\ is_subset_rep O_sub O
   .
@@ -965,10 +1320,10 @@ Module BasicTopology.
   End BuildSubspaceTopology.
 
   Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
-    { isOpen := isOpen_SubspaceTopology P A_requiresTopologicalSpace
-    ; open_full := open_full_SubspaceTopolgy P A_requiresTopologicalSpace
-    ; open_unions := open_unions_SubspaceTopology P A_requiresTopologicalSpace
-    ; open_intersection := open_intersection_SubspaceTopology P A_requiresTopologicalSpace
+    { isOpen := isOpen_SubspaceTopology A P A_requiresTopologicalSpace
+    ; open_full := open_full_SubspaceTopolgy A P A_requiresTopologicalSpace
+    ; open_unions := open_unions_SubspaceTopology A P A_requiresTopologicalSpace
+    ; open_intersection := open_intersection_SubspaceTopology A P A_requiresTopologicalSpace
     }
   .
 

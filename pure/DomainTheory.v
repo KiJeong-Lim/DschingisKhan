@@ -5,7 +5,7 @@ Require Import DschingisKhan.pure.MyStructures.
 
 Module ConstructiveCoLaTheory.
 
-  Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
   Global Program Instance DirectProductOfSetoid {D : Type} {D' : Type} (D_requiresSetoid : isSetoid D) (D'_requiresSetoid : isSetoid D') : isSetoid (D * D') :=
     { eqProp :=
@@ -582,7 +582,7 @@ End ConstructiveCoLaTheory.
 
 Module CAWU.
 
-  Import ListNotations BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
   Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
     fun f : D >=> D =>
@@ -734,7 +734,7 @@ End CAWU.
 
 Module PowerSetCoLa.
 
-  Import BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory.
+  Import BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
   Global Instance ensemble_isPoset {A : Type} : isPoset (ensemble A) :=
     arrow_isPoset Prop_isPoset
@@ -993,14 +993,14 @@ End PowerSetCoLa.
 
 Module ConstructiveCpoTheory.
 
-  Import BasicSetoidTheory BasicPosetTheory MyEnsemble ConstructiveCoLaTheory BasicTopology.
+  Import BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova ConstructiveCoLaTheory BasicTopology.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
     fun X : ensemble D =>
     nonempty X /\ (forall x1 : D, member x1 X -> forall x2 : D, member x2 X -> exists x3 : D, member x3 X /\ x1 =< x3 /\ x2 =< x3)
   .
 
-  Class isCompletePartialOrder (D : Type) `{D_isPoset : isPoset D} : Type :=
+  Class isCompletePartialOrder {D : Type} (D_isPoset : isPoset D) : Type :=
     { bottom_exists :
       {min_D : D | forall x : D, min_D =< x}
     ; square_up_exists :
@@ -1022,7 +1022,7 @@ Module ConstructiveCpoTheory.
 
   Section BuildScottTopology.
 
-  Context {D : Type} `{D_isPoset : isPoset D}.
+  Context (D : Type) (D_isPoset : isPoset D).
 
   Let ScottOpen_cond1 : ensemble D -> Prop :=
     fun O : ensemble D =>
@@ -1033,8 +1033,6 @@ Module ConstructiveCpoTheory.
     member y O
   .
 
-  Local Hint Unfold ScottOpen_cond1 : core.
-
   Let ScottOpen_cond2 : ensemble D -> Prop :=
     fun O : ensemble D =>
     forall X : ensemble D,
@@ -1044,8 +1042,6 @@ Module ConstructiveCpoTheory.
     member sup_X O ->
     nonempty (intersection X O)
   .
-
-  Local Hint Unfold ScottOpen_cond2 : core.
 
   Definition isOpen_ScottTopology : ensemble D -> Prop :=
     fun O : ensemble D =>
@@ -1110,10 +1106,10 @@ Module ConstructiveCpoTheory.
   End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
-    { isOpen := isOpen_ScottTopology
-    ; open_full := open_full_ScottTopology D_requiresCompletePartialOrder
-    ; open_unions := open_unions_ScottTopology D_requiresCompletePartialOrder
-    ; open_intersection := open_intersection_ScottTopology D_requiresCompletePartialOrder
+    { isOpen := isOpen_ScottTopology D D_isPoset
+    ; open_full := open_full_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_unions := open_unions_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_intersection := open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     }
   .
 
