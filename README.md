@@ -28,13 +28,13 @@ coqc -Q . DschingisKhan projects/MyProp.v
 
 ## THANKS TO
 
-- Junyoung Jang: [https://github.com/Ailrun]
+- Junyoung Jang: https://github.com/Ailrun
 
-- Taeseung Sohn: [https://github.com/paulsohn]
+- Taeseung Sohn: https://github.com/paulsohn
 
-- Hanul Jeon: [https://github.com/hanuljeon95]
+- Hanul Jeon: https://github.com/hanuljeon95
 
-- Soonwon Moon: [https://github.com/damhiya]
+- Soonwon Moon: https://github.com/damhiya
 
 ## LICENSE
 
