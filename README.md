@@ -36,6 +36,10 @@ coqc -Q . DschingisKhan projects/MyProp.v
 
 - `Soonwon Moon` https://github.com/damhiya
 
+## Version
+
+Okay in `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
+
 ## LICENSE
 
 ```
