@@ -1,6 +1,6 @@
 # DschingisKhan
 
-My scratch pad
+He Reiter - Ho Reiter - He Reiter - Immer weiter!
 
 # Build
 
@@ -23,4 +23,5 @@ coqc -Q . DschingisKhan classical/MyAxioms.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
 coqc -Q . DschingisKhan projects/MyCoin.v
 coqc -Q . DschingisKhan projects/MyGIT.v
+coqc -Q . DschingisKhan projects/MyProp.v
 ```

@@ -56,21 +56,21 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   as negB_preserves.
   Proof.
     auto using negB_preserves_eqB.
-  Defined.
+  Qed.
 
   Add Parametric Morphism (B : Type) `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     andB with signature (eqProp ==> eqProp ==> eqProp)
   as andB_preserves.
   Proof.
     auto using andB_preserves_eqB.
-  Defined.
+  Qed.
 
   Add Parametric Morphism (B : Type) `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     orB with signature (eqProp ==> eqProp ==> eqProp)
   as orB_preserves.
   Proof.
     auto using orB_preserves_eqB.
-  Defined.
+  Qed.
 
   Definition leCBA {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) :=
     fun b1 : B =>
@@ -126,11 +126,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Context {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid}.
 
-  Let leCBA_is : leProp = leCBA B_isCBA :=
+  Let leCBA_is : @leProp B (@CBA_isPoset B B_isSetoid B_isCBA) = @leCBA B B_isSetoid B_isCBA :=
     eq_refl
   .
 
-  Local Hint Resolve leCBA_is : core.
+  Hint Rewrite leCBA_is : core.
 
   Lemma andB_leCBA_intro1 :
     forall b1 : B,
@@ -170,19 +170,17 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     intros b1 b2 b1' b2'.
     rewrite leCBA_is.
     intros H H0.
-    transitivity (andB b1 b2').
-    - unfold leCBA in *.
-      assert (H1 : andB (andB b1 b1') (andB b1 b2') == andB (andB b1 b1) (andB b1' b2')).
-      { repeat erewrite andB_associative.
-        rewrite (andB_commutative (andB b1 b1') b1), (andB_associative b1 b1 b1')...
-      }
-      rewrite H1, H0, andB_idempotent...
-    - unfold leCBA in *.
-      assert (H1 : andB (andB b1 b2') (andB b2 b2') == andB (andB b1 b2) (andB b2' b2')).
-      { repeat rewrite andB_associative.
-        rewrite (andB_commutative (andB b1 b2) b2'), (andB_commutative b2' (andB b1 b2)), <- (andB_associative b1 b2' b2), (andB_commutative b2' b2), (andB_associative b1 b2 b2')...
-      }
-      rewrite H1, H, andB_idempotent...
+    assert (claim1 : andB (andB b1 b1') (andB b1 b2') == andB (andB b1 b1) (andB b1' b2')).
+    { repeat erewrite andB_associative.
+      rewrite (andB_commutative (andB b1 b1') b1), (andB_associative b1 b1 b1')...
+    }
+    assert (claim2 : andB (andB b1 b2') (andB b2 b2') == andB (andB b1 b2) (andB b2' b2')).
+    { repeat rewrite andB_associative.
+      rewrite (andB_commutative (andB b1 b2) b2'), (andB_commutative b2' (andB b1 b2)), <- (andB_associative b1 b2' b2), (andB_commutative b2' b2), (andB_associative b1 b2 b2')...
+    }
+    transitivity (andB b1 b2'); unfold leCBA in *.
+    - rewrite claim1, H0, andB_idempotent...
+    - rewrite claim2, H, andB_idempotent...
   Qed.
 
   Local Hint Resolve andB_leCBA_andB : core.
@@ -235,7 +233,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     intros H2.
     enough (claim1 : forall b1 : B, forall b2 : B, forall b : B, member b1 bs2 -> member b2 bs2 -> b == andB b1 b2 -> member b bs2) by firstorder.
     intros b1 b2 b H3 H4 H5.
-    apply H2, (H1 b1 b2)...
+    apply (proj1 (H2 b)), (H1 b1 b2)...
   Qed.
 
   Inductive Cl : ensemble B -> ensemble B :=
@@ -360,11 +358,15 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     isFilter bs2 ->
     (forall b1 : B, In b1 bs1 -> member b1 bs2) ->
     member (fold_right andB trueB bs1) bs2.
-  Proof with ((now firstorder) || eauto with *).
+  Proof with eauto with *.
     induction bs1 as [| b1 bs1 IH]; simpl.
     - intros bs2 H H0...
     - intros bs2 [[b0 H] [H0 H1]] H2.
-      apply (H1 b1 (fold_right andB trueB bs1))...
+      apply (H1 b1 (fold_right andB trueB bs1)).
+      + apply H2...
+      + enough (claim1 : isFilter bs2)...
+        split...
+      + reflexivity.
   Qed.
 
   Local Hint Resolve leCBA_andB_fold_right : core.
@@ -505,12 +507,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     unfold equiconsistent.
     induction n as [| n IH]; simpl...
     intros bs H.
-    assert (H0 : isFilter (improveFilter bs n) /\ isSubsetOf (improveFilter bs n) (Cl (improveFilter bs n \cup insertion (improveFilter bs n) n))).
+    assert (claim1 : isFilter (improveFilter bs n) /\ isSubsetOf (improveFilter bs n) (Cl (improveFilter bs n \cup insertion (improveFilter bs n) n))).
     { split.
       - apply lemma1_of_1_2_11...
       - transitivity (Cl (improveFilter bs n))...
     }
-    revert H0.
+    revert claim1.
     rewrite IH...
     unfold isSubsetOf, inconsistent.
     intros [H0 H1].
@@ -518,19 +520,19 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     - intros [b [H2 H3]]...
     - intros [b [H2 H3]].
       inversion H2; subst.
+      assert (claim2 : andB b (fold_right andB trueB bs1) == falseB).
+      { rewrite H3, andB_commutative.
+        apply falseB_zero_andB.
+      }
+      assert (claim3 : fold_right andB trueB bs1 == falseB).
+      { rewrite H3 in H5.
+        apply (leCBA_PartialOrder B_isCBA).
+        split; [apply H5 | apply falseB_isBottom].
+      }
       destruct (lemma1_of_1_2_13_aux1 bs1 bs H n H4) as [H6 | [b0 [H6 H7]]].
-      + assert (claim1 : andB b (fold_right andB trueB bs1) == falseB).
-        { rewrite H3, andB_commutative.
-          apply falseB_zero_andB.
-        }
-        assert (H7 := proj1 (proj2 H0) (fold_right andB trueB bs1)).
+      + assert (H7 := proj1 (proj2 H0) (fold_right andB trueB bs1)).
         exists (andB b (fold_right andB trueB bs1))...
       + inversion H7; subst.
-        assert (claim2 : fold_right andB trueB bs1 == falseB).
-        { rewrite H3 in H5.
-          apply (leCBA_PartialOrder B_isCBA).
-          split; [apply H5 | apply falseB_isBottom].
-        }
         assert (H9 : isSubsetOf (Cl (union (improveFilter bs n) (insertion (improveFilter bs n) n))) (Cl (insert (enumB n) (improveFilter bs n)))) by now apply fact4_of_1_2_8, lemma1_of_1_2_13_aux2.
         apply H8.
         exists (fold_right andB trueB bs1)...
@@ -601,11 +603,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
         apply fact4_of_1_2_8.
         intros b.
         do 2 rewrite in_insert_iff.
-        intros [H2 | H2]...
+        intros [Heq | H2]...
       }
-      assert (H2 := proj2 H0 claim1).
-      assert (H3 := lemma1_of_1_2_13 n bs H).
-      assert (H4 := lemma3_of_1_2_13 bs H).
+      assert (claim2 := proj2 H0 claim1).
+      assert (claim3 := lemma1_of_1_2_13 n bs H).
+      assert (claim4 := lemma3_of_1_2_13 bs H). 
       now firstorder.
   Qed.
 
@@ -650,12 +652,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       exists (S n).
       simpl.
       exists (cons (enumB n) nil).
-      - intros b1 [H2 | []]; subst.
+      - intros b1 [Heq | []]; subst.
         apply in_union_iff...
-      - simpl...
+      - simpl fold_right...
     }
-    assert (claim8 : equiconsistent bs (CompleteFilter bs)) by now apply lemma3_of_1_2_13.
-    tauto.
+    assert (claim6 : equiconsistent bs (CompleteFilter bs)) by now apply lemma3_of_1_2_13...
   Qed.
 
   Definition isUltraFilter : ensemble B -> Prop :=
@@ -663,12 +664,83 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     isFilter bs /\ (forall bs' : ensemble B, isFilter bs' -> equiconsistent bs bs' -> isSubsetOf bs bs' -> isSubsetOf bs' bs)
   .
 
-  (*
-  Corollary corollary_1_2_16 :
+  Lemma corollary_of_1_2_16_aux1 :
+    forall bs1 : ensemble B,
+    isFilter bs1 ->
+    isSubsetOf bs1 (CompleteFilter bs1) ->
+    isFilter (CompleteFilter bs1) ->
+    isComplete (CompleteFilter bs1) ->
+    equiconsistent bs1 (CompleteFilter bs1) ->
+    forall bs2 : ensemble B,
+    isFilter bs2 ->
+    equiconsistent (CompleteFilter bs1) bs2 ->
+    isSubsetOf (CompleteFilter bs1) bs2 ->
+    forall b : B,
+    member b bs2 ->
+    inconsistent (Cl (insert b (CompleteFilter bs1))) ->
+    inconsistent (Cl (insert b bs2)).
+  Proof with eauto with *.
+    intros bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6.
+    assert (claim1 : isSubsetOf (insert b (CompleteFilter bs1)) (insert b bs2)).
+    { intros b'.
+      do 2 rewrite in_insert_iff.
+      intros [Heq | H7]; [subst | right]... 
+    }
+    destruct H6 as [b' [H6 H7]].
+    assert (claim2 : isSubsetOf (Cl (insert b (CompleteFilter bs1))) (Cl (insert b bs2))) by apply fact4_of_1_2_8, claim1.
+    exists b'...
+  Qed.
+
+  Lemma corollary_of_1_2_16_aux2 :
+    forall bs1 : ensemble B,
+    isFilter bs1 ->
+    isSubsetOf bs1 (CompleteFilter bs1) ->
+    isFilter (CompleteFilter bs1) ->
+    isComplete (CompleteFilter bs1) ->
+    equiconsistent bs1 (CompleteFilter bs1) ->
+    forall bs2 : ensemble B,
+    isFilter bs2 ->
+    equiconsistent (CompleteFilter bs1) bs2 ->
+    isSubsetOf (CompleteFilter bs1) bs2 ->
+    forall b : B,
+    member b bs2 ->
+    equiconsistent (CompleteFilter bs1) (Cl (insert b (CompleteFilter bs1))).
+  Proof with eauto with *.
+    intros bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5.
+    split.
+    - intros [b' [H6 H7]].
+      exists b'.
+      split.
+      + apply fact3_of_1_2_8, in_union_iff...
+      + apply H7.
+    - intros H6.
+      assert (claim1 : isSubsetOf (Cl (insert b bs2)) (Cl bs2)).
+      { apply fact4_of_1_2_8.
+        intros b'.
+        rewrite in_insert_iff.
+        intros [Heq | H7]; [subst | apply H7]...
+      }
+      destruct (corollary_of_1_2_16_aux1 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6) as [b' [H7 H8]].
+      apply (proj2 H3).
+      exists b'.
+      split.
+      + apply fact5_of_1_2_8...
+      + apply H8.
+  Qed.
+
+  Corollary corollary_of_1_2_16 :
     forall bs : ensemble B,
     isFilter bs ->
     isUltraFilter (CompleteFilter bs).
-  *)
+  Proof with eauto with *.
+    intros bs1 H_filter1.
+    destruct (theorem_of_1_2_14 bs1 H_filter1) as [H [H0 [H1 H2]]].
+    split.
+    - apply H0.
+    - intros bs2 H_filter2 H3 H4 b H5.
+      enough (claim1 : equiconsistent (CompleteFilter bs1) (Cl (insert b (CompleteFilter bs1)))) by apply H1, claim1.
+      apply (corollary_of_1_2_16_aux2 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5).
+  Qed.
 
   End CBA_theory.
 
