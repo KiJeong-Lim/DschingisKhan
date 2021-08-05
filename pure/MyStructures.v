@@ -56,39 +56,56 @@ Module BasicSetoidTheory.
     transitivity proved by Setoid_trans
   as Setoid_rel.
 
-  Global Program Instance Prop_isSetoid : isSetoid Prop :=
-    { eqProp :=
-      fun P : Prop =>
-      fun Q : Prop =>
-      P <-> Q
+  Global Instance Prop_isSetoid : isSetoid Prop :=
+    { eqProp := iff
     ; Setoid_requiresEquivalence := iff_equivalence
     }
   .
 
-  Local Program Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (arrow A B) :=
-    { eqProp :=
-      fun f1 : A -> B =>
-      fun f2 : A -> B =>
-      forall x : A,
-      f1 x == f2 x
-    }
+  Definition arrow_eqProp : forall A : Type, forall B : Type, isSetoid B -> arrow A B -> arrow A B -> Prop :=
+    fun A : Type =>
+    fun B : Type =>
+    fun B_requiresSetoid : isSetoid B =>
+    fun f1 : A -> B =>
+    fun f2 : A -> B =>
+    forall x : A,
+    @eqProp B B_requiresSetoid (f1 x) (f2 x)
   .
 
-  Next Obligation with eauto with *.
+  Global Instance arrow_Equivalence {A : Type} {B : Type} `{B_isSetoid : isSetoid B} :
+    Equivalence (arrow_eqProp A B B_isSetoid).
+  Proof with eauto with *.
+    unfold arrow_eqProp.
     split...
   Qed.
 
-  Local Program Instance SubSetoid {A : Type} {P : A -> Prop} (A_requiresSetoid : isSetoid A) : isSetoid {x : A | P x} :=
-    { eqProp :=
-      fun x1 : @sig A P =>
-      fun x2 : @sig A P =>
-      proj1_sig x1 == proj1_sig x2
+  Global Program Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (arrow A B) :=
+    { eqProp := arrow_eqProp A B B_requiresSetoid
+    ; Setoid_requiresEquivalence := @arrow_Equivalence A B B_requiresSetoid
     }
   .
 
-  Next Obligation with eauto with *.
-    split; red...
+  Definition SubPoset_eqProp : forall A : Type, forall P : A -> Prop, isSetoid A -> sig P -> sig P -> Prop :=
+    fun A : Type =>
+    fun P : A -> Prop =>
+    fun A_requiresSetoid : isSetoid A =>
+    fun x1 : @sig A P =>
+    fun x2 : @sig A P =>
+    @eqProp A A_requiresSetoid (proj1_sig x1) (proj1_sig x2)
+  .
+
+  Global Instance SubPoset_eqProp_Equivalence {A : Type} {P : A -> Prop} `{A_isSetoid : isSetoid A} :
+    Equivalence (SubPoset_eqProp A P A_isSetoid).
+  Proof with eauto with *.
+    unfold SubPoset_eqProp.
+    split...
   Qed.
+
+  Global Instance SubSetoid {A : Type} {P : A -> Prop} (A_requiresSetoid : isSetoid A) : isSetoid {x : A | P x} :=
+    { eqProp := SubPoset_eqProp A P A_requiresSetoid
+    ; Setoid_requiresEquivalence := @SubPoset_eqProp_Equivalence A P A_requiresSetoid
+    }
+  .
 
 End BasicSetoidTheory.
 
@@ -486,57 +503,87 @@ Module BasicPosetTheory.
     exact (MonotonicMap_preservesSetoid f H).
   Defined.
 
-  Local Program Instance Prop_isPoset : isPoset Prop :=
-    { leProp :=
-      fun P : Prop =>
-      fun Q : Prop =>
-      P -> Q
+  Global Instance impl_PreOrder :
+    PreOrder impl.
+  Proof with eauto with *.
+    split...
+  Qed.
+
+  Global Instance impl_PartialOrder :
+    PartialOrder iff impl.
+  Proof with eauto with *.
+    split...
+  Qed.
+
+  Global Instance Prop_isPoset : isPoset Prop :=
+    { leProp := impl
     ; Poset_requiresSetoid := Prop_isSetoid
+    ; Poset_requiresPreOrder := impl_PreOrder
+    ; Poset_requiresPartialOrder := impl_PartialOrder
     }
   .
 
-  Next Obligation with eauto with *.
+  Definition arrow_leProp : forall A : Type, forall B : Type, isPoset B -> arrow A B -> arrow A B -> Prop :=
+    fun A : Type =>
+    fun B : Type =>
+    fun B_requiresPoset : isPoset B =>
+    fun f1 : A -> B =>
+    fun f2 : A -> B =>
+    forall x : A,
+    @leProp B B_requiresPoset (f1 x) (f2 x)
+  .
+
+  Global Instance arrow_leProp_PreOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
+    PreOrder (arrow_leProp A B B_isPoset).
+  Proof with eauto with *.
+    unfold arrow_leProp.
     split...
   Qed.
 
-  Next Obligation with eauto with *.
-    split...
+  Global Instance arrow_leProp_PartialOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
+    PartialOrder (arrow_eqProp A B (@Poset_requiresSetoid B B_isPoset)) (arrow_leProp A B B_isPoset).
+  Proof with firstorder with my_hints.
+    unfold arrow_eqProp, arrow_leProp...
   Qed.
 
-  Local Program Instance arrow_isPoset {A : Type} {B : Type} (B_requiresPoset : isPoset B) : isPoset (arrow A B) :=
-    { leProp :=
-      fun f1 : A -> B =>
-      fun f2 : A -> B =>
-      forall x : A,
-      f1 x =< f2 x
+  Global Program Instance arrow_isPoset {A : Type} {B : Type} (B_requiresPoset : isPoset B) : isPoset (arrow A B) :=
+    { leProp := arrow_leProp A B B_requiresPoset
     ; Poset_requiresSetoid := arrow_isSetoid (@Poset_requiresSetoid B B_requiresPoset)
+    ; Poset_requiresPreOrder := @arrow_leProp_PreOrder A B B_requiresPoset
+    ; Poset_requiresPartialOrder := @arrow_leProp_PartialOrder A B B_requiresPoset
     }
   .
 
-  Next Obligation with eauto with *.
-    split...
-  Qed.
-
-  Next Obligation with firstorder with my_hints.
-    intros f1 f2...
-  Qed.
-
-  Local Program Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
-    { leProp :=
-      fun x1 : sig P =>
-      fun x2 : sig P =>
-      proj1_sig x1 =< proj1_sig x2
-    ; Poset_requiresSetoid := SubSetoid (@Poset_requiresSetoid A A_requiresPoset)
-    }
+  Definition SubPoset_leProp : forall A : Type, forall P : A -> Prop, isPoset A -> sig P -> sig P -> Prop :=
+    fun A : Type =>
+    fun P : A -> Prop =>
+    fun A_requiresPoset : isPoset A =>
+    fun x1 : @sig A P =>
+    fun x2 : @sig A P =>
+    @leProp A A_requiresPoset (proj1_sig x1) (proj1_sig x2)
   .
 
-  Next Obligation with eauto with *.
+  Global Instance SubPoset_leProp_PreOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
+    PreOrder (SubPoset_leProp A P A_isPoset).
+  Proof with eauto with *.
+    unfold SubPoset_leProp.
     split...
   Qed.
 
-  Next Obligation with firstorder with my_hints.
+  Global Instance SubPoset_leProp_PartialOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
+    PartialOrder (SubPoset_eqProp A P (@Poset_requiresSetoid A A_isPoset)) (SubPoset_leProp A P A_isPoset).
+  Proof with firstorder with my_hints.
+    unfold SubPoset_eqProp, SubPoset_leProp.
     intros [x1 H] [x2 H0]; unfold flip...
   Qed.
+
+  Global Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
+    { leProp := SubPoset_leProp A P A_requiresPoset
+    ; Poset_requiresSetoid := SubSetoid (@Poset_requiresSetoid A A_requiresPoset)
+    ; Poset_requiresPreOrder := @SubPoset_leProp_PreOrder A P A_requiresPoset
+    ; Poset_requiresPartialOrder := @SubPoset_leProp_PartialOrder A P A_requiresPoset
+    }
+  .
 
   Definition isSupremum {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> Prop :=
     fun sup_X : D =>
@@ -547,7 +594,13 @@ Module BasicPosetTheory.
 
   Global Hint Unfold isSupremum : my_hints.
 
-  Lemma isSupremum_upperbound {D : Type} `{D_isPoset : isPoset D} :
+  Section PosetTheory.
+
+  Context {D : Type} `{D_isPoset : isPoset D}.
+
+  Local Hint Unfold isSupremum : core.
+
+  Lemma isSupremum_upperbound :
     forall sup_X : D,
     forall X : ensemble D,
     isSupremum sup_X X ->
@@ -559,9 +612,9 @@ Module BasicPosetTheory.
     apply H...
   Qed.
 
-  Global Hint Resolve isSupremum_upperbound : my_hints.
+  Local Hint Resolve isSupremum_upperbound : core.
 
-  Lemma isSupremum_isSubsetOf {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isSupremum_isSubsetOf :
     forall X1 : ensemble D,
     forall X2 : ensemble D,
     isSubsetOf X1 X2 ->
@@ -575,9 +628,9 @@ Module BasicPosetTheory.
     apply H0...
   Qed.
 
-  Global Hint Resolve isSupremum_isSubsetOf : my_hints.
+  Local Hint Resolve isSupremum_isSubsetOf : core.
 
-  Lemma isSupremum_ext {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isSupremum_ext :
     forall X1 : ensemble D,
     forall X2 : ensemble D,
     (forall x : D, member x X1 <-> member x X2) ->
@@ -599,9 +652,9 @@ Module BasicPosetTheory.
       apply H0...
   Qed.
 
-  Global Hint Resolve isSupremum_ext : my_hints.
+  Local Hint Resolve isSupremum_ext : core.
 
-  Lemma isSupremum_unique {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isSupremum_unique :
     forall X : ensemble D,
     forall sup1 : D,
     isSupremum sup1 X ->
@@ -611,17 +664,17 @@ Module BasicPosetTheory.
     intros X sup1 H sup2...
   Qed.
 
-  Global Hint Resolve isSupremum_unique : my_hints.
+  Local Hint Resolve isSupremum_unique : core.
 
-  Definition image_sup {D : Type} `{D_isPoset : isPoset D} : ensemble (ensemble D) -> ensemble D :=
+  Definition image_sup : ensemble (ensemble D) -> ensemble D :=
     fun Xs : ensemble (ensemble D) =>
     fun sup_X : D =>
     exists X : ensemble D, member X Xs /\ isSupremum sup_X X
   .
 
-  Global Hint Unfold image_sup : my_hints.
+  Local Hint Unfold image_sup : core.
 
-  Lemma sup_in_image_sup {D : Type} `{D_isPoset : isPoset D} :
+  Lemma sup_in_image_sup :
     forall X : ensemble D,
     forall sup_X : D,
     isSupremum sup_X X ->
@@ -632,9 +685,9 @@ Module BasicPosetTheory.
     intros X sup_X H Xs H0...
   Qed.
 
-  Global Hint Resolve sup_in_image_sup : my_hints.
+  Local Hint Resolve sup_in_image_sup : core.
 
-  Lemma sup_image_sup_isGreaterThan {D : Type} `{D_isPoset : isPoset D} :
+  Lemma sup_image_sup_isGreaterThan :
     forall Xs : ensemble (ensemble D),
     forall sup : D,
     isSupremum sup (image_sup Xs) ->
@@ -647,9 +700,9 @@ Module BasicPosetTheory.
     intros Xs sup H X H0 sup_X H1...
   Qed.
 
-  Global Hint Resolve sup_image_sup_isGreaterThan : my_hints.
+  Local Hint Resolve sup_image_sup_isGreaterThan : core.
 
-  Lemma isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs :
     forall Xs : ensemble (ensemble D),
     (forall X : ensemble D, member X Xs -> exists sup_X : D, isSupremum sup_X X) ->
     forall sup : D,
@@ -676,18 +729,18 @@ Module BasicPosetTheory.
         apply H3...
   Qed.
 
-  Global Hint Resolve isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs : my_hints.
+  Local Hint Resolve isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs : core.
 
-  Definition isInfimum {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> Prop :=
+  Definition isInfimum : D -> ensemble D -> Prop :=
     fun inf_X : D =>
     fun X : ensemble D=>
     forall d : D,
     d =< inf_X <-> (forall x : D, member x X -> d =< x)
   .
 
-  Global Hint Unfold isInfimum : my_hints.
+  Local Hint Unfold isInfimum : core.
 
-  Lemma isInfimum_unique {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isInfimum_unique :
     forall X : ensemble D,
     forall inf1 : D,
     isInfimum inf1 X ->
@@ -705,9 +758,9 @@ Module BasicPosetTheory.
       apply H0...
   Qed.
 
-  Global Hint Resolve isInfimum_unique : my_hints.
+  Local Hint Resolve isInfimum_unique : core.
 
-  Lemma compute_Infimum {D : Type} `{D_isPoset: isPoset D} :
+  Lemma compute_Infimum :
     forall X : ensemble D,
     forall inf_X : D,
     isSupremum inf_X (fun d : D => forall x : D, member x X -> d =< x) ->
@@ -720,9 +773,9 @@ Module BasicPosetTheory.
     - intros H0...
   Qed.
 
-  Global Hint Resolve compute_Infimum : my_hints.
+  Local Hint Resolve compute_Infimum : core.
 
-  Lemma make_Supremum_to_Infimum_of_upper_bounds {D : Type} `{D_isPoset : isPoset D} :
+  Lemma make_Supremum_to_Infimum_of_upper_bounds :
     forall X : ensemble D,
     forall sup_X : D,
     isSupremum sup_X X ->
@@ -735,39 +788,39 @@ Module BasicPosetTheory.
     - intros H0...
   Qed.
 
-  Definition prefixed_points {D : Type} `{D_isPoset : isPoset D} : (D -> D) -> ensemble D :=
+  Definition prefixed_points : (D -> D) -> ensemble D :=
     fun f : D -> D =>
     fun x : D =>
     f x =< x
   .
 
-  Global Hint Unfold prefixed_points : my_hints.
+  Local Hint Unfold prefixed_points : core.
 
-  Definition fixed_points {D : Type} `{D_isSetoid : isSetoid D} : (D -> D) -> ensemble D :=
+  Definition fixed_points : (D -> D) -> ensemble D :=
     fun f : D -> D =>
     fun x : D =>
     x == f x
   .
 
-  Global Hint Unfold fixed_points : my_hints.
+  Local Hint Unfold fixed_points : core.
 
-  Definition postfixed_points {D : Type} `{D_isPoset : isPoset D} : (D -> D) -> ensemble D :=
+  Definition postfixed_points : (D -> D) -> ensemble D :=
     fun f : D -> D =>
     fun x : D =>
     x =< f x
   .
 
-  Global Hint Unfold postfixed_points : my_hints.
+  Local Hint Unfold postfixed_points : core.
 
-  Definition isLeastFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=
+  Definition isLeastFixedPoint : D -> (D -> D) -> Prop :=
     fun lfp : D =>
     fun f : D -> D =>
     member lfp (fixed_points f) /\ (forall fix_f : D, member fix_f (fixed_points f) -> lfp =< fix_f)
   .
 
-  Global Hint Unfold isLeastFixedPoint : my_hints.
+  Local Hint Unfold isLeastFixedPoint : core.
 
-  Theorem LeastFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
+  Theorem LeastFixedPointOfMonotonicMaps :
     forall f : D -> D,
     isMonotonicMap f ->
     forall lfp : D,
@@ -794,15 +847,15 @@ Module BasicPosetTheory.
     apply H0...
   Qed.
 
-  Definition isGreatestFixedPoint {D : Type} `{D_isPoset : isPoset D} : D -> (D -> D) -> Prop :=
+  Definition isGreatestFixedPoint : D -> (D -> D) -> Prop :=
     fun gfp : D =>
     fun f : D -> D =>
     member gfp (fixed_points f) /\ (forall fix_f : D, member fix_f (fixed_points f) -> fix_f =< gfp)
   .
 
-  Global Hint Unfold isGreatestFixedPoint : my_hints.
+  Local Hint Unfold isGreatestFixedPoint : core.
 
-  Lemma GreatestFixedPointOfMonotonicMaps {D : Type} `{D_isPoset : isPoset D} :
+  Lemma GreatestFixedPointOfMonotonicMaps :
     forall f : D -> D,
     isMonotonicMap f ->
     forall gfp : D,
@@ -820,14 +873,14 @@ Module BasicPosetTheory.
     - intros fix_f H1...
   Qed.
 
-  Definition isSupremumIn {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D -> ensemble D -> Prop :=
+  Definition isSupremumIn : D -> ensemble D -> ensemble D -> Prop :=
     fun sup_X : D =>
     fun X : ensemble D =>
     fun P : ensemble D =>
     member sup_X P /\ (forall d : D, member d P -> sup_X =< d <-> (forall x : D, member x X -> x =< d))
   .
 
-  Lemma isSupremumIn_iff {D : Type} `{D_isPoset : isPoset D} :
+  Lemma isSupremumIn_iff :
     forall P : D -> Prop,
     forall sup_X : sig P,
     forall X : ensemble (sig P),
@@ -865,6 +918,40 @@ Module BasicPosetTheory.
           intros x' H3.
           apply H2...
   Qed.
+
+  End PosetTheory.
+
+  Global Hint Resolve isSupremum_upperbound : my_hints.
+
+  Global Hint Resolve isSupremum_isSubsetOf : my_hints.
+
+  Global Hint Resolve isSupremum_ext : my_hints.
+
+  Global Hint Resolve isSupremum_unique : my_hints.
+
+  Global Hint Unfold image_sup : my_hints.
+
+  Global Hint Resolve sup_in_image_sup : my_hints.
+
+  Global Hint Resolve sup_image_sup_isGreaterThan : my_hints.
+
+  Global Hint Resolve isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs : my_hints.
+
+  Global Hint Unfold isInfimum : my_hints.
+
+  Global Hint Resolve isInfimum_unique : my_hints.
+
+  Global Hint Resolve compute_Infimum : my_hints.
+
+  Global Hint Unfold prefixed_points : my_hints.
+
+  Global Hint Unfold fixed_points : my_hints.
+
+  Global Hint Unfold postfixed_points : my_hints.
+
+  Global Hint Unfold isLeastFixedPoint : my_hints.
+
+  Global Hint Unfold isGreatestFixedPoint : my_hints.
 
 End BasicPosetTheory.
 

@@ -52,8 +52,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     forall X : AczelSet,
     ext_eq X X.
   Proof with eauto with *.
-    induction X as [children1 childtrees1 IH].
-    split...
+    induction X as [children1 childtrees1 IH]; simpl...
   Qed.
 
   Global Hint Resolve ext_eq_refl : aczel_hint.
@@ -102,10 +101,22 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Resolve ext_eq_trans : aczel_hint.
 
+  Global Instance ext_eq_Reflexive : Reflexive ext_eq :=
+    ext_eq_refl
+  .
+
+  Global Instance ext_eq_Symmetry : Symmetric ext_eq :=
+    ext_eq_sym
+  .
+
+  Global Instance ext_eq_Transitive : Transitive ext_eq :=
+    ext_eq_trans
+  .
+
   Global Instance ext_eq_Equivalence : Equivalence ext_eq :=
-    { Equivalence_Reflexive := ext_eq_refl
-    ; Equivalence_Symmetric := ext_eq_sym
-    ; Equivalence_Transitive := ext_eq_trans
+    { Equivalence_Reflexive := ext_eq_Reflexive
+    ; Equivalence_Symmetric := ext_eq_Symmetry
+    ; Equivalence_Transitive := ext_eq_Transitive
     }
   .
 
@@ -153,6 +164,14 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Qed.
 
   Global Hint Resolve in_eq_in : aczel_hint.
+
+  Add Parametric Morphism :
+    elem with signature (ext_eq ==> ext_eq ==> iff)
+  as elem_ext_eq.
+  Proof with eauto with *.
+    intros x1 x2 H y1 y2 H0.
+    transitivity (elem x1 y2); split...
+  Qed.
 
   Lemma elem_intro :
     forall X : AczelSet,
@@ -207,11 +226,23 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Unfold subseteq : aczel_hint.
 
-  Global Instance subseteq_isPreOrder :
-    PreOrder subseteq.
+  Global Instance subseteq_Reflexive :
+    Reflexive subseteq.
   Proof with eauto with *.
-    split...
+    intros x1...
   Qed.
+
+  Global Instance subseteq_Transtive :
+    Transitive subseteq.
+  Proof with eauto with *.
+    intros x1 x2 x3 H H0...
+  Qed.
+
+  Global Instance subseteq_isPreOrder : PreOrder subseteq :=
+    { PreOrder_Reflexive := subseteq_Reflexive
+    ; PreOrder_Transitive := subseteq_Transtive
+    }
+  .
 
   Global Instance subseteq_isPartialOrder :
     PartialOrder ext_eq subseteq.
@@ -232,6 +263,14 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     ; Poset_requiresPartialOrder := subseteq_isPartialOrder
     }
   .
+
+  Add Parametric Morphism :
+    subseteq with signature (ext_eq ==> ext_eq ==> iff)
+  as subseteq_ext_eq.
+  Proof with eauto with *.
+    intros x1 x2 H y1 y2 H0.
+    transitivity (subseteq x1 y2); split...
+  Qed.
 
   Definition respect_ext_eq : (AczelSet -> Prop) -> Prop :=
     fun phi : AczelSet -> Prop =>
@@ -431,17 +470,12 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     isOrdinal beta.
   Proof with eauto with *.
     intros alpha H.
-    inversion H; subst...
-(* [An Alternative Proof]
-  Proof with eauto with *.
-    intros alpha H.
     inversion H; subst.
     intros beta H2.
     constructor.
     - apply H1...
     - intros gamma H3.
       apply H1, (H0 beta)...
-*)
   Qed.
 
   Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
