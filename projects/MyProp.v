@@ -3,10 +3,10 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.micromega.Lia.
 Require Import Coq.Lists.List.
+Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
-Require Import Coq.Logic.Classical.
 Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
@@ -80,14 +80,14 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Global Hint Unfold leCBA : cba_hints.
 
-  Global Instance leCBA_Reflexive {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) :
-    Reflexive (leCBA B_isCBA).
+  Global Instance leCBA_Reflexive {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
+    Reflexive (leCBA B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA...
   Qed.
 
-  Global Instance leCBA_Transitive {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) :
-    Transitive (leCBA B_isCBA).
+  Global Instance leCBA_Transitive {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
+    Transitive (leCBA B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA.
     intros b1 b2 b3 H H0.
@@ -96,14 +96,14 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     - rewrite H0...
   Qed.
 
-  Global Instance leCBA_PreOrder {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) :
-    PreOrder (leCBA B_isCBA).
-  Proof with eauto with *.
-    split...
-  Qed.
+  Global Instance leCBA_PreOrder {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) : PreOrder (leCBA B_requiresCBA) :=
+    { PreOrder_Reflexive := leCBA_Reflexive B_requiresCBA
+    ; PreOrder_Transitive := leCBA_Transitive B_requiresCBA
+    }
+  .
 
-  Global Instance leCBA_PartialOrder {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) :
-    PartialOrder eqProp (leCBA B_isCBA).
+  Global Instance leCBA_PartialOrder {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
+    PartialOrder eqProp (leCBA B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA.
     intros b1 b2.
@@ -114,11 +114,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       transitivity (andB b1 b2)...
   Qed.
 
-  Global Instance CBA_isPoset {B : Type} `{B_isSetoid : isSetoid B} (B_isCBA : @isCBA B B_isSetoid) : isPoset B :=
-    { leProp := leCBA B_isCBA
+  Global Instance CBA_isPoset {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) : isPoset B :=
+    { leProp := leCBA B_requiresCBA
     ; Poset_requiresSetoid := B_isSetoid
-    ; Poset_requiresPreOrder := leCBA_PreOrder B_isCBA
-    ; Poset_requiresPartialOrder := leCBA_PartialOrder B_isCBA
+    ; Poset_requiresPreOrder := leCBA_PreOrder B_requiresCBA
+    ; Poset_requiresPartialOrder := leCBA_PartialOrder B_requiresCBA
     }
   .
 
@@ -200,7 +200,6 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Local Hint Resolve leCBA_andB_append : core.
 
-
   Definition isFilter : ensemble B -> Prop :=
     fun bs : ensemble B =>
     nonempty bs /\ (forall b1 : B, forall b2 : B, member b1 bs -> b1 =< b2 -> member b2 bs) /\ (forall b1 : B, forall b2 : B, forall b : B, member b1 bs -> member b2 bs -> b == andB b1 b2 -> member b bs)
@@ -233,8 +232,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with ((now firstorder) || eauto with *).
     intros bs1 [[b0 H] [H0 H1]] bs2.
     replace (bs1 == bs2) with (forall b : B, member b bs1 <-> member b bs2)...
-    split...
-    split...
+    intros H2.
+    enough (claim1 : forall b1 : B, forall b2 : B, forall b : B, member b1 bs2 -> member b2 bs2 -> b == andB b1 b2 -> member b bs2) by firstorder.
     intros b1 b2 b H3 H4 H5.
     apply H2, (H1 b1 b2)...
   Qed.
@@ -325,7 +324,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     member trueB bs.
   Proof with eauto with *.
     intros bs [[b0 H] [H0 H1]].
-    apply (H0 b0)...
+    enough (H2 : b0 =< trueB) by now apply (H0 b0).
+    rewrite leCBA_is...
   Qed.
 
   Local Hint Resolve fact2_of_1_2_8 : core.
@@ -519,19 +519,19 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     - intros [b [H2 H3]].
       inversion H2; subst.
       destruct (lemma1_of_1_2_13_aux1 bs1 bs H n H4) as [H6 | [b0 [H6 H7]]].
-      + assert (H7 : andB b (fold_right andB trueB bs1) == falseB).
+      + assert (claim1 : andB b (fold_right andB trueB bs1) == falseB).
         { rewrite H3, andB_commutative.
           apply falseB_zero_andB.
         }
-        assert (H8 := proj1 (proj2 H0) (fold_right andB trueB bs1)).
+        assert (H7 := proj1 (proj2 H0) (fold_right andB trueB bs1)).
         exists (andB b (fold_right andB trueB bs1))...
       + inversion H7; subst.
-        assert (H9 : fold_right andB trueB bs1 == falseB).
+        assert (claim2 : fold_right andB trueB bs1 == falseB).
         { rewrite H3 in H5.
           apply (leCBA_PartialOrder B_isCBA).
           split; [apply H5 | apply falseB_isBottom].
         }
-        assert (H10 : isSubsetOf (Cl (union (improveFilter bs n) (insertion (improveFilter bs n) n))) (Cl (insert (enumB n) (improveFilter bs n)))) by now apply fact4_of_1_2_8, lemma1_of_1_2_13_aux2.
+        assert (H9 : isSubsetOf (Cl (union (improveFilter bs n) (insertion (improveFilter bs n) n))) (Cl (insert (enumB n) (improveFilter bs n)))) by now apply fact4_of_1_2_8, lemma1_of_1_2_13_aux2.
         apply H8.
         exists (fold_right andB trueB bs1)...
   Qed.
@@ -580,6 +580,95 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Qed.
 
   Local Hint Resolve lemma3_of_1_2_13 : core.
+
+  Lemma theorem_of_1_2_14_aux1 :
+    forall bs : ensemble B,
+    isFilter bs ->
+    forall n : nat,
+    equiconsistent (CompleteFilter bs) (Cl (insert (enumB n) (CompleteFilter bs))) ->
+    equiconsistent (improveFilter bs n) (Cl (insert (enumB n) (improveFilter bs n))).
+  Proof with eauto with *.
+    intros bs H n H0.
+    split.
+    - intros [b [H1 H2]].
+      exists b.
+      split.
+      + apply fact3_of_1_2_8, in_insert_iff...
+      + apply H2.
+    - intros H1.
+      assert (claim1 : inconsistent (Cl (insert (enumB n) (CompleteFilter bs)))).
+      { apply (inconsistent_subset (Cl (insert (enumB n) (improveFilter bs n))))...
+        apply fact4_of_1_2_8.
+        intros b.
+        do 2 rewrite in_insert_iff.
+        intros [H2 | H2]...
+      }
+      assert (H2 := proj2 H0 claim1).
+      assert (H3 := lemma1_of_1_2_13 n bs H).
+      assert (H4 := lemma3_of_1_2_13 bs H).
+      now firstorder.
+  Qed.
+
+  Theorem theorem_of_1_2_14 :
+    forall bs : ensemble B,
+    isFilter bs ->
+    isSubsetOf bs (CompleteFilter bs) /\ isFilter (CompleteFilter bs) /\ isComplete (CompleteFilter bs) /\ equiconsistent bs (CompleteFilter bs).
+  Proof with eauto with *.
+    intros bs H.
+    assert (claim1 : isSubsetOf bs (CompleteFilter bs)) by exact (in_CompleteFilter 0 bs).
+    assert (claim2 : forall b1 : B, forall b2 : B, member b1 (CompleteFilter bs) -> b1 =< b2 -> member b2 (CompleteFilter bs)).
+    { intros b1 b2 H2 H3.
+      inversion H2; subst.
+      assert (H5 := lemma1_of_1_2_11 n bs H).
+      apply (in_CompleteFilter n), (proj1 (proj2 H5) b1 b2)...
+    }
+    assert (claim3 : forall b1 : B, forall b2 : B, forall b : B, member b1 (CompleteFilter bs) -> member b2 (CompleteFilter bs) -> b == andB b1 b2 -> member b (CompleteFilter bs)).
+    { intros b1 b2 b H0 H1 H2.
+      inversion H0; subst.
+      inversion H1; subst.
+      rename n into n1, n0 into n2.
+      assert (H5 : n1 <= n2 \/ n2 <= n1) by lia.
+      destruct H5 as [H5 | H5].
+      - assert (H6 := lemma1_of_1_2_11 n2 bs H).
+        assert (H7 := lemma1_of_1_2_12 n1 n2 H5 bs b1 H3).
+        apply (in_CompleteFilter n2), (proj2 (proj2 H6) b1 b2)...
+      - assert (H6 := lemma1_of_1_2_11 n1 bs H).
+        assert (H7 := lemma1_of_1_2_12 n2 n1 H5 bs b2 H4).
+        apply (in_CompleteFilter n1), (proj2 (proj2 H6) b1 b2)...
+    }
+    assert (claim4 : isFilter (CompleteFilter bs)).
+    { split.
+      - destruct (proj1 H) as [b0 H0].
+        exists b0...
+      - split...
+    }
+    assert (claim5 : isComplete (CompleteFilter bs)).
+    { intros b H0.
+      destruct (enumB_surjective b) as [n Heq].
+      subst.
+      assert (H1 := theorem_of_1_2_14_aux1 bs H n H0).
+      exists (S n).
+      simpl.
+      exists (cons (enumB n) nil).
+      - intros b1 [H2 | []]; subst.
+        apply in_union_iff...
+      - simpl...
+    }
+    assert (claim8 : equiconsistent bs (CompleteFilter bs)) by now apply lemma3_of_1_2_13.
+    tauto.
+  Qed.
+
+  Definition isUltraFilter : ensemble B -> Prop :=
+    fun bs : ensemble B =>
+    isFilter bs /\ (forall bs' : ensemble B, isFilter bs' -> equiconsistent bs bs' -> isSubsetOf bs bs' -> isSubsetOf bs' bs)
+  .
+
+  (*
+  Corollary corollary_1_2_16 :
+    forall bs : ensemble B,
+    isFilter bs ->
+    isUltraFilter (CompleteFilter bs).
+  *)
 
   End CBA_theory.
 
