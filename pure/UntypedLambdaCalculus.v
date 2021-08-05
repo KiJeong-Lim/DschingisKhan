@@ -669,9 +669,9 @@ Module UntypedLamdbdaCalculus.
         simpl.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq.
         split...
-        intros claim2_aux2.
+        intros Heq.
         subst.
-        enough (claim2_aux3 : isFreeIn y (sigma1 x') = false) by now rewrite H2 in claim2_aux3.
+        enough (claim2_aux2 : isFreeIn y (sigma1 x') = false) by now rewrite H2 in claim2_aux2.
         assert (H4 := main_property_of_chi (tmLam x M) sigma1).
         unfold isFreshIn_substitution in H4.
         rewrite forallb_true_iff in H4.
