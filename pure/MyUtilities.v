@@ -109,10 +109,10 @@ Module MyUtilities.
 
   Fixpoint cantor_pairing (n : nat) {struct n} : nat * nat :=
     match n with
-    | O => (O, O)
+    | O => (0, 0)
     | S n' =>
       match cantor_pairing n' with
-      | (O, y) => (S y, O)
+      | (O, y) => (S y, 0)
       | (S x, y) => (x, S y)
       end
     end
@@ -444,9 +444,28 @@ Module EqElim.
     end phi'
   .
 
-  Definition eq_symmetry {A : Type} : forall x : A, forall y : A, x = y -> y = x :=
-    fun x : A =>
-    eq_ind x (fun z : A => z = x) eq_refl
+  Definition eq_reflexivity {A : Type} : forall x1 : A, x1 = x1 :=
+    @eq_refl A
+  .
+
+  Definition eq_symmetry {A : Type} : forall x1 : A, forall x2 : A, x1 = x2 -> x2 = x1 :=
+    fun x1 : A =>
+    eq_ind x1 (fun x : A => x = x1) eq_refl
+  .
+
+  Definition eq_transitivity {A : Type} : forall x1 : A, forall x2 : A, forall x3 : A, x1 = x2 -> x2 = x3 -> x1 = x3 :=
+    fun x1 : A =>
+    fun x2 : A =>
+    fun x3 : A =>
+    fun H : x1 = x2 =>
+    eq_ind x2 (fun x : A => x1 = x) H x3
+  .
+
+  Definition eq_congruence {A : Type} {B : Type} : forall f : A -> B, forall x1 : A, forall x2 : A, x1 = x2 -> f x1 = f x2 :=
+    fun f : A -> B =>
+    fun x1 : A =>
+    fun x2 : A =>
+    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
   .
 
 End EqElim.

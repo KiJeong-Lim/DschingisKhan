@@ -51,21 +51,21 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Global Hint Resolve andB_associative orB_associative andB_idempotent orB_idempotent andB_commutative orB_commutative andB_distribute_orB orB_distribute_andB absorption_andB_orB absorption_orB_andB falseB_preserves_eqB trueB_zero_orB trueB_unit_andB falseB_unit_orB andB_negB orB_negB : cba_hints.
 
-  Add Parametric Morphism (B : Type) `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
+  Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     negB with signature (eqProp ==> eqProp)
   as negB_preserves.
   Proof.
     auto using negB_preserves_eqB.
   Qed.
 
-  Add Parametric Morphism (B : Type) `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
+  Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     andB with signature (eqProp ==> eqProp ==> eqProp)
   as andB_preserves.
   Proof.
     auto using andB_preserves_eqB.
   Qed.
 
-  Add Parametric Morphism (B : Type) `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
+  Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     orB with signature (eqProp ==> eqProp ==> eqProp)
   as orB_preserves.
   Proof.
@@ -115,10 +115,10 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Qed.
 
   Global Instance CBA_isPoset {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) : isPoset B :=
-    { leProp := leCBA B_requiresCBA
+    { leProp := @leCBA B B_isSetoid B_requiresCBA
     ; Poset_requiresSetoid := B_isSetoid
-    ; Poset_requiresPreOrder := leCBA_PreOrder B_requiresCBA
-    ; Poset_requiresPartialOrder := leCBA_PartialOrder B_requiresCBA
+    ; Poset_requiresPreOrder := @leCBA_PreOrder B B_isSetoid B_requiresCBA
+    ; Poset_requiresPartialOrder := @leCBA_PartialOrder B B_isSetoid B_requiresCBA
     }
   .
 
@@ -127,7 +127,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Context {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid}.
 
   Let leCBA_is : @leProp B (@CBA_isPoset B B_isSetoid B_isCBA) = @leCBA B B_isSetoid B_isCBA :=
-    eq_refl
+    @eq_refl (B -> B -> Prop) (fun b1 : B => fun b2 : B => andB b1 b2 == b1)
   .
 
   Hint Rewrite leCBA_is : core.
@@ -214,11 +214,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     split.
     - apply H.
     - intros b1 H2 b2 H3.
-      exists (orB b1 b2).
-      split.
-      + apply (H0 b1 (orB b1 b2) H2).
-        rewrite leCBA_is...
-      + split; [rewrite leCBA_is | rewrite orB_commutative, leCBA_is]...
+      enough (claim1 : b1 =< orB b1 b2 /\ b2 =< orB b1 b2) by firstorder.
+      split; [rewrite leCBA_is | rewrite leCBA_is, orB_commutative]...
   Qed.
 
   Lemma isFilter_ext_eq :
@@ -409,7 +406,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Definition improveFilter : ensemble B -> nat -> ensemble B :=
     fun bs : ensemble B =>
-    fix improveFilter_fix (n : nat) : ensemble B :=
+    fix improveFilter_fix (n : nat) {struct n} : ensemble B :=
     match n with
     | 0 => bs
     | S n' =>
@@ -437,14 +434,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     isSubsetOf (improveFilter bs n1) (improveFilter bs n2).
   Proof with eauto with *.
     intros n1 n2 H.
-    induction H as [| n2 H IH].
-    - simpl...
-    - intros bs.
-      simpl.
-      transitivity ((union (improveFilter bs n2) (insertion (improveFilter bs n2) n2)))...
-      intros b H0.
-      apply in_union_iff.
-      unfold isSubsetOf in IH...
+    induction H as [| n2 H IH]; simpl...
+    intros bs.
+    transitivity ((union (improveFilter bs n2) (insertion (improveFilter bs n2) n2)))...
+    intros b H0.
+    apply in_union_iff.
+    unfold isSubsetOf in IH...
   Qed.
 
   Local Hint Resolve lemma1_of_1_2_12 : core.
@@ -463,14 +458,10 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     assert (H2 : member b1 (improveFilter bs2 n) \/ member b1 (insertion (improveFilter bs2 n) n)) by now apply in_union_iff, H0; left.
     assert (H3 := leCBA_andB_fold_right bs1 (improveFilter bs2 n) H1).
     assert (H4 : forall b2 : B, In b2 bs1 -> member b2 (union (improveFilter bs2 n) (insertion (improveFilter bs2 n) n))) by firstorder.
-    destruct (IH bs2 H n H4) as [H5 | [b2 [H5 H6]]].
-    - destruct H2 as [H2 | H2].
-      + left.
-        apply (proj2 (proj2 H1) b1 (fold_right andB trueB bs1))...
-      + right.
-        exists b1...
-    - right.
-      exists b2...
+    assert (H5 := proj2 (proj2 H1) b1 (fold_right andB trueB bs1)).
+    destruct (IH bs2 H n H4) as [H6 | [b2 [H6 H7]]].
+    - destruct H2 as [H2 | H2]; [left | right]...
+    - right...
   Qed.
 
   Local Hint Resolve lemma1_of_1_2_13_aux1 : core.
@@ -491,9 +482,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with eauto with *.
     intros bs n b.
     rewrite in_union_iff, in_insert_iff.
-    intros [H | H].
-    - right...
-    - inversion H; subst...
+    intros [H | H]; [right | inversion H; subst]...
   Qed.
 
   Local Hint Resolve lemma1_of_1_2_13_aux2 : core.
@@ -594,9 +583,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     split.
     - intros [b [H1 H2]].
       exists b.
-      split.
-      + apply fact3_of_1_2_8, in_insert_iff...
-      + apply H2.
+      split; [apply fact3_of_1_2_8, in_insert_iff | apply H2]...
     - intros H1.
       assert (H2 := lemma1_of_1_2_13 n bs H).
       assert (H3 := lemma3_of_1_2_13 bs H). 
@@ -716,16 +703,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     split.
     - intros [b' [H6 H7]].
       exists b'.
-      split.
-      + apply fact3_of_1_2_8, in_union_iff...
-      + apply H7.
+      split; [apply fact3_of_1_2_8, in_union_iff | apply H7]...
     - intros H6.
       destruct (corollary_of_1_2_16_aux1 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6) as [b' [H7 H8]].
       apply (proj2 H3).
       exists b'.
-      split.
-      + apply fact5_of_1_2_8...
-      + apply H8.
+      split; [apply fact5_of_1_2_8 | apply H8]...
   Qed.
 
   Corollary corollary_of_1_2_16 :

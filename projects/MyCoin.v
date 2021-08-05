@@ -123,7 +123,7 @@ Module MyCoInductive.
 
   Definition bisimF : ensemble {i : Idx & prod (c->myM i) (c->myM i)} -> ensemble {i : Idx & prod (c->myM i) (c->myM i)} :=
     fun sim : {i : Idx & prod (c->myM i) (c->myM i)} -> Prop =>
-    uncurry' (fun i : Idx => fun lhs : c->myM i => fun rhs : c->myM i => BisimilarityF (curry' sim) i (c->unfold_myM i lhs) (c->unfold_myM i rhs))
+    uncurry' (fun i : Idx => fun lhs : c->myM i => fun rhs : c->myM i => @BisimilarityF Idx Idx c c->myM c->myM (curry' sim) i (c->unfold_myM i lhs) (c->unfold_myM i rhs))
   .
 
   Lemma bisimF_isMonotonicMap :

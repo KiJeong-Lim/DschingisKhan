@@ -105,7 +105,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     ext_eq_refl
   .
 
-  Global Instance ext_eq_Symmetry : Symmetric ext_eq :=
+  Global Instance ext_eq_Symmetric : Symmetric ext_eq :=
     ext_eq_sym
   .
 
@@ -115,7 +115,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Instance ext_eq_Equivalence : Equivalence ext_eq :=
     { Equivalence_Reflexive := ext_eq_Reflexive
-    ; Equivalence_Symmetric := ext_eq_Symmetry
+    ; Equivalence_Symmetric := ext_eq_Symmetric
     ; Equivalence_Transitive := ext_eq_Transitive
     }
   .
