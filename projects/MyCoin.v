@@ -128,7 +128,7 @@ Module MyCoInductive.
 
   Lemma bisimF_isMonotonicMap :
     isMonotonicMap bisimF.
-  Proof with eauto.
+  Proof.
     intros sim1 sim2 H_incl [i [lhs rhs]] Hb.
     simpl in *.
     destruct (BisimilarityF_elim Hb) as [a [lhs_snd [rhs_snd [H_sim [Heq1 Heq2]]]]].

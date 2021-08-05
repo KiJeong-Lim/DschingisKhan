@@ -1,5 +1,4 @@
 Require Import Coq.Classes.RelationClasses.
-Require Import Coq.micromega.Lia.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.

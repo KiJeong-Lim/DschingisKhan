@@ -15,7 +15,7 @@ End AxiomOfChoice.
 
 Module AxiomK.
 
-  Export Eq_rect_eq EqElim.
+  Export Eq_rect_eq EqFacts.
 
   Proposition RuleK {A : Type} :
     forall x : A,

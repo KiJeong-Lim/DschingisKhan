@@ -3,9 +3,49 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 
+Module EqFacts.
+
+  Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
+    fun x : A =>
+    fun y : A =>
+    fun H : eq x y =>
+    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 eq_refl -> phi x y0 H0 with
+    | eq_refl =>
+      fun phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type =>
+      fun phi_y : phi x x eq_refl =>
+      phi_y
+    end phi'
+  .
+
+  Definition eq_reflexivity {A : Type} : forall x1 : A, x1 = x1 :=
+    @eq_refl A
+  .
+
+  Definition eq_symmetry {A : Type} : forall x1 : A, forall x2 : A, x1 = x2 -> x2 = x1 :=
+    fun x1 : A =>
+    eq_ind x1 (fun x : A => x = x1) eq_refl
+  .
+
+  Definition eq_transitivity {A : Type} : forall x1 : A, forall x2 : A, forall x3 : A, x1 = x2 -> x2 = x3 -> x1 = x3 :=
+    fun x1 : A =>
+    fun x2 : A =>
+    fun x3 : A =>
+    fun H : x1 = x2 =>
+    eq_ind x2 (fun x : A => x1 = x) H x3
+  .
+
+  Definition eq_congruence {A : Type} {B : Type} : forall f : A -> B, forall x1 : A, forall x2 : A, x1 = x2 -> f x1 = f x2 :=
+    fun f : A -> B =>
+    fun x1 : A =>
+    fun x2 : A =>
+    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
+  .
+
+End EqFacts.
+
 Module MyUtilities.
 
-  Import ListNotations.
+  Import ListNotations EqFacts.
 
   Lemma strong_induction (P : nat -> Prop) :
     (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
@@ -100,7 +140,7 @@ Module MyUtilities.
     end
   .
 
-  Proposition sum_from_0_to_is :
+  Lemma sum_from_0_to_is :
     forall n : nat,
     2 * sum_from_0_to n = n * (S n).
   Proof with lia.
@@ -170,22 +210,20 @@ Module MyUtilities.
     cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
   Proof with eauto using cantor_pairing_is_injective, cantor_pairing_is_surjective.
     split...
-    intros H.
+    intros Heq.
     subst...
   Qed.
 
   Definition S_0 {A : Type} : forall n : nat, S n = O -> A :=
     fun n : nat =>
-    fun H0 : S n = O =>
-    let H1 : O = S n := eq_ind (S n) (fun x : nat => x = S n) eq_refl O H0 in
-    let H2 : False := eq_ind O (fun x : nat => if Nat.eqb x O then True else False) I (S n) H1 in
-    False_rect A H2
+    fun H : S n = O =>
+    False_rect A (eq_ind O (fun x : nat => if Nat.eqb x O then True else False) I (S n) (eq_symmetry (S n) O H))
   .
 
   Definition S_S : forall n1 : nat, forall n2 : nat, S n1 = S n2 -> n1 = n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    eq_ind (S n1) (fun x : nat => n1 = pred x) eq_refl (S n2)
+    eq_congruence Nat.pred (S n1) (S n2)
   .
 
   Inductive FinSet : nat -> Set :=
@@ -243,32 +281,33 @@ Module MyUtilities.
     False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
   .
 
-  Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
-    let lt_S_aux : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
-      fix lt_S_aux_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
-      match H as H0 in le _ n2' return n1 <= pred n2' with
-      | le_n _ => le_n n1
-      | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ _ => eq_refl end)
-      end
-    in
-    fun n1 : nat =>
-    fun n2 : nat =>
-    fun H : S n1 < S n2 =>
-    lt_S_aux (S n1) (S n2) H
+  Definition lt_S_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
+    fix lt_S_aux1_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
+    match H as H0 in le _ n2' return n1 <= pred n2' with
+    | le_n _ => le_n n1
+    | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux1_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ _ => eq_refl end)
+    end
   .
 
-  Fixpoint mkFinSet (n : nat) {struct n} : forall i : nat, i < n -> FinSet n :=
+  Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    lt_S_aux1 (S n1) (S n2)
+  .
+
+  Definition mkFinSet : forall n : nat, forall i : nat, i < n -> FinSet n :=
+    fix mkFinSet_fix (n : nat) {struct n} : forall i : nat, i < n -> FinSet n :=
     match n with
-    | 0 => lt_0
+    | O => lt_0
     | S n' =>
       fun i : nat =>
       match i with
-      | 0 =>
+      | O =>
         fun H : 0 < S n' =>
         FZ n'
       | S i' =>
         fun H : S i' < S n' =>
-        FS n' (mkFinSet n' i' (lt_S i' n' H))
+        FS n' (mkFinSet_fix n' i' (lt_S i' n' H))
       end
     end
   .
@@ -429,46 +468,6 @@ Module MyUtilities.
   .
 
 End MyUtilities.
-
-Module EqElim.
-
-  Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
-    fun x : A =>
-    fun y : A =>
-    fun H : eq x y =>
-    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 eq_refl -> phi x y0 H0 with
-    | eq_refl =>
-      fun phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type =>
-      fun phi_y : phi x x eq_refl =>
-      phi_y
-    end phi'
-  .
-
-  Definition eq_reflexivity {A : Type} : forall x1 : A, x1 = x1 :=
-    @eq_refl A
-  .
-
-  Definition eq_symmetry {A : Type} : forall x1 : A, forall x2 : A, x1 = x2 -> x2 = x1 :=
-    fun x1 : A =>
-    eq_ind x1 (fun x : A => x = x1) eq_refl
-  .
-
-  Definition eq_transitivity {A : Type} : forall x1 : A, forall x2 : A, forall x3 : A, x1 = x2 -> x2 = x3 -> x1 = x3 :=
-    fun x1 : A =>
-    fun x2 : A =>
-    fun x3 : A =>
-    fun H : x1 = x2 =>
-    eq_ind x2 (fun x : A => x1 = x) H x3
-  .
-
-  Definition eq_congruence {A : Type} {B : Type} : forall f : A -> B, forall x1 : A, forall x2 : A, x1 = x2 -> f x1 = f x2 :=
-    fun f : A -> B =>
-    fun x1 : A =>
-    fun x2 : A =>
-    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
-  .
-
-End EqElim.
 
 Module MyUniverses.
 
