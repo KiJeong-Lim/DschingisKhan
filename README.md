@@ -26,6 +26,10 @@ coqc -Q . DschingisKhan projects/MyGIT.v
 coqc -Q . DschingisKhan projects/MyProp.v
 ```
 
+## VERSION
+
+Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
+
 ## THANKS TO
 
 - `Junyoung Jang` https://github.com/Ailrun
@@ -35,10 +39,6 @@ coqc -Q . DschingisKhan projects/MyProp.v
 - `Hanul Jeon` https://github.com/hanuljeon95
 
 - `Soonwon Moon` https://github.com/damhiya
-
-## Version
-
-Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
 
 ## LICENSE
 
