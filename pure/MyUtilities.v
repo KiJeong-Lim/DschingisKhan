@@ -97,7 +97,7 @@ Module MyUtilities.
     fun p : nat -> bool =>
     fix first_nat_fix (n : nat) {struct n} : nat :=
     match n with
-    | 0 => 0
+    | O => 0
     | S n' => if p (first_nat_fix n') then first_nat_fix n' else n
     end
   .
@@ -265,9 +265,7 @@ Module MyUtilities.
     | FZ n0 => PZ n0
     | FS n0 i' =>
       match n0 as n1 return forall i0' : FinSet n1, P (S n1) (FS n1 i0') with
-      | O =>
-        fun i0' : FinSet O =>
-        @FinSet_case0 (fun i1 : FinSet O => P 1 (FS O i1)) i0'
+      | O => FinSet_case0
       | S n0' =>
         fun i0' : FinSet (S n0') =>
         PS (S n0') i0' (FinSet_rectS_fix n0' i0')
@@ -285,7 +283,7 @@ Module MyUtilities.
     fix lt_S_aux1_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
     match H as H0 in le _ n2' return n1 <= pred n2' with
     | le_n _ => le_n n1
-    | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux1_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ _ => eq_refl end)
+    | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux1_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ l => eq_refl end)
     end
   .
 
@@ -324,11 +322,10 @@ Module MyUtilities.
     forall xs : list A,
     forallb p xs = true <-> (forall x : A, In x xs -> p x = true).
   Proof with try now firstorder.
-    induction xs; simpl...
+    induction xs as [| x xs IH]; simpl...
     rewrite andb_true_iff.
     split...
-    intros [H H0] x [H1 | H1]...
-    rewrite H1 in H...
+    intros [H H0] x0 [H1 | H1]; [rewrite H1 in H | apply IH]...
   Qed.
 
   Definition fold_right_max_0 : list nat -> nat :=
@@ -353,9 +350,9 @@ Module MyUtilities.
     fold_right_max_0 (ns1 ++ ns2) = max (fold_right_max_0 ns1) (fold_right_max_0 ns2).
   Proof with (lia || eauto).
     unfold fold_right_max_0.
-    induction ns1 as [| n1 ns1]; simpl... 
+    induction ns1 as [| n1 ns1 IH]; simpl... 
     intros n.
-    rewrite IHns1...
+    rewrite IH...
   Qed.
 
   Lemma property1_of_fold_right_max_0 (Phi : nat -> Prop) (Phi_dec : forall i : nat, {Phi i} + {~ Phi i}) :

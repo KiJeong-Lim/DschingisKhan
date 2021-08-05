@@ -196,7 +196,7 @@ Module MyEnsemble.
     forall X : ensemble A,
     x \in X ->
     X \in Xs ->
-    x \in (unions Xs)
+    x \in unions Xs
   .
 
   Global Hint Constructors unions : my_hints.
