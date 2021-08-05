@@ -27,7 +27,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Section An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
 
-  Context {mathcalE : Type} `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
+  Context (mathcalE : Type) `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
 
   Definition diagonalizer : nat -> nat :=
     fun n : nat =>
@@ -214,6 +214,8 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
   Qed.
 
   End An_Abstract_Forms_of_Goedel's_and_Tarski's_Theorems.
+
+(* [Fix Me: "Refactoring"]
 
   Definition vr : Set :=
     nat
@@ -726,5 +728,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
         eval_in_vr_eq_dec H0.
         simpl_in_eval_tm_make_numeral H0...
   Qed.
+
+*)
 
 End Smullyan's_Goedel's_Incompleteness_Theorems.

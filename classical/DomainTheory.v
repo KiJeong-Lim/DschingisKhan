@@ -85,6 +85,8 @@ Module ClassicalCpoTheory.
       repeat split...
   Qed.
 
+(* [Fix Me: "Refactoring"]
+
   Lemma square_up_image {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall f : D -> D',
     isContinuousMap f ->
@@ -869,5 +871,7 @@ Module ClassicalCpoTheory.
       }
       exists sup_fs, (proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (sup_fs, x))...
   Qed.
+
+*)
 
 End ClassicalCpoTheory.
