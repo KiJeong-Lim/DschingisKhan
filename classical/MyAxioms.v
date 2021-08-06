@@ -2,7 +2,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module Type ClassicalEqFacts_requirements.
 
-  Parameter eq_rect_eq : forall (U : Type) (p : U) (Q : U -> Type) (x: Q p) (h : p = p), x = eq_rect p Q x p h.
+  Parameter eq_rect_eq : forall U : Type, forall p : U, forall Q : U -> Type, forall x : Q p, forall h : p = p, x = eq_rect p Q x p h.
 
 End ClassicalEqFacts_requirements.
 
@@ -45,11 +45,11 @@ Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requiremen
 
 End ClassicalEqFacts_prototype.
 
-Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_requirements). (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_requirements).
 
   Import EqFacts.
 
-  Section Berardis_paradox.
+  Section Berardis_paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
   Let EM : forall P : Prop, P \/ ~ P :=
     my_requirements.LEM
@@ -122,12 +122,11 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     forall A : Prop,
     forall B : Prop,
     retract_cond (pow A) (pow B).
-  Proof with eauto.
+  Proof with (tauto || eauto).
     intros A B.
     destruct (my_requirements.LEM (retract (pow A) (pow B))) as [[i j inv] | H].
     - exists i j...
-    - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F).
-      contradiction.
+    - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
   Qed.
 
   Let U : Prop :=
@@ -206,5 +205,18 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
   Qed.
 
   End Berardis_paradox.
+
+  Lemma eq_rect_eq (U : Type) :
+    forall p : U,
+    forall Q : U -> Type,
+    forall x : Q p,
+    forall H : p = p,
+    x = eq_rect p Q x p H.
+  Proof.
+    intros p Q x H.
+    assert (claim1 := @ProofIrrelevance (eq p p) eq_refl H).
+    rewrite <- claim1.
+    reflexivity.
+  Qed.
 
 End ExclusiveMiddleFacts_prototype.
