@@ -22,8 +22,6 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     ; andB : B -> B -> B
     ; orB : B -> B -> B
     ; enumB : nat -> B
-    ; trueB_preserves_eqB : trueB == trueB
-    ; falseB_preserves_eqB : falseB == falseB
     ; negB_preserves_eqB : forall b1 : B, forall b1' : B, b1 == b1' -> negB b1 == negB b1'
     ; andB_preserves_eqB : forall b1 : B, forall b1' : B, forall b2 : B, forall b2' : B, b1 == b1' -> b2 == b2' -> andB b1 b2 == andB b1' b2'
     ; orB_preserves_eqB : forall b1 : B, forall b1' : B, forall b2 : B, forall b2' : B, b1 == b1' -> b2 == b2' -> orB b1 b2 == orB b1' b2'
@@ -47,7 +45,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     }
   .
 
-  Global Hint Resolve andB_associative orB_associative andB_idempotent orB_idempotent andB_commutative orB_commutative andB_distribute_orB orB_distribute_andB absorption_andB_orB absorption_orB_andB falseB_preserves_eqB trueB_zero_orB trueB_unit_andB falseB_unit_orB andB_negB orB_negB : my_hints.
+  Global Hint Resolve andB_associative orB_associative andB_idempotent orB_idempotent andB_commutative orB_commutative andB_distribute_orB orB_distribute_andB absorption_andB_orB absorption_orB_andB trueB_zero_orB trueB_unit_andB falseB_unit_orB andB_negB orB_negB : my_hints.
 
   Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     negB with signature (eqProp ==> eqProp)
@@ -79,13 +77,13 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Global Hint Unfold leCBA : cba_hints.
 
   Global Instance leCBA_Reflexive {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
-    Reflexive (leCBA B_requiresCBA).
+    Reflexive (@leCBA B B_isSetoid B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA...
   Qed.
 
   Global Instance leCBA_Transitive {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
-    Transitive (leCBA B_requiresCBA).
+    Transitive (@leCBA B B_isSetoid B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA.
     intros b1 b2 b3 H H0.
@@ -101,7 +99,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   .
 
   Global Instance leCBA_PartialOrder {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
-    PartialOrder eqProp (leCBA B_requiresCBA).
+    PartialOrder eqProp (@leCBA B B_isSetoid B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA.
     intros b1 b2.
@@ -231,7 +229,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     apply (proj1 (H2 b)), (H1 b1 b2)...
   Qed.
 
-  Inductive Cl : ensemble B -> ensemble B :=
+  Variant Cl : ensemble B -> ensemble B :=
   | in_Cl :
     forall bs1 : list B,
     forall b2 : B,
@@ -392,7 +390,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Local Hint Resolve proposition1_of_1_2_9 : core.
 
-  Inductive insertion : ensemble B -> nat -> ensemble B :=
+  Variant insertion : ensemble B -> nat -> ensemble B :=
   | in_insertion :
     forall bs : ensemble B,
     forall n : nat,
@@ -798,22 +796,22 @@ Module PropositionalLogic.
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
         BiconditionalF (enum_formula_aux rank' seed2) (enum_formula_aux rank' seed3)
-      | S (S (S (S (S (S i))))) => AtomF i
+      | S (S (S (S (S (S seed))))) => AtomF seed
       end
     end
   .
 
-  Lemma enum_formula_aux_is_good :
+  Definition enum_formula_aux_InvIm :
     forall p : Formula,
     forall rank : nat,
     rankOfFormula p <= rank ->
-    exists seed : nat, enum_formula_aux rank seed = p.
+    {seed : nat | enum_formula_aux rank seed = p}.
   Proof with eauto with *.
     assert (claim1 := cantor_pairing_is).
     induction p; simpl.
     - intros [| rank] H.
       + exists i...
-      + assert (claim2 : exists seed : nat, cantor_pairing seed = (0, S (S (S (S (S (S i))))))).
+      + assert (claim2 : {seed : nat | cantor_pairing seed = (0, S (S (S (S (S (S i))))))}).
         { exists (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))).
           apply (proj2 (claim1 (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))) 0 (S (S (S (S (S (S i))))))))...
         }
@@ -823,13 +821,13 @@ Module PropositionalLogic.
         rewrite H0...
     - set (piece := 0).
       intros rank H.
-      inversion H; subst; exists 0...
+      exists piece.
+      inversion H; subst...
     - set (piece := 1).
       intros r H.
-      assert (claim3 : exists rank : nat, r = S rank).
-      { inversion H; subst.
-        - exists (rankOfFormula p)...
-        - exists m...
+      assert (claim3 : {rank : nat | r = S rank}).
+      { exists (pred r).
+        inversion H; subst...
       }
       destruct claim3 as [rank H0].
       rewrite H0 in H.
@@ -843,10 +841,9 @@ Module PropositionalLogic.
       rewrite H3...
     - set (piece := 2).
       intros r H.
-      assert (claim4 : exists rank : nat, r = S rank).
-      { inversion H; subst.
-        - exists (max (rankOfFormula p1) (rankOfFormula p2))...
-        - exists m...
+      assert (claim4 : {rank : nat | r = S rank}).
+      { exists (pred r).
+        inversion H; subst...
       }
       destruct claim4 as [rank H0].
       rewrite H0 in H.
@@ -856,7 +853,7 @@ Module PropositionalLogic.
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      assert (claim5 : exists seed : nat, cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)).
+      assert (claim5 : {seed : nat | cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)}).
       { exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
         apply (proj2 (claim1 (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) (sum_from_0_to (seed2 + seed3) + seed3) piece))...
       }
@@ -871,10 +868,9 @@ Module PropositionalLogic.
       rewrite H4, H5...
     - set (piece := 3).
       intros r H.
-      assert (claim6 : exists rank : nat, r = S rank).
-      { inversion H; subst.
-        - exists (max (rankOfFormula p1) (rankOfFormula p2))...
-        - exists m...
+      assert (claim6 : {rank : nat | r = S rank}).
+      { exists (pred r).
+        inversion H; subst...
       }
       destruct claim6 as [rank H0].
       rewrite H0 in H.
@@ -884,7 +880,7 @@ Module PropositionalLogic.
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      assert (claim7 : exists seed : nat, cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)).
+      assert (claim7 : {seed : nat | cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)}).
       { exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
         apply (proj2 (claim1 (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) (sum_from_0_to (seed2 + seed3) + seed3) piece))...
       }
@@ -899,10 +895,9 @@ Module PropositionalLogic.
       rewrite H4, H5...
     - set (piece := 4).
       intros r H.
-      assert (claim8 : exists rank : nat, r = S rank).
-      { inversion H; subst.
-        - exists (max (rankOfFormula p1) (rankOfFormula p2))...
-        - exists m...
+      assert (claim8 : {rank : nat | r = S rank}).
+      { exists (pred r).
+        inversion H; subst...
       }
       destruct claim8 as [rank H0].
       rewrite H0 in H.
@@ -912,7 +907,7 @@ Module PropositionalLogic.
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      assert (claim9 : exists seed : nat, cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)).
+      assert (claim9 : {seed : nat | cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)}).
       { exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
         apply (proj2 (claim1 (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) (sum_from_0_to (seed2 + seed3) + seed3) piece))...
       }
@@ -927,10 +922,9 @@ Module PropositionalLogic.
       rewrite H4, H5...
     - set (piece := 5).
       intros r H.
-      assert (claim10 : exists rank : nat, r = S rank).
-      { inversion H; subst.
-        - exists (max (rankOfFormula p1) (rankOfFormula p2))...
-        - exists m...
+      assert (claim10 : {rank : nat | r = S rank}).
+      { exists (pred r).
+        inversion H; subst...
       }
       destruct claim10 as [rank H0].
       rewrite H0 in H.
@@ -940,7 +934,7 @@ Module PropositionalLogic.
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      assert (claim11 : exists seed : nat, cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)).
+      assert (claim11 : {seed : nat | cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)}).
       { exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
         apply (proj2 (claim1 (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) (sum_from_0_to (seed2 + seed3) + seed3) piece))...
       }
@@ -953,7 +947,7 @@ Module PropositionalLogic.
       rewrite H7.
       simpl.
       rewrite H4, H5...
-  Qed.
+  Defined.
 
   Definition enumerateFormula : nat -> Formula :=
     fun n : nat =>
@@ -962,16 +956,16 @@ Module PropositionalLogic.
     end
   .
 
-  Lemma Formula_is_enumerable : 
+  Definition Formula_is_enumerable : 
     forall p : Formula,
-    exists n : nat, enumerateFormula n = p.
+    {n : nat | enumerateFormula n = p}.
   Proof with eauto with *.
     intros p.
-    assert (claim1 : exists seed : nat, enum_formula_aux (rankOfFormula p) seed = p) by now apply (enum_formula_aux_is_good p (rankOfFormula p)).
+    assert (claim1 : {seed : nat | enum_formula_aux (rankOfFormula p) seed = p}) by now apply (enum_formula_aux_InvIm p (rankOfFormula p)).
     destruct claim1 as [seed H].
     exists (sum_from_0_to (rankOfFormula p + seed) + seed).
     unfold enumerateFormula.
     rewrite <- cantor_pairing_is_surjective...
-  Qed.
+  Defined.
 
 End PropositionalLogic.

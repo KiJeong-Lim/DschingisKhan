@@ -28,7 +28,7 @@ coqc -Q . DschingisKhan projects/MyProp.v
 
 ## VERSION
 
-Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
+- Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
 
 ## THANKS TO
 

@@ -64,7 +64,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Local Hint Unfold is_expressible : core.
 
-  Inductive StarOf : ensemble nat -> ensemble nat :=
+  Variant StarOf : ensemble nat -> ensemble nat :=
   | in_StarOf :
     forall ns : ensemble nat,
     forall n : nat,
@@ -80,7 +80,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
 
   Local Hint Unfold isCorrect : core.
 
-  Inductive P : ensemble nat :=
+  Variant P : ensemble nat :=
   | in_P :
     forall n : nat,
     isProvable (enum_mathcalE n) ->
@@ -164,7 +164,7 @@ Module Smullyan's_Goedel's_Incompleteness_Theorems.
     apply A_Diagonal_Lemma_a...
   Qed.
 
-  Inductive T : ensemble nat :=
+  Variant T : ensemble nat :=
   | in_T :
     forall n : nat,
     isTrue (enum_mathcalE n) ->
