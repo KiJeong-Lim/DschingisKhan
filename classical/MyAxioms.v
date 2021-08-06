@@ -178,7 +178,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     apply (AC (L1 U U) X (fun u : U => Not_b (u U u))).
   Qed.
 
-  Corollary classical_proof_irrelevance :
+  Theorem classical_proof_irrelevance :
     T = F.
   Proof with (tauto || eauto).
     assert (claim1 := fun is_true : R U R = T => fun is_false : R U R = F => eq_ind (R U R) (fun T0 : Bool => T0 = F) (eq_ind (R U R) (fun F0 : Bool => R U R = F0) eq_refl F is_false) T is_true).
@@ -196,7 +196,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
   End Retracts.
 
-  Theorem ProofIrrelevance {P : Prop} :
+  Corollary ProofIrrelevance {P : Prop} :
     forall p1 : P,
     forall p2 : P,
     p1 = p2.
@@ -206,16 +206,15 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
   End Berardis_paradox.
 
-  Lemma eq_rect_eq (U : Type) :
-    forall p : U,
-    forall Q : U -> Type,
-    forall x : Q p,
-    forall H : p = p,
-    x = eq_rect p Q x p H.
+  Lemma eq_rect_eq (A : Type) :
+    forall x : A,
+    forall B : A -> Type,
+    forall y : B x,
+    forall H : x = x,
+    y = eq_rect x B y x H.
   Proof.
-    intros p Q x H.
-    assert (claim1 := @ProofIrrelevance (eq p p) eq_refl H).
-    rewrite <- claim1.
+    intros x B y H.
+    rewrite <- (@ProofIrrelevance (@eq A x x) (@eq_refl A x) H).
     reflexivity.
   Qed.
 
