@@ -3,6 +3,8 @@ Require Import DschingisKhan.classical.MyAxioms.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.DomainTheory.
 
+(* [2021-08-07]
+
 Module ClassicalCpoTheory.
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory.
@@ -875,3 +877,5 @@ Module ClassicalCpoTheory.
 *)
 
 End ClassicalCpoTheory.
+
+*)

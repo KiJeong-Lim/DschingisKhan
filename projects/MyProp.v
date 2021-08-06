@@ -842,10 +842,7 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
   .
 
   Local Ltac enum_formula_aux_is_good_tac :=
-    unfold enum_formula_aux;
-    (repeat enum_formula_aux_is_good_tac_aux1);
-    (repeat enum_formula_aux_is_good_tac_aux2);
-    eauto with *
+    (unfold enum_formula_aux); (repeat enum_formula_aux_is_good_tac_aux1); (repeat enum_formula_aux_is_good_tac_aux2); (eauto with *)
   .
 
   Definition enum_formula_aux_is_good :
@@ -856,21 +853,20 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
   Proof with enum_formula_aux_is_good_tac.
     assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_is x y z)).
     induction p; simpl.
-    { intros [| rank] H.
+    { intros [| r'] H.
       - exists i...
-      - set (seed := sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))).
-        assert (H0 : cantor_pairing seed = (0, S (S (S (S (S (S i))))))) by now apply claim1.
-        exists seed...
+      - assert (H0 : cantor_pairing (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))) = (0, S (S (S (S (S (S i))))))) by now apply claim1.
+        exists (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i))))))...
     }
     all: intros r H; set (rank := pred r); assert (H0 : r = S rank) by (now inversion H; subst); rewrite H0.
     { set (piece := 0).
-      exists piece...
+      exists 0...
     }
     { set (piece := 1).
       assert (H1 : rankOfFormula p <= rank) by lia.
-      destruct (IHp rank H1) as [seed H2].
-      assert (H3 : cantor_pairing (sum_from_0_to (seed + piece) + piece) = (seed, piece)) by now apply claim1.
-      exists (sum_from_0_to (seed + piece) + piece)...
+      destruct (IHp rank H1) as [seed2 H2].
+      assert (H3 : cantor_pairing (sum_from_0_to (seed2 + piece) + piece) = (seed2, piece)) by now apply claim1.
+      exists (sum_from_0_to (seed2 + piece) + piece)...
     }
     { set (piece := 2).
       assert (H1 : max (rankOfFormula p1) (rankOfFormula p2) <= rank) by lia.
@@ -878,10 +874,9 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      set (seed := sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
-      assert (H6 : cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
+      assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
-      exists seed...
+      exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
     { set (piece := 3).
       assert (H1 : max (rankOfFormula p1) (rankOfFormula p2) <= rank) by lia.
@@ -889,10 +884,9 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      set (seed := sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
-      assert (H6 : cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
+      assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
-      exists seed...
+      exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
     { set (piece := 4).
       assert (H1 : max (rankOfFormula p1) (rankOfFormula p2) <= rank) by lia.
@@ -900,10 +894,9 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      set (seed := sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
-      assert (H6 : cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
+      assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
-      exists seed...
+      exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
     { set (piece := 5).
       assert (H1 : max (rankOfFormula p1) (rankOfFormula p2) <= rank) by lia.
@@ -911,10 +904,9 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
       assert (H3 : rankOfFormula p2 <= rank) by lia.
       destruct (IHp1 rank H2) as [seed2 H4].
       destruct (IHp2 rank H3) as [seed3 H5].
-      set (seed := sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece).
-      assert (H6 : cantor_pairing seed = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
+      assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
-      exists seed...
+      exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
   Defined.
 
@@ -935,12 +927,12 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
     Prop
   .
 
-  Definition value_assign : Type :=
+  Definition env : Type :=
     pvar -> value
   .
 
-  Definition eval_formula : value_assign -> formula -> value :=
-    fix eval_formula_fix (v : value_assign) (p : formula) {struct p} : value :=
+  Definition eval_formula : env -> formula -> value :=
+    fix eval_formula_fix (v : env) (p : formula) {struct p} : value :=
     match p with
     | AtomF i => v i
     | ContradictionF => False
@@ -952,13 +944,13 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
     end
   .
 
-  Variant satifisfies : value_assign -> formula -> Prop :=
-  | IsModel : forall v : value_assign, forall p : formula, eval_formula v p -> satifisfies v p
+  Variant satifisfies : env -> formula -> Prop :=
+  | IsModel : forall v : env, forall p : formula, eval_formula v p -> satifisfies v p
   .
 
   Local Hint Constructors satifisfies : core.
 
-  Local Notation " hs |= c " := (forall v : value_assign, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
+  Local Notation " hs |= c " := (forall v : env, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
 
   Inductive infers : ensemble formula -> formula -> Prop :=
   | ByAssumption {hs : ensemble formula} : forall h : formula, member h hs -> infers hs h
@@ -978,8 +970,6 @@ Module PropositionalLogic. (* Thanks to Paul Sohn *)
   | BiconditionalE1 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs a -> infers hs b
   | BiconditionalE2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs b -> infers hs a
   .
-
-  Local Hint Constructors infers : core.
 
   Local Notation " hs |- c " := (infers hs c) (at level 70, no associativity) : type_scope.
 
