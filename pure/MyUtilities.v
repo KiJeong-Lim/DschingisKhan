@@ -57,6 +57,19 @@ Module MyUtilities.
     induction l; intros m H; inversion H; subst...
   Qed.
 
+  Lemma div_mod_uniqueness_aux1 :
+    forall x : nat,
+    forall y : nat,
+    x > y <-> (exists z : nat, x = S (y + z)).
+  Proof with try (lia || now (firstorder; eauto)).
+    intros x y.
+    split.
+    - intros H.
+      induction H as [| m H [z H0]]...
+      exists (S z)...
+    - intros [z H]...
+  Qed.
+
   Lemma div_mod_uniqueness :
     forall a : nat,
     forall b : nat,
@@ -66,28 +79,17 @@ Module MyUtilities.
     r < b ->
     a / b = q /\ a mod b = r.
   Proof with try (lia || now (firstorder; eauto)).
-    assert (claim1 : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))).
-    { intros x y.
-      split.
-      - intros H.
-        induction H...
-        destruct IHle as [z H0].
-        exists (S z)...
-      - intros [z H]...
-    }
     intros a b q r H H0.
     assert (H1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
     assert (H2 : 0 <= a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
-    assert (claim2 : ~ q > a / b).
+    assert (claim1 : ~ q > a / b).
     { intros H3.
-      assert (H4 : exists z : nat, q = S (a / b + z)) by firstorder.
-      destruct H4 as [z H4].
+      destruct (proj1 (div_mod_uniqueness_aux1 q (a / b)) H3) as [z H4].
       enough (so_we_obatain : b * q + r >= b * S (a / b) + r)...
     }
-    assert (claim3 : ~ q < a / b).
+    assert (claim2 : ~ q < a / b).
     { intros H3.
-      assert (H4 : exists z : nat, a / b = S (q + z)) by firstorder.
-      destruct H4 as [z H4].
+      destruct (proj1 (div_mod_uniqueness_aux1 (a / b) q) H3) as [z H4].
       enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
     }
     enough (therefore : q = a / b)...

@@ -8,7 +8,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module UntypedLamdbdaCalculus.
 
-  Import ListNotations BasicSetoidTheory BasicPosetTheory BasicTopology MyUtilities MyEnsemble.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology.
 
   Definition ivar : Set :=
     nat
@@ -54,8 +54,6 @@ Module UntypedLamdbdaCalculus.
   | subtmLAbs : forall M : tm, forall y : ivar, forall Q : tm, subtm M Q -> subtm M (tmLam y Q)
   .
 
-  Global Hint Constructors subtm : my_hints.
-
   Lemma subtm_getRank :
     forall M : tm,
     forall N : tm,
@@ -91,8 +89,6 @@ Module UntypedLamdbdaCalculus.
     apply subtmRefl.
   Qed.
 
-  Local Hint Resolve subtm_refl : core.
-
   Lemma subtm_asym :
     forall M1 : tm,
     forall M2 : tm,
@@ -106,8 +102,6 @@ Module UntypedLamdbdaCalculus.
     split; apply subtm_getRank...
   Qed.
 
-  Local Hint Resolve subtm_asym : core.
-
   Lemma subtm_trans :
     forall M1 : tm,
     forall M2 : tm,
@@ -116,14 +110,14 @@ Module UntypedLamdbdaCalculus.
     subtm M2 M3 ->
     subtm M1 M3.
   Proof with eauto.
-    enough (claim1 : forall L : tm, forall N : tm, forall M : tm, subtm N L -> subtm M N -> subtm M L)...
+    enough (claim1 : forall L : tm, forall N : tm, forall M : tm, subtm N L -> subtm M N -> subtm M L) by firstorder.
     induction L; intros N M H H0; inversion H; subst...
     - constructor 2...
     - constructor 3...
     - constructor 4...
   Qed.
 
-  Local Hint Resolve subtm_trans : core.
+  Local Hint Resolve subtm_refl subtm_asym subtm_trans : core.
 
   Theorem strong_induction_on_tm (phi : tm -> Prop) :
     (forall M : tm, (forall N : tm, subtm N M -> N <> M -> phi N) -> phi M) ->
@@ -329,13 +323,12 @@ Module UntypedLamdbdaCalculus.
         intros x H0.
         unfold cons_substitution.
         destruct (ivar_eq_dec y x).
-        * unfold isFreeIn.
-          apply negb_true_iff, Nat.eqb_neq...
+        * apply negb_true_iff, Nat.eqb_neq...
         * apply H, in_in_remove...
       + intros x H0.
         apply in_remove in H0.
-        destruct H0.
-        destruct H.
+        destruct H0 as [H0 H1].
+        destruct H as [H | H].
         * assert (H2 : isFreshIn_substitution z (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) M = true) by now apply IHM.
           unfold isFreshIn_substitution in H2.
           rewrite forallb_true_iff in H2.
@@ -736,7 +729,7 @@ Module UntypedLamdbdaCalculus.
     ; runLam_ext :
       forall vv : Dom -> Dom,
       forall vv' : Dom -> Dom,
-      (forall v0 : Dom, vv v0 == vv' v0) ->
+      (forall v : Dom, vv v == vv' v) ->
       runLam vv == runLam vv'
     }
   .
@@ -745,8 +738,16 @@ Module UntypedLamdbdaCalculus.
 
   Global Hint Resolve runLam_ext : my_hints.
 
-  Definition eval_tm {D : Type} `{D_is_model : isPreLambdaStructure D} : (ivar -> D) -> tm -> D :=
-    fix eval_tm_fix (E : ivar -> D) (M : tm) {struct M} : D :=
+  Section PreliminariesOfSemantics.
+
+  Context {D : Type} `{D_isSetoid : isSetoid D} `{D_isPreLambdaStructure : @isPreLambdaStructure D D_isSetoid}.
+
+  Let env : Type :=
+    ivar -> D
+  .
+
+  Definition eval_tm : env -> tm -> D :=
+    fix eval_tm_fix (E : env) (M : tm) {struct M} : D :=
     match M with
     | tmVar x => E x
     | tmApp P1 P2 => runApp (eval_tm_fix E P1) (eval_tm_fix E P2)
@@ -754,10 +755,10 @@ Module UntypedLamdbdaCalculus.
     end
   .
 
-  Lemma eval_tm_ext {D : Type} `{D_isPreLambdaStructure : isPreLambdaStructure D} :
+  Lemma eval_tm_ext :
     forall M : tm,
-    forall E1 : ivar -> D,
-    forall E2 : ivar -> D,
+    forall E1 : env,
+    forall E2 : env,
     (forall z : ivar, isFreeIn z M = true -> E1 z == E2 z) ->
     eval_tm E1 M == eval_tm E2 M.
   Proof with eauto with *.
@@ -779,12 +780,12 @@ Module UntypedLamdbdaCalculus.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq...
   Qed.
 
-  Global Hint Resolve eval_tm_ext : my_hints.
+  Local Hint Resolve eval_tm_ext : core.
 
-  Theorem run_substitution_on_tm_preserves_eval_tm {D : Type} `{D_isPreLambdaStructure : isPreLambdaStructure D} :
+  Theorem run_substitution_on_tm_preserves_eval_tm :
     forall M : tm,
     forall sigma : substitution,
-    forall E : ivar -> D,
+    forall E : env,
     eval_tm (fun z : ivar => eval_tm E (sigma z)) M == eval_tm E (run_substitution_on_tm sigma M).
   Proof with eauto with *.
     induction M.
@@ -821,6 +822,8 @@ Module UntypedLamdbdaCalculus.
       transitivity (eval_tm (fun z : ivar => eval_tm (fun z0 : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z0 then v else E z0) (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma z)) M)...
   Qed.
 
-  Global Hint Resolve run_substitution_on_tm_preserves_eval_tm : my_hints.
+  Local Hint Resolve run_substitution_on_tm_preserves_eval_tm : core.
+
+  End PreliminariesOfSemantics.
 
 End UntypedLamdbdaCalculus.

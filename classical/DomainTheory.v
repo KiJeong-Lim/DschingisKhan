@@ -5,7 +5,7 @@ Require Import DschingisKhan.pure.DomainTheory.
 
 Module ClassicalCpoTheory.
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory ClasssicalFacts.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory ExclusiveMiddleFacts.
 
   Definition U {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D :=
     fun x : D =>

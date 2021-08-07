@@ -993,7 +993,7 @@ End PowerSetCoLa.
 
 Module ConstructiveCpoTheory.
 
-  Import BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova ConstructiveCoLaTheory BasicTopology.
+  Import BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova BasicTopology ConstructiveCoLaTheory.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
     fun X : ensemble D =>

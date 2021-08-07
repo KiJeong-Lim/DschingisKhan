@@ -12,11 +12,11 @@ Module Type ExclusiveMiddleFacts_requirements.
 
 End ExclusiveMiddleFacts_requirements.
 
-Module Type AxiomOfChoice_requirements.
+Module Type ChoiceFacts_requirements.
 
   Parameter AxiomOfChoice : forall A : Type, forall B : Type, forall psi : A -> B -> Prop, (forall x : A, exists y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
 
-End AxiomOfChoice_requirements.
+End ChoiceFacts_requirements.
 
 Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requirements).
 
@@ -395,30 +395,34 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
 End ExclusiveMiddleFacts_prototype.
 
-Module ClasssicalFacts.
+Module ChoiceFacts_prototype (my_requirements : ChoiceFacts_requirements).
+
+End ChoiceFacts_prototype.
+
+Module ExclusiveMiddleFacts.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
-  Module ClasssicalFacts_axiom.
+  Module ExclusiveMiddleFacts_axiom.
 
     Definition LEM : forall A : Prop, A \/ ~ A :=
       classic
     .
 
-  End ClasssicalFacts_axiom.
+  End ExclusiveMiddleFacts_axiom.
 
-  Module ExclusiveMiddleFacts := ExclusiveMiddleFacts_prototype(ClasssicalFacts_axiom).
+  Module ExclusiveMiddleFacts_internal := ExclusiveMiddleFacts_prototype(ExclusiveMiddleFacts_axiom).
 
   Module ClassicalEqFacts_axiom.
 
     Definition eq_rect_eq : forall U : Type, forall p : U, forall Q : U -> Type, forall x : Q p, forall h : p = p, x = eq_rect p Q x p h :=
-      ExclusiveMiddleFacts.eq_rect_eq
+      ExclusiveMiddleFacts_internal.eq_rect_eq
     .
 
   End ClassicalEqFacts_axiom.
 
-  Module ClassicalEqFacts := ClassicalEqFacts_prototype(ClassicalEqFacts_axiom).
+  Module ClassicalEqFacts_internal := ClassicalEqFacts_prototype(ClassicalEqFacts_axiom).
 
-  Export ExclusiveMiddleFacts ClassicalEqFacts.
+  Export ExclusiveMiddleFacts_internal ClassicalEqFacts_internal.
 
-End ClasssicalFacts.
+End ExclusiveMiddleFacts.
