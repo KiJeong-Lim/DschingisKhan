@@ -15,7 +15,7 @@ Module BasicSetoidTheory.
     }
   .
 
-  Global Notation " x == y " := (eqProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x '==' y " := (eqProp x y) (at level 70, no associativity) : type_scope.
 
   Lemma Setoid_refl {A : Type} `{A_isSetoid : isSetoid A} :
     forall x1 : A,
@@ -408,7 +408,7 @@ Module BasicPosetTheory.
     }
   .
 
-  Global Notation " x =< y " := (leProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x '=<' y " := (leProp x y) (at level 70, no associativity) : type_scope.
 
   Lemma Poset_refl {A : Type} `{A_isPoset : isPoset A} :
     forall x1 : A,
@@ -494,7 +494,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
 
-  Global Notation " D1 >=> D2 " := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 '>=>' D2 " := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
 
   Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
@@ -921,37 +921,9 @@ Module BasicPosetTheory.
 
   End PosetTheory.
 
-  Global Hint Resolve isSupremum_upperbound : my_hints.
+  Global Hint Unfold image_sup isInfimum prefixed_points fixed_points postfixed_points isLeastFixedPoint isGreatestFixedPoint : my_hints.
 
-  Global Hint Resolve isSupremum_isSubsetOf : my_hints.
-
-  Global Hint Resolve isSupremum_ext : my_hints.
-
-  Global Hint Resolve isSupremum_unique : my_hints.
-
-  Global Hint Unfold image_sup : my_hints.
-
-  Global Hint Resolve sup_in_image_sup : my_hints.
-
-  Global Hint Resolve sup_image_sup_isGreaterThan : my_hints.
-
-  Global Hint Resolve isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs : my_hints.
-
-  Global Hint Unfold isInfimum : my_hints.
-
-  Global Hint Resolve isInfimum_unique : my_hints.
-
-  Global Hint Resolve compute_Infimum : my_hints.
-
-  Global Hint Unfold prefixed_points : my_hints.
-
-  Global Hint Unfold fixed_points : my_hints.
-
-  Global Hint Unfold postfixed_points : my_hints.
-
-  Global Hint Unfold isLeastFixedPoint : my_hints.
-
-  Global Hint Unfold isGreatestFixedPoint : my_hints.
+  Global Hint Resolve isSupremum_upperbound isSupremum_isSubsetOf isSupremum_ext isSupremum_unique sup_in_image_sup sup_image_sup_isGreaterThan isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs isInfimum_unique compute_Infimum : my_hints.
 
 End BasicPosetTheory.
 
@@ -997,7 +969,7 @@ Module MyEnsembleNova.
     fun xs2 : ensemble A =>
     xs1 \cap xs2^c
   .
-  
+
   Global Hint Unfold difference : my_hints.
 
   Lemma in_difference_iff {A : Type} :
@@ -1016,7 +988,7 @@ Module MyEnsembleNova.
     fun xs2 : ensemble A =>
     xs2 \cap \left\{ x1 \right\}^c
   .
-  
+
   Global Hint Unfold delete : my_hints.
 
   Lemma in_delete_iff {A : Type} :
@@ -1130,11 +1102,7 @@ Module BasicTopology.
     }
   .
 
-  Global Hint Resolve open_full : my_hints.
-
-  Global Hint Resolve open_unions : my_hints.
-
-  Global Hint Resolve open_intersection : my_hints.
+  Global Hint Resolve open_full open_unions open_intersection : my_hints.
 
   Definition isContinuousMap {A : Type} {B : Type} `{A_isTopologicalSpace : isTopologicalSpace A} `{B_isTopologicalSpace : isTopologicalSpace B} : (A -> B) -> Prop :=
     fun f : A -> B =>
@@ -1145,7 +1113,7 @@ Module BasicTopology.
 
   Global Hint Unfold isContinuousMap : my_hints.
 
-  Global Notation " D1 ~> D2 " := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 '~>' D2 " := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 

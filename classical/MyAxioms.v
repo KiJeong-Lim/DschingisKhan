@@ -12,17 +12,21 @@ Module Type ExclusiveMiddleFacts_requirements.
 
 End ExclusiveMiddleFacts_requirements.
 
-Module Type ChoiceFacts_requirements.
-
-  Parameter AxiomOfChoice : forall A : Type, forall B : Type, forall psi : A -> B -> Prop, (forall x : A, exists y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
-
-End ChoiceFacts_requirements.
-
 Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requirements).
 
   Import EqFacts.
 
-  Definition RuleK {A : Type} :
+  Section ClassicalEqTheory.
+
+  Let _eq_rect_eq {A : Type} : forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
+    my_requirements.eq_rect_eq A
+  .
+
+  Section DeriveAxiomK.
+
+  Context {A : Type}.
+
+  Definition RuleK :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
@@ -34,41 +38,63 @@ Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requiremen
     intros phi phi_val0 eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_val0.
-    - rewrite (my_requirements.eq_rect_eq A x (eq x) eq_val eq_val0).
+    - rewrite (_eq_rect_eq x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Defined.
 
-  Definition existT_snd_eq {A : Type} {B : A -> Type} : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
-    let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type := fun p1 : sigT B => fun p2 : sigT B => fun H : p1 = p2 => forall H0 : projT1 p1 = projT1 p2, eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) H0 = projT2 p2 in
-    let phi : forall p1 : sigT B, forall p2 : sigT B, forall H : p1 = p2, phi' p2 p2 eq_refl -> phi' p1 p2 H := RuleJ phi' in
+  End DeriveAxiomK.
+
+  Section ExistTSndEq.
+
+  Context {A : Type} {B : A -> Type}.
+
+  Let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type :=
+    fun p1 : sigT B =>
+    fun p2 : sigT B =>
+    fun H : p1 = p2 =>
+    forall H0 : projT1 p1 = projT1 p2,
+    eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) H0 = projT2 p2
+  .
+
+  Let phi : forall p1 : sigT B, forall p2 : sigT B, forall H : p1 = p2, phi' p2 p2 eq_refl -> phi' p1 p2 H :=
+    RuleJ phi'
+  .
+
+  Definition existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (my_requirements.eq_rect_eq A x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (_eq_rect_eq x B y2 H0)) eq_refl
   .
+
+  End ExistTSndEq.
+
+  End ClassicalEqTheory.
 
 End ClassicalEqFacts_prototype.
 
 Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_requirements).
 
-  Section Berardis_paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+  Section Berardi's_Paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
   Let EM : forall P : Prop, P \/ ~ P :=
     my_requirements.LEM
   .
 
-  Section IFPROP.
+  Section Retracts.
+
+  Section IF_PROP.
 
   Context {P : Prop} (B : Prop).
 
-  Definition IFProp : P -> P -> P :=
+  Definition IfProp : P -> P -> P :=
     fun p1 : P =>
     fun p2 : P =>
     match EM B with
-    | or_introl _ => p1
-    | or_intror _ => p2
+    | or_introl H => p1
+    | or_intror H => p2
     end
   .
 
@@ -78,15 +104,13 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     forall Q : P -> Prop,
     (B -> Q p1) ->
     (~ B -> Q p2) ->
-    Q (IFProp p1 p2).
+    Q (IfProp p1 p2).
   Proof with eauto.
-    unfold IFProp.
+    unfold IfProp.
     destruct (EM B)...
   Qed.
 
-  End IFPROP.
-
-  Section Retracts.
+  End IF_PROP.
 
   Record retract (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
@@ -162,7 +186,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
   Let Not_b : Bool -> Bool :=
     fun b : Bool =>
-    IFProp (b = T) F T
+    IfProp (b = T) F T
   .
 
   Let R : U :=
@@ -173,13 +197,13 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     R U R
   .
 
-  Lemma not_has_fixpoint :
+  Lemma Not_b_has_fixpoint :
     RR = Not_b RR.
-  Proof with eauto.
+  Proof.
     assert (X : retract (pow U) (pow U)) by now exists (fun x : pow U => x) (fun x : pow U => x).
     apply (eq_ind (fun u : U => Not_b (u U u)) (fun Phi : pow U => Phi R = Not_b (R U R)) eq_refl).
     symmetry.
-    apply (AC (L1 U U) X (fun u : U => Not_b (u U u))).
+    exact (AC (L1 U U) X (fun u : U => Not_b (u U u))).
   Qed.
 
   Theorem classical_proof_irrelevance :
@@ -187,14 +211,14 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
   Proof with (tauto || eauto).
     assert (claim1 := fun is_true : R U R = T => fun is_false : R U R = F => eq_ind (R U R) (fun T0 : Bool => T0 = F) (eq_ind (R U R) (fun F0 : Bool => R U R = F0) eq_refl F is_false) T is_true).
     assert (claim2 := fun not_true : R U R <> T => fun is_true : R U R = T => False_ind (T = F) (not_true is_true)).
-    assert (claim3 : R U R = Not_b (R U R)) by apply not_has_fixpoint.
+    assert (claim3 : R U R = Not_b (R U R)) by apply Not_b_has_fixpoint.
     destruct (EM (R U R = T)) as [claim4 | claim4]; simpl in *.
     - rewrite claim4 in claim3.
-      unfold Not_b, IFProp in claim3.
+      unfold Not_b, IfProp in claim3.
       destruct (EM (T = T))...
     - apply claim2...
       rewrite claim3.
-      unfold Not_b, IFProp.
+      unfold Not_b, IfProp.
       destruct (EM (R U R = T))...
   Qed.
 
@@ -208,7 +232,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     exact (@classical_proof_irrelevance P).
   Qed.
 
-  End Berardis_paradox.
+  End Berardi's_Paradox.
 
   Lemma eq_rect_eq (A : Type) :
     forall x : A,
@@ -228,49 +252,53 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     my_requirements.LEM
   .
 
-  Lemma NNPP (P : Prop) :
+  Context {P : Prop}.
+
+  Lemma NNPP :
     ~ ~ P ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma Peirce (P : Prop) (Q : Prop) :
+  Context {Q : Prop}.
+
+  Lemma Peirce :
     ((P -> Q) -> P) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_imply_elim (P : Prop) (Q : Prop) :
+  Lemma not_imply_elim :
     ~ (P -> Q) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_imply_elim2 (P : Prop) (Q : Prop) :
+  Lemma not_imply_elim2 :
     ~ (P -> Q) ->
     ~ Q.
   Proof with tauto.
     destruct (classic Q)...
   Qed.
 
-  Lemma imply_to_or (P : Prop) (Q : Prop) :
+  Lemma imply_to_or :
     (P -> Q) ->
     ~ P \/ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma imply_to_and (P : Prop) (Q : Prop) :
+  Lemma imply_to_and :
     ~ (P -> Q) ->
     P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma or_to_imply (P : Prop) (Q : Prop) :
+  Lemma or_to_imply :
     ~ P \/ Q ->
     P ->
     Q.
@@ -278,35 +306,35 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     destruct (classic Q)...
   Qed.
 
-  Lemma not_and_or (P : Prop) (Q : Prop) :
+  Lemma not_and_or :
     ~ (P /\ Q) ->
     ~ P \/ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma or_not_and (P : Prop) (Q : Prop) :
+  Lemma or_not_and :
     ~ P \/ ~ Q ->
     ~ (P /\ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_or_and (P : Prop) (Q : Prop) :
+  Lemma not_or_and :
     ~ (P \/ Q) ->
     ~ P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma and_not_or (P : Prop) (Q : Prop) :
+  Lemma and_not_or :
     ~ P /\ ~ Q ->
     ~ (P \/ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma imply_and_or (P : Prop) (Q : Prop) :
+  Lemma imply_and_or :
     (P -> Q) ->
     P \/ Q ->
     Q.
@@ -314,7 +342,9 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     destruct (classic Q)...
   Qed.
 
-  Lemma imply_and_or2 (P : Prop) (Q : Prop) (R : Prop) :
+  Context {R : Prop}.
+
+  Lemma imply_and_or2 :
     (P -> Q) ->
     P \/ R ->
     Q \/ R.
@@ -330,7 +360,13 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     my_requirements.LEM
   .
 
-  Context {U : Type} (P : U -> Prop).
+  Context {U : Type} {P : U -> Prop}.
+
+  Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
+    fun H : ~ (forall n : U, P n) =>
+    fun H0 : ~ (exists n : U, ~ P n) =>
+    H (fun n : U => @NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+  .
 
   Lemma not_all_not_ex :
     ~ (forall n : U, ~ P n) ->
@@ -339,24 +375,11 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     destruct (classic (exists n : U, P n))...
   Qed.
 
-  Lemma forall_exists_False {A : Type} :
-    ~ (forall n : U, P n) ->
-    ~ (exists n : U, ~ P n) ->
-    A.
-  Proof with firstorder.
-    intros H H0.
-    contradiction H.
-    intros n.
-    apply NNPP...
-  Qed.
-
   Lemma not_all_ex_not :
     ~ (forall n : U, P n) ->
     exists n : U, ~ P n.
-  Proof with try tauto.
+  Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
-    intros H0.
-    apply forall_exists_False...
   Qed.
 
   Lemma not_ex_all_not :
@@ -371,10 +394,8 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     ~ (exists n : U, ~ P n) ->
     forall n : U,
     P n.
-  Proof with try tauto.
+  Proof with firstorder.
     destruct (classic (forall n : U, P n))...
-    intros H0.
-    apply forall_exists_False...
   Qed.
 
   Lemma ex_not_not_all :
@@ -395,15 +416,11 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
 End ExclusiveMiddleFacts_prototype.
 
-Module ChoiceFacts_prototype (my_requirements : ChoiceFacts_requirements).
-
-End ChoiceFacts_prototype.
-
 Module ExclusiveMiddleFacts.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
-  Module ExclusiveMiddleFacts_axiom.
+  Module ExclusiveMiddleFacts_axiom : ExclusiveMiddleFacts_requirements.
 
     Definition LEM : forall A : Prop, A \/ ~ A :=
       classic
@@ -413,7 +430,7 @@ Module ExclusiveMiddleFacts.
 
   Module ExclusiveMiddleFacts_internal := ExclusiveMiddleFacts_prototype(ExclusiveMiddleFacts_axiom).
 
-  Module ClassicalEqFacts_axiom.
+  Module ClassicalEqFacts_axiom : ClassicalEqFacts_requirements.
 
     Definition eq_rect_eq : forall U : Type, forall p : U, forall Q : U -> Type, forall x : Q p, forall h : p = p, x = eq_rect p Q x p h :=
       ExclusiveMiddleFacts_internal.eq_rect_eq
