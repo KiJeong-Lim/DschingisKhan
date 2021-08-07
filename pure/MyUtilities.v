@@ -484,6 +484,24 @@ Module MyUtilities.
     end
   .
 
+End MyUtilities.
+
+Module MyUniverses.
+
+  Definition SuperiorUniverse : Type :=
+    Type
+  .
+
+  Definition InferiorUniverse : SuperiorUniverse :=
+    Type
+  .
+
+End MyUniverses.
+
+Module PRIVATE.
+
+  Import EqFacts MyUtilities.
+
   Record retract (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
     ; _j : B -> A
@@ -506,11 +524,11 @@ Module MyUtilities.
 
   Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Section DeriveAxiomK.
+  Section AxiomK.
 
   Context (A : Type).
 
-  Lemma __RuleK :
+  Lemma private_RuleK :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
@@ -525,7 +543,7 @@ Module MyUtilities.
     destruct eq_val0...
   Qed.
 
-  End DeriveAxiomK.
+  End AxiomK.
 
   Section ExistTSndEq.
 
@@ -543,7 +561,7 @@ Module MyUtilities.
     RuleJ phi'
   .
 
-  Definition __existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Definition private_existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
@@ -557,22 +575,11 @@ Module MyUtilities.
 
   Section ClassicalLogic.
 
-  Hypothesis EM : forall P : Prop, P \/ ~ P.
+  Hypothesis LEM : forall P : Prop, P \/ ~ P.
 
-  Section Berardi's_Paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+  Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Section Retracts.
-
-  Let IF_PROP {P : Prop} (B : Prop) : P -> P -> P :=
-    fun p1 : P =>
-    fun p2 : P =>
-    match EM B with
-    | or_introl H => p1
-    | or_intror H => p2
-    end
-  .
-
-  Lemma __AC {A : Prop} {B : Prop} :
+  Lemma private_AC {A : Prop} {B : Prop} :
     forall r : retract_cond A B,
     retract A B ->
     forall a : A,
@@ -581,6 +588,17 @@ Module MyUtilities.
     intros [i2 j2 inv2] [i j inv] a...
   Qed.
 
+  Let IF_PROP {P : Prop} (B : Prop) : P -> P -> P :=
+    fun p1 : P =>
+    fun p2 : P =>
+    match LEM B with
+    | or_introl H => p1
+    | or_intror H => p2
+    end
+  .
+
+  Section ParadoxOfBerardi.
+
   Context {Bool : Prop} (T : Bool) (F : Bool).
 
   Let pow : Prop -> Prop :=
@@ -588,13 +606,13 @@ Module MyUtilities.
     P -> Bool
   .
 
-  Lemma __L1 :
+  Lemma private_L1 :
     forall A : Prop,
     forall B : Prop,
     retract_cond (pow A) (pow B).
   Proof with tauto.
     intros A B.
-    destruct (EM (retract (pow A) (pow B))) as [[i j inv] | H].
+    destruct (LEM (retract (pow A) (pow B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
   Qed.
@@ -612,8 +630,8 @@ Module MyUtilities.
   Let g : pow U -> U :=
     fun h : pow U =>
     fun X : Prop =>
-    let lX := _j2 (pow X) (pow U) (__L1 X U) in
-    let rU := _i2 (pow U) (pow U) (__L1 U U) in
+    let lX := _j2 (pow X) (pow U) (private_L1 X U) in
+    let rU := _i2 (pow U) (pow U) (private_L1 U U) in
     lX (rU h)
   .
 
@@ -634,43 +652,43 @@ Module MyUtilities.
     R U R
   .
 
-  Lemma __NotB_has_fixpoint :
+  Lemma private_NotB_has_fixpoint :
     Russel = NotB Russel.
   Proof with eauto.
     set (Apply := fun f : U -> Bool => fun x : U => f x).
     enough (claim1 : Russel = Apply (fun u : U => NotB (u U u)) R)...
     replace (fun u : U => NotB (u U u)) with (R U)...
-    apply __AC...
+    apply private_AC...
   Qed.
 
-  Local Hint Resolve __NotB_has_fixpoint : core.
+  Local Hint Resolve private_NotB_has_fixpoint : core.
 
-  Theorem __ParadoxOfBerardi :
+  Theorem private_ParadoxOfBerardi :
     T = F.
   Proof with tauto.
-    destruct (EM (Russel = T)) as [H | H].
+    destruct (LEM (Russel = T)) as [H | H].
     - assert (claim1 : T = NotB T) by now rewrite <- H.
       unfold NotB, IF_PROP in claim1.
-      destruct (EM (T = T))...
-    - assert (claim1 : NotB Russel <> T) by now rewrite <- __NotB_has_fixpoint.
+      destruct (LEM (T = T))...
+    - assert (claim1 : NotB Russel <> T) by now rewrite <- private_NotB_has_fixpoint.
       unfold NotB, IF_PROP in claim1. 
-      destruct (EM (Russel = T))...
+      destruct (LEM (Russel = T))...
   Qed.
 
-  End Retracts.
+  End ParadoxOfBerardi.
 
-  Corollary __ProofIrrelevance :
+  Corollary private_ProofIrrelevance :
     forall P : Prop,
     forall p1 : P,
     forall p2 : P,
     p1 = p2.
   Proof.
-    exact (@__ParadoxOfBerardi).
+    exact (@private_ParadoxOfBerardi).
   Qed.
 
-  End Berardi's_Paradox.
+  End ProofIrrelevance.
 
-  Corollary __eq_rect_eq (A : Type) :
+  Corollary private_eq_rect_eq (A : Type) :
     forall x : A,
     forall B : A -> Type,
     forall y : B x,
@@ -678,62 +696,62 @@ Module MyUtilities.
     y = eq_rect x B y x H.
   Proof with reflexivity.
     intros x B y H.
-    rewrite <- (__ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
+    rewrite <- (private_ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
   Qed.
 
   Section Classical_Prop.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    EM
+    LEM
   .
 
-  Context (P : Prop).
+  Variable P : Prop.
 
-  Lemma __NNPP :
+  Lemma private_NNPP :
     ~ ~ P ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Context (Q : Prop).
+  Variable Q : Prop.
 
-  Lemma __Peirce :
+  Lemma private_Peirce :
     ((P -> Q) -> P) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __not_imply_elim :
+  Lemma private_not_imply_elim :
     ~ (P -> Q) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __not_imply_elim2 :
+  Lemma private_not_imply_elim2 :
     ~ (P -> Q) ->
     ~ Q.
   Proof with tauto.
     destruct (classic Q)...
   Qed.
 
-  Lemma __imply_to_or :
+  Lemma private_imply_to_or :
     (P -> Q) ->
     ~ P \/ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __imply_to_and :
+  Lemma private_imply_to_and :
     ~ (P -> Q) ->
     P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __or_to_imply :
+  Lemma private_or_to_imply :
     ~ P \/ Q ->
     P ->
     Q.
@@ -741,35 +759,35 @@ Module MyUtilities.
     destruct (classic Q)...
   Qed.
 
-  Lemma __not_and_or :
+  Lemma private_not_and_or :
     ~ (P /\ Q) ->
     ~ P \/ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __or_not_and :
+  Lemma private_or_not_and :
     ~ P \/ ~ Q ->
     ~ (P /\ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __not_or_and :
+  Lemma private_not_or_and :
     ~ (P \/ Q) ->
     ~ P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __and_not_or :
+  Lemma private_and_not_or :
     ~ P /\ ~ Q ->
     ~ (P \/ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma __imply_and_or :
+  Lemma private_imply_and_or :
     (P -> Q) ->
     P \/ Q ->
     Q.
@@ -777,9 +795,9 @@ Module MyUtilities.
     destruct (classic Q)...
   Qed.
 
-  Context (R : Prop).
+  Variable R : Prop.
 
-  Lemma __imply_and_or2 :
+  Lemma private_imply_and_or2 :
     (P -> Q) ->
     P \/ R ->
     Q \/ R.
@@ -792,7 +810,7 @@ Module MyUtilities.
   Section Classical_Pred_Type.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    EM
+    LEM
   .
 
   Context (U : Type) (P : U -> Prop).
@@ -800,24 +818,24 @@ Module MyUtilities.
   Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
-    H (fun n : U => __NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+    H (fun n : U => private_NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
   .
 
-  Lemma __not_all_not_ex :
+  Lemma private_not_all_not_ex :
     ~ (forall n : U, ~ P n) ->
     exists n : U, P n.
   Proof with firstorder.
     destruct (classic (exists n : U, P n))...
   Qed.
 
-  Lemma __not_all_ex_not :
+  Lemma private_not_all_ex_not :
     ~ (forall n : U, P n) ->
     exists n : U, ~ P n.
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma __not_ex_all_not :
+  Lemma private_not_ex_all_not :
     ~ (exists n : U, P n) ->
     forall n : U,
     ~ P n.
@@ -825,7 +843,7 @@ Module MyUtilities.
     destruct (classic (forall n : U, ~ P n))...
   Qed.
 
-  Lemma __not_ex_not_all :
+  Lemma private_not_ex_not_all :
     ~ (exists n : U, ~ P n) ->
     forall n : U,
     P n.
@@ -833,14 +851,14 @@ Module MyUtilities.
     destruct (classic (forall n : U, P n))...
   Qed.
 
-  Lemma __ex_not_not_all :
+  Lemma private_ex_not_not_all :
     (exists n : U, ~ P n) ->
     ~ (forall n : U, P n).
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma __all_not_not_ex :
+  Lemma private_all_not_not_ex :
     (forall n : U, ~ P n) ->
     ~ (exists n : U, P n).
   Proof with firstorder.
@@ -851,16 +869,4 @@ Module MyUtilities.
 
   End ClassicalLogic.
 
-End MyUtilities.
-
-Module MyUniverses.
-
-  Definition SuperiorUniverse : Type :=
-    Type
-  .
-
-  Definition InferiorUniverse : SuperiorUniverse :=
-    Type
-  .
-
-End MyUniverses.
+End PRIVATE.
