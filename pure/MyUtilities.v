@@ -372,13 +372,13 @@ Module MyUtilities.
   Definition FZeqFS : forall n : nat, forall i : FinSet n, FZ n = FS n i -> False :=
     fun n : nat =>
     fun i : FinSet n =>
-    @eq_ind (FinSet (S n)) (FZ n) (fun j : FinSet (S n) => match j with | FZ n0 => True | FS n0 j' => False end) I (FS n i)
+    @eq_ind (FinSet (S n)) (FZ n) (fun j : FinSet (S n) => match j as j0 in FinSet Sn0 return Prop with | FZ n0 => True | FS n0 j' => False end) I (FS n i)
   .
 
   Definition FSeqFZ : forall n : nat, forall i : FinSet n, FS n i = FZ n -> False :=
     fun n : nat =>
     fun i : FinSet n =>
-    @eq_ind (FinSet (S n)) (FS n i) (fun j : FinSet (S n) => match j with | FZ n0 => False | FS n0 j' => True end) I (FZ n)
+    @eq_ind (FinSet (S n)) (FS n i) (fun j : FinSet (S n) => match j as j0 in FinSet Sn0 return Prop with | FZ n0 => False | FS n0 j' => True end) I (FZ n)
   .
 
   Definition FSeqFS : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, FS n i1 = FS n i2 -> i1 = i2 :=
@@ -386,8 +386,8 @@ Module MyUtilities.
     fun i1 : FinSet n =>
     fun i2 : FinSet n =>
     fun Heq : FS n i1 = FS n i2 =>
-    match Heq as Heq0 in @eq _ _ rhs return (match rhs as rhs0 in FinSet n0 return FinSet (pred n0) -> Prop with | FZ n0 => fun lhs : FinSet n0 => i1 <> i2 | FS n0 rhs' => fun lhs' : FinSet n0 => lhs' = rhs' end) i1 with
-    | @eq_refl _ _ => @eq_refl (FinSet n) i1
+    match Heq as Heq0 in eq _ rhs return (match rhs as rhs0 in FinSet n0 return FinSet (pred n0) -> Prop with | FZ n0 => fun lhs : FinSet n0 => i1 <> i2 | FS n0 rhs' => fun lhs' : FinSet n0 => lhs' = rhs' end) i1 with
+    | eq_refl => @eq_refl (FinSet n) i1
     end
   .
 
@@ -396,15 +396,15 @@ Module MyUtilities.
     FinSet_caseS (left (FZeqFZ n)) (fun j' : FinSet n => right (FZeqFS n j'))
   .
 
-  Definition FinSet_eq_dec_FS: forall n : nat, (forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
+  Definition FinSet_eq_dec_FS : forall n : nat, (forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
     fun n : nat =>
-    fun IH : forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j} =>
+    fun IH : forall i : FinSet n, forall j : FinSet n, sumbool (i = j) (i = j -> False) =>
     fun i' : FinSet n =>
-    FinSet_caseS (right (FSeqFZ n i')) (fun j' : FinSet n => match IH i' j' with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hne => right (fun Heq : FS n i' = FS n j' => Hne (FSeqFS n i' j' Heq)) end)
+    FinSet_caseS (right (FSeqFZ n i')) (fun j' : FinSet n => match IH i' j' as b0 in sumbool _ _ return {FS n i' = FS n j'} + {FS n i' <> FS n j'} with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hne => right (fun Heq : FS n i' = FS n j' => Hne (FSeqFS n i' j' Heq)) end)
   .
 
   Definition FinSet_eq_dec : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, {i1 = i2} + {i1 <> i2} :=
-    fix FinSet_eq_dec_fix (n : nat) : forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j} :=
+    fix FinSet_eq_dec_fix (n : nat) {struct n} : forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j} :=
     match n as n0 return forall i : FinSet n0, forall j : FinSet n0, {i = j} + {i <> j} with
     | O => FinSet_case0
     | S n' => FinSet_caseS (FinSet_eq_dec_FZ n') (FinSet_eq_dec_FS n' (FinSet_eq_dec_fix n'))
