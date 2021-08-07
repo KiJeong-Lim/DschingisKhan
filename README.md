@@ -2,16 +2,20 @@
 
 > He Reiter, Ho Reiter, He Reiter, Immer weiter!
 
-## BUILD
-
-- With `make`:
+## QUICK START
 
 ```
+git clone https://github.com/KiJeong-Lim/DschingisKhan.git
+cd DschingisKhan
 coq_makefile -f _CoqProject *.v -o Makefile
 make
 ```
 
-- By hands:
+## VERSION
+
+- Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
+
+## BUILD
 
 ```
 coqc -Q . DschingisKhan pure/MyUtilities.v
@@ -25,10 +29,6 @@ coqc -Q . DschingisKhan projects/MyCoin.v
 coqc -Q . DschingisKhan projects/MyGIT.v
 coqc -Q . DschingisKhan projects/MyProp.v
 ```
-
-## VERSION
-
-- Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
 
 ## THANKS TO
 

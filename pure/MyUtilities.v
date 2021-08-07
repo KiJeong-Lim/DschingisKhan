@@ -504,13 +504,13 @@ Module MyUtilities.
 
   Section ClassicalEqTheory.
 
-  Hypothesis _eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Section DeriveAxiomK.
 
   Context (A : Type).
 
-  Lemma RuleK :
+  Lemma __RuleK :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
@@ -521,7 +521,7 @@ Module MyUtilities.
     set (eq_val := @eq_refl A x). 
     intros phi phi_val0 eq_val0.
     replace eq_val0 with eq_val...
-    rewrite (_eq_rect_eq A x (eq x) eq_val eq_val0).
+    rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
     destruct eq_val0...
   Qed.
 
@@ -543,12 +543,12 @@ Module MyUtilities.
     RuleJ phi'
   .
 
-  Definition existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Definition __existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (_eq_rect_eq A x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (eq_rect_eq A x B y2 H0)) eq_refl
   .
 
   End ExistTSndEq.
@@ -563,7 +563,7 @@ Module MyUtilities.
 
   Section Retracts.
 
-  Let IfProp {P : Prop} (B : Prop) : P -> P -> P :=
+  Let IF_PROP {P : Prop} (B : Prop) : P -> P -> P :=
     fun p1 : P =>
     fun p2 : P =>
     match EM B with
@@ -572,7 +572,7 @@ Module MyUtilities.
     end
   .
 
-  Lemma AC {A : Prop} {B : Prop} :
+  Lemma __AC {A : Prop} {B : Prop} :
     forall r : retract_cond A B,
     retract A B ->
     forall a : A,
@@ -588,7 +588,7 @@ Module MyUtilities.
     P -> Bool
   .
 
-  Lemma L1 :
+  Lemma __L1 :
     forall A : Prop,
     forall B : Prop,
     retract_cond (pow A) (pow B).
@@ -612,8 +612,8 @@ Module MyUtilities.
   Let g : pow U -> U :=
     fun h : pow U =>
     fun X : Prop =>
-    let lX := _j2 (pow X) (pow U) (L1 X U) in
-    let rU := _i2 (pow U) (pow U) (L1 U U) in
+    let lX := _j2 (pow X) (pow U) (__L1 X U) in
+    let rU := _i2 (pow U) (pow U) (__L1 U U) in
     lX (rU h)
   .
 
@@ -623,7 +623,7 @@ Module MyUtilities.
 
   Let NotB : Bool -> Bool :=
     fun b : Bool =>
-    IfProp (b = T) F T
+    IF_PROP (b = T) F T
   .
 
   Let R : U :=
@@ -634,43 +634,43 @@ Module MyUtilities.
     R U R
   .
 
-  Lemma NotB_has_fixpoint :
+  Lemma __NotB_has_fixpoint :
     Russel = NotB Russel.
   Proof with eauto.
     set (Apply := fun f : U -> Bool => fun x : U => f x).
     enough (claim1 : Russel = Apply (fun u : U => NotB (u U u)) R)...
     replace (fun u : U => NotB (u U u)) with (R U)...
-    apply AC...
+    apply __AC...
   Qed.
 
-  Local Hint Resolve NotB_has_fixpoint : core.
+  Local Hint Resolve __NotB_has_fixpoint : core.
 
-  Theorem ParadoxOfBerardi :
+  Theorem __ParadoxOfBerardi :
     T = F.
   Proof with tauto.
     destruct (EM (Russel = T)) as [H | H].
     - assert (claim1 : T = NotB T) by now rewrite <- H.
-      unfold NotB, IfProp in claim1.
+      unfold NotB, IF_PROP in claim1.
       destruct (EM (T = T))...
-    - assert (claim1 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
-      unfold NotB, IfProp in claim1. 
+    - assert (claim1 : NotB Russel <> T) by now rewrite <- __NotB_has_fixpoint.
+      unfold NotB, IF_PROP in claim1. 
       destruct (EM (Russel = T))...
   Qed.
 
   End Retracts.
 
-  Corollary ProofIrrelevance :
+  Corollary __ProofIrrelevance :
     forall P : Prop,
     forall p1 : P,
     forall p2 : P,
     p1 = p2.
   Proof.
-    exact (@ParadoxOfBerardi).
+    exact (@__ParadoxOfBerardi).
   Qed.
 
   End Berardi's_Paradox.
 
-  Corollary eq_rect_eq (A : Type) :
+  Corollary __eq_rect_eq (A : Type) :
     forall x : A,
     forall B : A -> Type,
     forall y : B x,
@@ -678,7 +678,7 @@ Module MyUtilities.
     y = eq_rect x B y x H.
   Proof with reflexivity.
     intros x B y H.
-    rewrite <- (@ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
+    rewrite <- (__ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
   Qed.
 
   Section Classical_Prop.
@@ -689,7 +689,7 @@ Module MyUtilities.
 
   Context (P : Prop).
 
-  Lemma NNPP :
+  Lemma __NNPP :
     ~ ~ P ->
     P.
   Proof with tauto.
@@ -698,42 +698,42 @@ Module MyUtilities.
 
   Context (Q : Prop).
 
-  Lemma Peirce :
+  Lemma __Peirce :
     ((P -> Q) -> P) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_imply_elim :
+  Lemma __not_imply_elim :
     ~ (P -> Q) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_imply_elim2 :
+  Lemma __not_imply_elim2 :
     ~ (P -> Q) ->
     ~ Q.
   Proof with tauto.
     destruct (classic Q)...
   Qed.
 
-  Lemma imply_to_or :
+  Lemma __imply_to_or :
     (P -> Q) ->
     ~ P \/ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma imply_to_and :
+  Lemma __imply_to_and :
     ~ (P -> Q) ->
     P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma or_to_imply :
+  Lemma __or_to_imply :
     ~ P \/ Q ->
     P ->
     Q.
@@ -741,35 +741,35 @@ Module MyUtilities.
     destruct (classic Q)...
   Qed.
 
-  Lemma not_and_or :
+  Lemma __not_and_or :
     ~ (P /\ Q) ->
     ~ P \/ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma or_not_and :
+  Lemma __or_not_and :
     ~ P \/ ~ Q ->
     ~ (P /\ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma not_or_and :
+  Lemma __not_or_and :
     ~ (P \/ Q) ->
     ~ P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma and_not_or :
+  Lemma __and_not_or :
     ~ P /\ ~ Q ->
     ~ (P \/ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma imply_and_or :
+  Lemma __imply_and_or :
     (P -> Q) ->
     P \/ Q ->
     Q.
@@ -779,7 +779,7 @@ Module MyUtilities.
 
   Context (R : Prop).
 
-  Lemma imply_and_or2 :
+  Lemma __imply_and_or2 :
     (P -> Q) ->
     P \/ R ->
     Q \/ R.
@@ -800,24 +800,24 @@ Module MyUtilities.
   Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
-    H (fun n : U => @NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+    H (fun n : U => __NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
   .
 
-  Lemma not_all_not_ex :
+  Lemma __not_all_not_ex :
     ~ (forall n : U, ~ P n) ->
     exists n : U, P n.
   Proof with firstorder.
     destruct (classic (exists n : U, P n))...
   Qed.
 
-  Lemma not_all_ex_not :
+  Lemma __not_all_ex_not :
     ~ (forall n : U, P n) ->
     exists n : U, ~ P n.
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma not_ex_all_not :
+  Lemma __not_ex_all_not :
     ~ (exists n : U, P n) ->
     forall n : U,
     ~ P n.
@@ -825,7 +825,7 @@ Module MyUtilities.
     destruct (classic (forall n : U, ~ P n))...
   Qed.
 
-  Lemma not_ex_not_all :
+  Lemma __not_ex_not_all :
     ~ (exists n : U, ~ P n) ->
     forall n : U,
     P n.
@@ -833,14 +833,14 @@ Module MyUtilities.
     destruct (classic (forall n : U, P n))...
   Qed.
 
-  Lemma ex_not_not_all :
+  Lemma __ex_not_not_all :
     (exists n : U, ~ P n) ->
     ~ (forall n : U, P n).
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma all_not_not_ex :
+  Lemma __all_not_not_ex :
     (forall n : U, ~ P n) ->
     ~ (exists n : U, P n).
   Proof with firstorder.
