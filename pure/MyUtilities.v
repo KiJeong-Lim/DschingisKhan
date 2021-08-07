@@ -386,7 +386,7 @@ Module MyUtilities.
     fun i1 : FinSet n =>
     fun i2 : FinSet n =>
     fun Heq : FS n i1 = FS n i2 =>
-    match Heq as Heq0 in eq _ rhs return (match rhs as rhs0 in FinSet n0 return FinSet (pred n0) -> Prop with | FZ n0 => fun lhs : FinSet n0 => i1 <> i2 | FS n0 rhs' => fun lhs' : FinSet n0 => lhs' = rhs' end) i1 with
+    match Heq as Heq0 in eq _ rhs return (match rhs as rhs0 in FinSet Sn0 return FinSet (pred Sn0) -> Prop with | FZ n0 => fun lhs : FinSet n0 => 2 + 2 = 5 | FS n0 i2' => fun lhs : FinSet n0 => lhs = i2' end) i1 with
     | eq_refl => @eq_refl (FinSet n) i1
     end
   .
