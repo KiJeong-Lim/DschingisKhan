@@ -101,7 +101,7 @@ Module BasicSetoidTheory.
     split...
   Qed.
 
-  Global Instance SubSetoid {A : Type} {P : A -> Prop} (A_requiresSetoid : isSetoid A) : isSetoid {x : A | P x} :=
+  Local Instance SubSetoid {A : Type} {P : A -> Prop} (A_requiresSetoid : isSetoid A) : isSetoid {x : A | P x} :=
     { eqProp := SubPoset_eqProp A P A_requiresSetoid
     ; Setoid_requiresEquivalence := @SubPoset_eqProp_Equivalence A P A_requiresSetoid
     }
@@ -563,21 +563,21 @@ Module BasicPosetTheory.
     @leProp A A_requiresPoset (proj1_sig x1) (proj1_sig x2)
   .
 
-  Global Instance SubPoset_leProp_PreOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
+  Local Instance SubPoset_leProp_PreOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
     PreOrder (SubPoset_leProp A P A_isPoset).
   Proof with eauto with *.
     unfold SubPoset_leProp.
     split...
   Qed.
 
-  Global Instance SubPoset_leProp_PartialOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
+  Local Instance SubPoset_leProp_PartialOrder {A : Type} {P : A -> Prop} `{A_isPoset : isPoset A} :
     PartialOrder (SubPoset_eqProp A P (@Poset_requiresSetoid A A_isPoset)) (SubPoset_leProp A P A_isPoset).
   Proof with firstorder with my_hints.
     unfold SubPoset_eqProp, SubPoset_leProp.
     intros [x1 H] [x2 H0]; unfold flip...
   Qed.
 
-  Global Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
+  Local Instance SubPoset {A : Type} {P : A -> Prop} (A_requiresPoset : isPoset A) : isPoset {x : A | P x} :=
     { leProp := SubPoset_leProp A P A_requiresPoset
     ; Poset_requiresSetoid := SubSetoid (@Poset_requiresSetoid A A_requiresPoset)
     ; Poset_requiresPreOrder := @SubPoset_leProp_PreOrder A P A_requiresPoset
