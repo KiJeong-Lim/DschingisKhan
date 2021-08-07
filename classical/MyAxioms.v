@@ -235,8 +235,8 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     destruct (classic P)...
   Qed.
 
-  Lemma Peirce (P : Prop) :
-    ((P -> False) -> P) ->
+  Lemma Peirce (P : Prop) (Q : Prop) :
+    ((P -> Q) -> P) ->
     P.
   Proof with tauto.
     destruct (classic P)...
