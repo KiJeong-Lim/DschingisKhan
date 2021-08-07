@@ -216,46 +216,52 @@ Module MyUtilities.
     subst...
   Qed.
 
-  Definition Seq0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
+  Section Fin.
+
+  Let eq_intro : forall A : Type, forall x : A, x = x :=
+    @eq_refl
+  .
+
+  Definition S_eq_0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
     fun n : nat =>
     fun H : S n = O =>
     False_rect A (eq_ind O (fun x : nat => if Nat.eqb O x then True else False) I (S n) (eq_symmetry (S n) O H))
   .
 
-  Definition SeqS_elim : forall n1 : nat, forall n2 : nat, S n1 = S n2 -> n1 = n2 :=
+  Definition S_eq_S_elim : forall n1 : nat, forall n2 : nat, S n1 = S n2 -> n1 = n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
     eq_congruence Nat.pred (S n1) (S n2)
   .
 
-  Definition lt0_elim {A : Type} : forall n : nat, n < 0 -> A :=
+  Definition lt_elim_n_lt_0 {A : Type} : forall n : nat, n < 0 -> A :=
     fun n : nat =>
     fun H : S n <= O =>
     False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
   .
 
-  Definition ltS_elim_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> S (pred n2) = n2 :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    fun H : S n1 <= n2 =>
-    match H as H0 in le _ m return S (pred m) = m with
-    | le_n _ => eq_refl
-    | le_S _ _ m' => eq_refl
+  Definition guarantee1_S_pred_n_eq_n : forall m : nat, forall n : nat, S m <= n -> S (pred n) = n :=
+    fun m : nat =>
+    fun n : nat =>
+    fun H : S m <= n =>
+    match H in le _ n0 return S (pred n0) = n0 with
+    | le_n _ => eq_intro nat (S m)
+    | le_S _ n' H' => eq_intro nat (S n')
     end
   .
 
-  Definition ltS_elim_aux2 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
-    fix ltS_elim_aux2_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
-    match H as H0 in le _ n2' return n1 <= pred n2' with
+  Let lt_elim_S_n_lt_S_m_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
+    fix lt_elim_S_n_lt_S_m_aux1_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
+    match H in le _ n2' return n1 <= pred n2' with
     | le_n _ => le_n n1
-    | le_S _ n2' H' => eq_ind (S (pred n2')) (fun x : nat => n1 <= x) (le_S n1 (pred n2') (ltS_elim_aux2_fix n1 n2' H')) n2' (ltS_elim_aux1 n1 n2' H')
+    | le_S _ n2' H' => eq_ind (S (pred n2')) (fun x : nat => n1 <= x) (le_S n1 (pred n2') (lt_elim_S_n_lt_S_m_aux1_fix n1 n2' H')) n2' (guarantee1_S_pred_n_eq_n n1 n2' H')
     end
   .
 
-  Definition ltS : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
+  Definition lt_elim_S_n_lt_S_m : forall n : nat, forall m : nat, S n < S m -> n < m :=
     fun n1 : nat =>
     fun n2 : nat =>
-    ltS_elim_aux2 (S n1) (S n2)
+    lt_elim_S_n_lt_S_m_aux1 (S n1) (S n2)
   .
 
   Inductive FinSet : nat -> Set :=
@@ -266,9 +272,9 @@ Module MyUtilities.
   Definition FinSet_case0 {P : FinSet O -> Type} : forall i : FinSet O, P i :=
     fun i : FinSet O =>
     match i as i0 in FinSet Sn return Sn = O -> P i with
-    | FZ n => Seq0_elim n
-    | FS n i' => Seq0_elim n
-    end eq_refl
+    | FZ n => S_eq_0_elim n
+    | FS n i' => S_eq_0_elim n
+    end (eq_intro nat O)
   .
 
   Definition FinSet_caseS {n : nat} {P : FinSet (S n) -> Type} : P (FZ n) -> (forall i' : FinSet n, P (FS n i')) -> (forall i : FinSet (S n), P i) :=
@@ -307,17 +313,17 @@ Module MyUtilities.
 
   Definition mkFinSet : forall n : nat, forall i : nat, i < n -> FinSet n :=
     fix mkFinSet_fix (n : nat) {struct n} : forall i : nat, i < n -> FinSet n :=
-    match n with
-    | O => lt0_elim
+    match n as n0 return forall i : nat, i < n0 -> FinSet n0 with
+    | O => lt_elim_n_lt_0
     | S n' =>
       fun i : nat =>
-      match i with
+      match i as i0 return i0 < S n' -> FinSet (S n') with
       | O =>
         fun H : 0 < S n' =>
         FZ n'
       | S i' =>
         fun H : S i' < S n' =>
-        FS n' (mkFinSet_fix n' i' (ltS i' n' H))
+        FS n' (mkFinSet_fix n' i' (lt_elim_S_n_lt_S_m i' n' H))
       end
     end
   .
@@ -330,7 +336,7 @@ Module MyUtilities.
     end
   .
 
-  Definition lt0_intro : forall n : nat, 0 < S n :=
+  Definition lt_intro_0_lt_S_n : forall n : nat, 0 < S n :=
     fix lt0_intro_fix (n : nat) {struct n} : S O <= S n :=
     match n as n0 return S O <= S n0 with
     | O => le_n (S O)
@@ -338,78 +344,71 @@ Module MyUtilities.
     end
   .
 
-  Definition ltS_intro_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> S n1 <= S n2 :=
-    fix ltS_intro_aux1_fix (n : nat) (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
-    match Hle as Hle0 in le _ m0 return le (S n) (S m0) with
+  Let lt_intro_S_n_lt_S_m_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> S n1 <= S n2 :=
+    fix lt_intro_S_n_lt_S_m_aux1_fix (n : nat) (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
+    match Hle in le _ m0 return le (S n) (S m0) with
     | le_n _ => le_n (S n)
-    | le_S _ m' H' => le_S (S n) (S m') (ltS_intro_aux1_fix n m' H')
+    | le_S _ m' H' => le_S (S n) (S m') (lt_intro_S_n_lt_S_m_aux1_fix n m' H')
     end
   .
 
-  Definition ltS_intro : forall n1 : nat, forall n2 : nat, n1 < n2 -> S n1 < S n2 :=
+  Definition lt_intro_S_n_lt_S_m : forall n : nat, forall m : nat, n < m -> S n < S m :=
     fun n1 : nat =>
     fun n2 : nat =>
-    fun H : S n1 <= n2 =>
-    ltS_intro_aux1 (S n1) n2 H
+    lt_intro_S_n_lt_S_m_aux1 (S n1) n2
   .
 
-  Definition runFinSet : forall n : nat, FinSet n -> {i : nat | i < n} :=
-    fix runFinSet_fix (n : nat) (i : FinSet n) {struct i} : sig (fun x : nat => S x <= n) :=
-    match i as i0 in FinSet Sn0 return sig (fun x : nat => S x <= Sn0) with
-    | FZ n0 => exist (fun x : nat => S x <= S n0) O (lt0_intro n0)
-    | FS n0 i' =>
-      match runFinSet_fix n0 i' as sig0 in sig _ return sig (fun x : nat => S x <= S n0) with
-      | exist _ x H => exist (fun x : nat => S x <= S n0) (S x) (ltS_intro x n0 H)
+  Definition runFinSet : forall n : nat, FinSet n -> {m : nat | m < n} :=
+    fix runFinSet_fix (n : nat) (i : FinSet n) {struct i} : sig (fun m : nat => S m <= n) :=
+    match i in FinSet Sn' return sig (fun m : nat => S m <= Sn') with
+    | FZ n' => exist (fun m : nat => S m <= S n') O (lt_intro_0_lt_S_n n')
+    | FS n' i' =>
+      match runFinSet_fix n' i' return sig (fun m : nat => S m <= S n') with
+      | exist _ m H => exist (fun m : nat => S m <= S n') (S m) (lt_intro_S_n_lt_S_m m n' H)
       end
     end
   .
 
-  Definition FZeqFZ : forall n : nat, FZ n = FZ n :=
-    fun n : nat =>
-    @eq_refl (FinSet (S n)) (FZ n)
-  .
-
-  Definition FZeqFS : forall n : nat, forall i : FinSet n, FZ n = FS n i -> False :=
+  Definition FZ_eq_FS_elim : forall n : nat, forall i : FinSet n, FZ n = FS n i -> False :=
     fun n : nat =>
     fun i : FinSet n =>
-    @eq_ind (FinSet (S n)) (FZ n) (fun j : FinSet (S n) => match j as j0 in FinSet Sn0 return Prop with | FZ n0 => True | FS n0 j' => False end) I (FS n i)
+    eq_ind (FZ n) (fun FS_n_i_ : FinSet (S n) => match FS_n_i_ return Prop with | FZ n_ => True | FS n_ i_ => False end) I (FS n i)
   .
 
-  Definition FSeqFZ : forall n : nat, forall i : FinSet n, FS n i = FZ n -> False :=
+  Definition FS_eq_FZ_elim : forall n : nat, forall i : FinSet n, FS n i = FZ n -> False :=
     fun n : nat =>
     fun i : FinSet n =>
-    @eq_ind (FinSet (S n)) (FS n i) (fun j : FinSet (S n) => match j as j0 in FinSet Sn0 return Prop with | FZ n0 => False | FS n0 j' => True end) I (FZ n)
+    eq_ind (FS n i) (fun FS_n_i_ : FinSet (S n) => match FS_n_i_ return Prop with | FZ n_ => False | FS n_ i_ => True end) I (FZ n)
   .
 
-  Definition FSeqFS : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, FS n i1 = FS n i2 -> i1 = i2 :=
+  Definition FS_eq_FS_elim : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, FS n i1 = FS n i2 -> i1 = i2 :=
     fun n : nat =>
-    fun i1 : FinSet n =>
-    fun i2 : FinSet n =>
-    fun Heq : FS n i1 = FS n i2 =>
-    match Heq as Heq0 in eq _ rhs return (match rhs as rhs0 in FinSet Sn0 return FinSet (pred Sn0) -> Prop with | FZ n0 => fun lhs : FinSet n0 => 2 + 2 = 5 | FS n0 i2' => fun lhs : FinSet n0 => lhs = i2' end) i1 with
-    | eq_refl => @eq_refl (FinSet n) i1
-    end
+    fun i : FinSet n =>
+    fun j : FinSet n =>
+    eq_ind (FS n i) (fun FS_n_j_ : FinSet (S n) => (match FS_n_j_ in FinSet S_n_ return FinSet (pred S_n_) -> Prop with | FZ n_ => fun i_ : FinSet n_ => 2 + 2 = 5 | FS n_ j_ => fun i_ : FinSet n_ => i_ = j_ end) i) (eq_intro (FinSet n) i) (FS n j)
   .
 
-  Definition FinSet_eq_dec_aux1 : forall n : nat, forall j : FinSet (S n), {FZ n = j} + {FZ n <> j} :=
+  Let FinSet_eq_dec_aux1 : forall n : nat, forall j : FinSet (S n), {FZ n = j} + {FZ n <> j} :=
     fun n : nat =>
-    FinSet_caseS (left (FZeqFZ n)) (fun j' : FinSet n => right (FZeqFS n j'))
+    FinSet_caseS (left (eq_intro (FinSet (S n)) (FZ n))) (fun j' : FinSet n => right (FZ_eq_FS_elim n j'))
   .
 
-  Definition FinSet_eq_dec_aux2 : forall n : nat, (forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
+  Let FinSet_eq_dec_aux2 : forall n : nat, (forall i' : FinSet n, forall j' : FinSet n, {i' = j'} + {i' <> j'}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
     fun n : nat =>
-    fun IH : forall i : FinSet n, forall j : FinSet n, sumbool (i = j) (i = j -> False) =>
+    fun IH : forall i' : FinSet n, forall j' : FinSet n, sumbool (i' = j') (i' = j' -> False) =>
     fun i' : FinSet n =>
-    FinSet_caseS (right (FSeqFZ n i')) (fun j' : FinSet n => match IH i' j' as b0 in sumbool _ _ return {FS n i' = FS n j'} + {FS n i' <> FS n j'} with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hne => right (fun Heq : FS n i' = FS n j' => Hne (FSeqFS n i' j' Heq)) end)
+    FinSet_caseS (right (FS_eq_FZ_elim n i')) (fun j' : FinSet n => match IH i' j' return sumbool (FS n i' = FS n j') (FS n i' = FS n j' -> False) with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hneq => right (fun Heq : FS n i' = FS n j' => Hneq (FS_eq_FS_elim n i' j' Heq)) end)
   .
 
   Definition FinSet_eq_dec : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, {i1 = i2} + {i1 <> i2} :=
-    fix FinSet_eq_dec_fix (n : nat) {struct n} : forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j} :=
-    match n as n0 return forall i : FinSet n0, forall j : FinSet n0, {i = j} + {i <> j} with
+    fix FinSet_eq_dec_fix (n : nat) {struct n} : forall i : FinSet n, forall j : FinSet n, sumbool (i = j) (i = j -> False) :=
+    match n as n0 return forall i : FinSet n0, forall j : FinSet n0, sumbool (i = j) (i = j -> False) with
     | O => FinSet_case0
     | S n' => FinSet_caseS (FinSet_eq_dec_aux1 n') (FinSet_eq_dec_aux2 n' (FinSet_eq_dec_fix n'))
     end
   .
+
+  End Fin.
 
   Lemma forallb_true_iff {A : Type} (p : A -> bool) :
     forall xs : list A,
