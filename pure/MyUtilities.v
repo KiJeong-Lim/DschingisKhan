@@ -438,6 +438,16 @@ Module MyUtilities.
     split; apply property5_of_fold_right_max_0...
   Qed.
 
+  Lemma in_remove_iff {A : Type} (A_eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}) :
+    forall x : A,
+    forall x0 : A,
+    forall xs : list A,
+    In x (remove A_eq_dec x0 xs) <-> (In x xs /\ x <> x0).
+  Proof with firstorder.
+    assert (claim1 := in_remove A_eq_dec).
+    assert (claim2 := in_in_remove A_eq_dec)...
+  Qed.
+
   Definition case_eq {A : Type} : forall x : A, forall y : A, forall H : x = y, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> phi x H :=
     fun x : A =>
     fun y : A =>
