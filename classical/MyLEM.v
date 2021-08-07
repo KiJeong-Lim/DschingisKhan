@@ -1,12 +1,12 @@
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module Type LawOfExclusiveMiddle.
+Module Type ClassicalLogicAxioms.
 
   Parameter LEM : forall A : Prop, A \/ ~ A.
 
-End LawOfExclusiveMiddle.
+End ClassicalLogicAxioms.
 
-Module ClassicalLogicTemplate (ClassicalLogic_axioms : LawOfExclusiveMiddle).
+Module ClassicalLogicFactsTemplate (ClassicalLogic_axioms : ClassicalLogicAxioms).
 
   Definition ProofIrrelevance {P : Prop} : forall p1 : P, forall p2 : P, p1 = p2 :=
     @MyUtilities.ProofIrrelevance ClassicalLogic_axioms.LEM P
@@ -100,13 +100,13 @@ Module ClassicalLogicTemplate (ClassicalLogic_axioms : LawOfExclusiveMiddle).
     @MyUtilities.all_not_not_ex ClassicalLogic_axioms.LEM U P
   .
 
-End ClassicalLogicTemplate.
+End ClassicalLogicFactsTemplate.
 
 Module ClassicalLogic.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
-  Module ClassicalLogic_axioms : LawOfExclusiveMiddle.
+  Module ClassicalLogic_axioms : ClassicalLogicAxioms.
 
     Definition LEM : forall A : Prop, A \/ ~ A :=
       classic
@@ -114,7 +114,7 @@ Module ClassicalLogic.
 
   End ClassicalLogic_axioms.
 
-  Module ClassicalLogicFacts := ClassicalLogicTemplate(ClassicalLogic_axioms).
+  Module ClassicalLogicFacts := ClassicalLogicFactsTemplate(ClassicalLogic_axioms).
 
   Export ClassicalLogicFacts.
 
