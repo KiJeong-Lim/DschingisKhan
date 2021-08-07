@@ -3,11 +3,9 @@ Require Import DschingisKhan.classical.MyAxioms.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.DomainTheory.
 
-(* [2021-08-07]
-
 Module ClassicalCpoTheory.
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory ClasssicalFacts.
 
   Definition U {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D :=
     fun x : D =>
@@ -877,5 +875,3 @@ Module ClassicalCpoTheory.
 *)
 
 End ClassicalCpoTheory.
-
-*)

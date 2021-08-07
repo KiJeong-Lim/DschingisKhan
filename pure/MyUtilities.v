@@ -135,7 +135,7 @@ Module MyUtilities.
 
   Fixpoint sum_from_0_to (n : nat) {struct n} : nat :=
     match n with
-    | 0 => 0
+    | O => 0
     | S n' => n + sum_from_0_to n'
     end
   .

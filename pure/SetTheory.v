@@ -10,7 +10,7 @@ Global Create HintDb aczel_hint.
 
 Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
-  Import BasicSetoidTheory BasicPosetTheory MyUtilities MyUniverses.
+  Import MyUtilities MyUniverses BasicSetoidTheory BasicPosetTheory.
 
   Inductive Tree : SuperiorUniverse :=
   | RootNode (children : InferiorUniverse) (childtrees : children -> Tree) : Tree
