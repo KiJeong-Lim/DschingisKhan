@@ -508,30 +508,28 @@ Module MyUtilities.
 
   Section DeriveAxiomK.
 
-  Context {A : Type}.
+  Context (A : Type).
 
-  Definition RuleK :
+  Lemma RuleK :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
     forall eq_val0 : x = x,
     phi eq_val0.
-  Proof.
+  Proof with eauto.
     intros x.
     set (eq_val := @eq_refl A x). 
     intros phi phi_val0 eq_val0.
-    replace eq_val0 with eq_val.
-    - apply phi_val0.
-    - rewrite (_eq_rect_eq A x (eq x) eq_val eq_val0).
-      destruct eq_val0.
-      reflexivity.
-  Defined.
+    replace eq_val0 with eq_val...
+    rewrite (_eq_rect_eq A x (eq x) eq_val eq_val0).
+    destruct eq_val0...
+  Qed.
 
   End DeriveAxiomK.
 
   Section ExistTSndEq.
 
-  Context {A : Type} {B : A -> Type}.
+  Context (A : Type) (B : A -> Type).
 
   Let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type :=
     fun p1 : sigT B =>
@@ -565,11 +563,7 @@ Module MyUtilities.
 
   Section Retracts.
 
-  Section IF_PROP.
-
-  Context {P : Prop} (B : Prop).
-
-  Definition IfProp : P -> P -> P :=
+  Let IfProp {P : Prop} (B : Prop) : P -> P -> P :=
     fun p1 : P =>
     fun p2 : P =>
     match EM B with
@@ -577,20 +571,6 @@ Module MyUtilities.
     | or_intror H => p2
     end
   .
-
-  Lemma AC_IF :
-    forall p1 : P,
-    forall p2 : P,
-    forall Q : P -> Prop,
-    (B -> Q p1) ->
-    (~ B -> Q p2) ->
-    Q (IfProp p1 p2).
-  Proof with eauto.
-    unfold IfProp.
-    destruct (EM B)...
-  Qed.
-
-  End IF_PROP.
 
   Lemma AC {A : Prop} {B : Prop} :
     forall r : retract_cond A B,
@@ -612,7 +592,7 @@ Module MyUtilities.
     forall A : Prop,
     forall B : Prop,
     retract_cond (pow A) (pow B).
-  Proof with (tauto || eauto).
+  Proof with tauto.
     intros A B.
     destruct (EM (retract (pow A) (pow B))) as [[i j inv] | H].
     - exists i j...
@@ -665,40 +645,40 @@ Module MyUtilities.
 
   Local Hint Resolve NotB_has_fixpoint : core.
 
-  Theorem classical_proof_irrelevance :
+  Theorem ParadoxOfBerardi :
     T = F.
   Proof with tauto.
     destruct (EM (Russel = T)) as [H | H].
     - assert (claim1 : T = NotB T) by now rewrite <- H.
       unfold NotB, IfProp in claim1.
       destruct (EM (T = T))...
-    - assert (claim2 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
-      unfold NotB, IfProp in claim2.
+    - assert (claim1 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
+      unfold NotB, IfProp in claim1. 
       destruct (EM (Russel = T))...
   Qed.
 
   End Retracts.
 
-  Corollary ProofIrrelevance {P : Prop} :
+  Corollary ProofIrrelevance :
+    forall P : Prop,
     forall p1 : P,
     forall p2 : P,
     p1 = p2.
   Proof.
-    exact (@classical_proof_irrelevance P).
+    exact (@ParadoxOfBerardi).
   Qed.
 
   End Berardi's_Paradox.
 
-  Lemma eq_rect_eq (A : Type) :
+  Corollary eq_rect_eq (A : Type) :
     forall x : A,
     forall B : A -> Type,
     forall y : B x,
     forall H : x = x,
     y = eq_rect x B y x H.
-  Proof.
+  Proof with reflexivity.
     intros x B y H.
-    rewrite <- (@ProofIrrelevance (@eq A x x) (@eq_refl A x) H).
-    reflexivity.
+    rewrite <- (@ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
   Qed.
 
   Section Classical_Prop.
@@ -707,7 +687,7 @@ Module MyUtilities.
     EM
   .
 
-  Context {P : Prop}.
+  Context (P : Prop).
 
   Lemma NNPP :
     ~ ~ P ->
@@ -716,7 +696,7 @@ Module MyUtilities.
     destruct (classic P)...
   Qed.
 
-  Context {Q : Prop}.
+  Context (Q : Prop).
 
   Lemma Peirce :
     ((P -> Q) -> P) ->
@@ -797,7 +777,7 @@ Module MyUtilities.
     destruct (classic Q)...
   Qed.
 
-  Context {R : Prop}.
+  Context (R : Prop).
 
   Lemma imply_and_or2 :
     (P -> Q) ->
@@ -815,7 +795,7 @@ Module MyUtilities.
     EM
   .
 
-  Context {U : Type} {P : U -> Prop}.
+  Context (U : Type) (P : U -> Prop).
 
   Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
     fun H : ~ (forall n : U, P n) =>

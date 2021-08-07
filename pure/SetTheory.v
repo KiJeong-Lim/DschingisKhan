@@ -73,8 +73,6 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
       exists child2...
   Qed.
 
-  Print Assumptions ext_eq_sym.
-
   Global Hint Resolve ext_eq_sym : aczel_hint.
 
   Lemma ext_eq_trans :
