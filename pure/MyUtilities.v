@@ -3,6 +3,18 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 
+Module Type ClassicalEqFacts_requirements.
+
+  Parameter eq_rect_eq : forall U : Type, forall p : U, forall Q : U -> Type, forall x : Q p, forall h : p = p, x = eq_rect p Q x p h.
+
+End ClassicalEqFacts_requirements.
+
+Module Type ExclusiveMiddleFacts_requirements.
+
+  Parameter LEM : forall A : Prop, A \/ ~ A.
+
+End ExclusiveMiddleFacts_requirements.
+
 Module EqFacts.
 
   Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
@@ -281,18 +293,26 @@ Module MyUtilities.
     False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
   .
 
-  Definition lt_S_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
-    fix lt_S_aux1_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
+  Definition lt_S_aux1 {n1 : nat} {n2 : nat} : S n1 <= n2 -> S (pred n2) = n2 :=
+    fun H : S n1 <= n2 =>
+    match H as H0 in le _ m return S (pred m) = m with
+    | le_n _ => eq_refl
+    | le_S _ _ m' => eq_refl
+    end
+  .
+
+  Definition lt_S_aux2 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
+    fix lt_S_aux2_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
     match H as H0 in le _ n2' return n1 <= pred n2' with
     | le_n _ => le_n n1
-    | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux1_fix n1 m H')) m (match H' as H0' in le _ m' return S (pred m') = m' with | le_n _ => eq_refl | le_S _ _ l => eq_refl end)
+    | le_S _ m H' => eq_ind (S (pred m)) (fun x : nat => n1 <= x) (le_S n1 (pred m) (lt_S_aux2_fix n1 m H')) m (lt_S_aux1 H')
     end
   .
 
   Definition lt_S : forall n1 : nat, forall n2 : nat, S n1 < S n2 -> n1 < n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    lt_S_aux1 (S n1) (S n2)
+    lt_S_aux2 (S n1) (S n2)
   .
 
   Definition mkFinSet : forall n : nat, forall i : nat, i < n -> FinSet n :=
@@ -476,6 +496,20 @@ Module MyUtilities.
     end
   .
 
+  Record retract (A : Prop) (B : Prop) : Prop :=
+    { _i : A -> B
+    ; _j : B -> A
+    ; _inv : forall a : A, _j (_i a) = a
+    }
+  .
+
+  Record retract_cond (A : Prop) (B : Prop) : Prop :=
+    { _i2 : A -> B
+    ; _j2 : B -> A
+    ; _inv2 : retract A B -> forall a : A, _j2 (_i2 a) = a
+    }
+  .
+
 End MyUtilities.
 
 Module MyUniverses.
@@ -489,3 +523,386 @@ Module MyUniverses.
   .
 
 End MyUniverses.
+
+Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requirements).
+
+  Import EqFacts.
+
+  Section ClassicalEqTheory.
+
+  Let _eq_rect_eq {A : Type} : forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
+    my_requirements.eq_rect_eq A
+  .
+
+  Section DeriveAxiomK.
+
+  Context {A : Type}.
+
+  Definition RuleK :
+    forall x : A,
+    forall phi : x = x -> Type,
+    phi eq_refl ->
+    forall eq_val0 : x = x,
+    phi eq_val0.
+  Proof.
+    intros x.
+    set (eq_val := @eq_refl A x). 
+    intros phi phi_val0 eq_val0.
+    replace eq_val0 with eq_val.
+    - apply phi_val0.
+    - rewrite (_eq_rect_eq x (eq x) eq_val eq_val0).
+      destruct eq_val0.
+      reflexivity.
+  Defined.
+
+  End DeriveAxiomK.
+
+  Section ExistTSndEq.
+
+  Context {A : Type} {B : A -> Type}.
+
+  Let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type :=
+    fun p1 : sigT B =>
+    fun p2 : sigT B =>
+    fun H : p1 = p2 =>
+    forall H0 : projT1 p1 = projT1 p2,
+    eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) H0 = projT2 p2
+  .
+
+  Let phi : forall p1 : sigT B, forall p2 : sigT B, forall H : p1 = p2, phi' p2 p2 eq_refl -> phi' p1 p2 H :=
+    RuleJ phi'
+  .
+
+  Definition existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+    fun x : A =>
+    fun y1 : B x =>
+    fun y2 : B x =>
+    fun H : existT B x y1 = existT B x y2 =>
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (_eq_rect_eq x B y2 H0)) eq_refl
+  .
+
+  End ExistTSndEq.
+
+  End ClassicalEqTheory.
+
+End ClassicalEqFacts_prototype.
+
+Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_requirements).
+
+  Import MyUtilities.
+
+  Section Berardi's_Paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+
+  Local Hint Constructors retract retract_cond : core.
+
+  Let EM : forall P : Prop, P \/ ~ P :=
+    my_requirements.LEM
+  .
+
+  Section Retracts.
+
+  Section IF_PROP.
+
+  Context {P : Prop} (B : Prop).
+
+  Definition IfProp : P -> P -> P :=
+    fun p1 : P =>
+    fun p2 : P =>
+    match EM B with
+    | or_introl H => p1
+    | or_intror H => p2
+    end
+  .
+
+  Lemma AC_IF :
+    forall p1 : P,
+    forall p2 : P,
+    forall Q : P -> Prop,
+    (B -> Q p1) ->
+    (~ B -> Q p2) ->
+    Q (IfProp p1 p2).
+  Proof with eauto.
+    unfold IfProp.
+    destruct (EM B)...
+  Qed.
+
+  End IF_PROP.
+
+  Lemma AC {A : Prop} {B : Prop} :
+    forall r : retract_cond A B,
+    retract A B ->
+    forall a : A,
+    _j2 A B r (_i2 A B r a) = a.
+  Proof with eauto.
+    intros [i2 j2 inv2] [i j inv] a...
+  Qed.
+
+  Context {Bool : Prop} (T : Bool) (F : Bool).
+
+  Let pow : Prop -> Prop :=
+    fun P : Prop =>
+    P -> Bool
+  .
+
+  Lemma L1 :
+    forall A : Prop,
+    forall B : Prop,
+    retract_cond (pow A) (pow B).
+  Proof with (tauto || eauto).
+    intros A B.
+    destruct (my_requirements.LEM (retract (pow A) (pow B))) as [[i j inv] | H].
+    - exists i j...
+    - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
+  Qed.
+
+  Let U : Prop :=
+    forall P : Prop,
+    pow P
+  .
+
+  Let f : U -> pow U :=
+    fun u : U =>
+    u U
+  .
+
+  Let g : pow U -> U :=
+    fun h : pow U =>
+    fun X : Prop =>
+    let lX := _j2 (pow X) (pow U) (L1 X U) in
+    let rU := _i2 (pow U) (pow U) (L1 U U) in
+    lX (rU h)
+  .
+
+  Let retract_pow_U_pow_U : retract (pow U) (pow U) :=
+    {| _i := fun x : pow U => x; _j := fun x : pow U => x; _inv := @eq_refl (pow U)|}
+  .
+
+  Let NotB : Bool -> Bool :=
+    fun b : Bool =>
+    IfProp (b = T) F T
+  .
+
+  Let R : U :=
+    g (fun u : U => NotB (u U u))
+  .
+
+  Let Russel : Bool :=
+    R U R
+  .
+
+  Lemma NotB_has_fixpoint :
+    Russel = NotB Russel.
+  Proof with eauto.
+    set (Apply := fun f : U -> Bool => fun x : U => f x).
+    enough (claim1 : Russel = Apply (fun u : U => NotB (u U u)) R)...
+    replace (fun u : U => NotB (u U u)) with (R U)...
+    apply AC...
+  Qed.
+
+  Local Hint Resolve NotB_has_fixpoint : core.
+
+  Theorem classical_proof_irrelevance :
+    T = F.
+  Proof with tauto.
+    destruct (EM (Russel = T)) as [H | H].
+    - assert (claim1 : T = NotB T) by now rewrite <- H.
+      unfold NotB, IfProp in claim1.
+      destruct (EM (T = T))...
+    - assert (claim2 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
+      unfold NotB, IfProp in claim2.
+      destruct (EM (Russel = T))...
+  Qed.
+
+  End Retracts.
+
+  Corollary ProofIrrelevance {P : Prop} :
+    forall p1 : P,
+    forall p2 : P,
+    p1 = p2.
+  Proof.
+    exact (@classical_proof_irrelevance P).
+  Qed.
+
+  End Berardi's_Paradox.
+
+  Lemma eq_rect_eq (A : Type) :
+    forall x : A,
+    forall B : A -> Type,
+    forall y : B x,
+    forall H : x = x,
+    y = eq_rect x B y x H.
+  Proof.
+    intros x B y H.
+    rewrite <- (@ProofIrrelevance (@eq A x x) (@eq_refl A x) H).
+    reflexivity.
+  Qed.
+
+  Section Classical_Prop.
+
+  Let classic : forall P : Prop, P \/ ~ P :=
+    my_requirements.LEM
+  .
+
+  Context {P : Prop}.
+
+  Lemma NNPP :
+    ~ ~ P ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Context {Q : Prop}.
+
+  Lemma Peirce :
+    ((P -> Q) -> P) ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma not_imply_elim :
+    ~ (P -> Q) ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma not_imply_elim2 :
+    ~ (P -> Q) ->
+    ~ Q.
+  Proof with tauto.
+    destruct (classic Q)...
+  Qed.
+
+  Lemma imply_to_or :
+    (P -> Q) ->
+    ~ P \/ Q.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma imply_to_and :
+    ~ (P -> Q) ->
+    P /\ ~ Q.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma or_to_imply :
+    ~ P \/ Q ->
+    P ->
+    Q.
+  Proof with tauto.
+    destruct (classic Q)...
+  Qed.
+
+  Lemma not_and_or :
+    ~ (P /\ Q) ->
+    ~ P \/ ~ Q.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma or_not_and :
+    ~ P \/ ~ Q ->
+    ~ (P /\ Q).
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma not_or_and :
+    ~ (P \/ Q) ->
+    ~ P /\ ~ Q.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma and_not_or :
+    ~ P /\ ~ Q ->
+    ~ (P \/ Q).
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma imply_and_or :
+    (P -> Q) ->
+    P \/ Q ->
+    Q.
+  Proof with tauto.
+    destruct (classic Q)...
+  Qed.
+
+  Context {R : Prop}.
+
+  Lemma imply_and_or2 :
+    (P -> Q) ->
+    P \/ R ->
+    Q \/ R.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  End Classical_Prop.
+
+  Section Classical_Pred_Type.
+
+  Let classic : forall P : Prop, P \/ ~ P :=
+    my_requirements.LEM
+  .
+
+  Context {U : Type} {P : U -> Prop}.
+
+  Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
+    fun H : ~ (forall n : U, P n) =>
+    fun H0 : ~ (exists n : U, ~ P n) =>
+    H (fun n : U => @NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+  .
+
+  Lemma not_all_not_ex :
+    ~ (forall n : U, ~ P n) ->
+    exists n : U, P n.
+  Proof with firstorder.
+    destruct (classic (exists n : U, P n))...
+  Qed.
+
+  Lemma not_all_ex_not :
+    ~ (forall n : U, P n) ->
+    exists n : U, ~ P n.
+  Proof with firstorder.
+    destruct (classic (exists n : U, ~ P n))...
+  Qed.
+
+  Lemma not_ex_all_not :
+    ~ (exists n : U, P n) ->
+    forall n : U,
+    ~ P n.
+  Proof with firstorder.
+    destruct (classic (forall n : U, ~ P n))...
+  Qed.
+
+  Lemma not_ex_not_all :
+    ~ (exists n : U, ~ P n) ->
+    forall n : U,
+    P n.
+  Proof with firstorder.
+    destruct (classic (forall n : U, P n))...
+  Qed.
+
+  Lemma ex_not_not_all :
+    (exists n : U, ~ P n) ->
+    ~ (forall n : U, P n).
+  Proof with firstorder.
+    destruct (classic (exists n : U, ~ P n))...
+  Qed.
+
+  Lemma all_not_not_ex :
+    (forall n : U, ~ P n) ->
+    ~ (exists n : U, P n).
+  Proof with firstorder.
+    destruct (classic (forall n : U, ~ P n))...
+  Qed.
+
+  End Classical_Pred_Type.
+
+End ExclusiveMiddleFacts_prototype.
