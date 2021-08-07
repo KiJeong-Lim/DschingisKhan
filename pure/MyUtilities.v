@@ -3,18 +3,6 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 
-Module Type ClassicalEqFacts_requirements.
-
-  Parameter eq_rect_eq : forall U : Type, forall p : U, forall Q : U -> Type, forall x : Q p, forall h : p = p, x = eq_rect p Q x p h.
-
-End ClassicalEqFacts_requirements.
-
-Module Type ExclusiveMiddleFacts_requirements.
-
-  Parameter LEM : forall A : Prop, A \/ ~ A.
-
-End ExclusiveMiddleFacts_requirements.
-
 Module EqFacts.
 
   Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
@@ -503,6 +491,8 @@ Module MyUtilities.
     }
   .
 
+  Local Hint Constructors retract : core.
+
   Record retract_cond (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
@@ -510,29 +500,11 @@ Module MyUtilities.
     }
   .
 
-End MyUtilities.
-
-Module MyUniverses.
-
-  Definition SuperiorUniverse : Type :=
-    Type
-  .
-
-  Definition InferiorUniverse : SuperiorUniverse :=
-    Type
-  .
-
-End MyUniverses.
-
-Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requirements).
-
-  Import EqFacts.
+  Local Hint Constructors retract_cond : core.
 
   Section ClassicalEqTheory.
 
-  Let _eq_rect_eq {A : Type} : forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
-    my_requirements.eq_rect_eq A
-  .
+  Hypothesis _eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Section DeriveAxiomK.
 
@@ -550,7 +522,7 @@ Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requiremen
     intros phi phi_val0 eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_val0.
-    - rewrite (_eq_rect_eq x (eq x) eq_val eq_val0).
+    - rewrite (_eq_rect_eq A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Defined.
@@ -578,26 +550,18 @@ Module ClassicalEqFacts_prototype (my_requirements : ClassicalEqFacts_requiremen
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (_eq_rect_eq x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (_eq_rect_eq A x B y2 H0)) eq_refl
   .
 
   End ExistTSndEq.
 
   End ClassicalEqTheory.
 
-End ClassicalEqFacts_prototype.
+  Section ClassicalLogic.
 
-Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_requirements).
-
-  Import MyUtilities.
+  Hypothesis EM : forall P : Prop, P \/ ~ P.
 
   Section Berardi's_Paradox. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
-
-  Local Hint Constructors retract retract_cond : core.
-
-  Let EM : forall P : Prop, P \/ ~ P :=
-    my_requirements.LEM
-  .
 
   Section Retracts.
 
@@ -650,7 +614,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
     retract_cond (pow A) (pow B).
   Proof with (tauto || eauto).
     intros A B.
-    destruct (my_requirements.LEM (retract (pow A) (pow B))) as [[i j inv] | H].
+    destruct (EM (retract (pow A) (pow B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
   Qed.
@@ -674,7 +638,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
   .
 
   Let retract_pow_U_pow_U : retract (pow U) (pow U) :=
-    {| _i := fun x : pow U => x; _j := fun x : pow U => x; _inv := @eq_refl (pow U)|}
+    {| _i := fun x : pow U => x; _j := fun x : pow U => x; _inv := @eq_refl (pow U) |}
   .
 
   Let NotB : Bool -> Bool :=
@@ -740,7 +704,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
   Section Classical_Prop.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    my_requirements.LEM
+    EM
   .
 
   Context {P : Prop}.
@@ -848,7 +812,7 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
   Section Classical_Pred_Type.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    my_requirements.LEM
+    EM
   .
 
   Context {U : Type} {P : U -> Prop}.
@@ -905,4 +869,18 @@ Module ExclusiveMiddleFacts_prototype (my_requirements : ExclusiveMiddleFacts_re
 
   End Classical_Pred_Type.
 
-End ExclusiveMiddleFacts_prototype.
+  End ClassicalLogic.
+
+End MyUtilities.
+
+Module MyUniverses.
+
+  Definition SuperiorUniverse : Type :=
+    Type
+  .
+
+  Definition InferiorUniverse : SuperiorUniverse :=
+    Type
+  .
+
+End MyUniverses.
