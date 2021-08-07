@@ -1,5 +1,5 @@
 Require Import Coq.Lists.List.
-Require Import DschingisKhan.classical.MyLEM.
+Require Import DschingisKhan.classical.ExclusiveMiddle.
 Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 

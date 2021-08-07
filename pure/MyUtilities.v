@@ -391,12 +391,12 @@ Module MyUtilities.
     end
   .
 
-  Definition FinSet_eq_dec_FZ : forall n : nat, forall j : FinSet (S n), {FZ n = j} + {FZ n <> j} :=
+  Definition FinSet_eq_dec_aux1 : forall n : nat, forall j : FinSet (S n), {FZ n = j} + {FZ n <> j} :=
     fun n : nat =>
     FinSet_caseS (left (FZeqFZ n)) (fun j' : FinSet n => right (FZeqFS n j'))
   .
 
-  Definition FinSet_eq_dec_FS : forall n : nat, (forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
+  Definition FinSet_eq_dec_aux2 : forall n : nat, (forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j}) -> forall i' : FinSet n, forall j : FinSet (S n), {FS n i' = j} + {FS n i' <> j} :=
     fun n : nat =>
     fun IH : forall i : FinSet n, forall j : FinSet n, sumbool (i = j) (i = j -> False) =>
     fun i' : FinSet n =>
@@ -407,7 +407,7 @@ Module MyUtilities.
     fix FinSet_eq_dec_fix (n : nat) {struct n} : forall i : FinSet n, forall j : FinSet n, {i = j} + {i <> j} :=
     match n as n0 return forall i : FinSet n0, forall j : FinSet n0, {i = j} + {i <> j} with
     | O => FinSet_case0
-    | S n' => FinSet_caseS (FinSet_eq_dec_FZ n') (FinSet_eq_dec_FS n' (FinSet_eq_dec_fix n'))
+    | S n' => FinSet_caseS (FinSet_eq_dec_aux1 n') (FinSet_eq_dec_aux2 n' (FinSet_eq_dec_fix n'))
     end
   .
 
@@ -611,7 +611,7 @@ Module PRIVATE.
 
   Context (A : Type).
 
-  Lemma private_RuleK :
+  Lemma RuleK :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
@@ -644,7 +644,7 @@ Module PRIVATE.
     RuleJ phi'
   .
 
-  Definition private_existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Definition existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
@@ -662,7 +662,7 @@ Module PRIVATE.
 
   Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Lemma private_AC {A : Prop} {B : Prop} :
+  Lemma AC {A : Prop} {B : Prop} :
     forall r : retract_cond A B,
     retract A B ->
     forall a : A,
@@ -689,7 +689,7 @@ Module PRIVATE.
     P -> Bool
   .
 
-  Lemma private_L1 :
+  Lemma L1 :
     forall A : Prop,
     forall B : Prop,
     retract_cond (pow A) (pow B).
@@ -713,8 +713,8 @@ Module PRIVATE.
   Let g : pow U -> U :=
     fun h : pow U =>
     fun X : Prop =>
-    let lX := _j2 (pow X) (pow U) (private_L1 X U) in
-    let rU := _i2 (pow U) (pow U) (private_L1 U U) in
+    let lX := _j2 (pow X) (pow U) (L1 X U) in
+    let rU := _i2 (pow U) (pow U) (L1 U U) in
     lX (rU h)
   .
 
@@ -735,43 +735,43 @@ Module PRIVATE.
     R U R
   .
 
-  Lemma private_NotB_has_fixpoint :
+  Lemma NotB_has_fixpoint :
     Russel = NotB Russel.
   Proof with eauto.
     set (Apply := fun f : U -> Bool => fun x : U => f x).
     enough (claim1 : Russel = Apply (fun u : U => NotB (u U u)) R)...
     replace (fun u : U => NotB (u U u)) with (R U)...
-    apply private_AC...
+    apply AC...
   Qed.
 
-  Local Hint Resolve private_NotB_has_fixpoint : core.
+  Local Hint Resolve NotB_has_fixpoint : core.
 
-  Theorem private_ParadoxOfBerardi :
+  Theorem ParadoxOfBerardi :
     T = F.
   Proof with tauto.
     destruct (LEM (Russel = T)) as [H | H].
     - assert (claim1 : T = NotB T) by now rewrite <- H.
       unfold NotB, IF_PROP in claim1.
       destruct (LEM (T = T))...
-    - assert (claim1 : NotB Russel <> T) by now rewrite <- private_NotB_has_fixpoint.
+    - assert (claim1 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
       unfold NotB, IF_PROP in claim1. 
       destruct (LEM (Russel = T))...
   Qed.
 
   End ParadoxOfBerardi.
 
-  Corollary private_ProofIrrelevance :
+  Corollary ProofIrrelevance :
     forall P : Prop,
     forall p1 : P,
     forall p2 : P,
     p1 = p2.
   Proof.
-    exact (@private_ParadoxOfBerardi).
+    exact (@ParadoxOfBerardi).
   Qed.
 
   End ProofIrrelevance.
 
-  Corollary private_eq_rect_eq (A : Type) :
+  Corollary eq_rect_eq (A : Type) :
     forall x : A,
     forall B : A -> Type,
     forall y : B x,
@@ -779,7 +779,7 @@ Module PRIVATE.
     y = eq_rect x B y x H.
   Proof with reflexivity.
     intros x B y H.
-    rewrite <- (private_ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
+    rewrite <- (ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
   Qed.
 
   Section Classical_Prop.
@@ -790,7 +790,7 @@ Module PRIVATE.
 
   Variable P : Prop.
 
-  Lemma private_NNPP :
+  Lemma NNPP :
     ~ ~ P ->
     P.
   Proof with tauto.
@@ -799,42 +799,42 @@ Module PRIVATE.
 
   Variable Q : Prop.
 
-  Lemma private_Peirce :
+  Lemma Peirce :
     ((P -> Q) -> P) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_not_imply_elim :
+  Lemma not_imply_elim :
     ~ (P -> Q) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_not_imply_elim2 :
+  Lemma not_imply_elim2 :
     ~ (P -> Q) ->
     ~ Q.
   Proof with tauto.
     destruct (classic Q)...
   Qed.
 
-  Lemma private_imply_to_or :
+  Lemma imply_to_or :
     (P -> Q) ->
     ~ P \/ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_imply_to_and :
+  Lemma imply_to_and :
     ~ (P -> Q) ->
     P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_or_to_imply :
+  Lemma or_to_imply :
     ~ P \/ Q ->
     P ->
     Q.
@@ -842,35 +842,35 @@ Module PRIVATE.
     destruct (classic Q)...
   Qed.
 
-  Lemma private_not_and_or :
+  Lemma not_and_or :
     ~ (P /\ Q) ->
     ~ P \/ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_or_not_and :
+  Lemma or_not_and :
     ~ P \/ ~ Q ->
     ~ (P /\ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_not_or_and :
+  Lemma not_or_and :
     ~ (P \/ Q) ->
     ~ P /\ ~ Q.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_and_not_or :
+  Lemma and_not_or :
     ~ P /\ ~ Q ->
     ~ (P \/ Q).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
-  Lemma private_imply_and_or :
+  Lemma imply_and_or :
     (P -> Q) ->
     P \/ Q ->
     Q.
@@ -880,7 +880,7 @@ Module PRIVATE.
 
   Variable R : Prop.
 
-  Lemma private_imply_and_or2 :
+  Lemma imply_and_or2 :
     (P -> Q) ->
     P \/ R ->
     Q \/ R.
@@ -901,24 +901,24 @@ Module PRIVATE.
   Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
-    H (fun n : U => private_NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
   .
 
-  Lemma private_not_all_not_ex :
+  Lemma not_all_not_ex :
     ~ (forall n : U, ~ P n) ->
     exists n : U, P n.
   Proof with firstorder.
     destruct (classic (exists n : U, P n))...
   Qed.
 
-  Lemma private_not_all_ex_not :
+  Lemma not_all_ex_not :
     ~ (forall n : U, P n) ->
     exists n : U, ~ P n.
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma private_not_ex_all_not :
+  Lemma not_ex_all_not :
     ~ (exists n : U, P n) ->
     forall n : U,
     ~ P n.
@@ -926,7 +926,7 @@ Module PRIVATE.
     destruct (classic (forall n : U, ~ P n))...
   Qed.
 
-  Lemma private_not_ex_not_all :
+  Lemma not_ex_not_all :
     ~ (exists n : U, ~ P n) ->
     forall n : U,
     P n.
@@ -934,14 +934,14 @@ Module PRIVATE.
     destruct (classic (forall n : U, P n))...
   Qed.
 
-  Lemma private_ex_not_not_all :
+  Lemma ex_not_not_all :
     (exists n : U, ~ P n) ->
     ~ (forall n : U, P n).
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma private_all_not_not_ex :
+  Lemma all_not_not_ex :
     (forall n : U, ~ P n) ->
     ~ (exists n : U, P n).
   Proof with firstorder.

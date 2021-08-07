@@ -23,7 +23,7 @@ coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v
-coqc -Q . DschingisKhan classical/MyLEM.v
+coqc -Q . DschingisKhan classical/ExclusiveMiddle.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
 coqc -Q . DschingisKhan projects/MyCoin.v
 coqc -Q . DschingisKhan projects/MyGIT.v

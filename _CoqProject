@@ -6,7 +6,7 @@ pure/DomainTheory.v
 pure/UntypedLambdaCalculus.v
 pure/SetTheory.v
 
-classical/MyLEM.v
+classical/ExclusiveMiddle.v
 classical/DomainTheory.v
 
 projects/MyCoin.v
