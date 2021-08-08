@@ -10,8 +10,8 @@ Module ClassicalLogic.
     classic
   .
 
-  Definition ProofIrrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2 :=
-    FUN_FACT.ProofIrrelevance __internal_axiom1__
+  Definition proof_irrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2 :=
+    FUN_FACT.proof_irrelevance __internal_axiom1__
   .
 
   Definition eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
@@ -22,8 +22,8 @@ Module ClassicalLogic.
     eq_rect_eq
   .
 
-  Definition RuleK : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
-    FUN_FACT.RuleK __internal_axiom2__
+  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi (@eq_refl A x) -> forall eq_val0 : x = x, phi eq_val0 :=
+    FUN_FACT.Streicher_K __internal_axiom2__
   .
 
   Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=

@@ -613,11 +613,11 @@ Module FUN_FACT.
 
   Hypothesis CEQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Section axiom_K.
+  Section Axiom_K.
 
   Context (A : Type).
 
-  Lemma RuleK :
+  Lemma Streicher_K :
     forall x : A,
     forall phi : x = x -> Type,
     phi eq_refl ->
@@ -634,7 +634,7 @@ Module FUN_FACT.
       reflexivity.
   Qed.
 
-  End axiom_K.
+  End Axiom_K.
 
   Section inj_pairT2.
 
@@ -744,7 +744,7 @@ Module FUN_FACT.
     LEFT (RIGHT H)
   .
 
-  Let _retract_pow_U_pow_U : _retract (POW U) (POW U) :=
+  Let _retract_POW_U_POW_U : _retract (POW U) (POW U) :=
     {| _i := fun x : POW U => x; _j := fun x : POW U => x; _inv := @eq_refl (POW U) |}
   .
 
@@ -757,48 +757,39 @@ Module FUN_FACT.
     g (fun u : U => NOT_B (u U u))
   .
 
-  Let Russel : Bool :=
+  Let RUSSEL : Bool :=
     R U R
   .
 
-  Let RUSSEL_PARADOX :
-    Russel = NOT_B Russel.
+  Let PARADOX_OF_BERARDI :
+    RUSSEL = NOT_B RUSSEL.
   Proof with eauto.
     set (Apply := fun f : U -> Bool => fun x : U => f x).
-    enough (claim1 : Russel = Apply (fun u : U => NOT_B (u U u)) R)...
+    enough (claim1 : RUSSEL = Apply (fun u : U => NOT_B (u U u)) R)...
     replace (fun u : U => NOT_B (u U u)) with (R U)...
   Qed.
 
-  Theorem PARADOX_OF_BERARDI :
+  Theorem proof_irrelevance :
     T = F.
   Proof with tauto.
-    destruct (EM (Russel = T)) as [H | H].
-    - assert (claim1 : T = NOT_B T) by (rewrite <- H; apply RUSSEL_PARADOX).
+    destruct (EM (RUSSEL = T)) as [H | H].
+    - assert (claim1 : T = NOT_B T) by (rewrite <- H; apply PARADOX_OF_BERARDI).
       unfold NOT_B, IF_PROP in claim1.
       destruct (EM (T = T))...
-    - assert (claim1 : NOT_B Russel <> T) by (rewrite <- RUSSEL_PARADOX; apply H).
+    - assert (claim1 : NOT_B RUSSEL <> T) by (rewrite <- PARADOX_OF_BERARDI; apply H).
       unfold NOT_B, IF_PROP in claim1. 
-      destruct (EM (Russel = T))...
+      destruct (EM (RUSSEL = T))...
   Qed.
 
   End ParadoxOfBerardi.
 
-  Corollary ProofIrrelevance :
-    forall P : Prop,
-    forall p1 : P,
-    forall p2 : P,
-    p1 = p2.
-  Proof.
-    exact PARADOX_OF_BERARDI.
-  Qed.
-
-  End ProofIrrelevance.
-
   Corollary eq_rect_eq (A : Type) (x : A) (B : A -> Type) (y : B x) (H : x = x) :
     y = eq_rect x B y x H.
   Proof with reflexivity.
-    rewrite <- (ProofIrrelevance (@eq A x x) (@eq_refl A x) H)...
+    rewrite <- (proof_irrelevance (@eq A x x) (@eq_refl A x) H)...
   Qed.
+
+  End ProofIrrelevance.
 
   Section Classical_Prop.
 
