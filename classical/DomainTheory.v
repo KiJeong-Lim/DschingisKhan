@@ -5,7 +5,7 @@ Require Import DschingisKhan.pure.MyStructures.
 
 Module ClassicalCpoTheory.
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory ClassicalLogic.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology ConstructiveCpoTheory ClassicalLogic.
 
   Definition U {D : Type} `{D_isPoset : isPoset D} : D -> ensemble D :=
     fun x : D =>

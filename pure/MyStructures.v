@@ -5,9 +5,9 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Global Create HintDb my_hints.
-
 Module BasicSetoidTheory.
+
+  Import MyUtilities.
 
   Class isSetoid (A : Type) : Type :=
     { eqProp : A -> A -> Prop
@@ -111,7 +111,7 @@ End BasicSetoidTheory.
 
 Module MyEnsemble.
 
-  Import BasicSetoidTheory.
+  Import MyUtilities BasicSetoidTheory.
 
   Definition ensemble : Type -> Type :=
     fun A : Type =>
@@ -398,7 +398,7 @@ End MyEnsemble.
 
 Module BasicPosetTheory.
 
-  Import BasicSetoidTheory MyEnsemble.
+  Import MyUtilities BasicSetoidTheory MyEnsemble.
 
   Class isPoset (A : Type) : Type :=
     { leProp : A -> A -> Prop
@@ -929,7 +929,7 @@ End BasicPosetTheory.
 
 Module MyEnsembleNova.
 
-  Import MyEnsemble.
+  Import MyUtilities MyEnsemble.
 
   Definition full {A : Type} : ensemble A :=
     fun x : A =>
@@ -1083,7 +1083,7 @@ End MyEnsembleNova.
 
 Module BasicTopology.
 
-  Import MyEnsemble MyEnsembleNova.
+  Import MyUtilities MyEnsemble MyEnsembleNova.
 
   Class isTopologicalSpace (A : Type) : Type :=
     { isOpen : ensemble A -> Prop

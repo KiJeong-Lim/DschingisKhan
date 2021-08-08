@@ -5,7 +5,7 @@ Require Import DschingisKhan.pure.MyStructures.
 
 Module ConstructiveCoLaTheory.
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
   Global Program Instance DirectProductOfSetoid {D : Type} {D' : Type} (D_requiresSetoid : isSetoid D) (D'_requiresSetoid : isSetoid D') : isSetoid (D * D') :=
     { eqProp :=
@@ -582,7 +582,7 @@ End ConstructiveCoLaTheory.
 
 Module CAWU.
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
   Definition isCompatibleFor {D : Type} `{D_isPoset : isPoset D} : (D >=> D) -> (D >=> D) -> Prop :=
     fun f : D >=> D =>
@@ -734,7 +734,7 @@ End CAWU.
 
 Module PowerSetCoLa.
 
-  Import BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
+  Import MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
   Global Instance ensemble_isPoset {A : Type} : isPoset (ensemble A) :=
     arrow_isPoset Prop_isPoset
@@ -993,7 +993,7 @@ End PowerSetCoLa.
 
 Module ConstructiveCpoTheory.
 
-  Import BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova BasicTopology ConstructiveCoLaTheory.
+  Import MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova BasicTopology ConstructiveCoLaTheory.
 
   Definition isDirected {D : Type} `{D_isPoset : isPoset D} : ensemble D -> Prop :=
     fun X : ensemble D =>

@@ -47,6 +47,8 @@ Module MyUtilities.
 
   Import ListNotations EqFacts.
 
+  Global Create HintDb my_hints.
+
   Section FIN_SET.
 
   Inductive FinSet : nat -> Set :=

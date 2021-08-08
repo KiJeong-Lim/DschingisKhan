@@ -6,11 +6,11 @@ Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Global Create HintDb aczel_hint.
-
 Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Import MyUtilities MyUniverses BasicSetoidTheory BasicPosetTheory.
+
+  Global Create HintDb aczel_hint.
 
   Inductive Tree : SuperiorUniverse :=
   | RootNode (children : InferiorUniverse) (childtrees : children -> Tree) : Tree
