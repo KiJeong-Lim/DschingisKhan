@@ -22,7 +22,7 @@ Module ClassicalLogic.
     eq_rect_eq
   .
 
-  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi (@eq_refl A x) -> forall eq_val0 : x = x, phi eq_val0 :=
+  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
     FUN_FACT.Streicher_K __internal_axiom2__
   .
 

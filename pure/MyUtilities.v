@@ -620,15 +620,15 @@ Module FUN_FACT.
   Lemma Streicher_K :
     forall x : A,
     forall phi : x = x -> Type,
-    phi eq_refl ->
+    phi (eq_reflexivity x) ->
     forall eq_val0 : x = x,
     phi eq_val0.
   Proof.
     intros x.
-    set (eq_val := @eq_refl A x). 
-    intros phi phi_val eq_val0.
+    set (eq_val := eq_reflexivity x). 
+    intros phi phi_eq_val eq_val0.
     replace eq_val0 with eq_val.
-    - apply phi_val.
+    - apply phi_eq_val.
     - rewrite (CEQ A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
@@ -670,27 +670,27 @@ Module FUN_FACT.
 
   Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Record _retract (A : Prop) (B : Prop) : Prop :=
+  Record RETRACT (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
     ; _j : B -> A
     ; _inv : forall a : A, _j (_i a) = a
     }
   .
 
-  Local Hint Constructors _retract : core.
+  Local Hint Constructors RETRACT : core.
 
-  Record _retract_cond (A : Prop) (B : Prop) : Prop :=
+  Record RETRACT_COND (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
-    ; _inv2 : _retract A B -> forall a : A, _j2 (_i2 a) = a
+    ; _inv2 : RETRACT A B -> forall a : A, _j2 (_i2 a) = a
     }
   .
 
-  Local Hint Constructors _retract_cond : core.
+  Local Hint Constructors RETRACT_COND : core.
 
   Let AC {A : Prop} {B : Prop} :
-    forall r : _retract_cond A B,
-    _retract A B ->
+    forall r : RETRACT_COND A B,
+    RETRACT A B ->
     forall a : A,
     _j2 A B r (_i2 A B r a) = a.
   Proof with eauto.
@@ -708,20 +708,20 @@ Module FUN_FACT.
 
   Section ParadoxOfBerardi.
 
-  Context (Bool : Prop) (T : Bool) (F : Bool).
+  Context (BOOL : Prop) (T : BOOL) (F : BOOL).
 
   Let POW : Prop -> Prop :=
     fun P : Prop =>
-    P -> Bool
+    P -> BOOL
   .
 
   Let L1 :
     forall A : Prop,
     forall B : Prop,
-    _retract_cond (POW A) (POW B).
+    RETRACT_COND (POW A) (POW B).
   Proof with tauto.
     intros A B.
-    destruct (EM (_retract (POW A) (POW B))) as [[i j inv] | H].
+    destruct (EM (RETRACT (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : POW A => fun b : B => T) (fun pb : POW B => fun a : A => T)...
   Qed.
@@ -739,45 +739,45 @@ Module FUN_FACT.
   Let g : POW U -> U :=
     fun H : POW U =>
     fun X : Prop =>
-    let LEFT := _j2 (POW X) (POW U) (L1 X U) in
-    let RIGHT := _i2 (POW U) (POW U) (L1 U U) in
+    let LEFT : POW U -> POW X := _j2 (POW X) (POW U) (L1 X U) in
+    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (L1 U U) in
     LEFT (RIGHT H)
   .
 
-  Let _retract_POW_U_POW_U : _retract (POW U) (POW U) :=
+  Let RETRACT_POW_U_POW_U : RETRACT (POW U) (POW U) :=
     {| _i := fun x : POW U => x; _j := fun x : POW U => x; _inv := @eq_refl (POW U) |}
   .
 
-  Let NOT_B : Bool -> Bool :=
-    fun b : Bool =>
+  Let NOT : BOOL -> BOOL :=
+    fun b : BOOL =>
     IF_PROP (b = T) F T
   .
 
   Let R : U :=
-    g (fun u : U => NOT_B (u U u))
+    g (fun u : U => NOT (u U u))
   .
 
-  Let RUSSEL : Bool :=
+  Let RUSSEL : BOOL :=
     R U R
   .
 
   Let PARADOX_OF_BERARDI :
-    RUSSEL = NOT_B RUSSEL.
+    RUSSEL = NOT RUSSEL.
   Proof with eauto.
-    set (Apply := fun f : U -> Bool => fun x : U => f x).
-    enough (claim1 : RUSSEL = Apply (fun u : U => NOT_B (u U u)) R)...
-    replace (fun u : U => NOT_B (u U u)) with (R U)...
+    set (Apply := fun P : U -> BOOL => fun u : U => P u).
+    enough (claim1 : RUSSEL = Apply (fun u : U => NOT (u U u)) R)...
+    replace (fun u : U => NOT (u U u)) with (R U)...
   Qed.
 
   Theorem proof_irrelevance :
     T = F.
   Proof with tauto.
     destruct (EM (RUSSEL = T)) as [H | H].
-    - assert (claim1 : T = NOT_B T) by (rewrite <- H; apply PARADOX_OF_BERARDI).
-      unfold NOT_B, IF_PROP in claim1.
+    - assert (claim1 : T = NOT T) by (rewrite <- H; exact PARADOX_OF_BERARDI).
+      unfold NOT, IF_PROP in claim1.
       destruct (EM (T = T))...
-    - assert (claim1 : NOT_B RUSSEL <> T) by (rewrite <- PARADOX_OF_BERARDI; apply H).
-      unfold NOT_B, IF_PROP in claim1. 
+    - assert (claim1 : NOT RUSSEL <> T) by (rewrite <- PARADOX_OF_BERARDI; exact H).
+      unfold NOT, IF_PROP in claim1. 
       destruct (EM (RUSSEL = T))...
   Qed.
 
