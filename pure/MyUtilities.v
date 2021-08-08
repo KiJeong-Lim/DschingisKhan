@@ -611,9 +611,9 @@ Module FUN_FACT.
 
   Section CLASSICAL_EQUALITY.
 
-  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis CEQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Section AxiomK.
+  Section axiom_K.
 
   Context (A : Type).
 
@@ -629,14 +629,14 @@ Module FUN_FACT.
     intros phi phi_val eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_val.
-    - rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
+    - rewrite (CEQ A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Qed.
 
-  End AxiomK.
+  End axiom_K.
 
-  Section ExistTSndEq.
+  Section inj_pairT2.
 
   Context (A : Type) (B : A -> Type).
 
@@ -652,21 +652,21 @@ Module FUN_FACT.
     RuleJ phi'
   .
 
-  Definition existT_snd_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Definition existT_inj2_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (eq_rect_eq A x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (CEQ A x B y2 H0)) eq_refl
   .
 
-  End ExistTSndEq.
+  End inj_pairT2.
 
   End CLASSICAL_EQUALITY.
 
   Section EXCLUSIVE_MIDDLE.
 
-  Hypothesis LEM : forall P : Prop, P \/ ~ P.
+  Hypothesis EM : forall P : Prop, P \/ ~ P.
 
   Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
@@ -700,7 +700,7 @@ Module FUN_FACT.
   Let IF_PROP {P : Prop} (B : Prop) : P -> P -> P :=
     fun p1 : P =>
     fun p2 : P =>
-    match LEM B with
+    match EM B with
     | or_introl H => p1
     | or_intror H => p2
     end
@@ -721,7 +721,7 @@ Module FUN_FACT.
     retract_cond (pow A) (pow B).
   Proof with tauto.
     intros A B.
-    destruct (LEM (retract (pow A) (pow B))) as [[i j inv] | H].
+    destruct (EM (retract (pow A) (pow B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
   Qed.
@@ -775,13 +775,13 @@ Module FUN_FACT.
   Theorem ParadoxOfBerardi :
     T = F.
   Proof with tauto.
-    destruct (LEM (Russel = T)) as [H | H].
+    destruct (EM (Russel = T)) as [H | H].
     - assert (claim1 : T = NotB T) by now rewrite <- H.
       unfold NotB, IF_PROP in claim1.
-      destruct (LEM (T = T))...
+      destruct (EM (T = T))...
     - assert (claim1 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
       unfold NotB, IF_PROP in claim1. 
-      destruct (LEM (Russel = T))...
+      destruct (EM (Russel = T))...
   Qed.
 
   End ParadoxOfBerardi.
@@ -806,7 +806,7 @@ Module FUN_FACT.
   Section Classical_Prop.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    LEM
+    EM
   .
 
   Variable P : Prop.
@@ -914,7 +914,7 @@ Module FUN_FACT.
   Section Classical_Pred_Type.
 
   Let classic : forall P : Prop, P \/ ~ P :=
-    LEM
+    EM
   .
 
   Context (U : Type) (P : U -> Prop).
