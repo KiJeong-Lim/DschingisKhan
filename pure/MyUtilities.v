@@ -605,7 +605,7 @@ Module MyUniverses.
 
 End MyUniverses.
 
-Module FunFacts.
+Module FUN_FACT.
 
   Import EqFacts MyUtilities.
 
@@ -973,4 +973,4 @@ Module FunFacts.
 
   End EXCLUSIVE_MIDDLE.
 
-End FunFacts.
+End FUN_FACT.
