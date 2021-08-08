@@ -42,10 +42,6 @@ Module ClassicalLogic.
     FUN_FACT.not_imply_elim __internal_axiom1__
   .
 
-  Definition not_imply_elim2 : forall P : Prop, forall Q : Prop, ~ (P -> Q) -> ~ Q :=
-    FUN_FACT.not_imply_elim2 __internal_axiom1__
-  .
-
   Definition imply_to_or : forall P : Prop, forall Q : Prop, (P -> Q) -> ~ P \/ Q :=
     FUN_FACT.imply_to_or __internal_axiom1__
   .
@@ -54,28 +50,8 @@ Module ClassicalLogic.
     FUN_FACT.imply_to_and __internal_axiom1__
   .
 
-  Definition or_to_imply : forall P : Prop, forall Q : Prop, ~ P \/ Q -> P -> Q :=
-    FUN_FACT.or_to_imply __internal_axiom1__
-  .
-
   Definition not_and_or : forall P : Prop, forall Q : Prop, ~ (P /\ Q) -> ~ P \/ ~ Q :=
     FUN_FACT.not_and_or __internal_axiom1__
-  .
-
-  Definition or_not_and : forall P : Prop, forall Q : Prop, ~ P \/ ~ Q -> ~ (P /\ Q) :=
-    FUN_FACT.or_not_and __internal_axiom1__
-  .
-
-  Definition not_or_and : forall P : Prop, forall Q : Prop, ~ (P \/ Q) -> ~ P /\ ~ Q :=
-    FUN_FACT.not_or_and __internal_axiom1__
-  .
-
-  Definition and_not_or : forall P : Prop, forall Q : Prop, ~ P /\ ~ Q -> ~ (P \/ Q) :=
-    FUN_FACT.and_not_or __internal_axiom1__
-  .
-
-  Definition imply_and_or : forall P : Prop, forall Q : Prop, (P -> Q) -> P \/ Q -> Q :=
-    FUN_FACT.imply_and_or __internal_axiom1__
   .
 
   Definition not_all_not_ex : forall U : Type, forall P : U -> Prop, ~ (forall n : U, ~ P n) -> exists n : U, P n :=
@@ -86,20 +62,8 @@ Module ClassicalLogic.
     FUN_FACT.not_all_ex_not __internal_axiom1__
   .
 
-  Definition not_ex_all_not : forall U : Type, forall P : U -> Prop, ~ (exists n : U, P n) -> forall n : U, ~ P n :=
-    FUN_FACT.not_ex_all_not __internal_axiom1__
-  .
-
   Definition not_ex_not_all : forall U : Type, forall P : U -> Prop, ~ (exists n : U, ~ P n) -> forall n : U, P n :=
     FUN_FACT.not_ex_not_all __internal_axiom1__
-  .
-
-  Definition ex_not_not_all : forall U : Type, forall P : U -> Prop, (exists n : U, ~ P n) -> ~ (forall n : U, P n) :=
-    FUN_FACT.ex_not_not_all __internal_axiom1__
-  .
-
-  Definition all_not_not_ex : forall U : Type, forall P : U -> Prop, (forall n : U, ~ P n) -> ~ (exists n : U, P n) :=
-    FUN_FACT.all_not_not_ex __internal_axiom1__
   .
 
   End InternalFactBindings.

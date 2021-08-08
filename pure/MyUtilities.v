@@ -49,14 +49,7 @@ Module MyUtilities.
 
   Global Create HintDb my_hints.
 
-  Section FinSetTheory.
-
-  Inductive FinSet : nat -> Set :=
-  | FZ : forall n : nat, FinSet (S n) 
-  | FS : forall n : nat, FinSet n -> FinSet (S n)
-  .
-
-  Section FinSet_methods.
+  Section BASIC_ARITH.
 
   Definition S_eq_0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
     fun n : nat =>
@@ -122,6 +115,15 @@ Module MyUtilities.
     fun n1 : nat =>
     fun n2 : nat =>
     lt_intro_S_m_lt_S_n_aux1 (S n1) n2
+  .
+
+  End BASIC_ARITH.
+
+  Section MY_FINSET.
+
+  Inductive FinSet : nat -> Set :=
+  | FZ : forall n : nat, FinSet (S n) 
+  | FS : forall n : nat, FinSet n -> FinSet (S n)
   .
 
   Definition FinSet_case0 {P : FinSet O -> Type} : forall i : FinSet O, P i :=
@@ -258,61 +260,142 @@ Module MyUtilities.
     end
   .
 
-  End FinSet_methods.
-
-  Section FinSet_facts.
-
-  Definition mkFinSet_ext : forall n : nat, forall i : nat, forall Hle1 : i < n, forall Hle2 : i < n, mkFinSet n i Hle1 = mkFinSet n i Hle2 :=
-    fix mkFinSet_ext_fix (n : nat) {struct n} : forall i : nat, forall Hle1 : i < n, forall Hle2 : i < n, mkFinSet n i Hle1 = mkFinSet n i Hle2 :=
-    match n as n0 return forall i : nat, forall Hle1 : i < n0, forall Hle2 : i < n0, mkFinSet n0 i Hle1 = mkFinSet n0 i Hle2 with
+  Definition mkFinSet_ext : forall n : nat, forall i : nat, forall Hlt1 : i < n, forall Hlt2 : i < n, mkFinSet n i Hlt1 = mkFinSet n i Hlt2 :=
+    fix mkFinSet_ext_fix (n : nat) {struct n} : forall i : nat, forall Hlt1 : i < n, forall Hlt2 : i < n, mkFinSet n i Hlt1 = mkFinSet n i Hlt2 :=
+    match n as n0 return forall i : nat, forall Hlt1 : i < n0, forall Hlt2 : i < n0, mkFinSet n0 i Hlt1 = mkFinSet n0 i Hlt2 with
     | O =>
       fun i : nat =>
-      fun Hle1 : i < O =>
-      lt_elim_n_lt_0 i Hle1
+      fun Hlt1 : i < O =>
+      lt_elim_n_lt_0 i Hlt1
     | S n' =>
       fun i : nat =>
-      match i as i0 return forall Hle1 : i0 < S n', forall Hle2 : i0 < S n', mkFinSet (S n') i0 Hle1 = mkFinSet (S n') i0 Hle2 with
+      match i as i0 return forall Hlt1 : i0 < S n', forall Hlt2 : i0 < S n', mkFinSet (S n') i0 Hlt1 = mkFinSet (S n') i0 Hlt2 with
       | O =>
-        fun Hle1 : O < S n' =>
-        fun Hle2 : O < S n' =>
+        fun Hlt1 : O < S n' =>
+        fun Hlt2 : O < S n' =>
         eq_reflexivity (FZ n')
       | S i' =>
-        fun Hle1 : S i' < S n' =>
-        fun Hle2 : S i' < S n' =>
-        eq_congruence (FS n') (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hle1)) (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hle2)) (mkFinSet_ext_fix n' i' (lt_elim_S_n_lt_S_m i' n' Hle1) (lt_elim_S_n_lt_S_m i' n' Hle2))
+        fun Hlt1 : S i' < S n' =>
+        fun Hlt2 : S i' < S n' =>
+        eq_congruence (FS n') (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hlt1)) (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hlt2)) (mkFinSet_ext_fix n' i' (lt_elim_S_n_lt_S_m i' n' Hlt1) (lt_elim_S_n_lt_S_m i' n' Hlt2))
       end
     end
   .
 
-  Definition mkFinSet_runFinSet {n : nat} :
+  Definition mkFinSet_runFinSet_identity (n : nat) :
     forall i : FinSet n,
     mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)) = i.
   Proof.
-    induction i as [| n i IH].
-    - reflexivity.
-    - transitivity (FS n (mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)))).
+    induction i as [n' | n' i' IH].
+    - exact (eq_reflexivity (FZ n')). 
+    - apply (eq_transitivity (mkFinSet (S n') (proj1_sig (runFinSet (S n') (FS n' i'))) (proj2_sig (runFinSet (S n') (FS n' i')))) (FS n' (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i')))) (FS n' i')).
       + simpl.
-        destruct (runFinSet n i) as [m Hlt].
+        destruct (runFinSet n' i') as [m Hlt].
         simpl in *.
-        assert (Heq := mkFinSet_ext n m (lt_elim_S_n_lt_S_m m n (lt_intro_S_m_lt_S_n m n Hlt)) Hlt).
-        congruence.
-      + congruence.
+        assert (claim1 := mkFinSet_ext n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt)) Hlt).
+        exact (eq_congruence (FS n') (mkFinSet n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt))) (mkFinSet n' m Hlt) claim1).
+      + exact (eq_congruence (FS n') (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i'))) i' IH).
   Defined.
 
-  End FinSet_facts.
+  End MY_FINSET.
 
-  End FinSetTheory.
+  Section SIMPLE_LOGIC.
+
+  Lemma not_imply_elim2 :
+    forall P : Prop,
+    forall Q : Prop,
+    (~ (P -> Q)) ->
+    (~ Q).
+  Proof with tauto.
+    intros P Q...
+  Qed.
+
+  Lemma or_to_imply :
+    forall P : Prop,
+    forall Q : Prop,
+    (~ P \/ Q) ->
+    (P) ->
+    (Q).
+  Proof with tauto.
+    intros P Q...
+  Qed.
+
+  Lemma or_not_and :
+    forall P : Prop,
+    forall Q : Prop,
+    (~ P \/ ~ Q) ->
+    (~ (P /\ Q)).
+  Proof with tauto.
+    intros P Q...
+  Qed.
+
+  Lemma not_or_and :
+    forall P : Prop,
+    forall Q : Prop,
+    (~ (P \/ Q)) ->
+    (~ P /\ ~ Q).
+  Proof with tauto.
+    intros P Q...
+  Qed.
+
+  Lemma and_not_or :
+    forall P : Prop,
+    forall Q : Prop,
+    (~ P /\ ~ Q) ->
+    (~ (P \/ Q)).
+  Proof with tauto.
+    intros P Q...
+  Qed.
+
+  Lemma imply_and_or :
+    forall P : Prop,
+    forall Q : Prop,
+    (P -> Q) ->
+    (P \/ Q) ->
+    (Q).
+  Proof with tauto.
+    intros P Q...
+  Qed.
 
   Lemma imply_and_or2 :
     forall P : Prop,
     forall Q : Prop,
     forall R : Prop,
     (P -> Q) ->
-    (P \/ R) -> 
+    (P \/ R) ->
     (Q \/ R).
   Proof with tauto.
     intros P Q R...
   Qed.
+
+  Lemma not_ex_all_not :
+    forall U : Type,
+    forall P : U -> Prop,
+    (~ exists n : U, P n) ->
+    (forall n : U, ~ P n).
+  Proof with firstorder.
+    intros U P...
+  Qed.
+
+  Lemma ex_not_not_all :
+    forall U : Type,
+    forall P : U -> Prop,
+    (exists n : U, ~ P n) ->
+    (~ forall n : U, P n).
+  Proof with firstorder.
+    intros U P...
+  Qed.
+
+  Lemma all_not_not_ex :
+    forall U : Type,
+    forall P : U -> Prop,
+    (forall n : U, ~ P n) ->
+    (~ exists n : U, P n).
+  Proof with firstorder.
+    intros U P...
+  Qed.
+
+  End SIMPLE_LOGIC.
 
   Lemma strong_induction (P : nat -> Prop) :
     (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
@@ -859,13 +942,6 @@ Module FUN_FACT.
     destruct (classic P)...
   Qed.
 
-  Lemma not_imply_elim2 :
-    (~ (P -> Q)) ->
-    (~ Q).
-  Proof with tauto.
-    destruct (classic Q)...
-  Qed.
-
   Lemma imply_to_or :
     (P -> Q) ->
     ((~ P) \/ Q).
@@ -880,48 +956,11 @@ Module FUN_FACT.
     destruct (classic P)...
   Qed.
 
-  Lemma or_to_imply :
-    ((~ P) \/ Q) ->
-    P ->
-    Q.
-  Proof with tauto.
-    destruct (classic Q)...
-  Qed.
-
   Lemma not_and_or :
     (~ (P /\ Q)) ->
     ((~ P) \/ (~ Q)).
   Proof with tauto.
     destruct (classic P)...
-  Qed.
-
-  Lemma or_not_and :
-    ((~ P) \/ (~ Q)) ->
-    (~ (P /\ Q)).
-  Proof with tauto.
-    destruct (classic P)...
-  Qed.
-
-  Lemma not_or_and :
-    (~ (P \/ Q)) ->
-    ((~ P) /\ (~ Q)).
-  Proof with tauto.
-    destruct (classic P)...
-  Qed.
-
-  Lemma and_not_or :
-    ((~ P) /\ (~ Q)) ->
-    (~ (P \/ Q)).
-  Proof with tauto.
-    destruct (classic P)...
-  Qed.
-
-  Lemma imply_and_or :
-    (P -> Q) ->
-    P \/ Q ->
-    Q.
-  Proof with tauto.
-    destruct (classic Q)...
   Qed.
 
   End Classical_Prop.
@@ -954,32 +993,11 @@ Module FUN_FACT.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
-  Lemma not_ex_all_not :
-    (~ (exists n : U, P n)) ->
-    (forall n : U, (~ P n)).
-  Proof with firstorder.
-    destruct (classic (forall n : U, ~ P n))...
-  Qed.
-
   Lemma not_ex_not_all :
     (~ (exists n : U, (~ P n))) ->
     (forall n : U, P n).
   Proof with firstorder.
     destruct (classic (forall n : U, P n))...
-  Qed.
-
-  Lemma ex_not_not_all :
-    (exists n : U, (~ P n)) ->
-    (~ (forall n : U, P n)).
-  Proof with firstorder.
-    destruct (classic (exists n : U, ~ P n))...
-  Qed.
-
-  Lemma all_not_not_ex :
-    (forall n : U, (~ P n)) ->
-    (~ (exists n : U, P n)).
-  Proof with firstorder.
-    destruct (classic (forall n : U, ~ P n))...
   Qed.
 
   End Classical_Pred_Type.
