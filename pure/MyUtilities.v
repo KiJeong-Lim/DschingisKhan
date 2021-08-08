@@ -670,27 +670,27 @@ Module FUN_FACT.
 
   Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Record retract (A : Prop) (B : Prop) : Prop :=
+  Record _retract (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
     ; _j : B -> A
     ; _inv : forall a : A, _j (_i a) = a
     }
   .
 
-  Local Hint Constructors retract : core.
+  Local Hint Constructors _retract : core.
 
-  Record retract_cond (A : Prop) (B : Prop) : Prop :=
+  Record _retract_cond (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
-    ; _inv2 : retract A B -> forall a : A, _j2 (_i2 a) = a
+    ; _inv2 : _retract A B -> forall a : A, _j2 (_i2 a) = a
     }
   .
 
-  Local Hint Constructors retract_cond : core.
+  Local Hint Constructors _retract_cond : core.
 
-  Lemma AC {A : Prop} {B : Prop} :
-    forall r : retract_cond A B,
-    retract A B ->
+  Let AC {A : Prop} {B : Prop} :
+    forall r : _retract_cond A B,
+    _retract A B ->
     forall a : A,
     _j2 A B r (_i2 A B r a) = a.
   Proof with eauto.
@@ -710,77 +710,74 @@ Module FUN_FACT.
 
   Context (Bool : Prop) (T : Bool) (F : Bool).
 
-  Let pow : Prop -> Prop :=
+  Let POW : Prop -> Prop :=
     fun P : Prop =>
     P -> Bool
   .
 
-  Lemma L1 :
+  Let L1 :
     forall A : Prop,
     forall B : Prop,
-    retract_cond (pow A) (pow B).
+    _retract_cond (POW A) (POW B).
   Proof with tauto.
     intros A B.
-    destruct (EM (retract (pow A) (pow B))) as [[i j inv] | H].
+    destruct (EM (_retract (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
-    - exists (fun pa : pow A => fun b : B => F) (fun pb : pow B => fun a : A => F)...
+    - exists (fun pa : POW A => fun b : B => T) (fun pb : POW B => fun a : A => T)...
   Qed.
 
   Let U : Prop :=
     forall P : Prop,
-    pow P
+    POW P
   .
 
-  Let f : U -> pow U :=
+  Let f : U -> POW U :=
     fun u : U =>
     u U
   .
 
-  Let g : pow U -> U :=
-    fun h : pow U =>
+  Let g : POW U -> U :=
+    fun H : POW U =>
     fun X : Prop =>
-    let lX := _j2 (pow X) (pow U) (L1 X U) in
-    let rU := _i2 (pow U) (pow U) (L1 U U) in
-    lX (rU h)
+    let LEFT := _j2 (POW X) (POW U) (L1 X U) in
+    let RIGHT := _i2 (POW U) (POW U) (L1 U U) in
+    LEFT (RIGHT H)
   .
 
-  Let retract_pow_U_pow_U : retract (pow U) (pow U) :=
-    {| _i := fun x : pow U => x; _j := fun x : pow U => x; _inv := @eq_refl (pow U) |}
+  Let _retract_pow_U_pow_U : _retract (POW U) (POW U) :=
+    {| _i := fun x : POW U => x; _j := fun x : POW U => x; _inv := @eq_refl (POW U) |}
   .
 
-  Let NotB : Bool -> Bool :=
+  Let NOT_B : Bool -> Bool :=
     fun b : Bool =>
     IF_PROP (b = T) F T
   .
 
   Let R : U :=
-    g (fun u : U => NotB (u U u))
+    g (fun u : U => NOT_B (u U u))
   .
 
   Let Russel : Bool :=
     R U R
   .
 
-  Lemma NotB_has_fixpoint :
-    Russel = NotB Russel.
+  Let RUSSEL_PARADOX :
+    Russel = NOT_B Russel.
   Proof with eauto.
     set (Apply := fun f : U -> Bool => fun x : U => f x).
-    enough (claim1 : Russel = Apply (fun u : U => NotB (u U u)) R)...
-    replace (fun u : U => NotB (u U u)) with (R U)...
-    apply AC...
+    enough (claim1 : Russel = Apply (fun u : U => NOT_B (u U u)) R)...
+    replace (fun u : U => NOT_B (u U u)) with (R U)...
   Qed.
 
-  Local Hint Resolve NotB_has_fixpoint : core.
-
-  Theorem ParadoxOfBerardi :
+  Theorem PARADOX_OF_BERARDI :
     T = F.
   Proof with tauto.
     destruct (EM (Russel = T)) as [H | H].
-    - assert (claim1 : T = NotB T) by now rewrite <- H.
-      unfold NotB, IF_PROP in claim1.
+    - assert (claim1 : T = NOT_B T) by (rewrite <- H; apply RUSSEL_PARADOX).
+      unfold NOT_B, IF_PROP in claim1.
       destruct (EM (T = T))...
-    - assert (claim1 : NotB Russel <> T) by now rewrite <- NotB_has_fixpoint.
-      unfold NotB, IF_PROP in claim1. 
+    - assert (claim1 : NOT_B Russel <> T) by (rewrite <- RUSSEL_PARADOX; apply H).
+      unfold NOT_B, IF_PROP in claim1. 
       destruct (EM (Russel = T))...
   Qed.
 
@@ -792,7 +789,7 @@ Module FUN_FACT.
     forall p2 : P,
     p1 = p2.
   Proof.
-    exact ParadoxOfBerardi.
+    exact PARADOX_OF_BERARDI.
   Qed.
 
   End ProofIrrelevance.
@@ -805,7 +802,7 @@ Module FUN_FACT.
 
   Section Classical_Prop.
 
-  Let classic : forall P : Prop, P \/ ~ P :=
+  Let classic : forall A : Prop, A \/ ~ A :=
     EM
   .
 
@@ -913,7 +910,7 @@ Module FUN_FACT.
 
   Section Classical_Pred_Type.
 
-  Let classic : forall P : Prop, P \/ ~ P :=
+  Let classic : forall A : Prop, A \/ ~ A :=
     EM
   .
 
