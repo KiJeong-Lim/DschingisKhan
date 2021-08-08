@@ -49,12 +49,14 @@ Module MyUtilities.
 
   Global Create HintDb my_hints.
 
-  Section FIN_SET.
+  Section FinSetTheory.
 
   Inductive FinSet : nat -> Set :=
   | FZ : forall n : nat, FinSet (S n) 
   | FS : forall n : nat, FinSet n -> FinSet (S n)
   .
+
+  Section FinSet_methods.
 
   Definition S_eq_0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
     fun n : nat =>
@@ -256,7 +258,13 @@ Module MyUtilities.
     end
   .
 
-  End FIN_SET.
+  End FinSet_methods.
+
+  Section FinSet_properties.
+
+  End FinSet_properties.
+
+  End FinSetTheory.
 
   Lemma strong_induction (P : nat -> Prop) :
     (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
@@ -615,13 +623,15 @@ Module FunFacts.
     phi eq_refl ->
     forall eq_val0 : x = x,
     phi eq_val0.
-  Proof with eauto.
+  Proof.
     intros x.
     set (eq_val := @eq_refl A x). 
-    intros phi phi_val0 eq_val0.
-    replace eq_val0 with eq_val...
-    rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
-    destruct eq_val0...
+    intros phi phi_val eq_val0.
+    replace eq_val0 with eq_val.
+    - apply phi_val.
+    - rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
+      destruct eq_val0.
+      reflexivity.
   Qed.
 
   End AxiomK.

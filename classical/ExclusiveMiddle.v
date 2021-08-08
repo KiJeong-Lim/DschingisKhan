@@ -6,7 +6,7 @@ Module Type ClassicalLogicAxioms.
 
 End ClassicalLogicAxioms.
 
-Module ClassicalLogicFactsTemplate(ClassicalLogic_axioms : ClassicalLogicAxioms).
+Module ClassicalLogicFactsTemplate (ClassicalLogic_axioms : ClassicalLogicAxioms).
 
   Definition ProofIrrelevance {P : Prop} : forall p1 : P, forall p2 : P, p1 = p2 :=
     FunFacts.ProofIrrelevance ClassicalLogic_axioms.classic P
@@ -110,8 +110,8 @@ End ClassicalLogic_axioms.
 
 Module ClassicalLogic.
 
-  Module ClassicalLogicFacts := ClassicalLogicFactsTemplate(ClassicalLogic_axioms).
+  Export ClassicalLogic_axioms.
 
-  Export ClassicalLogic_axioms ClassicalLogicFacts.
+  Include (ClassicalLogicFactsTemplate ClassicalLogic_axioms).
 
 End ClassicalLogic.

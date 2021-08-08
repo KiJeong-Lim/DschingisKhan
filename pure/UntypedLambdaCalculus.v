@@ -19,7 +19,7 @@ Module UntypedLamdbdaCalculus.
     forall y : ivar,
     {x = y} + {x <> y}.
   Proof.
-    apply Nat.eq_dec.
+    exact Nat.eq_dec.
   Defined.
 
   Inductive tm : Set :=
