@@ -2,6 +2,7 @@ Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import DschingisKhan.pure.MyStructures.
+Require Import DschingisKhan.pure.MyUtilities.
 
 Module ConstructiveCoLaTheory.
 

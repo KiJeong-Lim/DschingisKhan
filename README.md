@@ -11,11 +11,11 @@ coq_makefile -f _CoqProject *.v -o Makefile
 make
 ```
 
-## VERSION
+## COMPATIBLE COQ VERSIONS
 
-- Okay with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
+- Everything works fine with `The Coq Proof Assistant, version 8.13.2 (July 2021)`.
 
-## BUILD
+## BUILD BY HANDS
 
 ```
 coqc -Q . DschingisKhan pure/MyUtilities.v

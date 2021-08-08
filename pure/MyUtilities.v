@@ -85,10 +85,11 @@ Module MyUtilities.
   .
 
   Let lt_elim_S_n_lt_S_m_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
-    fix lt_elim_S_n_lt_S_m_aux1_fix (n1 : nat) (n2 : nat) (H : S n1 <= n2) {struct H} : n1 <= pred n2 :=
-    match H in le _ n2' return n1 <= pred n2' with
-    | le_n _ => le_n n1
-    | le_S _ n2' H' => eq_ind (S (pred n2')) (fun x : nat => n1 <= x) (le_S n1 (pred n2') (lt_elim_S_n_lt_S_m_aux1_fix n1 n2' H')) n2' (guarantee1_S_pred_n_eq_n n1 n2' H')
+    fun n : nat =>
+    fix lt_elim_S_n_lt_S_m_aux1_fix (m : nat) (H : S n <= m) {struct H} : n <= pred m :=
+    match H in le _ m0 return n <= pred m0 with
+    | le_n _ => le_n n
+    | le_S _ m' H' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (lt_elim_S_n_lt_S_m_aux1_fix m' H')) m' (guarantee1_S_pred_n_eq_n n m' H')
     end
   .
 
@@ -96,6 +97,29 @@ Module MyUtilities.
     fun n1 : nat =>
     fun n2 : nat =>
     lt_elim_S_n_lt_S_m_aux1 (S n1) (S n2)
+  .
+
+  Definition lt_intro_0_lt_S_n : forall n : nat, 0 < S n :=
+    fix lt0_intro_fix (n : nat) {struct n} : S O <= S n :=
+    match n as n0 return S O <= S n0 with
+    | O => le_n (S O)
+    | S n' => le_S (S O) (S n') (lt0_intro_fix n')
+    end
+  .
+
+  Let lt_intro_S_m_lt_S_n_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> S n1 <= S n2 :=
+    fun n : nat =>
+    fix lt_intro_S_n_lt_S_m_aux1_fix (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
+    match Hle in le _ m0 return le (S n) (S m0) with
+    | le_n _ => le_n (S n)
+    | le_S _ m' H' => le_S (S n) (S m') (lt_intro_S_n_lt_S_m_aux1_fix m' H')
+    end
+  .
+
+  Definition lt_intro_S_m_lt_S_n : forall m : nat, forall n : nat, m < n -> S m < S n :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    lt_intro_S_m_lt_S_n_aux1 (S n1) n2
   .
 
   Definition FinSet_case0 {P : FinSet O -> Type} : forall i : FinSet O, P i :=
@@ -148,7 +172,7 @@ Module MyUtilities.
       fun i : nat =>
       match i as i0 return i0 < S n' -> FinSet (S n') with
       | O =>
-        fun H : 0 < S n' =>
+        fun H : O < S n' =>
         FZ n'
       | S i' =>
         fun H : S i' < S n' =>
@@ -163,28 +187,6 @@ Module MyUtilities.
     | [] => FinSet_case0
     | x :: xs' => FinSet_caseS x (safe_nth_fix xs')
     end
-  .
-
-  Definition lt_intro_0_lt_S_n : forall n : nat, 0 < S n :=
-    fix lt0_intro_fix (n : nat) {struct n} : S O <= S n :=
-    match n as n0 return S O <= S n0 with
-    | O => le_n (S O)
-    | S n' => le_S (S O) (S n') (lt0_intro_fix n')
-    end
-  .
-
-  Let lt_intro_S_m_lt_S_n_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> S n1 <= S n2 :=
-    fix lt_intro_S_n_lt_S_m_aux1_fix (n : nat) (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
-    match Hle in le _ m0 return le (S n) (S m0) with
-    | le_n _ => le_n (S n)
-    | le_S _ m' H' => le_S (S n) (S m') (lt_intro_S_n_lt_S_m_aux1_fix n m' H')
-    end
-  .
-
-  Definition lt_intro_S_m_lt_S_n : forall m : nat, forall n : nat, m < n -> S m < S n :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    lt_intro_S_m_lt_S_n_aux1 (S n1) n2
   .
 
   Definition runFinSet : forall n : nat, FinSet n -> {m : nat | m < n} :=
@@ -226,7 +228,7 @@ Module MyUtilities.
     fun n : nat =>
     fun IH_i' : forall i' : FinSet n, forall j' : FinSet n, sumbool (i' = j') (i' = j' -> False) =>
     fun i' : FinSet n =>
-    FinSet_caseS (right (FS_eq_FZ_elim n i')) (fun j' : FinSet n => match IH_i' i' j' return sumbool (FS n i' = FS n j') (FS n i' = FS n j' -> False) with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hneq => right (fun Heq : FS n i' = FS n j' => Hneq (FS_eq_FS_elim n i' j' Heq)) end)
+    FinSet_caseS (right (FS_eq_FZ_elim n i')) (fun j' : FinSet n => match IH_i' i' j' return sumbool (FS n i' = FS n j') (FS n i' = FS n j' -> False) with | left Heq => left (eq_congruence (FS n) i' j' Heq) | right Hne => right (fun Heq : FS n i' = FS n j' => Hne (FS_eq_FS_elim n i' j' Heq)) end)
   .
 
   Definition FinSet_eq_dec : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, {i1 = i2} + {i1 <> i2} :=
@@ -247,13 +249,10 @@ Module MyUtilities.
 
   Definition incrFinSet {m : nat} : forall n : nat, FinSet m -> FinSet (n + m) :=
     fix incrFinSet_fix (n : nat) {struct n} : FinSet m -> FinSet (n + m) :=
-    match n as n0 return FinSet m -> FinSet (n0 + m) with
-    | O =>
-      fun i : FinSet m =>
-      i
-    | S n' =>
-      fun i : FinSet m =>
-      FS (n' + m) (incrFinSet_fix n' i)
+    fun i : FinSet m =>
+    match n as n0 return FinSet (n0 + m) with
+    | O => i
+    | S n' => FS (n' + m) (incrFinSet_fix n' i)
     end
   .
 

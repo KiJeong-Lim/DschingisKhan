@@ -191,15 +191,13 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Proof with eauto with *.
     induction X as [children1 childtrees1 IH].
     intros [children2 childtrees2] H.
-    split.
-    - intros child1.
-      assert (H0 : elem (childtrees1 child1) (RootNode children1 childtrees1)) by apply elem_intro.
-      destruct (proj1 (H (childtrees1 child1)) H0) as [key H1].
+    split; intros child.
+    - assert (claim1 : elem (childtrees1 child) (RootNode children1 childtrees1)) by apply elem_intro.
+      destruct (proj1 (H (childtrees1 child)) claim1) as [key H0].
       simpl in *.
       exists key...
-    - intros child2.
-      assert (H0 : elem (childtrees2 child2) (RootNode children2 childtrees2)) by apply elem_intro.
-      destruct (proj2 (H (childtrees2 child2)) H0) as [key H2].
+    - assert (claim2 : elem (childtrees2 child) (RootNode children2 childtrees2)) by apply elem_intro.
+      destruct (proj2 (H (childtrees2 child)) claim2) as [key H0].
       simpl in *.
       exists key...
   Qed.
@@ -248,11 +246,9 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Proof with eauto with *.
     assert (claim1 : forall X : AczelSet, forall Y : AczelSet, (subseteq X Y /\ subseteq Y X) <-> (forall Z : AczelSet, elem Z X <-> elem Z Y)) by firstorder.
     intros x1 x2.
-    split; unfold relation_conjunction, flip, predicate_intersection, pointwise_extension.
-    - intros H.
-      apply claim1...
-    - intros H...
-      apply ext_eq_iff, claim1...
+    split; unfold relation_conjunction, flip, predicate_intersection, pointwise_extension; intros H.
+    - apply claim1...
+    - apply ext_eq_iff, claim1...
   Qed.
 
   Global Instance AczelSet_isPoset : isPoset AczelSet :=
