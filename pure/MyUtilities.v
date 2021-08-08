@@ -260,16 +260,63 @@ Module MyUtilities.
 
   End FinSet_methods.
 
-  Section FinSet_properties.
+  Section FinSet_facts.
 
-  End FinSet_properties.
+  Definition mkFinSet_ext : forall n : nat, forall i : nat, forall Hle1 : i < n, forall Hle2 : i < n, mkFinSet n i Hle1 = mkFinSet n i Hle2 :=
+    fix mkFinSet_ext_fix (n : nat) {struct n} : forall i : nat, forall Hle1 : i < n, forall Hle2 : i < n, mkFinSet n i Hle1 = mkFinSet n i Hle2 :=
+    match n as n0 return forall i : nat, forall Hle1 : i < n0, forall Hle2 : i < n0, mkFinSet n0 i Hle1 = mkFinSet n0 i Hle2 with
+    | O =>
+      fun i : nat =>
+      fun Hle1 : i < O =>
+      lt_elim_n_lt_0 i Hle1
+    | S n' =>
+      fun i : nat =>
+      match i as i0 return forall Hle1 : i0 < S n', forall Hle2 : i0 < S n', mkFinSet (S n') i0 Hle1 = mkFinSet (S n') i0 Hle2 with
+      | O =>
+        fun Hle1 : O < S n' =>
+        fun Hle2 : O < S n' =>
+        eq_reflexivity (FZ n')
+      | S i' =>
+        fun Hle1 : S i' < S n' =>
+        fun Hle2 : S i' < S n' =>
+        eq_congruence (FS n') (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hle1)) (mkFinSet n' i' (lt_elim_S_n_lt_S_m i' n' Hle2)) (mkFinSet_ext_fix n' i' (lt_elim_S_n_lt_S_m i' n' Hle1) (lt_elim_S_n_lt_S_m i' n' Hle2))
+      end
+    end
+  .
+
+  Definition mkFinSet_runFinSet {n : nat} :
+    forall i : FinSet n,
+    mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)) = i.
+  Proof.
+    induction i as [| n i IH].
+    - reflexivity.
+    - transitivity (FS n (mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)))).
+      + simpl.
+        destruct (runFinSet n i) as [m Hlt].
+        simpl in *.
+        assert (Heq := mkFinSet_ext n m (lt_elim_S_n_lt_S_m m n (lt_intro_S_m_lt_S_n m n Hlt)) Hlt).
+        congruence.
+      + congruence.
+  Defined.
+
+  End FinSet_facts.
 
   End FinSetTheory.
 
+  Lemma imply_and_or2 :
+    forall P : Prop,
+    forall Q : Prop,
+    forall R : Prop,
+    (P -> Q) ->
+    (P \/ R) -> 
+    (Q \/ R).
+  Proof with tauto.
+    intros P Q R...
+  Qed.
+
   Lemma strong_induction (P : nat -> Prop) :
     (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
-    forall l : nat,
-    P l.
+    (forall l : nat, P l).
   Proof with eauto.
     intros ind_claim l.
     apply ind_claim.
@@ -611,7 +658,7 @@ Module FUN_FACT.
 
   Section CLASSICAL_EQUALITY.
 
-  Hypothesis CEQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis EQ_EQ_RECT : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Section Axiom_K.
 
@@ -629,7 +676,7 @@ Module FUN_FACT.
     intros phi phi_eq_val eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_eq_val.
-    - rewrite (CEQ A x (eq x) eq_val eq_val0).
+    - rewrite (EQ_EQ_RECT A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Qed.
@@ -657,7 +704,7 @@ Module FUN_FACT.
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (CEQ A x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (EQ_EQ_RECT A x B y2 H0)) eq_refl
   .
 
   End inj_pairT2.
@@ -669,6 +716,8 @@ Module FUN_FACT.
   Hypothesis EM : forall P : Prop, P \/ ~ P.
 
   Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+
+  Section ParadoxOfBerardi.
 
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
@@ -694,28 +743,18 @@ Module FUN_FACT.
     forall a : A,
     _j2 A B r (_i2 A B r a) = a.
   Proof with eauto.
-    intros [i2 j2 inv2] [i j inv] a...
+    intros [i2 j2 inv2] [i j inv]...
   Qed.
-
-  Let IF_PROP {P : Prop} (B : Prop) : P -> P -> P :=
-    fun p1 : P =>
-    fun p2 : P =>
-    match EM B with
-    | or_introl H => p1
-    | or_intror H => p2
-    end
-  .
-
-  Section ParadoxOfBerardi.
 
   Context (BOOL : Prop) (T : BOOL) (F : BOOL).
 
   Let POW : Prop -> Prop :=
     fun P : Prop =>
-    P -> BOOL
+    P ->
+    BOOL
   .
 
-  Let L1 :
+  Let COND :
     forall A : Prop,
     forall B : Prop,
     RETRACT_COND (POW A) (POW B).
@@ -723,7 +762,7 @@ Module FUN_FACT.
     intros A B.
     destruct (EM (RETRACT (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
-    - exists (fun pa : POW A => fun b : B => T) (fun pb : POW B => fun a : A => T)...
+    - exists (fun pa : POW A => fun b : B => F) (fun pb : POW B => fun a : A => F)...
   Qed.
 
   Let U : Prop :=
@@ -731,41 +770,39 @@ Module FUN_FACT.
     POW P
   .
 
-  Let f : U -> POW U :=
-    fun u : U =>
-    u U
-  .
-
-  Let g : POW U -> U :=
-    fun H : POW U =>
-    fun X : Prop =>
-    let LEFT : POW U -> POW X := _j2 (POW X) (POW U) (L1 X U) in
-    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (L1 U U) in
-    LEFT (RIGHT H)
+  Let r : POW U -> U :=
+    fun p : POW U =>
+    fun P : Prop =>
+    let LEFT : POW U -> POW P := _j2 (POW P) (POW U) (COND P U) in
+    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (COND U U) in
+    LEFT (RIGHT p)
   .
 
   Let RETRACT_POW_U_POW_U : RETRACT (POW U) (POW U) :=
-    {| _i := fun x : POW U => x; _j := fun x : POW U => x; _inv := @eq_refl (POW U) |}
+    {| _i := fun p : POW U => p; _j := fun p : POW U => p; _inv := @eq_refl (POW U) |}
   .
 
   Let NOT : BOOL -> BOOL :=
     fun b : BOOL =>
-    IF_PROP (b = T) F T
+    match (EM (b = T)) with
+    | or_introl H => F
+    | or_intror H => T
+    end
   .
 
   Let R : U :=
-    g (fun u : U => NOT (u U u))
+    r (fun u : U => NOT (u U u))
   .
 
   Let RUSSEL : BOOL :=
     R U R
   .
 
-  Let PARADOX_OF_BERARDI :
+  Let BERARDI_PARADOX :
     RUSSEL = NOT RUSSEL.
   Proof with eauto.
-    set (Apply := fun P : U -> BOOL => fun u : U => P u).
-    enough (claim1 : RUSSEL = Apply (fun u : U => NOT (u U u)) R)...
+    set (app := fun p : POW U => fun u : U => p u).
+    enough (claim1 : RUSSEL = app (fun u : U => NOT (u U u)) R)...
     replace (fun u : U => NOT (u U u)) with (R U)...
   Qed.
 
@@ -773,11 +810,11 @@ Module FUN_FACT.
     T = F.
   Proof with tauto.
     destruct (EM (RUSSEL = T)) as [H | H].
-    - assert (claim1 : T = NOT T) by (rewrite <- H; exact PARADOX_OF_BERARDI).
-      unfold NOT, IF_PROP in claim1.
+    - assert (claim1 : T = NOT T) by (rewrite <- H; exact BERARDI_PARADOX).
+      unfold NOT in claim1.
       destruct (EM (T = T))...
-    - assert (claim1 : NOT RUSSEL <> T) by (rewrite <- PARADOX_OF_BERARDI; exact H).
-      unfold NOT, IF_PROP in claim1. 
+    - assert (claim1 : NOT RUSSEL <> T) by (rewrite <- BERARDI_PARADOX; exact H).
+      unfold NOT in claim1. 
       destruct (EM (RUSSEL = T))...
   Qed.
 
@@ -800,7 +837,7 @@ Module FUN_FACT.
   Variable P : Prop.
 
   Lemma NNPP :
-    ~ ~ P ->
+    (~ (~ P)) ->
     P.
   Proof with tauto.
     destruct (classic P)...
@@ -816,35 +853,35 @@ Module FUN_FACT.
   Qed.
 
   Lemma not_imply_elim :
-    ~ (P -> Q) ->
+    (~ (P -> Q)) ->
     P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma not_imply_elim2 :
-    ~ (P -> Q) ->
-    ~ Q.
+    (~ (P -> Q)) ->
+    (~ Q).
   Proof with tauto.
     destruct (classic Q)...
   Qed.
 
   Lemma imply_to_or :
     (P -> Q) ->
-    ~ P \/ Q.
+    ((~ P) \/ Q).
   Proof with tauto.
-    destruct (classic P)...
+    destruct (classic Q)...
   Qed.
 
   Lemma imply_to_and :
-    ~ (P -> Q) ->
-    P /\ ~ Q.
+    (~ (P -> Q)) ->
+    (P /\ (~ Q)).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma or_to_imply :
-    ~ P \/ Q ->
+    ((~ P) \/ Q) ->
     P ->
     Q.
   Proof with tauto.
@@ -852,29 +889,29 @@ Module FUN_FACT.
   Qed.
 
   Lemma not_and_or :
-    ~ (P /\ Q) ->
-    ~ P \/ ~ Q.
+    (~ (P /\ Q)) ->
+    ((~ P) \/ (~ Q)).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma or_not_and :
-    ~ P \/ ~ Q ->
-    ~ (P /\ Q).
+    ((~ P) \/ (~ Q)) ->
+    (~ (P /\ Q)).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma not_or_and :
-    ~ (P \/ Q) ->
-    ~ P /\ ~ Q.
+    (~ (P \/ Q)) ->
+    ((~ P) /\ (~ Q)).
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma and_not_or :
-    ~ P /\ ~ Q ->
-    ~ (P \/ Q).
+    ((~ P) /\ (~ Q)) ->
+    (~ (P \/ Q)).
   Proof with tauto.
     destruct (classic P)...
   Qed.
@@ -887,16 +924,6 @@ Module FUN_FACT.
     destruct (classic Q)...
   Qed.
 
-  Variable R : Prop.
-
-  Lemma imply_and_or2 :
-    (P -> Q) ->
-    P \/ R ->
-    Q \/ R.
-  Proof with tauto.
-    destruct (classic P)...
-  Qed.
-
   End Classical_Prop.
 
   Section Classical_Pred_Type.
@@ -907,52 +934,50 @@ Module FUN_FACT.
 
   Context (U : Type) (P : U -> Prop).
 
-  Let forall_exists_False : ~ (forall n : U, P n) -> ~ (exists n : U, ~ P n) -> False :=
+  Let forall_exists_False : (~ (forall n : U, P n)) -> (~ (exists n : U, (~ P n))) -> False :=
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
-    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (@ex_intro U (fun n' : U => ~ P n') n H1)))
+    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n_ : U => ~ P n_) n H1)))
   .
 
   Lemma not_all_not_ex :
-    ~ (forall n : U, ~ P n) ->
-    exists n : U, P n.
+    (~ (forall n : U, ~ P n)) ->
+    (exists n : U, P n).
   Proof with firstorder.
     destruct (classic (exists n : U, P n))...
   Qed.
 
   Lemma not_all_ex_not :
-    ~ (forall n : U, P n) ->
-    exists n : U, ~ P n.
+    (~ (forall n : U, P n)) ->
+    (exists n : U, (~ P n)).
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
   Lemma not_ex_all_not :
-    ~ (exists n : U, P n) ->
-    forall n : U,
-    ~ P n.
+    (~ (exists n : U, P n)) ->
+    (forall n : U, (~ P n)).
   Proof with firstorder.
     destruct (classic (forall n : U, ~ P n))...
   Qed.
 
   Lemma not_ex_not_all :
-    ~ (exists n : U, ~ P n) ->
-    forall n : U,
-    P n.
+    (~ (exists n : U, (~ P n))) ->
+    (forall n : U, P n).
   Proof with firstorder.
     destruct (classic (forall n : U, P n))...
   Qed.
 
   Lemma ex_not_not_all :
-    (exists n : U, ~ P n) ->
-    ~ (forall n : U, P n).
+    (exists n : U, (~ P n)) ->
+    (~ (forall n : U, P n)).
   Proof with firstorder.
     destruct (classic (exists n : U, ~ P n))...
   Qed.
 
   Lemma all_not_not_ex :
-    (forall n : U, ~ P n) ->
-    ~ (exists n : U, P n).
+    (forall n : U, (~ P n)) ->
+    (~ (exists n : U, P n)).
   Proof with firstorder.
     destruct (classic (forall n : U, ~ P n))...
   Qed.

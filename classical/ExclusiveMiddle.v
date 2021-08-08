@@ -78,10 +78,6 @@ Module ClassicalLogic.
     FUN_FACT.imply_and_or __internal_axiom1__
   .
 
-  Definition imply_and_or2 : forall P : Prop, forall Q : Prop, forall R : Prop, (P -> Q) -> P \/ R -> Q \/ R :=
-    FUN_FACT.imply_and_or2 __internal_axiom1__
-  .
-
   Definition not_all_not_ex : forall U : Type, forall P : U -> Prop, ~ (forall n : U, ~ P n) -> exists n : U, P n :=
     FUN_FACT.not_all_not_ex __internal_axiom1__
   .
