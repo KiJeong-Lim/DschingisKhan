@@ -69,9 +69,7 @@ Module MyUtilities.
     False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
   .
 
-  Definition guarantee1_S_pred_n_eq_n : forall m : nat, forall n : nat, S m <= n -> S (pred n) = n :=
-    fun m : nat =>
-    fun n : nat =>
+  Definition guarantee1_S_pred_n_eq_n {m : nat} {n : nat} : S m <= n -> S (pred n) = n :=
     fun H : S m <= n =>
     match H in le _ n0 return S (pred n0) = n0 with
     | le_n _ => eq_reflexivity (S m)
@@ -79,19 +77,97 @@ Module MyUtilities.
     end
   .
 
-  Let lt_elim_S_n_lt_S_m_aux1 : forall n1 : nat, forall n2 : nat, S n1 <= n2 -> n1 <= pred n2 :=
+  Definition le_elim_S_n_le_m : forall n : nat, forall m : nat, S n <= m -> n <= pred m :=
     fun n : nat =>
-    fix lt_elim_S_n_lt_S_m_aux1_fix (m : nat) (H : S n <= m) {struct H} : n <= pred m :=
+    fix le_elim_S_n_le_m_fix (m : nat) (H : S n <= m) {struct H} : n <= pred m :=
     match H in le _ m0 return n <= pred m0 with
     | le_n _ => le_n n
-    | le_S _ m' H' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (lt_elim_S_n_lt_S_m_aux1_fix m' H')) m' (guarantee1_S_pred_n_eq_n n m' H')
+    | le_S _ m' H' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (le_elim_S_n_le_m_fix m' H')) m' (guarantee1_S_pred_n_eq_n H')
     end
+  .
+
+  Let le_transitivity_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
+    fix le_transitivity_aux1_fix (n1 : nat) (n2 : nat) (Hle1 : le n1 n2) {struct Hle1} : forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
+    match Hle1 in le _ m return forall n3 : nat, m <= n3 -> n1 <= n3 with
+    | le_n _ =>
+      fun n3 : nat =>
+      fun Hle2 : n1 <= n3 =>
+      Hle2
+    | le_S _ n2' Hle1' =>
+      fun n3 : nat =>
+      fun Hle2 : S n2' <= n3 =>
+      let claim1 : n2' <= pred n3 := le_elim_S_n_le_m n2' n3 Hle2 in
+      let claim2 : S (pred n3) = n3 := guarantee1_S_pred_n_eq_n Hle2 in
+      let claim3 : n2' <= S (pred n3) := le_S n2' (pred n3) claim1 in
+      let claim4 : n2' <= n3 := eq_ind (S (pred n3)) (fun m : nat => n2' <= m) claim3 n3 claim2 in
+      le_transitivity_aux1_fix n1 n2' Hle1' n3 claim4
+    end
+  .
+
+  Definition le_transitivity : forall n1 : nat, forall n2 : nat, forall n3 : nat, n1 <= n2 -> n2 <= n3 -> n1 <= n3 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun n3 : nat =>
+    fun Hle1 : n1 <= n2 =>
+    fun Hle2 : n2 <= n3 =>
+    le_transitivity_aux1 n1 n2 Hle1 n3 Hle2
+  .
+
+  Definition le_intro_0_le_n : forall n : nat, 0 <= n :=
+    fix le_intro_0_le_n_fix (n : nat) {struct n} : 0 <= n :=
+    match n as n0 return 0 <= n0 with
+    | O => le_n O
+    | S n' => le_S O n' (le_intro_0_le_n_fix n')
+    end
+  .
+
+  Definition le_intro_S_n_le_S_m : forall n : nat, forall m : nat, n <= m -> S n <= S m :=
+    fun n : nat =>
+    fix le_intro_S_n_le_S_m_fix (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
+    match Hle in le _ m0 return le (S n) (S m0) with
+    | le_n _ => le_n (S n)
+    | le_S _ m' H' => le_S (S n) (S m') (le_intro_S_n_le_S_m_fix m' H')
+    end
+  .
+
+  Definition n1_le_max_n1_n2 : forall n1 : nat, forall n2 : nat, n1 <= max n1 n2 :=
+    fix n1_le_max_n1_n2_fix (n : nat) {struct n} : forall m : nat, n <= max n m :=
+    match n as n0 return forall m : nat, n0 <= max n0 m with
+    | O => le_intro_0_le_n
+    | S n' =>
+      fun m : nat =>
+      match m as m0 return S n' <= max (S n') m0 with
+      | O => le_n (S n')
+      | S m' => le_intro_S_n_le_S_m n' (max n' m') (n1_le_max_n1_n2_fix n' m')
+      end
+    end
+  .
+
+  Definition n2_le_max_n1_n2 : forall n1 : nat, forall n2 : nat, n2 <= max n1 n2 :=
+    fix n2_le_max_n1_n2_fix (n : nat) {struct n} : forall m : nat, m <= max n m :=
+    match n as n0 return forall m : nat, m <= max n0 m with
+    | O => le_n
+    | S n' =>
+      fun m : nat =>
+      match m as m0 return m0 <= max (S n') m0 with
+      | O => le_intro_0_le_n (S n')
+      | S m' => le_intro_S_n_le_S_m m' (max n' m') (n2_le_max_n1_n2_fix n' m')
+      end
+    end
+  .
+
+  Definition le_elim_max_n1_n2_le_m : forall n1 : nat, forall n2 : nat, forall m : nat, max n1 n2 <= m -> n1 <= m /\ n2 <= m :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun m : nat =>
+    fun Hle : max n1 n2 <= m =>
+    conj (le_transitivity n1 (max n1 n2) m (n1_le_max_n1_n2 n1 n2) Hle) (le_transitivity n2 (max n1 n2) m (n2_le_max_n1_n2 n1 n2) Hle)
   .
 
   Definition lt_elim_S_n_lt_S_m : forall n : nat, forall m : nat, S n < S m -> n < m :=
     fun n1 : nat =>
     fun n2 : nat =>
-    lt_elim_S_n_lt_S_m_aux1 (S n1) (S n2)
+    le_elim_S_n_le_m (S n1) (S n2)
   .
 
   Definition lt_intro_0_lt_S_n : forall n : nat, 0 < S n :=
@@ -102,19 +178,10 @@ Module MyUtilities.
     end
   .
 
-  Let lt_intro_S_m_lt_S_n_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> S n1 <= S n2 :=
-    fun n : nat =>
-    fix lt_intro_S_n_lt_S_m_aux1_fix (m : nat) (Hle : n <= m) {struct Hle} : S n <= S m :=
-    match Hle in le _ m0 return le (S n) (S m0) with
-    | le_n _ => le_n (S n)
-    | le_S _ m' H' => le_S (S n) (S m') (lt_intro_S_n_lt_S_m_aux1_fix m' H')
-    end
-  .
-
   Definition lt_intro_S_m_lt_S_n : forall m : nat, forall n : nat, m < n -> S m < S n :=
     fun n1 : nat =>
     fun n2 : nat =>
-    lt_intro_S_m_lt_S_n_aux1 (S n1) n2
+    le_intro_S_n_le_S_m (S n1) n2
   .
 
   End BASIC_ARITH.

@@ -5,10 +5,13 @@ pure/MyStructures.v
 pure/DomainTheory.v
 pure/UntypedLambdaCalculus.v
 pure/SetTheory.v
+pure/CBA.v
+pure/MyCoin.v
 
 classical/ExclusiveMiddle.v
 classical/DomainTheory.v
 
-projects/MyCoin.v
-projects/MyGIT.v
-projects/MyProp.v
+projects/PropositionalLogic/Basics.v
+projects/PropositionalLogic.v
+projects/SmullyanGIT/Chapter1.v
+projects/SmullyanGIT.v
