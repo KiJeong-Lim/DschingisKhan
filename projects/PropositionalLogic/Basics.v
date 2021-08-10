@@ -6,8 +6,6 @@ Module Syntax.
 
   Import MyUtilities MyEnsemble.
 
-  Global Declare Custom Entry pl_formula_scope.
-
   Definition pvar : Set := 
     nat
   .
@@ -21,26 +19,6 @@ Module Syntax.
   | ImplicationF : forall p1 : formula, forall p2 : formula, formula
   | BiconditionalF : forall p1 : formula, forall p2 : formula, formula
   .
-
-  Global Notation " $ p $ " := p (p custom pl_formula_scope at level 3).
-
-  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_scope at level 0, only parsing).
-
-  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_scope at level 0, no associativity, only parsing).
-
-  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_scope at level 1, right associativity, only parsing).
-
-  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_scope at level 1, right associativity, only parsing).
-
-  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
-
-  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
-
-  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_scope at level 2, no associativity, only parsing).
-
-  Global Notation " x " := x (in custom pl_formula_scope at level 0, x ident).
-
-  Global Notation " ( p ) " := p (in custom pl_formula_scope, p at level 3).
 
   Definition eq_formula_dec :
     forall p1 : formula,
@@ -196,6 +174,34 @@ Module Syntax.
 
 End Syntax.
 
+Module FormulaNotations.
+
+  Import Syntax.
+
+  Global Declare Custom Entry pl_formula_scope.
+
+  Global Notation " $$ p $$ " := p (p custom pl_formula_scope at level 3, only parsing).
+
+  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_scope at level 0, only parsing).
+
+  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_scope at level 0, no associativity, only parsing).
+
+  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_scope at level 1, right associativity, only parsing).
+
+  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_scope at level 1, right associativity, only parsing).
+
+  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
+
+  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
+
+  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_scope at level 2, no associativity, only parsing).
+
+  Global Notation " x " := x (in custom pl_formula_scope at level 0, x ident).
+
+  Global Notation " ( p ) " := p (in custom pl_formula_scope, p at level 3).
+
+End FormulaNotations.
+
 Module Semantics.
 
   Import MyEnsemble Syntax.
@@ -226,12 +232,12 @@ Module Semantics.
   .
 
   Global Notation " hs |= c " := (forall v : env, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
-  
+
 End Semantics.
 
 Module InferenceRules.
 
-  Import MyEnsemble MyEnsembleNova Syntax.
+  Import MyEnsemble MyEnsembleNova Syntax FormulaNotations.
 
   Inductive infers : ensemble formula -> formula -> Prop :=
   | ByAssumption {hs : ensemble formula} : forall h : formula, member h hs -> infers hs h
@@ -256,11 +262,11 @@ Module InferenceRules.
 
   Lemma Law_of_Exclusive_Middle :
     forall p : formula,
-    \emptyset |- $p \/ ~ p$.
+    \emptyset |- $$p \/ ~ p$$.
   Proof with eauto with *.
     intros p.
-    apply NegationE, (ContradictionI $p \/ ~ p$).
-    - apply DisjunctionI2, NegationI, (ContradictionI $p \/ ~ p$).
+    apply NegationE, (ContradictionI $$p \/ ~ p$$).
+    - apply DisjunctionI2, NegationI, (ContradictionI $$p \/ ~ p$$).
       + apply DisjunctionI1, ByAssumption...
       + apply ByAssumption, in_insert_iff, or_intror...
     - apply ByAssumption...
