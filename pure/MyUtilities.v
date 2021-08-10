@@ -721,6 +721,31 @@ Module MyUtilities.
     end
   .
 
+  Global Ltac repeat_rewrite :=
+    simpl in *;
+    first
+    [ rewrite in_app_iff in *
+    | rewrite in_remove_iff in *
+    | rewrite orb_false_iff in *
+    | rewrite forallb_app in *
+    | rewrite andb_true_iff in *
+    | rewrite orb_true_iff in *
+    | rewrite negb_true_iff in *
+    | rewrite andb_false_iff in *
+    | rewrite negb_false_iff in *
+    | rewrite Nat.eqb_eq in *
+    | rewrite Nat.eqb_neq in *
+    | rewrite forallb_true_iff in *
+    | rewrite in_map_iff in *
+    | rewrite not_true_iff_false in *
+    | rewrite not_false_iff_true in *
+    ]
+  .
+
+  Global Ltac auto_rewrite :=
+    repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
+  .
+
 End MyUtilities.
 
 Module MyUniverses.
