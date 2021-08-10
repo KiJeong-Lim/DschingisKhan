@@ -13,20 +13,10 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Global Create HintDb aczel_hint.
 
   Inductive Tree : SuperiorUniverse :=
-  | RootNode (children : InferiorUniverse) (childtrees : children -> Tree) : Tree
-  .
-
-  Definition childrenOf : Tree -> InferiorUniverse :=
-    fun t : Tree =>
-    match t return InferiorUniverse with
-    | RootNode children _ => children
-    end
-  .
-
-  Definition childTreeOf {t : Tree} : childrenOf t -> Tree :=
-    match t as t0 return (match t0 return InferiorUniverse with | RootNode children _ => children end) -> Tree with
-    | RootNode _ childtrees => childtrees
-    end
+    RootNode 
+    { childrenOf : InferiorUniverse
+    ; childTreeOf : childrenOf -> Tree
+    }
   .
 
   Definition AczelSet : SuperiorUniverse :=
@@ -66,11 +56,9 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros [children2 childtrees2] [H H0].
     split.
     - intros child2.
-      destruct (H0 child2) as [child1 H1].
-      exists child1...
+      destruct (H0 child2) as [child1 H1]...
     - intros child1.
-      destruct (H child1) as [child2 H1].
-      exists child2...
+      destruct (H child1) as [child2 H1]...
   Qed.
 
   Global Hint Resolve ext_eq_sym : aczel_hint.
@@ -90,12 +78,10 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     split.
     - intros child1.
       destruct (H child1) as [child2 H3].
-      destruct (H1 child2) as [child3 H4].
-      exists child3...
+      destruct (H1 child2) as [child3 H4]...
     - intros child3.
       destruct (H2 child3) as [child2 H3].
-      destruct (H0 child2) as [child1 H4].
-      exists child1...
+      destruct (H0 child2) as [child1 H4]...
   Qed.
 
   Global Hint Resolve ext_eq_trans : aczel_hint.
@@ -128,8 +114,10 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Definition elem : AczelSet -> AczelSet -> Prop :=
     fun X : AczelSet =>
     fun Y : AczelSet =>
-    exists key : childrenOf Y, ext_eq X (childTreeOf key)
+    exists key : childrenOf Y, ext_eq X (childTreeOf Y key)
   .
+
+  Global Hint Unfold elem : aczel_hint.
 
   Lemma eq_in_in :
     forall X : AczelSet,
@@ -139,8 +127,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     elem Y Z ->
     elem X Z.
   Proof with eauto with *.
-    intros X Y Z H [child_Z H0].
-    exists child_Z...
+    intros X Y Z H [child_Z H0]...
   Qed.
 
   Global Hint Resolve eq_in_in : aczel_hint.
@@ -157,16 +144,14 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     revert Z X Y.
     induction Z as [children3 childtrees3 IH].
     intros X [children2 childtrees2] [key H] [H0 H1].
-    simpl in *.
-    destruct (H0 key) as [new_key H2].
-    exists new_key...
+    destruct (H0 key) as [new_key H2]...
   Qed.
 
   Global Hint Resolve in_eq_in : aczel_hint.
 
   Add Parametric Morphism :
     elem with signature (ext_eq ==> ext_eq ==> iff)
-  as elem_ext_eq.
+  as elem_with_ext_eq_ext_eq_iff.
   Proof with eauto with *.
     intros x1 x2 H y1 y2 H0.
     transitivity (elem x1 y2); split...
@@ -175,10 +160,9 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Lemma elem_intro :
     forall X : AczelSet,
     forall child_X : childrenOf X,
-    elem (childTreeOf child_X) X.
+    elem (childTreeOf X child_X) X.
   Proof with eauto with *.
-    intros X child_X.
-    exists child_X...
+    intros X child_X...
   Qed.
 
   Global Hint Resolve elem_intro : aczel_hint.
@@ -193,13 +177,9 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros [children2 childtrees2] H.
     split; intros child.
     - assert (claim1 : elem (childtrees1 child) (RootNode children1 childtrees1)) by apply elem_intro.
-      destruct (proj1 (H (childtrees1 child)) claim1) as [key H0].
-      simpl in *.
-      exists key...
+      destruct (proj1 (H (childtrees1 child)) claim1) as [key H0]...
     - assert (claim2 : elem (childtrees2 child) (RootNode children2 childtrees2)) by apply elem_intro.
-      destruct (proj2 (H (childtrees2 child)) claim2) as [key H0].
-      simpl in *.
-      exists key...
+      destruct (proj2 (H (childtrees2 child)) claim2) as [key H0]...
   Qed.
 
   Global Hint Resolve ext_eq_intro : aczel_hint.
@@ -261,7 +241,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Add Parametric Morphism :
     subseteq with signature (ext_eq ==> ext_eq ==> iff)
-  as subseteq_ext_eq.
+  as subseteq_with_ext_eq_ext_eq_iff.
   Proof with eauto with *.
     intros x1 x2 H y1 y2 H0.
     transitivity (subseteq x1 y2); split...
@@ -295,8 +275,8 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Definition filter : AczelSet -> (AczelSet -> Prop) -> AczelSet :=
     fun X : AczelSet =>
     fun cond : AczelSet -> Prop =>
-    let children : InferiorUniverse := {child_X : childrenOf X | cond (childTreeOf child_X)} in
-    let childtrees : children -> Tree := fun x : children => childTreeOf (proj1_sig x) in
+    let children : InferiorUniverse := {child_X : childrenOf X | cond (childTreeOf X child_X)} in
+    let childtrees : children -> Tree := fun x : children => childTreeOf X (proj1_sig x) in
     RootNode children childtrees
   .
 
@@ -307,12 +287,10 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     elem x (filter X phi) <-> elem x X /\ phi x.
   Proof with eauto with *.
     intros ext_cong X x.
-    split.
-    - intros [[key H] H0].
-      simpl in *...
-    - intros [[key H] H0].
-      assert (H1 := ext_cong x H0 (childTreeOf key) H).
-      exists (exist _ key H1)...
+    split; intros [[key H] H0].
+    - simpl in *...
+    - assert (H1 := ext_cong x H0 (childTreeOf X key) H).
+      exists (exist (fun key_ : childrenOf X => phi (childTreeOf X key_)) key H1)...
   Qed.
 
   Global Hint Resolve in_filter_iff : aczel_hint.
@@ -330,10 +308,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     elem x (fromList Xs) <-> (exists i : FinSet (length Xs), ext_eq x (safe_nth Xs i)).
   Proof with eauto with *.
     intros Xs x.
-    split.
-    - intros [key H]...
-    - intros [i H].
-      exists i...
+    split; [intros [key H] | intros [i H]]...
   Qed.
 
   Global Hint Resolve fromList : aczel_hint.
@@ -341,7 +316,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Definition power : AczelSet -> AczelSet :=
     fun X : AczelSet =>
     let children : InferiorUniverse := childrenOf X -> Prop in
-    let childtrees : children -> AczelSet := fun phi : children => RootNode {child_X : childrenOf X | phi child_X} (fun x : @sig (childrenOf X) phi => childTreeOf (proj1_sig x)) in
+    let childtrees : children -> AczelSet := fun phi : children => RootNode {child_X : childrenOf X | phi child_X} (fun x : @sig (childrenOf X) phi => childTreeOf X (proj1_sig x)) in
     RootNode children childtrees
   .
 
@@ -353,11 +328,11 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros X x.
     split.
     - intros [child_X H].
-      enough (claim1 : subseteq (childTreeOf child_X) X)...
+      enough (claim1 : subseteq (childTreeOf (power X) child_X) X)...
       intros z [key H0].
       exists (proj1_sig key)...
     - intros H.
-      exists (fun child_X : childrenOf X => elem (childTreeOf child_X) x).
+      exists (fun child_X : childrenOf X => elem (childTreeOf X child_X) x).
       simpl.
       destruct x as [children childtrees].
       simpl in *.
@@ -365,11 +340,8 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
       + intros child1.
         assert (H0 := elem_intro (RootNode children childtrees) child1).
         destruct (H (childtrees child1) H0) as [child_X H1].
-        assert (H2 : elem (childTreeOf child_X) (RootNode children childtrees))...
-        exists (exist _ child_X H2)...
-      + intros [child_X [key H0]].
-        simpl in *.
-        exists key...
+        enough (H2 : elem (childTreeOf X child_X) (RootNode children childtrees)) by now exists (exist _ child_X H2)...
+      + intros [child_X [key H0]]...
   Qed.
 
   Global Hint Resolve in_power_iff : aczel_hint.
@@ -378,7 +350,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     fun I : InferiorUniverse =>
     fun X_i : I -> Tree =>
     let children : InferiorUniverse := {i : I & childrenOf (X_i i)} in
-    let childtrees : children -> Tree := fun child : children => @childTreeOf (X_i (projT1 child)) (projT2 child) in
+    let childtrees : children -> Tree := fun child : children => childTreeOf (X_i (projT1 child)) (projT2 child) in
     RootNode children childtrees
   .
 
@@ -390,9 +362,8 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
   Proof with eauto with *.
     intros I X_i x.
     split.
-    - intros [[i child_i] H0].
-      simpl in *.
-      exists i...
+    - intros [[i child_i] H].
+      simpl in *...
     - intros [i [child_i H]].
       exists (existT _ i child_i)...
   Qed.
@@ -412,9 +383,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros Xs x.
     unfold unions.
     rewrite in_unions'_iff.
-    split.
-    - intros [i [X_i H]]...
-    - intros [X_i [[child_i H] [i H0]]]...
+    split; [intros [i [X_i H]] | intros [X_i [[child_i H] [i H0]]]]...
   Qed.
 
   Global Hint Resolve in_unions_iff : aczel_hint.
@@ -465,12 +434,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     isOrdinal beta.
   Proof with eauto with *.
     intros alpha H.
-    inversion H; subst.
-    intros beta H2.
-    constructor.
-    - apply H1...
-    - intros gamma H3.
-      apply H1, (H0 beta)...
+    inversion H; subst...
   Qed.
 
   Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
@@ -487,10 +451,9 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros H.
     apply ind_claim...
     intros beta H0.
-    assert (H1 : isOrdinal beta) by now apply (isOrdinal_member_isOrdinal (RootNode children childtrees)).
+    assert (H1 := isOrdinal_member_isOrdinal (RootNode children childtrees) H beta H0).
     destruct H0 as [key H0].
-    apply (ext_cong (childTreeOf key))...
-    apply (IH key)...
+    apply (ext_cong (childTreeOf (RootNode children childtrees) key))...
   Qed.
 
 End ConstructiveSetTheory.
