@@ -70,9 +70,9 @@ Module UntypedLamdbdaCalculus.
     subtm M N ->
     getRank M = getRank N ->
     M = N.
-  Proof with simpl in *; lia.
+  Proof with lia.
     intros M N X.
-    destruct X; intros H.
+    destruct X; simpl; intros H.
     - reflexivity.
     - assert (H0 := subtm_getRank M P1 X)...
     - assert (H0 := subtm_getRank M P2 X)...

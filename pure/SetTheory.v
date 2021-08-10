@@ -18,13 +18,13 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Definition childrenOf : Tree -> InferiorUniverse :=
     fun t : Tree =>
-    match t with
+    match t return InferiorUniverse with
     | RootNode children _ => children
     end
   .
 
   Definition childTreeOf {t : Tree} : childrenOf t -> Tree :=
-    match t with
+    match t as t0 return (match t0 return InferiorUniverse with | RootNode children _ => children end) -> Tree with
     | RootNode _ childtrees => childtrees
     end
   .
@@ -35,10 +35,10 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Definition ext_eq : AczelSet -> AczelSet -> Prop :=
     fix ext_eq_fix (t1 : Tree) {struct t1} : Tree -> Prop :=
-    match t1 with
+    match t1 return Tree -> Prop with
     | RootNode children1 childtrees1 =>
       fun t2 : Tree =>
-      match t2 with
+      match t2 return Prop with
       | RootNode children2 childtrees2 =>
         let goal1 : Prop := forall child1 : children1, exists child2 : children2, ext_eq_fix (childtrees1 child1) (childtrees2 child2) in
         let goal2 : Prop := forall child2 : children2, exists child1 : children1, ext_eq_fix (childtrees1 child1) (childtrees2 child2) in
