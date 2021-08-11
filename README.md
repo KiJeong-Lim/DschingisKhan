@@ -23,11 +23,14 @@ coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v
+coqc -Q . DschingisKhan pure/CBA.v
+coqc -Q . DschingisKhan pure/MyCoin.v
 coqc -Q . DschingisKhan classical/ExclusiveMiddle.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
-coqc -Q . DschingisKhan projects/MyCoin.v
-coqc -Q . DschingisKhan projects/MyGIT.v
-coqc -Q . DschingisKhan projects/MyProp.v
+coqc -Q . DschingisKhan projects/PropositionalLogic/Basics.v
+coqc -Q . DschingisKhan projects/PropositionalLogic.v
+coqc -Q . DschingisKhan projects/SmullyanGIT/Chapter1.v
+coqc -Q . DschingisKhan projects/SmullyanGIT.v
 ```
 
 ## THANKS TO
