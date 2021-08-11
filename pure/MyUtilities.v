@@ -313,7 +313,7 @@ Module MyUtilities.
   Proof.
     intros n m H_EQ.
     rewrite (calc_eqnat_is n n (eq_reflexivity n)).
-    apply calc_eqnat_is.
+    exact (calc_eqnat_is n m H_EQ).
   Qed.
 
   Theorem eqnat_proof_irrelevance :
@@ -339,7 +339,7 @@ Module MyUtilities.
     exact (eqnat_proof_irrelevance n n H_EQ (eq_reflexivity n)).
   Qed.
 
-  Lemma lenat_proof_irrelevance :
+  Theorem lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall H_LE1 : n1 <= n2,
@@ -348,7 +348,7 @@ Module MyUtilities.
   Proof.
     refine (
       fun n1 : nat =>
-      fix lenat_K_fix (n2 : nat) (H_LE1 : n1 <= n2) {struct H_LE1} : forall H_LE2 : n1 <= n2, H_LE1 = H_LE2 :=
+      fix lenat_proof_irrelevance_fix (n2 : nat) (H_LE1 : n1 <= n2) {struct H_LE1} : forall H_LE2 : n1 <= n2, H_LE1 = H_LE2 :=
       match H_LE1 as Hle in le _ m1 return forall H_LE2 : n1 <= m1, Hle = H_LE2 with
       | le_n _ =>
         fun Hle2 : n1 <= n1 =>
@@ -379,10 +379,10 @@ Module MyUtilities.
         | eq_refl => _
         end H_EQ H_LE1'
       ).
-      intros Heq Hle1.
-      rewrite (eqnat_K (S m2') Heq).
-      apply (eq_congruence (le_S n1 m2') Hle1 H_LE2').
-      exact (lenat_K_fix m2' Hle1 H_LE2').
+      intros h_EQ h_LE1'.
+      rewrite (eqnat_K (S m2') h_EQ).
+      apply (eq_congruence (le_S n1 m2') h_LE1' H_LE2').
+      exact (lenat_proof_irrelevance_fix m2' h_LE1' H_LE2').
   Qed.
 
   End ArithProofIrrelevance.
