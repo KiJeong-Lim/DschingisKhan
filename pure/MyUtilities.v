@@ -49,7 +49,7 @@ Module MyUtilities.
 
   Global Create HintDb my_hints.
 
-  Section BASIC_ARITH.
+  Section ARITH_WITHOUT_LIA.
 
   Definition S_eq_0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
     fun n : nat =>
@@ -108,6 +108,24 @@ Module MyUtilities.
     fun Hle1 : n1 <= n2 =>
     fun Hle2 : n2 <= n3 =>
     le_transitivity_aux1 n1 n2 Hle1 n3 Hle2
+  .
+
+  Definition le_inversion (P : nat -> nat -> Prop) : forall n1 : nat, forall n2 : nat, forall Hle : n1 <= n2, (n1 = n2 -> P n2 n2) -> (forall m' : nat, n1 <= m' -> S m' = n2 -> P n1 (S m')) -> P n1 n2 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun Hle : n1 <= n2 =>
+    match Hle in le _ m return m = n2 -> (n1 = n2 -> P m m) -> (forall m' : nat, n1 <= m' -> S m' = n2 -> P n1 (S m')) -> P n1 m with
+    | le_n _ =>
+      fun Heq : n1 = n2 =>
+      fun H1 : n1 = n2 -> P n1 n1 =>
+      fun H2 : forall m' : nat, n1 <= m' -> S m' = n2 -> P n1 (S m') =>
+      H1 Heq
+    | le_S _ m' Hle' =>
+      fun Heq : S m' = n2 =>
+      fun H1 : n1 = n2 -> P (S m') (S m') =>
+      fun H2 : forall m' : nat, n1 <= m' -> S m' = n2 -> P n1 (S m') =>
+      H2 m' Hle' Heq
+    end (eq_reflexivity n2)
   .
 
   Definition le_intro_0_le_n : forall n : nat, 0 <= n :=
@@ -197,16 +215,177 @@ Module MyUtilities.
   .
 
   Definition le_lt_False : forall m : nat, forall n : nat, m <= n -> n < m -> False :=
-    fix le_lt_False_fix (m : nat) (n : nat) (Hle : m <= n) {struct Hle} : n < m -> False :=
+    fun m : nat =>
+    fix le_lt_False_fix (n : nat) (Hle : m <= n) {struct Hle} : n < m -> False :=
     match Hle in le _ n0 return n0 < m -> False with
     | le_n _ => not_n_lt_n m
     | le_S _ n' Hle' =>
       fun Hlt : S n' < m =>
-      le_lt_False_fix m n' Hle' (le_transitivity (le_S (S n') (S n') (le_n (S n'))) Hlt)
+      le_lt_False_fix n' Hle' (le_transitivity (le_S (S n') (S n') (le_n (S n'))) Hlt)
     end
   .
 
-  End BASIC_ARITH.
+  Definition strong_induction {P : nat -> Prop} : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) -> (forall l : nat, P l) :=
+    fun ACC : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) =>
+    fun n : nat =>
+    let case0 : forall m : nat, forall H : m < O, P m := fun m : nat => fun H : m < O => lt_elim_n_lt_0 m H in
+    let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> (forall m : nat, m < S n -> P m) := fun n : nat => fun IH : forall m : nat, m < n -> P m => fun m : nat => fun Hlt : m < S n => le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq))) in
+    let claim : forall m : nat, m < n -> P m := nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n in
+    ACC n claim
+  .
+
+  End ARITH_WITHOUT_LIA.
+
+  Section ArithProofIrrelevance.
+
+  Let eqnat : nat -> nat -> Prop :=
+    @eq nat
+  .
+
+  Let eq_dec_nat : forall n1 : nat, forall n2 : nat, {eqnat n1 n2} + {~ eqnat n1 n2} :=
+    fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
+    match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
+    | O =>
+      fun n2 : nat =>
+      match n2 as n return {O = n} + {O <> n} with
+      | O => left (eq_reflexivity O)
+      | S n2' => right (fun H : O = S n2' => S_eq_0_elim n2' (eq_symmetry O (S n2') H))
+      end
+    | S n1' =>
+      fun n2 : nat =>
+      match n2 as n return {S n1' = n} + {S n1' <> n} with
+      | O => right (fun H : S n1' = O => S_eq_0_elim n1' H)
+      | S n2' =>
+        match eq_dec_nat_fix n1' n2' return {S n1' = S n2'} + {S n1' <> S n2'} with
+        | left Heq => left (eq_congruence S n1' n2' Heq)
+        | right Hne => right (fun Heq : S n1' = S n2' => Hne (S_eq_S_elim n1' n2' Heq))
+        end
+      end
+    end
+  .
+
+  Definition calc_eqnat : forall n : nat, forall m : nat, eqnat n m -> eqnat n m :=
+    fun n : nat =>
+    fun m : nat =>
+    fun H_EQ : eqnat n m =>
+    match eq_dec_nat n m with
+    | left Heq => Heq
+    | right Hne => False_ind (eqnat n m) (Hne H_EQ)
+    end
+  .
+
+  Lemma calc_eqnat_is :
+    forall n : nat,
+    forall m : nat,
+    forall H_EQ : eqnat n m,
+    calc_eqnat n m H_EQ = H_EQ.
+  Proof.
+    induction n; intros m [].
+    - exact (eq_reflexivity (eq_reflexivity O)).
+    - unfold calc_eqnat in *.
+      simpl.
+      assert (claim1 := IHn n (eq_reflexivity n)).
+      destruct (eq_dec_nat n n) as [Heq | Hne].
+      + rewrite claim1.
+        exact (eq_reflexivity (eq_reflexivity (S n))).
+      + contradiction (Hne (eq_reflexivity n)).
+  Qed.
+
+  Lemma calc_eqnat_is_constant :
+    forall n : nat,
+    forall m : nat,
+    forall H_EQ1 : eqnat n m,
+    forall H_EQ2 : eqnat n m,
+    calc_eqnat n m H_EQ1 = calc_eqnat n m H_EQ2.
+  Proof.
+    unfold calc_eqnat.
+    intros n m H_EQ1 H_EQ2.
+    destruct (eq_dec_nat n m) as [Heq | Hne].
+    - exact (eq_reflexivity Heq).
+    - contradiction (Hne H_EQ1).
+  Qed.
+
+  Lemma calc_eqnat_eq_rect_eq :
+    forall n : nat,
+    forall m : nat,
+    forall H_EQ : n = m,
+    eq_ind n (fun l : nat => eqnat l m) (calc_eqnat n m H_EQ) n (calc_eqnat n n (eq_reflexivity n)) = H_EQ.
+  Proof.
+    intros n m H_EQ.
+    rewrite (calc_eqnat_is n n (eq_reflexivity n)).
+    apply calc_eqnat_is.
+  Qed.
+
+  Theorem eqnat_proof_irrelevance :
+    forall n : nat,
+    forall m : nat,
+    forall H_EQ1 : eqnat n m,
+    forall H_EQ2 : eqnat n m,
+    H_EQ1 = H_EQ2.
+  Proof.
+    intros n m H_EQ1 H_EQ2.
+    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ1), <- (calc_eqnat_eq_rect_eq n m H_EQ2).
+    replace (calc_eqnat n m H_EQ2) with (calc_eqnat n m H_EQ1).
+    - reflexivity.
+    - apply calc_eqnat_is_constant.
+  Qed.
+
+  Corollary eqnat_K :
+    forall n : nat,
+    forall H_EQ : eqnat n n,
+    H_EQ = eq_reflexivity n.
+  Proof.
+    intros n H_EQ.
+    exact (eqnat_proof_irrelevance n n H_EQ (eq_reflexivity n)).
+  Qed.
+
+  Lemma lenat_proof_irrelevance :
+    forall n1 : nat,
+    forall n2 : nat,
+    forall H_LE1 : n1 <= n2,
+    forall H_LE2 : n1 <= n2,
+    H_LE1 = H_LE2.
+  Proof.
+    refine (
+      fun n1 : nat =>
+      fix lenat_K_fix (n2 : nat) (H_LE1 : n1 <= n2) {struct H_LE1} : forall H_LE2 : n1 <= n2, H_LE1 = H_LE2 :=
+      match H_LE1 as Hle in le _ m1 return forall H_LE2 : n1 <= m1, Hle = H_LE2 with
+      | le_n _ =>
+        fun Hle2 : n1 <= n1 =>
+        match Hle2 as Hle in le _ m2 return forall H_EQ : n1 = m2, eq_ind n1 (le n1) (le_n n1) m2 H_EQ = Hle with
+        | le_n _ => _
+        | le_S _ m2' H_LE2' => _
+        end (eq_reflexivity n1)
+      | le_S _ m1' H_LE1' =>
+        fun H_LE2 : n1 <= S m1' =>
+        match H_LE2 as Hle in le _ m2 return forall H_EQ : m2 = S m1', le_S n1 m1' H_LE1' = eq_ind m2 (le n1) Hle (S m1') H_EQ with
+        | le_n _ => _
+        | le_S _ m2' H_LE2' => _
+        end (eq_reflexivity (S m1'))
+      end
+    ).
+    - intros H_EQ.
+      rewrite (eqnat_K n1 H_EQ).
+      reflexivity.
+    - intros H_EQ.
+      assert (Hlt : m2' < n1) by now rewrite H_EQ; constructor.
+      contradiction (le_lt_False n1 m2' H_LE2' Hlt).
+    - intros H_EQ.
+      assert (Hlt : m1' < n1) by now rewrite H_EQ; constructor.
+      contradiction (le_lt_False n1 m1' H_LE1' Hlt).
+    - intros H_EQ.
+      refine (
+        match S_eq_S_elim m2' m1' H_EQ in eq _ m return forall Heq : S m2' = S m, forall Hle1 : n1 <= m, le_S n1 m Hle1 = eq_ind (S m2') (le n1) (le_S n1 m2' H_LE2') (S m) Heq with
+        | eq_refl => _
+        end H_EQ H_LE1'
+      ).
+      intros Heq Hle1.
+      rewrite (eqnat_K (S m2') Heq).
+      apply (eq_congruence (le_S n1 m2') Hle1 H_LE2').
+      exact (lenat_K_fix m2' Hle1 H_LE2').
+  Qed.
+
+  End ArithProofIrrelevance.
 
   Section MY_FINSET.
 
@@ -486,161 +665,7 @@ Module MyUtilities.
 
   End SIMPLE_LOGIC.
 
-  Section ArithProofIrrelevance.
-
-  Let eqnat : nat -> nat -> Prop :=
-    @eq nat
-  .
-
-  Let eq_dec_nat : forall n1 : nat, forall n2 : nat, {eqnat n1 n2} + {~ eqnat n1 n2} :=
-    fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
-    match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
-    | O =>
-      fun n2 : nat =>
-      match n2 as n return {O = n} + {O <> n} with
-      | O => left (eq_reflexivity O)
-      | S n2' => right (fun H : O = S n2' => S_eq_0_elim n2' (eq_symmetry O (S n2') H))
-      end
-    | S n1' =>
-      fun n2 : nat =>
-      match n2 as n return {S n1' = n} + {S n1' <> n} with
-      | O => right (fun H : S n1' = O => S_eq_0_elim n1' H)
-      | S n2' =>
-        match eq_dec_nat_fix n1' n2' return {S n1' = S n2'} + {S n1' <> S n2'} with
-        | left Heq => left (eq_congruence S n1' n2' Heq)
-        | right Hne => right (fun Heq : S n1' = S n2' => Hne (S_eq_S_elim n1' n2' Heq))
-        end
-      end
-    end
-  .
-
-  Definition calc_eqnat : forall n : nat, forall m : nat, eqnat n m -> eqnat n m :=
-    fun n : nat =>
-    fun m : nat =>
-    fun Heq : eqnat n m =>
-    match eq_dec_nat n m with
-    | left Heq' => Heq'
-    | right Hne => False_ind (eqnat n m) (Hne Heq)
-    end
-  .
-
-  Lemma calc_eqnat_is :
-    forall n : nat,
-    forall m : nat,
-    forall Heq : eqnat n m,
-    calc_eqnat n m Heq = Heq.
-  Proof.
-    induction n; intros m Heq.
-    - destruct Heq.
-      exact (eq_reflexivity (eq_reflexivity 0)).
-    - unfold calc_eqnat in *.
-      simpl.
-      destruct Heq.
-      assert (claim1 := IHn n (@eq_refl nat n)).
-      destruct (eq_dec_nat n n) as [Heq' | Hne].
-      + rewrite claim1.
-        exact (eq_reflexivity (eq_reflexivity (S n))).
-      + contradiction (Hne (eq_reflexivity n)).
-  Qed.
-
-  Lemma calc_eqnat_is_constant :
-    forall n : nat,
-    forall m : nat,
-    forall Heq1 : eqnat n m,
-    forall Heq2 : eqnat n m,
-    calc_eqnat n m Heq1 = calc_eqnat n m Heq2.
-  Proof.
-    unfold calc_eqnat.
-    intros n m Heq1 Heq2.
-    destruct (eq_dec_nat n m) as [Heq | Hne].
-    - exact (eq_reflexivity Heq).
-    - contradiction (Hne Heq1).
-  Qed.
-
-  Lemma calc_eqnat_eq_rect_eq :
-    forall n : nat,
-    forall m : nat,
-    forall Heq : n = m,
-    eq_ind n (fun l : nat => eqnat l m) (calc_eqnat n m Heq) n (calc_eqnat n n (eq_reflexivity n)) = Heq.
-  Proof.
-    intros n m Heq.
-    rewrite (calc_eqnat_is n n (eq_reflexivity n)).
-    simpl.
-    apply calc_eqnat_is.
-  Qed.
-
-  Theorem eqnat_proof_irrelevance :
-    forall n : nat,
-    forall m : nat,
-    forall Heq1 : eqnat n m,
-    forall Heq2 : eqnat n m,
-    Heq1 = Heq2.
-  Proof.
-    intros n m Heq1 Heq2.
-    rewrite <- (calc_eqnat_eq_rect_eq n m Heq1), <- (calc_eqnat_eq_rect_eq n m Heq2).
-    replace (calc_eqnat n m Heq2) with (calc_eqnat n m Heq1).
-    - reflexivity.
-    - apply calc_eqnat_is_constant.
-  Qed.
-
-  Corollary eqnat_K :
-    forall n : nat,
-    forall Heq : eqnat n n,
-    Heq = eq_reflexivity n.
-  Proof.
-    intros n Heq.
-    exact (eqnat_proof_irrelevance n n Heq (eq_reflexivity n)).
-  Qed.
-
-  Let lenat : nat -> nat -> Prop :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    n1 <= n2
-  .
-
-  Definition lenat_proof_irrelevance : forall n1 : nat, forall n2 : nat, forall Hle1 : n1 <= n2, forall Hle2 : n1 <= n2, Hle1 = Hle2 :=
-    fix lenat_K_fix (n1 : nat) (n2 : nat) (Hle1 : n1 <= n2) {struct Hle1} : forall Hle2 : n1 <= n2, Hle1 = Hle2 :=
-    match Hle1 as Hle in le _ m1 return forall Hle2 : n1 <= m1, Hle = Hle2 with
-    | le_n _ =>
-      fun Hle2 : n1 <= n1 =>
-      match Hle2 as Hle in le _ m2 return forall Heq : n1 = m2, eq_ind n1 (le n1) (le_n n1) m2 Heq = Hle with
-      | le_n _ =>
-        fun Heq : n1 = n1 =>
-        (eq_ind (eq_reflexivity n1) (fun Heq0 : n1 = n1 => eq_ind n1 (le n1) (le_n n1) n1 Heq0 = le_n n1) (eq_reflexivity (le_n n1)) Heq (eq_symmetry Heq (eq_reflexivity n1) (eqnat_K n1 Heq)))
-      | le_S _ m2' Hle2' =>
-        fun Heq : n1 = S m2' =>
-        let Hlt : m2' < n1 := eq_ind (S m2') (le (S m2')) (le_n (S m2')) n1 (eq_symmetry n1 (S m2') Heq) in
-        False_ind (eq_ind n1 (le n1) (le_n n1) (S m2') Heq = le_S n1 m2' Hle2') (le_lt_False n1 m2' Hle2' Hlt)
-      end (eq_reflexivity n1)
-    | le_S _ m1' Hle1' =>
-      fun Hle2 : n1 <= S m1' =>
-      match Hle2 as Hle in le _ m2 return forall Heq : m2 = S m1', le_S n1 m1' Hle1' = eq_ind m2 (le n1) Hle (S m1') Heq with
-      | le_n _ =>
-        fun Heq : n1 = S m1' =>
-        let Hlt : m1' < n1 := eq_ind (S m1') (le (S m1')) (le_n (S m1')) n1 (eq_symmetry n1 (S m1') Heq) in
-        False_ind (le_S n1 m1' Hle1' = eq_ind n1 (le n1) (le_n n1) (S m1') Heq) (le_lt_False n1 m1' Hle1' Hlt)
-      | le_S _ m2' Hle2' =>
-        fun Heq : S m2' = S m1' =>
-        match S_eq_S_elim m2' m1' Heq in eq _ m_ return forall Heq_ : S m2' = S m_, forall Hle1_ : n1 <= m_, le_S n1 m_ Hle1_ = eq_ind (S m2') (le n1) (le_S n1 m2' Hle2') (S m_) Heq_ with
-        | eq_refl =>
-          fun Heq_ : S m2' = S m2' =>
-          fun Hle1_ : n1 <= m2' =>
-          eq_ind (eq_reflexivity (S m2')) (fun Heq_' : S m2' = S m2' => le_S n1 m2' Hle1_ = eq_ind (S m2') (le n1) (le_S n1 m2' Hle2') (S m2') Heq_') (eq_congruence (le_S n1 m2') Hle1_ Hle2' (lenat_K_fix n1 m2' Hle1_ Hle2')) Heq_ (eq_symmetry Heq_ (eq_reflexivity (S m2')) (eqnat_K (S m2') Heq_)) 
-        end Heq Hle1'
-      end (eq_reflexivity (S m1'))
-    end
-  .
-
-  End ArithProofIrrelevance.
-
-  Lemma strong_induction (P : nat -> Prop) :
-    (forall n : nat, (forall m : nat, m < n -> P m) -> P n) ->
-    (forall l : nat, P l).
-  Proof with eauto.
-    intros ind_claim l.
-    apply ind_claim.
-    induction l; intros m H; inversion H; subst...
-  Qed.
+  Section BORING.
 
   Lemma div_mod_uniqueness_aux1 :
     forall x : nat,
@@ -928,6 +953,8 @@ Module MyUtilities.
     assert (claim1 := in_remove A_eq_dec).
     assert (claim2 := in_in_remove A_eq_dec)...
   Qed.
+
+  End BORING.
 
   Definition case_eqrefl {A : Type} : forall x : A, forall y : A, forall H : x = y, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> phi x H :=
     fun x : A =>
