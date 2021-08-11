@@ -242,7 +242,7 @@ Module MyUtilities.
     @eq nat
   .
 
-  Let eq_dec_nat : forall n1 : nat, forall n2 : nat, {eqnat n1 n2} + {~ eqnat n1 n2} :=
+  Definition eq_dec_nat : forall n1 : nat, forall n2 : nat, {eqnat n1 n2} + {~ eqnat n1 n2} :=
     fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
     match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
     | O =>
@@ -264,13 +264,13 @@ Module MyUtilities.
     end
   .
 
-  Definition calc_eqnat : forall n : nat, forall m : nat, eqnat n m -> eqnat n m :=
-    fun n : nat =>
-    fun m : nat =>
-    fun H_EQ : eqnat n m =>
-    match eq_dec_nat n m with
+  Definition calc_eqnat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 -> eqnat n1 n2 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun H_EQ : eqnat n1 n2 =>
+    match eq_dec_nat n1 n2 return eqnat n1 n2 with
     | left Heq => Heq
-    | right Hne => False_ind (eqnat n m) (Hne H_EQ)
+    | right Hne => False_ind (eqnat n1 n2) (Hne H_EQ)
     end
   .
 
@@ -280,18 +280,18 @@ Module MyUtilities.
     forall H_EQ : eqnat n m,
     calc_eqnat n m H_EQ = H_EQ.
   Proof.
-    induction n; intros m [].
+    induction n as [| n' IH]; intros m [].
     - exact (eq_reflexivity (eq_reflexivity O)).
     - unfold calc_eqnat in *.
       simpl.
-      assert (claim1 := IHn n (eq_reflexivity n)).
-      destruct (eq_dec_nat n n) as [Heq | Hne].
+      assert (claim1 := IH n' (eq_reflexivity n')).
+      destruct (eq_dec_nat n' n') as [Heq | Hne].
       + rewrite claim1.
-        exact (eq_reflexivity (eq_reflexivity (S n))).
-      + contradiction (Hne (eq_reflexivity n)).
+        exact (eq_reflexivity (eq_reflexivity (S n'))).
+      + contradiction (Hne (eq_reflexivity n')).
   Qed.
 
-  Lemma calc_eqnat_is_constant :
+  Lemma calc_eqnat_const :
     forall n : nat,
     forall m : nat,
     forall H_EQ1 : eqnat n m,
@@ -324,10 +324,10 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     intros n m H_EQ1 H_EQ2.
-    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ1), <- (calc_eqnat_eq_rect_eq n m H_EQ2).
-    replace (calc_eqnat n m H_EQ2) with (calc_eqnat n m H_EQ1).
-    - reflexivity.
-    - apply calc_eqnat_is_constant.
+    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ1).
+    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ2).
+    rewrite <- (calc_eqnat_const n m H_EQ1 H_EQ2).
+    reflexivity.
   Qed.
 
   Corollary eqnat_K :
@@ -339,11 +339,17 @@ Module MyUtilities.
     exact (eqnat_proof_irrelevance n n H_EQ (eq_reflexivity n)).
   Qed.
 
+  Let lenat : nat -> nat -> Prop :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    le n1 n2
+  .
+
   Theorem lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
-    forall H_LE1 : n1 <= n2,
-    forall H_LE2 : n1 <= n2,
+    forall H_LE1 : lenat n1 n2,
+    forall H_LE2 : lenat n1 n2,
     H_LE1 = H_LE2.
   Proof.
     refine (
