@@ -1,7 +1,9 @@
+Require Import Coq.Lists.List.
+Require Import DschingisKhan.pure.CBA.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module Syntax.
+Module SyntaxOfPL.
 
   Import MyUtilities MyEnsemble.
 
@@ -108,7 +110,7 @@ Module Syntax.
     }
     all: intros r H; set (rank := pred r); assert (H0 : S rank = r) by (now apply (guarantee1_S_pred_n_eq_n H)); rewrite <- H0.
     { set (piece := 0).
-      exists 0...
+      exists piece...
     }
     { set (piece := 1).
       assert (H1 : rankOfFormula p <= rank) by now apply le_elim_S_n_le_m.
@@ -171,11 +173,11 @@ Module Syntax.
     exist (fun n : nat => enum_formula n = p) (sum_from_0_to (rankOfFormula p + seed) + seed) (eq_ind (rankOfFormula p, seed) (fun pr : nat * nat => enum_formula_aux (fst pr) (snd pr) = p) (proj2_sig (enum_formula_aux_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))) (cantor_pairing (sum_from_0_to (rankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (rankOfFormula p) seed))
   .
 
-End Syntax.
+End SyntaxOfPL.
 
-Module FormulaNotations.
+Module FormulaNotationsOfPL.
 
-  Import Syntax.
+  Import SyntaxOfPL.
 
   Global Declare Custom Entry pl_formula_scope.
 
@@ -199,30 +201,31 @@ Module FormulaNotations.
 
   Global Notation " ( p ) " := p (in custom pl_formula_scope, p at level 3).
 
-End FormulaNotations.
+End FormulaNotationsOfPL.
 
-Module Semantics.
+Module SemanticsOfPL.
 
-  Import MyEnsemble Syntax.
+  Import MyUniverses MyEnsemble SyntaxOfPL.
 
-  Definition value : Type :=
+  Definition value : InferiorUniverse :=
     Prop
   .
 
-  Definition env : Type :=
+  Definition env : InferiorUniverse :=
     pvar -> value
   .
 
   Definition eval_formula : env -> formula -> value :=
-    fix eval_formula_fix (v : env) (p : formula) {struct p} : value :=
+    fun v : env =>
+    fix eval_formula_fix (p : formula) {struct p} : value :=
     match p with
     | AtomF i => v i
     | ContradictionF => False
-    | NegationF p1 => ~ eval_formula_fix v p1
-    | ConjunctionF p1 p2 => eval_formula_fix v p1 /\ eval_formula_fix v p2
-    | DisjunctionF p1 p2 => eval_formula_fix v p1 \/ eval_formula_fix v p2
-    | ImplicationF p1 p2 => eval_formula_fix v p1 -> eval_formula_fix v p2
-    | BiconditionalF p1 p2 => eval_formula_fix v p1 <-> eval_formula_fix v p2
+    | NegationF p1 => ~ eval_formula_fix p1
+    | ConjunctionF p1 p2 => eval_formula_fix p1 /\ eval_formula_fix p2
+    | DisjunctionF p1 p2 => eval_formula_fix p1 \/ eval_formula_fix p2
+    | ImplicationF p1 p2 => eval_formula_fix p1 -> eval_formula_fix p2
+    | BiconditionalF p1 p2 => eval_formula_fix p1 <-> eval_formula_fix p2
     end
   .
 
@@ -230,13 +233,23 @@ Module Semantics.
   | IsModel : forall v : env, forall p : formula, eval_formula v p -> satifisfies v p
   .
 
-  Global Notation " hs |= c " := (forall v : env, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
+  Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
 
-End Semantics.
+  Lemma extendEntails {hs1 : ensemble formula} :
+    forall c : formula,
+    hs1 |= c ->
+    forall hs2 : ensemble formula,
+    hs1 \subseteq hs2 ->
+    hs2 |= c.
+  Proof with eauto with *.
+    intros c H_entail hs2 H_subseteq...
+  Qed.
 
-Module InferenceRules.
+End SemanticsOfPL.
 
-  Import MyEnsemble MyEnsembleNova Syntax FormulaNotations.
+Module InferenceRulesOfPL.
+
+  Import MyEnsemble MyEnsembleNova SyntaxOfPL FormulaNotationsOfPL.
 
   Inductive infers : ensemble formula -> formula -> Prop :=
   | ByAssumption {hs : ensemble formula} : forall h : formula, member h hs -> infers hs h
@@ -257,18 +270,518 @@ Module InferenceRules.
   | BiconditionalE2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs b -> infers hs a
   .
 
-  Global Notation " hs |- c " := (infers hs c) (at level 70, no associativity) : type_scope.
+  Global Hint Constructors infers : my_hints.
 
-  Lemma Law_of_Exclusive_Middle :
-    forall p : formula,
+  Global Notation " hs '|-' c " := (infers hs c) (at level 70, no associativity) : type_scope.
+
+  Lemma Law_of_Exclusive_Middle (p : formula) :
     \emptyset |- $$p \/ ~ p$$.
   Proof with eauto with *.
-    intros p.
-    apply NegationE, (ContradictionI $$p \/ ~ p$$).
-    - apply DisjunctionI2, NegationI, (ContradictionI $$p \/ ~ p$$).
-      + apply DisjunctionI1, ByAssumption...
-      + apply ByAssumption, in_insert_iff, or_intror...
-    - apply ByAssumption...
+    eapply NegationE, ContradictionI.
+    - eapply DisjunctionI2, NegationI, ContradictionI.
+      + eapply DisjunctionI1, ByAssumption...
+      + eapply ByAssumption, in_insert_iff, or_intror...
+    - eapply ByAssumption...
   Qed.
-  
-End InferenceRules.
+
+  Lemma cut_property {hs : ensemble formula} :
+    forall p1 : formula,
+    forall p2 : formula,
+    hs |- p1 ->
+    insert p1 hs |- p2 ->
+    hs |- p2.
+  Proof with eauto with *.
+    intros p1 p2 H_infer H_cut.
+    assert (claim1 : hs |- $$p1 -> p2$$)...
+  Qed.
+
+  Lemma extendInfers {hs1 : ensemble formula} :
+    forall c : formula,
+    hs1 |- c ->
+    forall hs2 : ensemble formula,
+    isSubsetOf hs1 hs2 ->
+    hs2 |- c.
+  Proof with eauto with *.
+    intros c H.
+    induction H; intros hs' H_incl.
+    - apply (ByAssumption h)...
+    - apply (ContradictionI a)...
+    - apply (ContradictionE a)...
+    - apply (NegationI a)...
+    - apply (NegationE a)...
+    - apply (ConjunctionI a b)...
+    - apply (ConjunctionE1 a b)...
+    - apply (ConjunctionE2 a b)...
+    - apply (DisjunctionI1 a b)...
+    - apply (DisjunctionI2 a b)...
+    - apply (DisjunctionE a b c)...
+    - apply (ImplicationI a b)...
+    - apply (ImplicationE a b)...
+    - apply (BiconditionalI a b)...
+    - apply (BiconditionalE1 a b)...
+    - apply (BiconditionalE2 a b)...
+  Qed.
+
+End InferenceRulesOfPL.
+
+Module LindenbaumBooleanAlgebraOnPL.
+
+  Import BasicSetoidTheory MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
+
+  Local Program Instance formula_isSetoid : isSetoid formula :=
+    { eqProp :=
+      fun b1 : formula =>
+      fun b2 : formula =>
+      \left\{ b1 \right\} |- b2 /\ \left\{ b2 \right\} |- b1
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros b1.
+      split; apply ByAssumption...
+    - intros b1 b2 [H H0].
+      split...
+    - intros b1 b2 b3 [H H0] [H1 H2].
+      split.
+      + apply (cut_property b2 b3 H).
+        apply (extendInfers b3 H1)...
+      + apply (cut_property b2 b1 H2).
+        apply (extendInfers b1 H0)...
+  Qed.
+
+  Global Program Instance LindenbaumBooleanAlgebra : @isCBA formula formula_isSetoid :=
+    { trueB := ImplicationF ContradictionF ContradictionF
+    ; falseB := ContradictionF
+    ; negB := NegationF
+    ; andB := ConjunctionF
+    ; orB := DisjunctionF
+    ; enumB := enum_formula
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - apply NegationI.
+      apply (ContradictionI b1).
+      + apply (extendInfers b1 H0)...
+      + apply ByAssumption...
+    - apply NegationI.
+      apply (ContradictionI b1').
+      + apply (extendInfers b1' H)...
+      + apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ConjunctionI.
+      + apply (cut_property b1 b1').
+        * apply (ConjunctionE1 b1 b2).
+          apply ByAssumption...
+        * apply (extendInfers b1' H)...
+      + apply (cut_property b2 b2').
+        * apply (ConjunctionE2 b1 b2).
+          apply ByAssumption...
+        * apply (extendInfers b2' H0)...
+    - apply ConjunctionI.
+      + apply (cut_property b1' b1).
+        * apply (ConjunctionE1 b1' b2').
+          apply ByAssumption...
+        * apply (extendInfers  b1 H2)...
+      + apply (cut_property b2' b2).
+        * apply (ConjunctionE2 b1' b2').
+          apply ByAssumption...
+        * apply (extendInfers b2 H1)...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 b2 (DisjunctionF b1' b2')).
+      + apply ByAssumption...
+      + apply (DisjunctionI1 b1' b2').
+        apply (extendInfers b1' H)...
+      + apply (DisjunctionI2 b1' b2').
+        apply (extendInfers b2' H0)...
+    - apply (DisjunctionE b1' b2' (DisjunctionF b1 b2)).
+      + apply ByAssumption...
+      + apply (DisjunctionI1 b1 b2).
+        apply (extendInfers b1 H2)...
+      + apply (DisjunctionI2 b1 b2).
+        apply (extendInfers b2 H1)...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ConjunctionI.
+      + apply ConjunctionI.
+        * apply (ConjunctionE1 b1 (ConjunctionF b2 b3)).
+          apply ByAssumption...
+        * apply (ConjunctionE1 b2 b3).
+          apply (ConjunctionE2 b1 (ConjunctionF b2 b3)).
+          apply ByAssumption...
+      + apply (ConjunctionE2 b2 b3).
+        apply (ConjunctionE2 b1 (ConjunctionF b2 b3)).
+        apply ByAssumption...
+    - apply ConjunctionI.
+      + apply (ConjunctionE1 b1 b2).
+        apply (ConjunctionE1 (ConjunctionF b1 b2) b3).
+        apply ByAssumption...
+      + apply ConjunctionI.
+        * apply (ConjunctionE2 b1 b2).
+          apply (ConjunctionE1 (ConjunctionF b1 b2) b3).
+          apply ByAssumption...
+        * apply (ConjunctionE2 (ConjunctionF b1 b2) b3).
+          apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 (DisjunctionF b2 b3)).
+      + apply ByAssumption...
+      + apply (DisjunctionI1 (DisjunctionF b1 b2) b3).
+        apply (DisjunctionI1 b1 b2).
+        apply ByAssumption...
+      + apply (DisjunctionE b2 b3).
+        * apply ByAssumption...
+        * apply (DisjunctionI1 (DisjunctionF b1 b2) b3).
+          apply (DisjunctionI2 b1 b2).
+          apply ByAssumption...
+        * apply (DisjunctionI2 (DisjunctionF b1 b2) b3).
+          apply ByAssumption...
+    - apply (DisjunctionE (DisjunctionF b1 b2) b3).
+      + apply ByAssumption...
+      + apply (DisjunctionE b1 b2).
+        * apply ByAssumption...
+        * apply (DisjunctionI1 b1 (DisjunctionF b2 b3)).
+          apply ByAssumption...
+        * apply (DisjunctionI2 b1 (DisjunctionF b2 b3)).
+          apply (DisjunctionI1 b2 b3).
+          apply ByAssumption...
+      + apply (DisjunctionI2 b1 (DisjunctionF b2 b3)).
+        apply (DisjunctionI2 b2 b3).
+        apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (ConjunctionE1 b1 b1).
+      apply ByAssumption...
+    - apply ConjunctionI; apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 b1 b1); apply ByAssumption...
+    - apply DisjunctionI1.
+      apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ConjunctionI.
+      + apply (ConjunctionE2 b1 b2).
+        apply ByAssumption...
+      + apply (ConjunctionE1 b1 b2).
+        apply ByAssumption...
+    - apply ConjunctionI.
+      + apply (ConjunctionE2 b2 b1).
+        apply ByAssumption...
+      + apply (ConjunctionE1 b2 b1).
+        apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 b2).
+      + apply ByAssumption...
+      + apply (DisjunctionI2 b2 b1).
+        apply ByAssumption...
+      + apply (DisjunctionI1 b2 b1).
+        apply ByAssumption...
+    - apply (DisjunctionE b2 b1).
+      + apply ByAssumption...
+      + apply (DisjunctionI2 b1 b2).
+        apply ByAssumption...
+      + apply (DisjunctionI1 b1 b2).
+        apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b2 b3).
+      + apply (ConjunctionE2 b1 (DisjunctionF b2 b3)).
+        apply ByAssumption...
+      + apply DisjunctionI1.
+        apply ConjunctionI.
+        * apply (ConjunctionE1 b1 (DisjunctionF b2 b3)).
+          apply ByAssumption...
+        * apply ByAssumption...
+      + apply DisjunctionI2.
+        apply ConjunctionI.
+        * apply (ConjunctionE1 b1 (DisjunctionF b2 b3)).
+          apply ByAssumption...
+        * apply ByAssumption...
+    - apply (DisjunctionE (ConjunctionF b1 b2) (ConjunctionF b1 b3)).
+      + apply ByAssumption...
+      + apply ConjunctionI.
+        * apply (ConjunctionE1 b1 b2).
+          apply ByAssumption...
+        * apply DisjunctionI1.
+          apply (ConjunctionE2 b1 b2).
+          apply ByAssumption...
+      + apply ConjunctionI.
+        * apply (ConjunctionE1 b1 b3).
+          apply ByAssumption...
+        * apply DisjunctionI2.
+          apply (ConjunctionE2 b1 b3).
+          apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ConjunctionI.
+      + apply (DisjunctionE b1 (ConjunctionF b2 b3)).
+        * apply ByAssumption...
+        * apply DisjunctionI1.
+          apply ByAssumption...
+        * apply DisjunctionI2.
+          apply (ConjunctionE1 b2 b3).
+          apply ByAssumption...
+      + apply (DisjunctionE b1 (ConjunctionF b2 b3)).
+        * apply ByAssumption...
+        * apply DisjunctionI1.
+          apply ByAssumption...
+        * apply DisjunctionI2.
+          apply (ConjunctionE2 b2 b3).
+          apply ByAssumption...
+  - apply (DisjunctionE b1 b2).
+    + apply (ConjunctionE1 (DisjunctionF b1 b2) (DisjunctionF b1 b3)).
+      apply ByAssumption...
+    + apply DisjunctionI1.
+      apply ByAssumption...
+    + apply (DisjunctionE b1 b3).
+      * apply (ConjunctionE2 (DisjunctionF b1 b2) (DisjunctionF b1 b3)).
+        apply ByAssumption...
+      * apply DisjunctionI1.
+        apply ByAssumption...
+      * apply DisjunctionI2.
+        apply ConjunctionI; apply ByAssumption...
+        apply in_insert_iff.
+        right...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (ConjunctionE1 b1 (DisjunctionF b1 b2)).
+      apply ByAssumption...
+    - apply ConjunctionI.
+      + apply ByAssumption...
+      + apply DisjunctionI1.
+        apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 (ConjunctionF b1 b2)).
+      + apply ByAssumption...
+      + apply ByAssumption...
+      + apply (ConjunctionE1 b1 b2).
+        apply ByAssumption...
+    - apply DisjunctionI1.
+      apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (ConjunctionE2 b1 ContradictionF).
+      apply ByAssumption...
+    - apply ConjunctionI.
+      + apply ContradictionE.
+        apply ByAssumption...
+      + apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ImplicationI.
+      apply ByAssumption...
+    - apply DisjunctionI2.
+      apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (DisjunctionE b1 ContradictionF).
+      + apply ByAssumption...
+      + apply ByAssumption...
+      + apply ContradictionE.
+        apply ByAssumption...
+    - apply DisjunctionI1.
+      apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (ConjunctionE1 b1 (ImplicationF ContradictionF ContradictionF)).
+      apply ByAssumption...
+    - apply ConjunctionI.
+      + apply ByAssumption...
+      + apply ImplicationI.
+        apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply (ContradictionI b1).
+      + apply (ConjunctionE1 b1 (NegationF b1)).
+        apply ByAssumption...
+      + apply (ConjunctionE2 b1 (NegationF b1)).
+        apply ByAssumption...
+    - apply ContradictionE.
+      apply ByAssumption...
+  Qed.
+
+  Next Obligation with eauto with *.
+    split.
+    - apply ImplicationI.
+      apply ByAssumption...
+    - apply (extendInfers (DisjunctionF b1 (NegationF b1)) (Law_of_Exclusive_Middle b1)).
+      intros p H.
+      apply in_empty_iff in H...
+  Qed.
+
+  Next Obligation with eauto with *.
+    destruct (formula_is_enumerable b) as [n H]...
+  Qed.
+
+  Lemma leq_LBA :
+    forall b1 : formula,
+    forall b2 : formula,
+    andB b1 b2 == b1 <-> \left\{ b1 \right\} |- b2.
+  Proof with eauto with *.
+    intros b1 b2.
+    split.
+    - intros [H H0].
+      apply (ConjunctionE2 b1 b2)...
+    - intros H.
+      split.
+      + apply (ConjunctionE1 b1 b2).
+        apply ByAssumption...
+      + apply ConjunctionI.
+        * apply ByAssumption...
+        * apply H.
+  Qed.
+
+  Lemma andBs_LBA :
+    forall ps : list formula,
+    forall hs : ensemble formula,
+    (forall p : formula, In p ps -> member p hs) ->
+    forall c : formula,
+    \left\{ fold_right andB trueB ps \right\} |- c <-> (exists hs' : ensemble formula, (forall h : formula, In h ps <-> member h hs') /\ hs' |- c).
+  Proof with eauto with *.
+    induction ps as [| p ps IH]; simpl.
+    { intros hs H c.
+      split.
+      - intros H0.
+        exists \emptyset.
+        split.
+        + intros p.
+          rewrite in_empty_iff.
+          reflexivity.
+        + apply (ConjunctionE2 (ImplicationF ContradictionF ContradictionF) c).
+          apply (cut_property (ImplicationF ContradictionF ContradictionF) (ConjunctionF (ImplicationF ContradictionF ContradictionF) c)).
+          * apply ImplicationI.
+            apply ByAssumption...
+          * apply ConjunctionI; [apply ByAssumption | apply (extendInfers c H0)]...
+      - intros [hs' [H0 H1]].
+        assert (claim1 : isSubsetOf hs' \emptyset).
+        { intros h.
+          rewrite <- (H0 h).
+          intros [].
+        }
+        assert (claim2 : \emptyset |- c) by now apply (extendInfers c H1).
+        apply (extendInfers c claim2)...
+    }
+    { intros hs H c.
+      split.
+      - intros H0.
+        assert (claim3 : forall h : formula, In h ps -> member h hs) by firstorder.
+        assert (claim4 : \left\{ fold_right andB trueB ps \right\} |- ImplicationF p c).
+        { apply ImplicationI.
+          apply (cut_property (fold_right andB trueB (p :: ps)) c).
+          - simpl.
+            apply ConjunctionI; apply ByAssumption...
+          - apply (extendInfers c H0)...
+        }
+        destruct (proj1 (IH hs claim3 (ImplicationF p c)) claim4) as [hs' [H1 H2]].
+        exists (insert p hs').
+        split.
+        + intros h.
+          rewrite in_insert_iff.
+          firstorder.
+        + apply (cut_property (ImplicationF p c) c).
+          apply (extendInfers (ImplicationF p c) H2)...
+          apply (ImplicationE p c).
+          * apply ByAssumption...
+          * apply ByAssumption, in_insert_iff.
+            right...
+      - intros [hs' [H0 H1]].
+        destruct (in_dec eq_formula_dec p ps) as [H_yes | H_no].
+        + assert (claim5 : forall h : formula, In h ps -> member h hs) by firstorder.
+          assert (claim6 : exists hs' : ensemble formula, (forall h : formula, In h ps <-> member h hs') /\ hs' |- c).
+          { exists hs'.
+            split.
+            - intros h'.
+              split.
+              + firstorder.
+              + intros H2.
+                destruct (proj2 (H0 h') H2) as [H3 | H3].
+                * subst...
+                * apply H3.
+            - apply H1.
+          }
+          assert (claim7 : \left\{ fold_right andB trueB ps \right\} |- c) by apply (proj2 (IH hs claim5 c) claim6).
+          apply (cut_property (fold_right andB trueB ps) c).
+          * simpl.
+            apply (ConjunctionE2 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
+            apply ByAssumption...
+          * apply (extendInfers c claim7)...
+        + assert (claim8 : forall h : formula, In h ps -> member h (delete p hs)).
+          { intros h H2.
+            apply in_delete_iff.
+            split...
+            intros Heq.
+            subst...
+          }
+          assert (claim9 : exists hs' : ensemble formula, (forall h : formula, In h ps <-> member h hs') /\ hs' |- ImplicationF p c).
+          { exists (delete p hs').
+            split.
+            - intros h.
+              rewrite in_delete_iff, <- H0.
+              split.
+              + intros H2.
+                split...
+                intros Heq.
+                subst...
+              + intros [[H2 | H2] H3]...
+                subst; contradiction.
+            - apply ImplicationI.
+              apply (extendInfers c H1).
+              intros h' H2.
+              rewrite in_insert_iff, in_delete_iff.
+              destruct (eq_formula_dec h' p)...
+          }
+        assert (claim10 : \left\{ fold_right andB trueB ps \right\} |- ImplicationF p c) by apply (proj2 (IH (delete p hs) claim8 (ImplicationF p c)) claim9).
+        apply (ImplicationE p c).
+        { apply (cut_property (fold_right andB trueB ps) (ImplicationF p c)); simpl.
+          - apply (ConjunctionE2 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
+            apply ByAssumption...
+          - apply (extendInfers (ImplicationF p c) claim10)...
+        }
+        { apply (ConjunctionE1 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
+          apply ByAssumption...
+        }
+    }
+  Qed.
+
+End LindenbaumBooleanAlgebraOnPL.

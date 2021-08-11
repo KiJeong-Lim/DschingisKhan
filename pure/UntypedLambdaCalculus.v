@@ -2,6 +2,7 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Relations.Relation_Operators.
 Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
@@ -733,8 +734,22 @@ Module UntypedLamdbdaCalculus.
       transitivity (eval_tm (fun z : ivar => eval_tm (fun z0 : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z0 then v else E z0) (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma z)) M)...
   Qed.
 
-  Local Hint Resolve run_substitution_on_tm_preserves_eval_tm : core.
-
   End PreliminariesOfSemantics.
+
+  Inductive beta1 : tm -> tm -> Prop :=
+  | BetaOnce {x : ivar} {M : tm} {N : tm} : beta1 (tmApp (tmLam x M) N) (run_substitution_on_tm (cons_substitution x N nil_subtitution) M)
+  | BetaAppL {P1 : tm} {P1' : tm} {P2 : tm} : beta1 P1 P1' -> beta1 (tmApp P1 P2) (tmApp P1' P2)
+  | BetaAppR {P1 : tm} {P2 : tm} {P2' : tm} : beta1 P2 P2' -> beta1 (tmApp P1 P2) (tmApp P1 P2')
+  | BetaLAbs {y : ivar} {Q : tm} {Q' : tm} : beta1 Q Q' -> beta1 (tmLam y Q) (tmLam y Q')
+  .
+
+  Local Hint Constructors beta1 : core.
+
+  Global Notation " M '~~beta~>*' N " := (clos_refl_trans_n1 tm beta1 M N) (at level 70, no associativity) : type_scope.
+
+  Definition getDeBruijnIndex : ivar -> forall xs : list ivar, option (FinSet (length xs)) :=
+    fun x : ivar =>
+    elemIndex x (ivar_eq_dec x)
+  .
 
 End UntypedLamdbdaCalculus.

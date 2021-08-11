@@ -28,6 +28,8 @@ coqc -Q . DschingisKhan pure/MyCoin.v
 coqc -Q . DschingisKhan classical/ExclusiveMiddle.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/Basics.v
+coqc -Q . DschingisKhan projects/PropositionalLogic/Soundness.v
+coqc -Q . DschingisKhan projects/PropositionalLogic/Completeness.v
 coqc -Q . DschingisKhan projects/PropositionalLogic.v
 coqc -Q . DschingisKhan projects/SmullyanGIT/Chapter1.v
 coqc -Q . DschingisKhan projects/SmullyanGIT.v

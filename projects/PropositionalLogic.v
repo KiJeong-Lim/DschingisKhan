@@ -14,6 +14,6 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module PropositionalLogic. (* Thanks to Taeseung Sohn *)
 
-  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra Syntax Semantics InferenceRules.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
 End PropositionalLogic.

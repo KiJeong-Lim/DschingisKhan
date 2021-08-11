@@ -230,11 +230,62 @@ Module MyUtilities.
     fun n : nat =>
     let case0 : forall m : nat, forall H : m < O, P m := fun m : nat => fun H : m < O => lt_elim_n_lt_0 m H in
     let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> (forall m : nat, m < S n -> P m) := fun n : nat => fun IH : forall m : nat, m < n -> P m => fun m : nat => fun Hlt : m < S n => le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq))) in
-    let claim : forall m : nat, m < n -> P m := nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n in
-    ACC n claim
+    ACC n (nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n)
   .
 
   End ARITH_WITHOUT_LIA.
+
+  Section DecidableProofIrrelevance.
+
+  Context {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}).
+
+  Definition calc_eq : forall y : A, x = y -> x = y :=
+    fun y : A =>
+    fun H_EQ : x = y =>
+    match eq_dec y return x = y with
+    | left Heq => Heq
+    | right Hne => False_ind (x = y) (Hne H_EQ)
+    end
+  .
+
+  Hypothesis calc_eq_is : forall y : A, forall H_EQ : x = y, calc_eq y H_EQ = H_EQ.
+
+  Lemma calc_eq_const :
+    forall y : A,
+    forall H_EQ1 : x = y,
+    forall H_EQ2 : x = y,
+    calc_eq y H_EQ1 = calc_eq y H_EQ2.
+  Proof.
+    unfold calc_eq.
+    intros y H_EQ1 H_EQ2.
+    destruct (eq_dec y) as [Heq | Hne].
+    - exact (eq_reflexivity Heq).
+    - contradiction (Hne H_EQ1).
+  Qed.
+
+  Lemma eq_ind_calc_eq_is :
+    forall y : A,
+    forall H_EQ : x = y,
+    eq_ind x (fun z : A => z = y) (calc_eq y H_EQ) x (calc_eq x (eq_reflexivity x)) = H_EQ.
+  Proof.
+    rewrite (calc_eq_is x (eq_reflexivity x)).
+    exact calc_eq_is.
+  Qed.
+
+  Theorem calc_eq_proof_irrelevance :
+    forall y : A,
+    forall H_EQ1 : x = y,
+    forall H_EQ2 : x = y,
+    H_EQ1 = H_EQ2.
+  Proof.
+    intros y H_EQ1 H_EQ2.
+    rewrite <- (eq_ind_calc_eq_is y H_EQ1).
+    rewrite <- (eq_ind_calc_eq_is y H_EQ2).
+    rewrite <- (calc_eq_const y H_EQ1 H_EQ2).
+    reflexivity.
+  Qed.
+
+  End DecidableProofIrrelevance.
 
   Section ArithProofIrrelevance.
 
@@ -267,67 +318,35 @@ Module MyUtilities.
   Definition calc_eqnat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 -> eqnat n1 n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    fun H_EQ : eqnat n1 n2 =>
-    match eq_dec_nat n1 n2 return eqnat n1 n2 with
-    | left Heq => Heq
-    | right Hne => False_ind (eqnat n1 n2) (Hne H_EQ)
-    end
+    calc_eq n1 (eq_dec_nat n1) n2
   .
 
   Lemma calc_eqnat_is :
-    forall n : nat,
-    forall m : nat,
-    forall H_EQ : eqnat n m,
-    calc_eqnat n m H_EQ = H_EQ.
+    forall n1 : nat,
+    forall n2 : nat,
+    forall H_EQ : eqnat n1 n2,
+    calc_eqnat n1 n2 H_EQ = H_EQ.
   Proof.
-    induction n as [| n' IH]; intros m [].
+    induction n1 as [| n IH]; intros n2 [].
     - exact (eq_reflexivity (eq_reflexivity O)).
-    - unfold calc_eqnat in *.
+    - unfold calc_eqnat, calc_eq in *.
       simpl.
-      assert (claim1 := IH n' (eq_reflexivity n')).
-      destruct (eq_dec_nat n' n') as [Heq | Hne].
+      assert (claim1 := IH n (eq_reflexivity n)).
+      destruct (eq_dec_nat n n) as [Heq | Hne].
       + rewrite claim1.
-        exact (eq_reflexivity (eq_reflexivity (S n'))).
-      + contradiction (Hne (eq_reflexivity n')).
-  Qed.
-
-  Lemma calc_eqnat_const :
-    forall n : nat,
-    forall m : nat,
-    forall H_EQ1 : eqnat n m,
-    forall H_EQ2 : eqnat n m,
-    calc_eqnat n m H_EQ1 = calc_eqnat n m H_EQ2.
-  Proof.
-    unfold calc_eqnat.
-    intros n m H_EQ1 H_EQ2.
-    destruct (eq_dec_nat n m) as [Heq | Hne].
-    - exact (eq_reflexivity Heq).
-    - contradiction (Hne H_EQ1).
-  Qed.
-
-  Lemma calc_eqnat_eq_rect_eq :
-    forall n : nat,
-    forall m : nat,
-    forall H_EQ : n = m,
-    eq_ind n (fun l : nat => eqnat l m) (calc_eqnat n m H_EQ) n (calc_eqnat n n (eq_reflexivity n)) = H_EQ.
-  Proof.
-    intros n m H_EQ.
-    rewrite (calc_eqnat_is n n (eq_reflexivity n)).
-    exact (calc_eqnat_is n m H_EQ).
+        exact (eq_reflexivity (eq_reflexivity (S n))).
+      + contradiction (Hne (eq_reflexivity n)).
   Qed.
 
   Theorem eqnat_proof_irrelevance :
-    forall n : nat,
-    forall m : nat,
-    forall H_EQ1 : eqnat n m,
-    forall H_EQ2 : eqnat n m,
+    forall n1 : nat,
+    forall n2 : nat,
+    forall H_EQ1 : eqnat n1 n2,
+    forall H_EQ2 : eqnat n1 n2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros n m H_EQ1 H_EQ2.
-    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ1).
-    rewrite <- (calc_eqnat_eq_rect_eq n m H_EQ2).
-    rewrite <- (calc_eqnat_const n m H_EQ1 H_EQ2).
-    reflexivity.
+    intros n.
+    exact (calc_eq_proof_irrelevance n (eq_dec_nat n) (calc_eqnat_is n)).
   Qed.
 
   Corollary eqnat_K :
@@ -340,9 +359,7 @@ Module MyUtilities.
   Qed.
 
   Let lenat : nat -> nat -> Prop :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    le n1 n2
+    le
   .
 
   Theorem lenat_proof_irrelevance :
@@ -393,7 +410,7 @@ Module MyUtilities.
 
   End ArithProofIrrelevance.
 
-  Section MY_FINSET.
+  Section MyFin.
 
   Inductive FinSet : nat -> Set :=
   | FZ : forall n : nat, FinSet (S n) 
@@ -571,7 +588,7 @@ Module MyUtilities.
       + exact (eq_congruence (FS n') (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i'))) i' IH).
   Defined.
 
-  End MY_FINSET.
+  End MyFin.
 
   Section SIMPLE_LOGIC.
 
@@ -987,6 +1004,25 @@ Module MyUtilities.
     fun p : {i : I & prod (A i) (B i)} =>
     match p with
     | existT _ i (x, y) => f i x y
+    end
+  .
+
+  Definition fmapMaybe {A : Type} {B : Type} : (A -> B) -> (option A -> option B) :=
+    fun f : A -> B =>
+    fun x : option A =>
+    match x return option B with
+    | None => None
+    | Some x' => Some (f x')
+    end
+  .
+
+  Definition elemIndex {A : Type} : forall x : A, (forall x' : A, {x = x'} + {x <> x'}) -> forall xs : list A, option (FinSet (length xs)) :=
+    fun x : A =>
+    fun eq_dec : forall x' : A, {x = x'} + {x <> x'} =>
+    fix elemIndex_fix (xs : list A) : option (FinSet (length xs)) :=
+    match xs as xs0 return option (FinSet (length xs0)) with
+    | [] => None
+    | x' :: xs' => if eq_dec x' then Some (FZ (length xs')) else fmapMaybe (FS (length xs')) (elemIndex_fix xs')
     end
   .
 

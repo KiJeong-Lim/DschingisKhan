@@ -1006,18 +1006,6 @@ Module MyEnsembleNova.
 
   Context {A : Type}.
 
-  Lemma isSubsetOf_insert :
-    forall x0 : A,
-    forall X1 : ensemble A,
-    forall X2 : ensemble A,
-    isSubsetOf X1 X2 ->
-    isSubsetOf (insert x0 X1) (insert x0 X2).
-  Proof with firstorder.
-    unfold isSubsetOf, insert.
-    intros x0 X1 X2 H_incl x.
-    do 2 rewrite in_union_iff, in_singleton_iff...
-  Qed.
-
   Lemma in_append_implies :
     forall xs1 : list A,
     forall xs2 : list A,
@@ -1078,6 +1066,44 @@ Module MyEnsembleNova.
   Qed.
 
   End ExtraFacts.
+
+  Lemma isSubsetOf_insert {A : Type} :
+    forall x0 : A,
+    forall X1 : ensemble A,
+    forall X2 : ensemble A,
+    isSubsetOf X1 X2 ->
+    isSubsetOf (insert x0 X1) (insert x0 X2).
+  Proof with firstorder.
+    unfold isSubsetOf, insert.
+    intros x0 X1 X2 H_incl x.
+    do 2 rewrite in_union_iff, in_singleton_iff...
+  Qed.
+
+  Global Hint Resolve isSubsetOf_insert : my_hints.
+
+  Lemma isSubsetOf_singleton {A : Type} :
+    forall x : A,
+    forall X : ensemble A,
+    x \in X ->
+    \left\{ x \right\} \subseteq X.
+  Proof with firstorder.
+    intros x X H x0.
+    rewrite in_singleton_iff.
+    intros Heq.
+    subst...
+  Qed.
+
+  Global Hint Resolve isSubsetOf_singleton : my_hints.
+
+  Lemma isSubsetOf_empty {A : Type} :
+    forall X : ensemble A,
+    \emptyset \subseteq X.
+  Proof with firstorder.
+    intros X x.
+    rewrite in_empty_iff...
+  Qed.
+
+  Global Hint Resolve isSubsetOf_empty : my_hints.
 
 End MyEnsembleNova.
 

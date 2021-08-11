@@ -324,7 +324,6 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with eauto with *.
     intros bs b H.
     apply (in_Cl [b])...
-    intros b1 [H0 | []]; subst...
   Qed.
 
   Local Hint Resolve fact3_of_1_2_8 : core.
@@ -579,15 +578,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     - intros H1.
       assert (H2 := lemma1_of_1_2_13 n bs H).
       assert (H3 := lemma3_of_1_2_13 bs H). 
-      assert (claim1 : inconsistent (Cl (insert (enumB n) (CompleteFilter bs)))).
-      { apply (inconsistent_isSubsetOf (Cl (insert (enumB n) (improveFilter bs n))))...
-        apply fact4_of_1_2_8.
-        intros b.
-        do 2 rewrite in_insert_iff.
-        intros [Heq | H4]...
+      enough (claim1 : inconsistent (Cl (insert (enumB n) (CompleteFilter bs)))).
+      { assert (H4 := proj2 H0 claim1).
+        now firstorder.
       }
-      assert (H4 := proj2 H0 claim1).
-      now firstorder.
+      apply (inconsistent_isSubsetOf (Cl (insert (enumB n) (improveFilter bs n))))...
   Qed.
 
   Theorem theorem_of_1_2_14 :
