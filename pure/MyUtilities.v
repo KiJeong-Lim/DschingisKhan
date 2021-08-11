@@ -577,7 +577,7 @@ Module MyUtilities.
     n1 <= n2
   .
 
-  Lemma lenat_K :
+  Lemma lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall Hle1 : n1 <= n2,
