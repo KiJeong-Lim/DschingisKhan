@@ -3,7 +3,6 @@ Require Import Coq.Arith.Peano_dec.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
-Require Import DschingisKhan.projects.SmullyanGIT.Chapter1.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
