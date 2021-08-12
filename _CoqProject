@@ -12,8 +12,7 @@ classical/ExclusiveMiddle.v
 classical/DomainTheory.v
 
 projects/PropositionalLogic/Basics.v
-projects/PropositionalLogic/Soundness.v
-projects/PropositionalLogic/Completeness.v
+projects/PropositionalLogic/MetaTheorems.v
 projects/PropositionalLogic.v
 projects/SmullyanGIT/Chapter1.v
 projects/SmullyanGIT.v

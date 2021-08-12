@@ -229,11 +229,11 @@ Module SemanticsOfPL.
     end
   .
 
-  Variant satifisfies : env -> formula -> Prop :=
-  | IsModel : forall v : env, forall p : formula, eval_formula v p -> satifisfies v p
+  Variant satisfies : env -> formula -> Prop :=
+  | IsModel : forall v : env, forall p : formula, eval_formula v p -> satisfies v p
   .
 
-  Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satifisfies v h) -> satifisfies v c) (at level 70, no associativity) : type_scope.
+  Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
 
   Lemma extendEntails {hs1 : ensemble formula} :
     forall c : formula,
@@ -566,8 +566,7 @@ Module LindenbaumBooleanAlgebraOnPL.
         apply ByAssumption...
       * apply DisjunctionI2.
         apply ConjunctionI; apply ByAssumption...
-        apply in_insert_iff.
-        right...
+        apply in_insert_iff, or_intror...
   Qed.
 
   Next Obligation with eauto with *.
@@ -672,6 +671,8 @@ Module LindenbaumBooleanAlgebraOnPL.
         * apply H.
   Qed.
 
+  Global Hint Resolve leq_LBA : my_hints.
+
   Lemma andBs_LBA :
     forall ps : list formula,
     forall hs : ensemble formula,
@@ -723,8 +724,7 @@ Module LindenbaumBooleanAlgebraOnPL.
           apply (extendInfers (ImplicationF p c) H2)...
           apply (ImplicationE p c).
           * apply ByAssumption...
-          * apply ByAssumption, in_insert_iff.
-            right...
+          * apply ByAssumption, in_insert_iff, or_intror...
       - intros [hs' [H0 H1]].
         destruct (in_dec eq_formula_dec p ps) as [H_yes | H_no].
         + assert (claim5 : forall h : formula, In h ps -> member h hs) by firstorder.
@@ -783,5 +783,7 @@ Module LindenbaumBooleanAlgebraOnPL.
         }
     }
   Qed.
+
+  Global Hint Resolve andBs_LBA : my_hints.
 
 End LindenbaumBooleanAlgebraOnPL.
