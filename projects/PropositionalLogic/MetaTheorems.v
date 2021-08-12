@@ -1001,9 +1001,8 @@ Module CompletenessOfPL.
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPL PropertiesOfPropostionalLogic SoundnessOfPL.
 
-  Variant makeEnv (bs : ensemble formula) (i : pvar) : value :=
-  | pos_pvar : member (AtomF i) bs -> makeEnv bs i
-  | neg_pvar : ~ member (AtomF i) bs -> makeEnv bs i
+  Definition makeEnv : ensemble formula -> env :=
+    preimage AtomF
   .
 
   Parameter ModelExistsIfConsistent : forall hs : ensemble formula, ~ hs |- ContradictionF -> MaximalConsistentSet hs == eval_formula (makeEnv (MaximalConsistentSet hs)).
