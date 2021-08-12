@@ -1,7 +1,4 @@
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Lists.List.
-Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.classical.ExclusiveMiddle.
 Require Import DschingisKhan.pure.CBA.
 Require Import DschingisKhan.pure.MyStructures.

@@ -229,8 +229,8 @@ Module SemanticsOfPL.
     end
   .
 
-  Variant satisfies : env -> formula -> Prop :=
-  | IsModel : forall v : env, forall p : formula, eval_formula v p -> satisfies v p
+  Variant satisfies (v : env) (p : formula) : Prop :=
+  | IsModel : eval_formula v p -> satisfies v p
   .
 
   Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
@@ -671,8 +671,6 @@ Module LindenbaumBooleanAlgebraOnPL.
         * apply H.
   Qed.
 
-  Global Hint Resolve leq_LBA : my_hints.
-
   Lemma andBs_LBA :
     forall ps : list formula,
     forall hs : ensemble formula,
@@ -783,7 +781,5 @@ Module LindenbaumBooleanAlgebraOnPL.
         }
     }
   Qed.
-
-  Global Hint Resolve andBs_LBA : my_hints.
 
 End LindenbaumBooleanAlgebraOnPL.
