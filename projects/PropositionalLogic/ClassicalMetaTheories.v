@@ -291,7 +291,7 @@ Module SoundnessOfPL.
     inversion H4; subst...
   Qed.
 
-  Theorem Soundness (hs : ensemble formula) (c : formula) (_infer : hs |- c) :
+  Theorem SoundnessOfPropositionalLogic (hs : ensemble formula) (c : formula) (_infer : hs |- c) :
     hs |= c.
   Proof with firstorder.
     induction _infer.
@@ -551,7 +551,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     induction p...
   Qed.
 
-  Corollary Completeness :
+  Corollary CompletenessOfPropositionalLogic :
     forall hs : ensemble formula,
     forall c : formula,
     hs |= c ->
