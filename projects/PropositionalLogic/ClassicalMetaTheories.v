@@ -25,7 +25,7 @@ Module SoundnessOfPL.
   Lemma ContradictionI_preserves {hs : ensemble formula} :
     forall a : formula,
     hs |= a ->
-    hs |= (NegationF a) ->
+    hs |= NegationF a ->
     hs |= ContradictionF.
   Proof with simpl in *; tauto.
     intros a H H0 v H1.
@@ -92,7 +92,7 @@ Module SoundnessOfPL.
     forall b : formula,
     hs |= a ->
     hs |= b ->
-    hs |= (ConjunctionF a b).
+    hs |= ConjunctionF a b.
   Proof with simpl in *; tauto.
     intros a b H H0 v H1.
     constructor.
