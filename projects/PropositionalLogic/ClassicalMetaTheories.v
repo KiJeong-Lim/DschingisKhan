@@ -319,7 +319,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
 
-  Definition makeEnv : ensemble formula -> env :=
+  Definition makeModelFromMaximalConsistentSet : ensemble formula -> env :=
     preimage AtomF
   .
 
@@ -327,7 +327,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     forall hs : ensemble formula,
     ~ hs |- ContradictionF ->
     forall p : formula,
-    member p (MaximalConsistentSet hs) <-> member p (eval_formula (makeEnv (MaximalConsistentSet hs))).
+    member p (MaximalConsistentSet hs) <-> eval_formula (makeModelFromMaximalConsistentSet (MaximalConsistentSet hs)) p.
   Proof with eauto with *.
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
@@ -366,9 +366,10 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     }
     assert ( case_AtomF :
       forall i : pvar,
-      member (AtomF i) hs_hat <-> member i (preimage AtomF hs_hat)
+      member (AtomF i) hs_hat <-> eval_formula (preimage AtomF hs_hat) (AtomF i)
     ).
     { intros i.
+      transitivity (member i (preimage AtomF hs_hat))...
       rewrite in_preimage_iff...
     }
     assert ( case_ContradictonF :
@@ -544,6 +545,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
           apply case_ImplicationF in H, H0...
       }
     }
+    unfold makeModelFromMaximalConsistentSet.
     induction p...
   Qed.
 
@@ -553,7 +555,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     hs |= c ->
     hs |- c.
   Proof with try now firstorder.
-    intros hs c H_entail.
+    intros hs c H_entails.
     destruct (classic (hs |- c)) as [H_yes | H_no].
     - apply H_yes.
     - assert (claim1 : ~ insert (NegationF c) hs |- ContradictionF).
@@ -562,7 +564,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       }
       assert (claim2 : isFilter (MaximalConsistentSet (insert (NegationF c) hs))) by apply theorem_of_1_2_14, lemma1_of_1_3_8.
       assert (H_eq := ModelExistsIfConsistent (insert (NegationF c) hs) claim1).
-      apply (completeness_theorem_prototype hs c H_entail (makeEnv (MaximalConsistentSet (insert (NegationF c) hs)))).
+      apply (completeness_theorem_prototype hs c H_entails (makeModelFromMaximalConsistentSet (MaximalConsistentSet (insert (NegationF c) hs)))).
       + unfold equiconsistent.
         transitivity (inconsistent (MaximalConsistentSet (insert (NegationF c) hs))).
         * apply theorem_of_1_3_10.
