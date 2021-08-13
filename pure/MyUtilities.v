@@ -263,7 +263,7 @@ Module MyUtilities.
     - contradiction (Hne H_EQ1).
   Qed.
 
-  Theorem calc_eq_proof_irrelevance :
+  Theorem choice_eq_proof_irrelevance_prototype :
     forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
@@ -354,7 +354,7 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     intros n.
-    exact (calc_eq_proof_irrelevance n (eq_lem_nat n) (choice_eqnat_is n)).
+    exact (choice_eq_proof_irrelevance_prototype n (eq_lem_nat n) (choice_eqnat_is n)).
   Qed.
 
   Corollary eqnat_K :

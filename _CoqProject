@@ -1,5 +1,4 @@
 -Q . DschingisKhan
-
 pure/MyUtilities.v
 pure/MyStructures.v
 pure/DomainTheory.v
@@ -7,10 +6,8 @@ pure/UntypedLambdaCalculus.v
 pure/SetTheory.v
 pure/CBA.v
 pure/MyCoin.v
-
 classical/ExclusiveMiddle.v
 classical/DomainTheory.v
-
 projects/PropositionalLogic/Basics.v
 projects/PropositionalLogic/ConstructiveMetaTheories.v
 projects/PropositionalLogic/ClassicalMetaTheories.v
