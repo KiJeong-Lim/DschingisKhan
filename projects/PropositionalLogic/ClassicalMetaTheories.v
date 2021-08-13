@@ -6,7 +6,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 Require Import DschingisKhan.projects.PropositionalLogic.Basics.
 Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheories.
 
-Module SoundnessOfPL.
+Module SoundnessOfPL. (* Thanks to Taeseung Sohn *)
 
   Import MyEnsemble MyEnsembleNova ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
@@ -291,7 +291,7 @@ Module SoundnessOfPL.
     inversion H4; subst...
   Qed.
 
-  Theorem SoundnessOfPropositionalLogic (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
+  Theorem SoundnessTheoremOfThePropositionalLogic (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
     hs |= c.
   Proof with firstorder.
     induction H_infers.
@@ -550,7 +550,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     induction p...
   Qed.
 
-  Corollary CompletenessOfPropositionalLogic :
+  Corollary CompletenessTheoremOfThePropositionalLogic :
     forall hs : ensemble formula,
     forall c : formula,
     hs |= c ->

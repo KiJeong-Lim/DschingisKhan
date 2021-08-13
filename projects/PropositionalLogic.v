@@ -13,8 +13,20 @@ Module PropositionLogic.
     hs |- c <-> hs |= c.
   Proof.
     split.
-    - apply SoundnessOfPropositionalLogic.
-    - apply CompletenessOfPropositionalLogic.
+    - apply SoundnessTheoremOfThePropositionalLogic.
+    - apply CompletenessTheoremOfThePropositionalLogic.
+  Qed.
+
+  Theorem CompactnessTheoremOfThePropositionalLogic (hs : ensemble formula) (c : formula) :
+    hs |= c <-> (exists ps : list formula, (forall p : formula, In p ps -> member p hs) /\ (exists hs0 : ensemble formula, (forall h : formula, In h ps <-> member h hs0) /\ hs0 |= c)).
+  Proof with try now firstorder.
+    split.
+    - intros hs_entails_c.
+      assert (hs_infers_c := proj2 (infers_iff_entails hs c) hs_entails_c).
+      destruct (infers_has_compactness hs c hs_infers_c) as [ps [hs_includes_ps [hs0 [hs0_finite hs0_infers_c]]]].
+      assert (hs0_entails_c := proj1 (infers_iff_entails hs0 c) hs0_infers_c)...
+    - intros [ps [hs_includes_ps [hs0 [hs0_finite hs0_entails_c]]]].
+      apply (extend_entails hs0_entails_c)...
   Qed.
 
 End PropositionLogic.
