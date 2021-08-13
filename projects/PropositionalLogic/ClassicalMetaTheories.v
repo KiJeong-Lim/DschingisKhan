@@ -326,7 +326,8 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
   Theorem ModelExistsIfConsistent :
     forall hs : ensemble formula,
     ~ hs |- ContradictionF ->
-    MaximalConsistentSet hs == eval_formula (makeEnv (MaximalConsistentSet hs)).
+    forall p : formula,
+    member p (MaximalConsistentSet hs) <-> member p (eval_formula (makeEnv (MaximalConsistentSet hs))).
   Proof with eauto with *.
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
@@ -378,29 +379,29 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       tauto.
     }
     assert ( case_NegationF :
-      forall p : formula,
-      (member p hs_hat <-> eval_formula (preimage AtomF hs_hat) p) ->
-      (member (NegationF p) hs_hat <-> eval_formula (preimage AtomF hs_hat) (NegationF p))
+      forall p1 : formula,
+      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
+      (member (NegationF p1) hs_hat <-> eval_formula (preimage AtomF hs_hat) (NegationF p1))
     ).
-    { intros p IHp.
+    { intros p1 IHp1.
       simpl.
-      rewrite <- IHp.
+      rewrite <- IHp1.
       rewrite claim4.
       split.
       - intros H H0.
         contradiction claim11.
         apply inconsistent_iff.
-        apply (ContradictionI p).
+        apply (ContradictionI p1).
         + apply claim4...
         + apply H.
       - intros H.
         apply claim4, claim5.
         intros H0.
         apply claim4.
-        apply (ContradictionI (NegationF p)).
-        + enough (aux1 : MaximalConsistentSet hs |- ImplicationF p ContradictionF).
+        apply (ContradictionI (NegationF p1)).
+        + enough (aux1 : MaximalConsistentSet hs |- ImplicationF p1 ContradictionF).
           { apply NegationI.
-            apply (ImplicationE p).
+            apply (ImplicationE p1).
             - apply (extend_infers aux1)...
             - apply ByAssumption...
           }
@@ -543,8 +544,6 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
           apply case_ImplicationF in H, H0...
       }
     }
-    intros p.
-    enough (it_is_sufficient_to_show : member p hs_hat <-> eval_formula (preimage AtomF hs_hat) p) by exact it_is_sufficient_to_show.
     induction p...
   Qed.
 

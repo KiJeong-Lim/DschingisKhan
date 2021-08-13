@@ -6,7 +6,7 @@ Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module SmullyanGIT. (* "Goedel's Incompleteness Theorems" of "Raymond M. Smullyan" *)
+Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond M. Smullyan" *)
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova.
 
