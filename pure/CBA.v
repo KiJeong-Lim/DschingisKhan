@@ -397,7 +397,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     fun bs : ensemble B =>
     fix improveFilter_fix (n : nat) {struct n} : ensemble B :=
     match n with
-    | 0 => bs
+    | O => bs
     | S n' =>
       let bs' : ensemble B := improveFilter_fix n' in
       Cl (union bs' (insertion bs' n'))
@@ -552,7 +552,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     split.
     - intros [b [H0 H1]].
       assert (H2 := in_CompleteFilter 0).
-      exists b...
+      exists (b)...
     - intros [b [H0 H1]].
       inversion H0; subst.
       apply (lemma1_of_1_2_13 n bs H)...
@@ -570,7 +570,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     intros bs H n H0.
     split.
     - intros [b [H1 H2]].
-      exists b.
+      exists (b).
       split; [apply fact3_of_1_2_8, in_insert_iff | apply H2]...
     - intros H1.
       assert (H2 := lemma1_of_1_2_13 n bs H).
@@ -612,7 +612,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     assert (claim4 : isFilter (CompleteFilter bs)).
     { split.
       - destruct (proj1 H) as [b0 H0].
-        exists b0...
+        exists (b0)...
       - split...
     }
     assert (claim5 : isComplete (CompleteFilter bs)).
@@ -659,7 +659,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     }
     intros [b' [H6 H7]].
     assert (H8 : isSubsetOf (Cl (insert b (CompleteFilter bs1))) (Cl (insert b bs2))) by apply fact4_of_1_2_8, claim1.
-    exists b'...
+    exists (b')...
   Qed.
 
   Lemma corollary_of_1_2_16_aux2 :
@@ -686,12 +686,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     }
     split.
     - intros [b' [H6 H7]].
-      exists b'.
+      exists (b').
       split; [apply fact3_of_1_2_8, in_union_iff | apply H7]...
     - intros H6.
       destruct (corollary_of_1_2_16_aux1 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5 H6) as [b' [H7 H8]].
       apply (proj2 H3).
-      exists b'.
+      exists (b').
       split; [apply fact5_of_1_2_8 | apply H8]...
   Qed.
 

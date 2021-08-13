@@ -720,36 +720,35 @@ Module MyUtilities.
 
   Section BORING.
 
-  Definition AckermannSpec : (nat -> nat -> nat) -> Prop :=
-    fun ackermann : nat -> nat -> nat =>
-    let spec1 : Prop := forall n : nat, ackermann 0 n = n + 1 in
-    let spec2 : Prop := forall m : nat, ackermann (m + 1) 0 = ackermann m 1 in
-    let spec3 : Prop := forall m : nat, forall n : nat, ackermann (m + 1) (n + 1) = ackermann m (ackermann (m + 1) n) in
-    spec1 /\ spec2 /\ spec3
+  Variant AckermannFuncSpec (ack : nat -> nat -> nat) : Prop :=
+  | AckermannCharacterization :
+    (forall n : nat, ack 0 n = n + 1) ->
+    (forall m : nat, ack (m + 1) 0 = ack m 1) ->
+    (forall m : nat, forall n : nat, ack (m + 1) (n + 1) = ack m (ack (m + 1) n)) ->
+    AckermannFuncSpec ack
   .
 
-  Definition Ackermann : nat -> nat -> nat :=
-    fix Ackermann_fix (m : nat) {struct m} : nat -> nat :=
+  Definition AckermannFunc : nat -> nat -> nat :=
+    let AckermannFunc_aux1 : nat -> (nat -> nat) -> nat := nat_rect (fun _ : nat => (nat -> nat) -> nat) (fun kont : nat -> nat => kont 1) (fun n' : nat => fun call_n' : (nat -> nat) -> nat => fun kont : nat -> nat => kont (call_n' kont)) in
+    fix AckermannFunc_fix (m : nat) {struct m} : nat -> nat :=
     match m return nat -> nat with
     | O => S
     | S m' =>
       fun n : nat =>
-      nat_rect (fun _ : nat => (nat -> nat) -> nat) (fun kont : nat -> nat => kont 1) (fun n' : nat => fun call_n' : (nat -> nat) -> nat => fun kont : nat -> nat => kont (call_n' kont)) n (Ackermann_fix m')
+      AckermannFunc_aux1 n (AckermannFunc_fix m')
     end
   .
 
-  Lemma Ackermann_good :
-    AckermannSpec Ackermann.
+  Lemma AckermannFuncSatisfiesItsSpecification :
+    AckermannFuncSpec AckermannFunc.
   Proof with (lia || eauto).
-    unfold AckermannSpec.
-    repeat split.
-    - induction n; simpl...
-    - induction m.
-      + simpl...
-      + replace (S m + 1) with (S (S m))...
-    - induction m; induction n; simpl in *...
-      + replace (m + 1) with (S m)...
-      + replace (m + 1) with (S m) in *...
+    constructor.
+    - induction n as [| n' IHn]; simpl...
+    - intros m.
+      replace (m + 1) with (S m)...
+    - induction m as [| m' IHm]; induction n as [| n' IHn]; simpl in *...
+      + replace (m' + 1) with (S m')...
+      + replace (m' + 1) with (S m') in *...
         rewrite IHn...
   Qed.
 

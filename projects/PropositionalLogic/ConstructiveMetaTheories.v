@@ -365,7 +365,7 @@ Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive C
     { intros hs H c.
       split.
       - intros H0.
-        exists \emptyset.
+        exists (\emptyset).
         split.
         + intros p.
           rewrite in_empty_iff.
@@ -410,7 +410,7 @@ Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive C
         destruct (in_dec eq_formula_dec p ps) as [H_yes | H_no].
         + assert (claim5 : forall h : formula, In h ps -> member h hs) by firstorder.
           assert (claim6 : exists hs' : ensemble formula, (forall h : formula, In h ps <-> member h hs') /\ hs' |- c).
-          { exists hs'.
+          { exists (hs').
             split.
             - intros h'.
               split.
@@ -540,7 +540,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     intros ps H c H0.
     assert (H1 : \left\{ fold_right andB trueB ps \right\} |- c) by apply leq_LBA, H0.
     destruct (proj1 (andBs_LBA ps hs H c) H1) as [hs' [H2 H3]].
-    exists hs'.
+    exists (hs').
     split...
     intros h H4.
     apply H.
@@ -582,7 +582,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
           * apply (extend_infers H6)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
-      exists ps...
+      exists (ps)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists (remove eq_formula_dec a ps).
@@ -626,16 +626,16 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
           * apply (extend_infers H6)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
-      exists ps...
+      exists (ps)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
-      exists ps...
+      exists (ps)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
-      exists ps...
+      exists (ps)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
-      exists ps...
+      exists (ps)...
     }
     { destruct IHinfers1 as [ps1 [H2 [hs1' [H5 H8]]]].
       destruct IHinfers2 as [ps2 [H3 [hs2' [H6 H9]]]].
@@ -749,7 +749,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     inversion H; subst.
     destruct (infers_has_compactness hs c H0) as [ps [H1 H2]].
     assert (claim1 := proj2 (andBs_LBA ps hs H1 c) H2).
-    exists ps.
+    exists (ps).
     - exact H1.
     - apply leq_LBA...
   Qed.
@@ -762,7 +762,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     exists n : nat, enum_formula n = p /\ n < bound.
   Proof with lia || eauto with *.
     induction ps as [| p ps [bound2 H]]; simpl.
-    - exists 0...
+    - exists (O)...
     - destruct (formula_is_enumerable p) as [bound1 H0].
       destruct (le_lt_dec bound1 bound2) as [Hle | Hlt].
       + exists (S bound2).
@@ -805,7 +805,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       + exact H2.
       + apply (extend_infers H0)...
     - intros H.
-      exists ContradictionF.
+      exists (ContradictionF).
       split...
       apply Th_isSubsetOf_Cl...
   Qed.
@@ -957,7 +957,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
   Proof with eauto with *.
     induction ps as [| p ps IH]; simpl.
     - intros bs H.
-      exists O...
+      exists (O)...
     - intros bs H.
       assert (claim1 : forall h : formula, In h ps -> member h (FullAxmSet bs)) by firstorder.
       assert (claim2 : member p (FullAxmSet bs)) by firstorder.
@@ -969,11 +969,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       }
       destruct (IH bs claim1) as [n' H1].
       destruct (le_lt_dec n' n) as [Hle | Hlt].
-      + exists n.
+      + exists (n).
         intros h [H2 | H2].
         * subst...
         * apply (lemma1_of_1_2_12  n' n Hle (Th bs))...
-      + exists n'.
+      + exists (n').
         intros h [H2 | H2]; subst.
         * assert (H3 : n <= n') by lia.
           apply (lemma1_of_1_2_12 n n' H3 (Th bs))...
@@ -991,11 +991,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     assert (H5 : isFilter (improveFilter (Th bs) m)) by apply lemma1_of_1_2_11, lemma1_of_1_3_8.
     assert (H6 := proj1 H5).
     destruct (proj2 H5) as [H7 H8].
-    exists m.
+    exists (m).
     apply (H7 (fold_right andB trueB ps) p).
     - apply fact5_of_1_2_8.
       + apply H5.
-      + exists ps...
+      + exists (ps)...
     - apply leq_LBA, (andBs_LBA ps hs')...
       firstorder.
   Qed.
@@ -1068,7 +1068,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         transitivity (insert p1 (MaximalConsistentSet bs))...
       - intros H0.
         assert (claim5_aux1 : insert p1 (MaximalConsistentSet bs) |- ContradictionF) by now apply inconsistent_iff.
-        exists ContradictionF.
+        exists (ContradictionF).
         split.
         + apply H, claim3, NegationI...
         + reflexivity.
