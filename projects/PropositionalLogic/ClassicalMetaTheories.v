@@ -342,14 +342,14 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     set (hs_hat := MaximalConsistentSet hs).
     destruct (theorem_of_1_3_10 hs) as [claim2 [claim3 [claim4 [claim5 claim6]]]].
     fold hs_hat in claim2, claim3, claim4, claim5, claim6.
-    assert (claim7 := TH_isSubsetOf_Cl).
-    assert (claim8 := Cl_isSubsetOf_TH).
+    assert (claim7 := Th_isSubsetOf_Cl).
+    assert (claim8 := Cl_isSubsetOf_Th).
     assert (claim9 : equiconsistent (Cl hs) hs_hat).
     { split.
       - apply inconsistent_isSubsetOf.
-        transitivity (TH hs)...
+        transitivity (Th hs)...
       - intros H.
-        apply (inconsistent_isSubsetOf (TH hs))...
+        apply (inconsistent_isSubsetOf (Th hs))...
         apply claim3...
     }
     assert (claim10 : ~ inconsistent hs_hat).

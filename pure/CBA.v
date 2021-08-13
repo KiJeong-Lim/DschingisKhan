@@ -226,11 +226,10 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     apply (proj1 (H2 b)), (H1 b1 b2)...
   Qed.
 
-  Variant Cl : ensemble B -> ensemble B :=
+  Variant Cl (bs2 : ensemble B) : ensemble B :=
   | in_Cl :
     forall bs1 : list B,
     forall b2 : B,
-    forall bs2 : ensemble B,
     (forall b1 : B, In b1 bs1 -> member b1 bs2) ->
     fold_right andB trueB bs1 =< b2 ->
     member b2 (Cl bs2)
@@ -288,8 +287,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with ((now firstorder) || eauto with *).
     intros bs.
     split.
-    - exists trueB.
-      apply (in_Cl []); simpl...
+    - exists (trueB).
+      exists ([]); simpl...
     - split.
       + intros b1 b2 H.
         inversion H; subst...
@@ -298,7 +297,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
         inversion H0; subst.
         rename bs0 into bs2.
         intros H5.
-        apply (in_Cl (bs1 ++ bs2)).
+        exists (bs1 ++ bs2).
         * intros b0.
           rewrite in_app_iff...
         * rewrite leCBA_andB_append, H5...
@@ -323,7 +322,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     isSubsetOf bs (Cl bs).
   Proof with eauto with *.
     intros bs b H.
-    apply (in_Cl [b])...
+    exists ([b])...
   Qed.
 
   Local Hint Resolve fact3_of_1_2_8 : core.
@@ -336,7 +335,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Proof with eauto with *.
     intros bs1 bs2 H_incl b H.
     inversion H; subst.
-    apply (in_Cl bs0)...
+    exists (bs0)...
   Qed.
 
   Local Hint Resolve fact4_of_1_2_8 : core.
@@ -386,10 +385,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Local Hint Resolve proposition1_of_1_2_9 : core.
 
-  Variant insertion : ensemble B -> nat -> ensemble B :=
+  Variant insertion (bs : ensemble B) (n : nat) : ensemble B :=
   | in_insertion :
-    forall bs : ensemble B,
-    forall n : nat,
     equiconsistent bs (Cl (insert (enumB n) bs)) ->
     member (enumB n) (insertion bs n)
   .

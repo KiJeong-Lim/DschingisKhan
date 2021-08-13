@@ -471,15 +471,14 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPL.
 
-  Inductive TH : ensemble formula -> ensemble formula :=
-  | in_Theory :
-    forall hs : ensemble formula,
+  Variant Th (hs : ensemble formula) : ensemble formula :=
+  | in_Th :
     forall c : formula,
     hs |- c ->
-    member c (TH hs)
+    member c (Th hs)
   .
 
-  Local Hint Constructors TH : core.
+  Local Hint Constructors Th : core.
 
   Local Instance formula_isCBA : @isCBA formula formula_isSetoid :=
     LindenbaumBooleanAlgebra
@@ -487,7 +486,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
 
   Lemma lemma1_of_1_3_8 :
     forall bs : ensemble formula,
-    isFilter (TH bs).
+    isFilter (Th bs).
   Proof with eauto with *.
     intros bs.
     split.
@@ -519,9 +518,9 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
 
   Local Hint Resolve lemma1_of_1_3_8 : core.
 
-  Lemma Cl_isSubsetOf_TH :
+  Lemma Cl_isSubsetOf_Th :
     forall hs : ensemble formula,
-    isSubsetOf (Cl hs) (TH hs).
+    isSubsetOf (Cl hs) (Th hs).
   Proof with eauto with *.
     intros hs.
     enough ( claim1 :
@@ -548,7 +547,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     apply H2...
   Qed.
 
-  Local Hint Resolve Cl_isSubsetOf_TH : core.
+  Local Hint Resolve Cl_isSubsetOf_Th : core.
 
   Lemma infers_has_compactness :
     forall hs : ensemble formula,
@@ -742,9 +741,9 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     }
   Qed.
 
-  Lemma TH_isSubsetOf_Cl :
+  Lemma Th_isSubsetOf_Cl :
     forall hs : ensemble formula,
-    isSubsetOf (TH hs) (Cl hs).
+    isSubsetOf (Th hs) (Cl hs).
   Proof with eauto with *.
     intros hs c H.
     inversion H; subst.
@@ -781,7 +780,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
   Definition Filter : ensemble formula -> nat -> ensemble formula :=
     fun hs : ensemble formula =>
     fun n : nat =>
-    improveFilter (TH hs) n
+    improveFilter (Th hs) n
   .
 
   Definition AxmSet : ensemble formula -> nat -> ensemble formula :=
@@ -800,7 +799,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     intros hs.
     split.
     - intros [b' [H [H0 H1]]].
-      assert (claim1 : member b' (TH hs)) by now apply (Cl_isSubsetOf_TH hs b' H).
+      assert (claim1 : member b' (Th hs)) by now apply (Cl_isSubsetOf_Th hs b' H).
       inversion claim1; subst.
       apply (cut_property b' ContradictionF).
       + exact H2.
@@ -808,7 +807,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     - intros H.
       exists ContradictionF.
       split...
-      apply TH_isSubsetOf_Cl...
+      apply Th_isSubsetOf_Cl...
   Qed.
 
   Local Hint Resolve fact1_of_1_2_8 fact2_of_1_2_8 fact3_of_1_2_8 fact4_of_1_2_8 fact5_of_1_2_8 lemma1_of_1_2_11 inconsistent_isSubsetOf inconsistent_iff : core.
@@ -849,14 +848,14 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
   Lemma lemma1_of_1_3_9 :
     forall n : nat,
     forall hs : ensemble formula,
-    isSubsetOf (Filter hs n) (TH (AxmSet hs n)) /\ isSubsetOf (TH (AxmSet hs n)) (Filter hs n).
+    isSubsetOf (Filter hs n) (Th (AxmSet hs n)) /\ isSubsetOf (Th (AxmSet hs n)) (Filter hs n).
   Proof with eauto with *.
     unfold Filter.
     induction n as [| n IH]; simpl.
     - intros hs...
     - intros hs.
       destruct (IH hs) as [H H0].
-      assert (claim1 : isSubsetOf (Cl (union (improveFilter (TH hs) n) (insertion (improveFilter (TH hs) n) n))) (Cl (TH (union (AxmSet hs n) (insertion (Filter hs n) n))))).
+      assert (claim1 : isSubsetOf (Cl (union (improveFilter (Th hs) n) (insertion (improveFilter (Th hs) n) n))) (Cl (Th (union (AxmSet hs n) (insertion (Filter hs n) n))))).
       { apply fact4_of_1_2_8.
         intros b.
         rewrite in_union_iff.
@@ -871,11 +870,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         - constructor.
           apply ByAssumption, in_union_iff, or_intror...
       }
-      assert (claim2 : isSubsetOf (Cl (TH (union (AxmSet hs n) (insertion (Filter hs n) n)))) (TH (union (AxmSet hs n) (insertion (Filter hs n) n)))) by apply fact5_of_1_2_8, lemma1_of_1_3_8.
-      assert (claim3 : isSubsetOf (TH (union (AxmSet hs n) (insertion (Filter hs n) n))) (Cl (union (AxmSet hs n) (insertion (Filter hs n) n)))) by apply TH_isSubsetOf_Cl.
-      assert (claim4 : isSubsetOf (Cl (Cl (union (improveFilter (TH hs) n) (insertion (improveFilter (TH hs) n) n)))) (Cl (union (improveFilter (TH hs) n) (insertion (improveFilter (TH hs) n) n)))) by apply fact5_of_1_2_8, fact1_of_1_2_8.
-      assert (claim5 : isSubsetOf (Cl (union (AxmSet hs n) (insertion (Filter hs n) n))) (Cl (Cl (union (improveFilter (TH hs) n) (insertion (improveFilter (TH hs) n) n))))).
-      { transitivity (Cl (union (improveFilter (TH hs) n) (insertion (improveFilter (TH hs) n) n)))...
+      assert (claim2 : isSubsetOf (Cl (Th (union (AxmSet hs n) (insertion (Filter hs n) n)))) (Th (union (AxmSet hs n) (insertion (Filter hs n) n)))) by apply fact5_of_1_2_8, lemma1_of_1_3_8.
+      assert (claim3 : isSubsetOf (Th (union (AxmSet hs n) (insertion (Filter hs n) n))) (Cl (union (AxmSet hs n) (insertion (Filter hs n) n)))) by apply Th_isSubsetOf_Cl.
+      assert (claim4 : isSubsetOf (Cl (Cl (union (improveFilter (Th hs) n) (insertion (improveFilter (Th hs) n) n)))) (Cl (union (improveFilter (Th hs) n) (insertion (improveFilter (Th hs) n) n)))) by apply fact5_of_1_2_8, fact1_of_1_2_8.
+      assert (claim5 : isSubsetOf (Cl (union (AxmSet hs n) (insertion (Filter hs n) n))) (Cl (Cl (union (improveFilter (Th hs) n) (insertion (improveFilter (Th hs) n) n))))).
+      { transitivity (Cl (union (improveFilter (Th hs) n) (insertion (improveFilter (Th hs) n) n)))...
         apply fact4_of_1_2_8.
         intros b.
         do 2 rewrite in_union_iff.
@@ -890,15 +889,15 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     forall c : formula,
     hs |= c ->
     forall E : env,
-    equiconsistent (TH (insert (NegationF c) hs)) (eval_formula E) ->
-    isSubsetOf (TH (insert (NegationF c) hs)) (eval_formula E) ->
+    equiconsistent (Th (insert (NegationF c) hs)) (eval_formula E) ->
+    isSubsetOf (Th (insert (NegationF c) hs)) (eval_formula E) ->
     isFilter (eval_formula E) ->
     hs |- c.
   Proof with eauto with *.
     intros hs c H_entail E.
     set (v := eval_formula E).
     intros H_equiconsistent H_incl H_isFilter.
-    assert (claim1 : inconsistent (TH (insert (NegationF c) hs))).
+    assert (claim1 : inconsistent (Th (insert (NegationF c) hs))).
     { apply H_equiconsistent.
       enough (claim1_aux1 : inconsistent (Cl v))...
       apply inconsistent_iff.
@@ -917,21 +916,20 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         apply ByAssumption, in_insert_iff...
     }
     assert (claim2 : inconsistent (Cl (insert (NegationF c) hs))).
-    { apply (inconsistent_isSubsetOf (TH (insert (NegationF c) hs)))...
-      apply TH_isSubsetOf_Cl.
+    { apply (inconsistent_isSubsetOf (Th (insert (NegationF c) hs)))...
+      apply Th_isSubsetOf_Cl.
     }
     apply NegationE, inconsistent_iff...
   Qed.
 
   Definition MaximalConsistentSet : ensemble formula -> ensemble formula :=
     fun bs : ensemble formula =>
-    CompleteFilter (TH bs)
+    CompleteFilter (Th bs)
   .
 
-  Inductive FullAxmSet : ensemble formula -> ensemble formula :=
+  Variant FullAxmSet (bs : ensemble formula) : ensemble formula :=
   | in_FullAxmSet :
     forall n : nat,
-    forall bs : ensemble formula,
     forall b : formula,
     member b (AxmSet bs n) ->
     member b (FullAxmSet bs)
@@ -941,7 +939,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
 
   Lemma lemma2_of_1_3_9 :
     forall bs : ensemble formula,
-    isSubsetOf (MaximalConsistentSet bs) (TH (FullAxmSet bs)).
+    isSubsetOf (MaximalConsistentSet bs) (Th (FullAxmSet bs)).
   Proof with eauto with *.
     intros bs p H.
     inversion H; subst.
@@ -974,23 +972,23 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       + exists n.
         intros h [H2 | H2].
         * subst...
-        * apply (lemma1_of_1_2_12  n' n Hle (TH bs))...
+        * apply (lemma1_of_1_2_12  n' n Hle (Th bs))...
       + exists n'.
         intros h [H2 | H2]; subst.
         * assert (H3 : n <= n') by lia.
-          apply (lemma1_of_1_2_12 n n' H3 (TH bs))...
+          apply (lemma1_of_1_2_12 n n' H3 (Th bs))...
         * apply H1...
   Qed.
 
   Lemma lemma3_of_1_3_9 :
     forall bs : ensemble formula,
-    isSubsetOf (TH (FullAxmSet bs)) (MaximalConsistentSet bs).
+    isSubsetOf (Th (FullAxmSet bs)) (MaximalConsistentSet bs).
   Proof with eauto with *.
     intros bs p H.
     inversion H; subst.
     destruct (infers_has_compactness (FullAxmSet bs) p H0) as [ps [H1 [hs' [H2 H3]]]].
     destruct (lemma3_of_1_3_9_aux1 ps bs H1) as [m H4].
-    assert (H5 : isFilter (improveFilter (TH bs) m)) by apply lemma1_of_1_2_11, lemma1_of_1_3_8.
+    assert (H5 : isFilter (improveFilter (Th bs) m)) by apply lemma1_of_1_2_11, lemma1_of_1_3_8.
     assert (H6 := proj1 H5).
     destruct (proj2 H5) as [H7 H8].
     exists m.
@@ -1017,13 +1015,13 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
   .
 
   Lemma theorem_of_1_3_10_aux1 (bs : ensemble formula) :
-    isSubsetOf (TH bs) (MaximalConsistentSet bs).
+    isSubsetOf (Th bs) (MaximalConsistentSet bs).
   Proof with eauto with *.
     apply theorem_of_1_2_14...
   Qed.
 
   Lemma theorem_of_1_3_10_aux2 (bs : ensemble formula) :
-    equiconsistent (TH bs) (MaximalConsistentSet bs).
+    equiconsistent (Th bs) (MaximalConsistentSet bs).
   Proof with eauto with *.
     apply lemma3_of_1_2_13...
   Qed.
@@ -1035,17 +1033,17 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     intros p.
     split.
     - intros H.
-      assert (claim1 : member p (TH (MaximalConsistentSet bs))) by now apply Cl_isSubsetOf_TH, fact3_of_1_2_8.
+      assert (claim1 : member p (Th (MaximalConsistentSet bs))) by now apply Cl_isSubsetOf_Th, fact3_of_1_2_8.
       inversion claim1; subst...
     - intros H.
       apply fact5_of_1_2_8.
       + apply theorem_of_1_2_14...
-      + apply TH_isSubsetOf_Cl...
+      + apply Th_isSubsetOf_Cl...
   Qed.
 
   Theorem theorem_of_1_3_10 :
     forall bs : ensemble formula,
-    isSubsetOf (TH bs) (MaximalConsistentSet bs) /\ equiconsistent (TH bs) (MaximalConsistentSet bs) /\ (forall p : formula, member p (MaximalConsistentSet bs) <-> MaximalConsistentSet bs |- p) /\ isMetaDN (MaximalConsistentSet bs) /\ isImplicationFaithful (MaximalConsistentSet bs).
+    isSubsetOf (Th bs) (MaximalConsistentSet bs) /\ equiconsistent (Th bs) (MaximalConsistentSet bs) /\ (forall p : formula, member p (MaximalConsistentSet bs) <-> MaximalConsistentSet bs |- p) /\ isMetaDN (MaximalConsistentSet bs) /\ isImplicationFaithful (MaximalConsistentSet bs).
   Proof with eauto with *.
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
