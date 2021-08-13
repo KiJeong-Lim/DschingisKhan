@@ -317,7 +317,7 @@ End SoundnessOfPL.
 
 Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPL ConstructiveMetaTheoryOnPropositonalLogic.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
 
   Definition makeEnv : ensemble formula -> env :=
     preimage AtomF
@@ -448,10 +448,8 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
       split.
       - intros H.
         destruct (classic (hs_hat |- p1)) as [H_yes | H_no].
-        + left.
-          apply claim4...
-        + right.
-          apply claim4.
+        + apply or_introl, claim4...
+        + apply or_intror, claim4.
           apply (ImplicationE (NegationF p1)).
           { apply (DisjunctionE p1 p2 (ImplicationF (NegationF p1) p2)).
             - apply claim4...

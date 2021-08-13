@@ -7,7 +7,7 @@ Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheorie
 
 Module PropositionLogic.
 
-  Import MyEnsemble MyEnsembleNova ConstructiveMetaTheoryOnPropositonalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPL CompletenessOfPL.
+  Import MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPL CompletenessOfPL.
 
   Theorem infers_iff_entails (hs : ensemble formula) (c : formula) :
     hs |- c <-> hs |= c.

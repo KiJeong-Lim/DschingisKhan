@@ -7,7 +7,7 @@ Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 Require Import DschingisKhan.projects.PropositionalLogic.Basics.
 
-Module LindenbaumBooleanAlgebraOnPL. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
+Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 
   Import BasicSetoidTheory MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
@@ -465,11 +465,11 @@ Module LindenbaumBooleanAlgebraOnPL. (* Reference: "Constructive Completeness Pr
     }
   Qed.
 
-End LindenbaumBooleanAlgebraOnPL.
+End LindenbaumBooleanAlgebraOnPropositionLogic.
 
 Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPL.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic.
 
   Variant Th (hs : ensemble formula) : ensemble formula :=
   | in_Th :
