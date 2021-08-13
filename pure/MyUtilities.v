@@ -237,39 +237,30 @@ Module MyUtilities.
 
   Section DecidableProofIrrelevance.
 
-  Context {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}).
+  Context {A : Type} (x : A) (eq_lem : forall y : A, x = y \/ x <> y).
 
-  Definition calc_eq : forall y : A, x = y -> x = y :=
+  Definition choice_eq : forall y : A, x = y -> x = y :=
     fun y : A =>
     fun H_EQ : x = y =>
-    match eq_dec y return x = y with
-    | left Heq => Heq
-    | right Hne => False_ind (x = y) (Hne H_EQ)
+    match eq_lem y return x = y with
+    | or_introl Heq => Heq
+    | or_intror Hne => False_ind (x = y) (Hne H_EQ)
     end
   .
 
-  Hypothesis calc_eq_is : forall y : A, forall H_EQ : x = y, calc_eq y H_EQ = H_EQ.
+  Hypothesis choice_eq_is : forall y : A, forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
 
-  Lemma calc_eq_const :
+  Lemma choice_eq_const :
     forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
-    calc_eq y H_EQ1 = calc_eq y H_EQ2.
+    choice_eq y H_EQ1 = choice_eq y H_EQ2.
   Proof.
-    unfold calc_eq.
+    unfold choice_eq.
     intros y H_EQ1 H_EQ2.
-    destruct (eq_dec y) as [Heq | Hne].
+    destruct (eq_lem y) as [Heq | Hne].
     - exact (eq_reflexivity Heq).
     - contradiction (Hne H_EQ1).
-  Qed.
-
-  Lemma eq_ind_calc_eq_is :
-    forall y : A,
-    forall H_EQ : x = y,
-    eq_ind x (fun z : A => z = y) (calc_eq y H_EQ) x (calc_eq x (eq_reflexivity x)) = H_EQ.
-  Proof.
-    rewrite (calc_eq_is x (eq_reflexivity x)).
-    exact calc_eq_is.
   Qed.
 
   Theorem calc_eq_proof_irrelevance :
@@ -278,10 +269,18 @@ Module MyUtilities.
     forall H_EQ2 : x = y,
     H_EQ1 = H_EQ2.
   Proof.
+    assert ( claim1 :
+      forall y : A,
+      forall H_EQ : x = y,
+      eq_ind x (fun z : A => z = y) (choice_eq y H_EQ) x (choice_eq x (eq_reflexivity x)) = H_EQ
+    ).
+    { rewrite (choice_eq_is x (eq_reflexivity x)).
+      exact choice_eq_is.
+    }
     intros y H_EQ1 H_EQ2.
-    rewrite <- (eq_ind_calc_eq_is y H_EQ1).
-    rewrite <- (eq_ind_calc_eq_is y H_EQ2).
-    rewrite <- (calc_eq_const y H_EQ1 H_EQ2).
+    rewrite <- (claim1 y H_EQ1).
+    rewrite <- (claim1 y H_EQ2).
+    rewrite <- (choice_eq_const y H_EQ1 H_EQ2).
     reflexivity.
   Qed.
 
@@ -315,24 +314,33 @@ Module MyUtilities.
     end
   .
 
-  Definition calc_eqnat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 -> eqnat n1 n2 :=
+  Definition eq_lem_nat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 \/ ~ eqnat n1 n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    calc_eq n1 (eq_dec_nat n1) n2
+    match Nat.eq_dec n1 n2 return n1 = n2 \/ n1 <> n2 with
+    | left H_yes => or_introl H_yes
+    | right H_no => or_intror H_no
+    end
   .
 
-  Lemma calc_eqnat_is :
+  Definition choice_eqnat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 -> eqnat n1 n2 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    choice_eq n1 (eq_lem_nat n1) n2
+  .
+
+  Lemma choice_eqnat_is :
     forall n1 : nat,
     forall n2 : nat,
     forall H_EQ : eqnat n1 n2,
-    calc_eqnat n1 n2 H_EQ = H_EQ.
+    choice_eqnat n1 n2 H_EQ = H_EQ.
   Proof.
     induction n1 as [| n IH]; intros n2 [].
     - exact (eq_reflexivity (eq_reflexivity O)).
-    - unfold calc_eqnat, calc_eq in *.
+    - unfold choice_eqnat, choice_eq, eq_lem_nat, eq_dec_nat in *.
       simpl.
       assert (claim1 := IH n (eq_reflexivity n)).
-      destruct (eq_dec_nat n n) as [Heq | Hne].
+      destruct (Nat.eq_dec n n) as [Heq | Hne].
       + rewrite claim1.
         exact (eq_reflexivity (eq_reflexivity (S n))).
       + contradiction (Hne (eq_reflexivity n)).
@@ -346,7 +354,7 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     intros n.
-    exact (calc_eq_proof_irrelevance n (eq_dec_nat n) (calc_eqnat_is n)).
+    exact (calc_eq_proof_irrelevance n (eq_lem_nat n) (choice_eqnat_is n)).
   Qed.
 
   Corollary eqnat_K :
@@ -1198,8 +1206,8 @@ Module FUN_FACT.
   Let NOT : BOOL -> BOOL :=
     fun b : BOOL =>
     match (EM (b = T)) with
-    | or_introl H => F
-    | or_intror H => T
+    | or_introl H_yes => F
+    | or_intror H_no => T
     end
   .
 

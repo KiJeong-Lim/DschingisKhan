@@ -5,9 +5,9 @@ Require Import DschingisKhan.projects.PropositionalLogic.Basics.
 Require Import DschingisKhan.projects.PropositionalLogic.ClassicalMetaTheories.
 Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheories.
 
-Module PropositionLogic.
+Module PropertiesOfPropositionLogic.
 
-  Import MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPL CompletenessOfPL.
+  Import MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPropositionLogic CompletenessOfPropositionLogic.
 
   Theorem infers_iff_entails (hs : ensemble formula) (c : formula) :
     hs |- c <-> hs |= c.
@@ -29,4 +29,4 @@ Module PropositionLogic.
       apply (extend_entails hs0_entails_c)...
   Qed.
 
-End PropositionLogic.
+End PropertiesOfPropositionLogic.

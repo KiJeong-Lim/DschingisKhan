@@ -6,7 +6,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 Require Import DschingisKhan.projects.PropositionalLogic.Basics.
 Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheories.
 
-Module SoundnessOfPL. (* Thanks to Taeseung Sohn *)
+Module SoundnessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
 
   Import MyEnsemble MyEnsembleNova ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
@@ -313,9 +313,9 @@ Module SoundnessOfPL. (* Thanks to Taeseung Sohn *)
     - apply (BiconditionalE2_preserves a b)...
   Qed.
 
-End SoundnessOfPL.
+End SoundnessOfPropositionLogic.
 
-Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
+Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
 
@@ -574,4 +574,4 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
       + apply (isFilter_ext_eq (MaximalConsistentSet (insert (NegationF c) hs)) claim2)...
   Qed.
 
-End CompletenessOfPL.
+End CompletenessOfPropositionLogic.
