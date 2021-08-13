@@ -4,7 +4,7 @@ Require Import Coq.Program.Basics.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module ConstructiveCoLaTheory.
+Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
@@ -579,7 +579,7 @@ Module ConstructiveCoLaTheory.
 
 End ConstructiveCoLaTheory.
 
-Module CAWU.
+Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous" *)
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
@@ -759,7 +759,7 @@ Module PowerSetCoLa.
     }
   .
 
-  Section PACO.
+  Section PACO. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
 
   Context {A : Type}.
 
@@ -988,7 +988,7 @@ Module PowerSetCoLa.
 
 End PowerSetCoLa.
 
-Module ConstructiveCpoTheory.
+Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Semantics" of "H. P. Barendregt." *)
 
   Import MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova BasicTopology ConstructiveCoLaTheory.
 

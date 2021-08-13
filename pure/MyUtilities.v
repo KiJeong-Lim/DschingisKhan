@@ -596,6 +596,28 @@ Module MyUtilities.
       + exact (eq_congruence (FS n') (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i'))) i' IH).
   Defined.
 
+  Lemma runFinSet_mkFinSet_identity :
+    forall m : nat,
+    forall n : nat,
+    forall Hlt : m < n,
+    runFinSet n (mkFinSet n m Hlt) = exist (fun m_ : nat => m_ < n) m Hlt.
+  Proof.
+    induction m; simpl.
+    - induction n; simpl.
+      + intros Hlt.
+        apply (lt_elim_n_lt_0 0 Hlt).
+      + intros Hlt.
+        rewrite (lenat_proof_irrelevance 1 (S n) (lt_intro_0_lt_S_n n) Hlt).
+        reflexivity.
+    - induction n; simpl in *.
+      + intros Hlt.
+        apply (lt_elim_n_lt_0 (S m) Hlt).
+      + intros Hlt.
+        rewrite (IHm n (lt_elim_S_n_lt_S_m m n Hlt)).
+        rewrite (lenat_proof_irrelevance (S (S m)) (S n) (lt_intro_S_m_lt_S_n m n (lt_elim_S_n_lt_S_m m n Hlt)) Hlt).
+        reflexivity.
+  Qed.
+
   End MyFin.
 
   Section SIMPLE_LOGIC.
@@ -698,7 +720,40 @@ Module MyUtilities.
 
   Section BORING.
 
-  Lemma div_mod_uniqueness_aux1 :
+  Definition AckermannSpec : (nat -> nat -> nat) -> Prop :=
+    fun ackermann : nat -> nat -> nat =>
+    let spec1 : Prop := forall n : nat, ackermann 0 n = n + 1 in
+    let spec2 : Prop := forall m : nat, ackermann (m + 1) 0 = ackermann m 1 in
+    let spec3 : Prop := forall m : nat, forall n : nat, ackermann (m + 1) (n + 1) = ackermann m (ackermann (m + 1) n) in
+    spec1 /\ spec2 /\ spec3
+  .
+
+  Definition Ackermann : nat -> nat -> nat :=
+    fix Ackermann_fix (m : nat) {struct m} : nat -> nat :=
+    match m return nat -> nat with
+    | O => S
+    | S m' =>
+      fun n : nat =>
+      nat_rect (fun _ : nat => (nat -> nat) -> nat) (fun kont : nat -> nat => kont 1) (fun n' : nat => fun call_n' : (nat -> nat) -> nat => fun kont : nat -> nat => kont (call_n' kont)) n (Ackermann_fix m')
+    end
+  .
+
+  Lemma Ackermann_good :
+    AckermannSpec Ackermann.
+  Proof with (lia || eauto).
+    unfold AckermannSpec.
+    repeat split.
+    - induction n; simpl...
+    - induction m.
+      + simpl...
+      + replace (S m + 1) with (S (S m))...
+    - induction m; induction n; simpl in *...
+      + replace (m + 1) with (S m)...
+      + replace (m + 1) with (S m) in *...
+        rewrite IHn...
+  Qed.
+
+  Lemma greater_than_iff :
     forall x : nat,
     forall y : nat,
     x > y <-> (exists z : nat, x = S (y + z)).
@@ -725,12 +780,12 @@ Module MyUtilities.
     assert (H2 : 0 <= a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
     assert (claim1 : ~ q > a / b).
     { intros H3.
-      destruct (proj1 (div_mod_uniqueness_aux1 q (a / b)) H3) as [z H4].
+      destruct (proj1 (greater_than_iff q (a / b)) H3) as [z H4].
       enough (so_we_obatain : b * q + r >= b * S (a / b) + r)...
     }
     assert (claim2 : ~ q < a / b).
     { intros H3.
-      destruct (proj1 (div_mod_uniqueness_aux1 (a / b) q) H3) as [z H4].
+      destruct (proj1 (greater_than_iff (a / b) q) H3) as [z H4].
       enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
     }
     enough (therefore : q = a / b)...
