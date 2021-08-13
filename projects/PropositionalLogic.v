@@ -7,14 +7,15 @@ Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheorie
 
 Module PropertiesOfPropositionLogic.
 
-  Import MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPropositionLogic CompletenessOfPropositionLogic.
+  Import ListNotations MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPropositionLogic CompletenessOfPropositionLogic.
 
-  Theorem infers_iff_entails (hs : ensemble formula) (c : formula) :
+  Theorem infers_iff_entails :
+    forall hs : ensemble formula,
+    forall c : formula,
     hs |- c <-> hs |= c.
-  Proof.
-    split.
-    - exact (the_propositional_soundness_theorem hs c).
-    - exact (the_propositional_completeness_theorem hs c).
+  Proof with eauto using the_propositional_soundness_theorem, the_propositional_completeness_theorem.
+    intros hs c.
+    split...
   Qed.
 
   Theorem the_propositional_compactness_theorem (hs : ensemble formula) (c : formula) :

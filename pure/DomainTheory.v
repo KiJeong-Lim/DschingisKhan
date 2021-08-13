@@ -207,7 +207,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     exists gfp : D, isSupremum gfp (postfixed_points f) /\ isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H.
-    destruct (supremum_always_exists_in_CompleteLattice (fun x : D => x =< f x)) as [gfp H0].
+    destruct (supremum_always_exists_in_CompleteLattice (postfixed_points f)) as [gfp H0].
     exists gfp.
     split...
     apply GreatestFixedPointOfMonotonicMaps...
@@ -215,10 +215,19 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Definition nu {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall f : D >=> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
     fun f : D >=> D =>
-    match supremum_always_exists_in_CompleteLattice (fun x : D => x =< proj1_sig f x) with
+    match supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f)) with
     | exist _ gfp H => exist _ gfp (GreatestFixedPointOfMonotonicMaps (proj1_sig f) (proj2_sig f) gfp H)
     end
   .
+
+  Lemma nu_isSupremum {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+    forall f : D >=> D,
+    isSupremum (proj1_sig (nu f)) (postfixed_points (proj1_sig f)).
+  Proof with eauto with *.
+    unfold nu.
+    intros f.
+    destruct (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f))) as [gfp H]...
+  Qed.
 
   Definition or_plus {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : D -> D -> D :=
     fun x1 : D =>
@@ -280,10 +289,8 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     x =< proj1_sig f x ->
     x =< proj1_sig (nu f).
   Proof with eauto with *.
-    intros f x H.
-    unfold nu.
-    destruct (supremum_always_exists_in_CompleteLattice (fun x0 : D => x0 =< proj1_sig f x0)) as [gfp H0].
-    apply H0...
+    intros f.
+    assert (claim1 := nu_isSupremum f)...
   Qed.
 
   Lemma StrongCoinduction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
@@ -334,11 +341,9 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     set (G_f_aux := fun x : D => fun y : D => proj1_sig f (or_plus x y)).
     intros x1 x2 H.
     apply StrongCoinduction.
-    unfold nu.
-    simpl.
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f (or_plus x2 y))) as [gfp2 H0].
+    assert (claim1 := nu_isSupremum f).
     simpl in *.
-    assert (claim1 : G_f f x1 == proj1_sig f (or_plus x1 (G_f f x1))) by apply (proj2_sig (nu (exist _ (G_f_aux x1) (G_f_aux_isMonotonic f x1)))).
+    assert (claim2 : G_f f x1 == proj1_sig f (or_plus x1 (G_f f x1))) by apply (proj2_sig (nu (exist _ (G_f_aux x1) (G_f_aux_isMonotonic f x1)))).
     transitivity (proj1_sig f (or_plus x1 (G_f f x1))).
     - apply Poset_refl1...
     - apply (proj2_sig f).
@@ -355,11 +360,10 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
   Proof with eauto with *.
     intros f1 f2 H x.
     simpl.
-    unfold G_f, nu.
-    simpl.
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f1 (or_plus x y))) as [gfp1 H0].
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f2 (or_plus x y))) as [gfp2 H1].
-    apply H0...
+    unfold G_f.
+    assert (claim1 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f1 (or_plus x y)) (G_f_aux_isMonotonic f1 x))).
+    assert (claim2 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f2 (or_plus x y)) (G_f_aux_isMonotonic f2 x))).
+    apply claim1...
   Qed.
 
   Definition bot {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : D :=
@@ -384,23 +388,22 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
   Proof with eauto with *.
     intros f.
     symmetry.
-    unfold ParameterizedGreatestFixedpoint, G_f, nu.
-    simpl.
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f (or_plus bot y))) as [gfp1 H].
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f y)) as [gfp2 H0].
-    simpl.
+    unfold ParameterizedGreatestFixedpoint, G_f.
+    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus bot y)) (G_f_aux_isMonotonic f bot))).
+    assert (H0 := nu_isSupremum f).
+    simpl in *.
     apply Poset_asym.
     - apply H.
       intros x H1.
       apply H0...
-      unfold member in *.
+      unfold member, postfixed_points in *.
       transitivity (proj1_sig f (or_plus bot x)).
       + apply H1.
       + apply (proj2_sig f), or_plus_le_iff...
     - apply H0.
       intros x H1.
       apply H...
-      unfold member in *.
+      unfold member, postfixed_points in *.
       transitivity (proj1_sig f x).
       + apply H1.
       + apply (proj2_sig f)...
@@ -414,9 +417,9 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros f x.
     unfold ParameterizedGreatestFixedpoint.
     simpl.
-    unfold G_f, nu.
-    simpl.
-    destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig f (or_plus x y))) as [gfp1 H].
+    unfold G_f.
+    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))).
+    simpl in *.
     apply (GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))...
   Qed.
 
@@ -565,13 +568,12 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
   Proof with eauto with *.
     intros x.
     split.
-    - unfold nu.
-      destruct (supremum_always_exists_in_CompleteLattice (fun y : D => y =< proj1_sig b y)) as [gfp H].
+    - assert (H := nu_isSupremum b).
       simpl.
-      assert (H0 := GreatestFixedPointOfMonotonicMaps (proj1_sig b) (proj2_sig b) gfp H).
+      assert (H0 := GreatestFixedPointOfMonotonicMaps (proj1_sig b) (proj2_sig b) (proj1_sig (nu b)) H).
       simpl.
       intros H1.
-      exists gfp.
+      exists (proj1_sig (nu b)).
       split; [apply H1 | apply Poset_refl1, H0].
     - intros [gfp [H H0]].
       transitivity gfp; [apply H | apply PrincipleOfTarski]...
@@ -851,10 +853,7 @@ Module PowerSetCoLa.
         + apply (F_mon (PaCo bot))...
         + apply claim1.
     }
-    assert (claim4 : isSupremum (proj1_sig (nu (exist _ F F_mon))) (postfixed_points F)).
-    { unfold nu.
-      destruct (supremum_always_exists_in_CompleteLattice (fun x : ensemble A => x =< proj1_sig (exist isMonotonicMap F F_mon) x)) as [gfp H0]...
-    }
+    assert (claim4 : isSupremum (proj1_sig (nu (exist _ F F_mon))) (postfixed_points F)) by now apply nu_isSupremum.
     destruct (GreatestFixedPointOfMonotonicMaps F F_mon (proj1_sig (nu (exist _ F F_mon))) claim4) as [claim5 claim6].
     assert (claim7 : F (proj1_sig (nu (exist _ F F_mon))) =< PaCo bot).
     { cofix CIH.
@@ -912,8 +911,8 @@ Module PowerSetCoLa.
       }
       assert (claim8 : PaCo (MyUnion X Y) =< nu0) by now apply PrincipleOfTarski.
       assert (claim9 : isSupremum nu0 (postfixed_points (fun Z : ensemble A => F (MyUnion X Z)))).
-      { unfold nu0, nu.
-        destruct (supremum_always_exists_in_CompleteLattice (fun x : ensemble A => x =< proj1_sig (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5) x)) as [gfp H]...
+      { unfold nu0.
+        assert (H0 := nu_isSupremum (exist isMonotonicMap (fun Z : ensemble A => F (MyUnion X Z)) claim5))...
       }
       destruct (GreatestFixedPointOfMonotonicMaps (fun Z : ensemble A => F (MyUnion X Z)) claim5 nu0 claim9) as [claim10 claim11].
       assert (claim12 : nu0 =< F (MyUnion X nu0)) by now apply Poset_refl1.
