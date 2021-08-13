@@ -114,7 +114,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (ps1 ++ ps2).
       split.
-      - apply (in_append_implies ps1 ps2 hs H1 H2).
+      - apply (in_append_elim1 ps1 ps2 hs H1 H2).
       - exists (union hs1' hs2').
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
@@ -128,10 +128,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists (remove eq_formula_dec a ps).
       split.
-      - apply in_remove_implies...
+      - apply in_remove_elim1...
       - exists (delete a hs').
         split.
-        + apply in_remove_iff_member_delete...
+        + apply in_remove_iff...
         + apply NegationI.
           apply (extend_infers H2).
           intros p H3.
@@ -142,11 +142,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists (remove eq_formula_dec (NegationF a) ps).
       split.
-      - apply in_remove_implies...
+      - apply in_remove_elim1...
       - exists (delete (NegationF a) hs').
         split.
         + intros h.
-          apply (in_remove_iff_member_delete eq_formula_dec (NegationF a) ps hs' H1).
+          apply (in_remove_iff eq_formula_dec (NegationF a) ps hs' H1).
         + apply NegationE.
           apply (extend_infers H2).
           intros h H3.
@@ -158,7 +158,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (ps1 ++ ps2).
       split.
-      - apply (in_append_implies ps1 ps2 hs H1 H2).
+      - apply (in_append_elim1 ps1 ps2 hs H1 H2).
       - exists (union hs1' hs2').
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
@@ -183,16 +183,16 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers3 as [ps3 [H4 [hs3' [H7 H10]]]].
       exists (ps1 ++ (remove eq_formula_dec a ps2 ++ remove eq_formula_dec b ps3)).
       split.
-      - apply in_append_implies...
-        apply in_append_implies...
-        apply in_remove_implies...
-        apply in_remove_implies...
+      - apply in_append_elim1...
+        apply in_append_elim1...
+        apply in_remove_elim1...
+        apply in_remove_elim1...
       - exists (union hs1' (union (delete a hs2') (delete b hs3'))).
         split.
         { apply in_append_iff...
           apply in_append_iff...
-          apply in_remove_iff_member_delete...
-          apply in_remove_iff_member_delete...
+          apply in_remove_iff...
+          apply in_remove_iff...
         }
         { apply (DisjunctionE a b c).
           - apply (extend_infers H8)...
@@ -211,10 +211,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists (remove eq_formula_dec a ps).
       split.
-      - apply in_remove_implies...
+      - apply in_remove_elim1...
       - exists (delete a hs').
         split.
-        + apply in_remove_iff_member_delete...
+        + apply in_remove_iff...
         + apply ImplicationI.
           apply (extend_infers H2).
           intros p H3.
@@ -226,7 +226,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (ps1 ++ ps2).
       split.
-      - apply (in_append_implies ps1 ps2 hs H1 H2).
+      - apply (in_append_elim1 ps1 ps2 hs H1 H2).
       - exists (union hs1' hs2').
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
@@ -238,10 +238,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (remove eq_formula_dec a ps1 ++ remove eq_formula_dec b ps2).
       split.
-      - apply in_append_implies; apply in_remove_implies...
+      - apply in_append_elim1; apply in_remove_elim1...
       - exists (union (delete a hs1') (delete b hs2')).
         split.
-        + apply in_append_iff; apply in_remove_iff_member_delete...
+        + apply in_append_iff; apply in_remove_iff...
         + apply BiconditionalI.
           { apply (extend_infers H5).
             intros p H7.
@@ -260,7 +260,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (ps1 ++ ps2).
       split.
-      - apply (in_append_implies ps1 ps2 hs H1 H2).
+      - apply (in_append_elim1 ps1 ps2 hs H1 H2).
       - exists (union hs1' hs2').
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
@@ -272,7 +272,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
       exists (ps1 ++ ps2).
       split.
-      - apply (in_append_implies ps1 ps2 hs H1 H2).
+      - apply (in_append_elim1 ps1 ps2 hs H1 H2).
       - exists (union hs1' hs2').
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
@@ -587,12 +587,12 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     forall bs : ensemble formula,
     isSubsetOf (TH bs) (MaximalConsistentSet bs) /\ equiconsistent (TH bs) (MaximalConsistentSet bs) /\ (forall p : formula, member p (MaximalConsistentSet bs) <-> MaximalConsistentSet bs |- p) /\ isMetaDN (MaximalConsistentSet bs) /\ isImplicationFaithful (MaximalConsistentSet bs).
   Proof with eauto with *.
-    assert (lemma1 := @isSubsetOf_singleton formula).
+    assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
     { intros hs h b.
       rewrite in_insert_iff...
     }
-    assert (lemma3 := @isSubsetOf_empty formula).
+    assert (lemma3 := @isSubsetOf_intro_empty formula).
     assert (lemma4 : forall hs : ensemble formula, forall h : formula, member h (insert h hs)).
     { intros hs h.
       apply in_insert_iff...
@@ -645,7 +645,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
                 apply ByAssumption.
                 apply in_insert_iff, or_intror, in_insert_iff, or_introl...
               * apply (extend_infers claim6_aux1).
-                apply isSubsetOf_insert.
+                apply insert_intro_isSubsetOf.
                 transitivity (insert p1 (MaximalConsistentSet bs))...
             + apply ConjunctionI.
               { apply ByAssumption.
@@ -659,7 +659,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
                     apply ByAssumption.
                     apply in_insert_iff, or_intror, in_insert_iff, or_introl...
                   + apply (extend_infers claim6_aux1).
-                    apply isSubsetOf_insert.
+                    apply insert_intro_isSubsetOf.
                     transitivity (insert (NegationF p2) (insert p1 (MaximalConsistentSet bs))).
                     * transitivity (insert p1 (MaximalConsistentSet bs))...
                     * apply lemma2.
@@ -674,7 +674,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
               * apply ByAssumption.
                 apply in_insert_iff, or_intror...
             + apply (extend_infers claim6_aux1).
-              apply isSubsetOf_insert...
+              apply insert_intro_isSubsetOf...
         }
       assert (claim6_aux3 : MaximalConsistentSet bs |- p1) by now apply (ConjunctionE1 p1 (NegationF p2)).
       assert (claim6_aux4 : MaximalConsistentSet bs |- NegationF p2) by now apply (ConjunctionE2 p1 (NegationF p2)).

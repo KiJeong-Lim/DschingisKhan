@@ -328,12 +328,12 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     ~ hs |- ContradictionF ->
     MaximalConsistentSet hs == eval_formula (makeEnv (MaximalConsistentSet hs)).
   Proof with eauto with *.
-    assert (lemma1 := @isSubsetOf_singleton formula).
+    assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
     { intros hs h b.
       rewrite in_insert_iff...
     }
-    assert (lemma3 := @isSubsetOf_empty formula).
+    assert (lemma3 := @isSubsetOf_intro_empty formula).
     assert (lemma4 : forall hs : ensemble formula, forall h : formula, member h (insert h hs)).
     { intros hs h.
       apply in_insert_iff...

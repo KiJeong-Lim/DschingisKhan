@@ -23,9 +23,9 @@ Module PropositionLogic.
     split.
     - intros hs_entails_c.
       assert (hs_infers_c := proj2 (infers_iff_entails hs c) hs_entails_c).
-      destruct (infers_has_compactness hs c hs_infers_c) as [ps [hs_includes_ps [hs0 [hs0_finite hs0_infers_c]]]].
+      destruct (infers_has_compactness hs c hs_infers_c) as [ps [hs0_subseteq_hs [hs0 [hs0_finite hs0_infers_c]]]].
       assert (hs0_entails_c := proj1 (infers_iff_entails hs0 c) hs0_infers_c)...
-    - intros [ps [hs_includes_ps [hs0 [hs0_finite hs0_entails_c]]]].
+    - intros [ps [hs0_subseteq_hs [hs0 [hs0_finite hs0_entails_c]]]].
       apply (extend_entails hs0_entails_c)...
   Qed.
 

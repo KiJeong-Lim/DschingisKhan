@@ -4,68 +4,103 @@ Module ClassicalLogic.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
-  Section InternalFactBindings.
-
-  Let __internal_axiom1__ : forall A : Prop, A \/ ~ A :=
-    classic
-  .
-
   Definition proof_irrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2 :=
-    FUN_FACT.proof_irrelevance __internal_axiom1__
+    FUN_FACT.proof_irrelevance classic
   .
 
   Definition eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
-    FUN_FACT.eq_rect_eq __internal_axiom1__
-  .
-
-  Let __internal_axiom2__ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
-    eq_rect_eq
+    FUN_FACT.eq_rect_eq classic
   .
 
   Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
-    FUN_FACT.Streicher_K __internal_axiom2__
+    FUN_FACT.Streicher_K eq_rect_eq
   .
 
   Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
-    FUN_FACT.existT_inj2_eq __internal_axiom2__
+    FUN_FACT.existT_inj2_eq eq_rect_eq
   .
 
-  Definition NNPP : forall P : Prop, ~ ~ P -> P :=
-    FUN_FACT.NNPP __internal_axiom1__
+  Section Classical_Prop.
+
+  Variable P : Prop.
+
+  Lemma NNPP :
+    (~ (~ P)) ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Variable Q : Prop.
+
+  Lemma Peirce :
+    ((P -> Q) -> P) ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma not_imply_elim :
+    (~ (P -> Q)) ->
+    P.
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma imply_to_or :
+    (P -> Q) ->
+    ((~ P) \/ Q).
+  Proof with tauto.
+    destruct (classic Q)...
+  Qed.
+
+  Lemma imply_to_and :
+    (~ (P -> Q)) ->
+    (P /\ (~ Q)).
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  Lemma not_and_or :
+    (~ (P /\ Q)) ->
+    ((~ P) \/ (~ Q)).
+  Proof with tauto.
+    destruct (classic P)...
+  Qed.
+
+  End Classical_Prop.
+
+  Section Classical_Pred_Type.
+
+  Context (U : Type) (P : U -> Prop).
+
+  Let forall_exists_False : (~ (forall n : U, P n)) -> (~ (exists n : U, (~ P n))) -> False :=
+    fun H : ~ (forall n : U, P n) =>
+    fun H0 : ~ (exists n : U, ~ P n) =>
+    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n_ : U => ~ P n_) n H1)))
   .
 
-  Definition Peirce : forall P : Prop, forall Q : Prop, ((P -> Q) -> P) -> P :=
-    FUN_FACT.Peirce __internal_axiom1__
-  .
+  Lemma not_all_not_ex :
+    (~ (forall n : U, ~ P n)) ->
+    (exists n : U, P n).
+  Proof with firstorder.
+    destruct (classic (exists n : U, P n))...
+  Qed.
 
-  Definition not_imply_elim : forall P : Prop, forall Q : Prop, ~ (P -> Q) -> P :=
-    FUN_FACT.not_imply_elim __internal_axiom1__
-  .
+  Lemma not_all_ex_not :
+    (~ (forall n : U, P n)) ->
+    (exists n : U, (~ P n)).
+  Proof with firstorder.
+    destruct (classic (exists n : U, ~ P n))...
+  Qed.
 
-  Definition imply_to_or : forall P : Prop, forall Q : Prop, (P -> Q) -> ~ P \/ Q :=
-    FUN_FACT.imply_to_or __internal_axiom1__
-  .
+  Lemma not_ex_not_all :
+    (~ (exists n : U, (~ P n))) ->
+    (forall n : U, P n).
+  Proof with firstorder.
+    destruct (classic (forall n : U, P n))...
+  Qed.
 
-  Definition imply_to_and : forall P : Prop, forall Q : Prop, ~ (P -> Q) -> P /\ ~ Q :=
-    FUN_FACT.imply_to_and __internal_axiom1__
-  .
-
-  Definition not_and_or : forall P : Prop, forall Q : Prop, ~ (P /\ Q) -> ~ P \/ ~ Q :=
-    FUN_FACT.not_and_or __internal_axiom1__
-  .
-
-  Definition not_all_not_ex : forall U : Type, forall P : U -> Prop, ~ (forall n : U, ~ P n) -> exists n : U, P n :=
-    FUN_FACT.not_all_not_ex __internal_axiom1__
-  .
-
-  Definition not_all_ex_not : forall U : Type, forall P : U -> Prop, ~ (forall n : U, P n) -> exists n : U, ~ P n :=
-    FUN_FACT.not_all_ex_not __internal_axiom1__
-  .
-
-  Definition not_ex_not_all : forall U : Type, forall P : U -> Prop, ~ (exists n : U, ~ P n) -> forall n : U, P n :=
-    FUN_FACT.not_ex_not_all __internal_axiom1__
-  .
-
-  End InternalFactBindings.
+  End Classical_Pred_Type.
 
 End ClassicalLogic.

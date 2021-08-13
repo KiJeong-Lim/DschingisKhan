@@ -128,8 +128,8 @@ Module MyEnsemble.
 
   Global Notation " X1 '\subseteq' X2 " := (forall x : _, member x X1 -> member x X2) (at level 70, no associativity) : type_scope.
 
-  Variant finite {A : Type} : list A -> ensemble A :=
-  | in_finite {xs : list A} :
+  Variant finite {A : Type} (xs : list A) : ensemble A :=
+  | in_finite :
     forall x : A,
     In x xs ->
     x \in finite xs
@@ -190,8 +190,8 @@ Module MyEnsemble.
 
   Global Hint Resolve in_finite_iff : my_hints.
 
-  Variant unions {A : Type} : ensemble (ensemble A) -> ensemble A :=
-  | in_unions {Xs : ensemble (ensemble A)} :
+  Variant unions {A : Type} (Xs : ensemble (ensemble A)) : ensemble A :=
+  | in_unions :
     forall x : A,
     forall X : ensemble A,
     x \in X ->
@@ -250,8 +250,8 @@ Module MyEnsemble.
 
   Global Hint Resolve in_union_iff : my_hints.
 
-  Variant intersection {A : Type} : ensemble A -> ensemble A -> ensemble A :=
-  | in_intersection {X1 : ensemble A} {X2 : ensemble A} :
+  Variant intersection {A : Type} (X1 : ensemble A) (X2 : ensemble A) : ensemble A :=
+  | in_intersection :
     forall x : A,
     x \in X1 ->
     x \in X2 ->
@@ -278,10 +278,9 @@ Module MyEnsemble.
 
   Global Hint Resolve in_intersection_iff : my_hints.
 
-  Variant image {A : Type} {B : Type} : (A -> B) -> ensemble A -> ensemble B :=
-  | in_image {X : ensemble A} :
+  Variant image {A : Type} {B : Type} (f : A -> B) (X : ensemble A) : ensemble B :=
+  | in_image :
     forall x : A,
-    forall f : A -> B,
     x \in X ->
     f x \in image f X
   .
@@ -294,7 +293,7 @@ Module MyEnsemble.
     forall y : B,
     forall f : A -> B,
     forall X : ensemble A,
-    y \in {f} \left[ X \right] <-> (exists x : A, y = f x /\ x \in X).
+    y \in {f}\left[ X \right] <-> (exists x : A, y = f x /\ x \in X).
   Proof with eauto.
     intros y f X.
     split.
@@ -307,10 +306,9 @@ Module MyEnsemble.
 
   Global Hint Resolve in_image_iff : my_hints.
 
-  Variant preimage {A : Type} {B : Type} : (A -> B) -> ensemble B -> ensemble A :=
-  | in_preimage {Y : ensemble B} :
+  Variant preimage {A : Type} {B : Type} (f : A -> B) (Y : ensemble B) : ensemble A :=
+  | in_preimage :
     forall x : A,
-    forall f : A -> B,
     f x \in Y ->
     x \in preimage f Y
   .
@@ -323,7 +321,7 @@ Module MyEnsemble.
     forall x : A,
     forall f : A -> B,
     forall Y : ensemble B,
-    x \in {f}^{-1} \left[ Y \right] <-> f x \in Y.
+    x \in {f}^{-1}\left[ Y \right] <-> f x \in Y.
   Proof with eauto.
     intros x f Y.
     split.
@@ -1006,7 +1004,7 @@ Module MyEnsembleNova.
 
   Context {A : Type}.
 
-  Lemma in_append_implies :
+  Lemma in_append_elim1 :
     forall xs1 : list A,
     forall xs2 : list A,
     forall X : ensemble A,
@@ -1036,7 +1034,7 @@ Module MyEnsembleNova.
 
   Hypothesis A_eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}.
 
-  Lemma in_remove_implies :
+  Lemma in_remove_elim1 :
     forall x0 : A,
     forall xs1 : list A,
     forall X2 : ensemble A,
@@ -1051,7 +1049,7 @@ Module MyEnsembleNova.
     apply in_insert_iff in H2...
   Qed.
 
-  Lemma in_remove_iff_member_delete :
+  Lemma in_remove_iff :
     forall x1 : A,
     forall xs2 : list A,
     forall X2 : ensemble A,
@@ -1067,7 +1065,7 @@ Module MyEnsembleNova.
 
   End ExtraFacts.
 
-  Lemma isSubsetOf_insert {A : Type} :
+  Lemma insert_intro_isSubsetOf {A : Type} :
     forall x0 : A,
     forall X1 : ensemble A,
     forall X2 : ensemble A,
@@ -1079,9 +1077,9 @@ Module MyEnsembleNova.
     do 2 rewrite in_union_iff, in_singleton_iff...
   Qed.
 
-  Global Hint Resolve isSubsetOf_insert : my_hints.
+  Global Hint Resolve insert_intro_isSubsetOf : my_hints.
 
-  Lemma isSubsetOf_singleton {A : Type} :
+  Lemma isSubsetOf_intro_singleton {A : Type} :
     forall x : A,
     forall X : ensemble A,
     x \in X ->
@@ -1093,9 +1091,9 @@ Module MyEnsembleNova.
     subst...
   Qed.
 
-  Global Hint Resolve isSubsetOf_singleton : my_hints.
+  Global Hint Resolve isSubsetOf_intro_singleton : my_hints.
 
-  Lemma isSubsetOf_empty {A : Type} :
+  Lemma isSubsetOf_intro_empty {A : Type} :
     forall X : ensemble A,
     \emptyset \subseteq X.
   Proof with firstorder.
@@ -1103,7 +1101,7 @@ Module MyEnsembleNova.
     rewrite in_empty_iff...
   Qed.
 
-  Global Hint Resolve isSubsetOf_empty : my_hints.
+  Global Hint Resolve isSubsetOf_intro_empty : my_hints.
 
 End MyEnsembleNova.
 
