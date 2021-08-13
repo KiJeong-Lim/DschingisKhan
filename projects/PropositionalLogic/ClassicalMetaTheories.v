@@ -16,7 +16,7 @@ Module SoundnessOfPL.
     hs |= a.
   Proof with eauto with *.
     intros c H.
-    apply (@extendEntails \left\{ c \right\} c)...
+    apply (@extend_entails \left\{ c \right\})...
   Qed.
 
   Lemma ContradictionI_preserves {hs : ensemble formula} :
@@ -291,10 +291,10 @@ Module SoundnessOfPL.
     inversion H4; subst...
   Qed.
 
-  Theorem SoundnessOfPropositionalLogic (hs : ensemble formula) (c : formula) (_infer : hs |- c) :
+  Theorem SoundnessOfPropositionalLogic (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
     hs |= c.
   Proof with firstorder.
-    induction _infer.
+    induction H_infers.
     - apply (ByAssumption_preserves h)...
     - apply (ContradictionI_preserves a)...
     - apply (ContradictionE_preserves a)...
@@ -355,7 +355,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     assert (claim10 : ~ inconsistent hs_hat).
     { intros H.
       contradiction claim1.
-      apply property1_of_inconsistent, claim9...
+      apply inconsistent_iff, claim9...
     }
     assert (claim11 : ~ inconsistent (Cl hs_hat)).
     { intros H.
@@ -374,8 +374,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
       member ContradictionF hs_hat <-> eval_formula (preimage AtomF hs_hat) ContradictionF
     ).
     { simpl.
-      rewrite claim4.
-      rewrite property1_of_inconsistent.
+      rewrite claim4, <- inconsistent_iff.
       tauto.
     }
     assert ( case_NegationF :
@@ -390,7 +389,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
       split.
       - intros H H0.
         contradiction claim11.
-        apply property1_of_inconsistent.
+        apply inconsistent_iff.
         apply (ContradictionI p).
         + apply claim4...
         + apply H.
@@ -402,7 +401,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
         + enough (aux1 : MaximalConsistentSet hs |- ImplicationF p ContradictionF).
           { apply NegationI.
             apply (ImplicationE p).
-            - apply (extendInfers (ImplicationF p ContradictionF) aux1)...
+            - apply (extend_infers aux1)...
             - apply ByAssumption...
           }
           apply claim4.
@@ -510,7 +509,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
           { apply claim4.
             apply ImplicationI.
             apply (BiconditionalE1 p1 p2).
-            - apply (@extendInfers hs_hat).
+            - apply (@extend_infers hs_hat).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption... 
@@ -518,7 +517,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
           { apply claim4.
             apply ImplicationI.
             apply (BiconditionalE2 p1 p2).
-            - apply (@extendInfers hs_hat).
+            - apply (@extend_infers hs_hat).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption... 
@@ -527,13 +526,13 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
           apply claim4.
           apply (BiconditionalI p1 p2).
           { apply (ImplicationE p1 p2).
-            - apply (@extendInfers hs_hat).
+            - apply (@extend_infers hs_hat).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption...
           }
           { apply (ImplicationE p2 p1).
-            - apply (@extendInfers hs_hat).
+            - apply (@extend_infers hs_hat).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption...

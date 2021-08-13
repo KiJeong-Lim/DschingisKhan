@@ -42,7 +42,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       constructor.
       apply (cut_property b1).
       - apply H1.
-      - apply (@extendInfers \left\{ b1 \right\} b2).
+      - apply (@extend_infers \left\{ b1 \right\}).
         apply (proj1 (leq_LBA b1 b2) H0).
         intros b.
         rewrite in_insert_iff, in_singleton_iff...
@@ -53,7 +53,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       constructor.
       apply (cut_property (ConjunctionF b1 b2)).
       - apply ConjunctionI...
-      - apply (@extendInfers \left\{ andB b1 b2 \right\} b)...
+      - apply (@extend_infers \left\{ andB b1 b2 \right\})...
     }
   Qed.
 
@@ -76,7 +76,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       inversion H; subst.
       destruct (claim1 bs1 H0 p H1) as [hs' [H2 H3]].
       constructor.
-      apply (extendInfers p H3)...
+      apply (extend_infers H3)...
     }
     intros ps H c H0.
     assert (H1 : \left\{ fold_right andB trueB ps \right\} |- c) by apply leq_LBA, H0.
@@ -119,8 +119,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
         + apply (ContradictionI a).
-          * apply (extendInfers a H5)...
-          * apply (extendInfers (NegationF a) H6)...
+          * apply (extend_infers H5)...
+          * apply (extend_infers H6)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists ps...
@@ -133,7 +133,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply in_remove_iff_member_delete...
         + apply NegationI.
-          apply (extendInfers ContradictionF H2).
+          apply (extend_infers H2).
           intros p H3.
           destruct (eq_formula_dec p a) as [H_yes | H_no].
           * subst...
@@ -148,7 +148,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         + intros h.
           apply (in_remove_iff_member_delete eq_formula_dec (NegationF a) ps hs' H1).
         + apply NegationE.
-          apply (extendInfers ContradictionF H2).
+          apply (extend_infers H2).
           intros h H3.
           destruct (eq_formula_dec h (NegationF a)) as [H_yes | H_no].
           * subst...
@@ -163,8 +163,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
         + apply ConjunctionI.
-          * apply (extendInfers a H5)...
-          * apply (extendInfers b H6)...
+          * apply (extend_infers H5)...
+          * apply (extend_infers H6)...
     }
     { destruct IHinfers as [ps [H0 [hs' [H1 H2]]]].
       exists ps...
@@ -195,13 +195,13 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
           apply in_remove_iff_member_delete...
         }
         { apply (DisjunctionE a b c).
-          - apply (extendInfers (DisjunctionF a b) H8)...
-          - apply (extendInfers c H9).
+          - apply (extend_infers H8)...
+          - apply (extend_infers H9).
             intros p H11.
             destruct (eq_formula_dec p a) as [H_yes | H_no].
             + subst...
             + apply in_insert_iff, or_intror, in_union_iff, or_intror, in_union_iff, or_introl, in_delete_iff...
-          - apply (extendInfers c H10).
+          - apply (extend_infers H10).
             intros p H11.
             destruct (eq_formula_dec p b) as [H_yes | H_no].
             + subst...
@@ -216,7 +216,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply in_remove_iff_member_delete...
         + apply ImplicationI.
-          apply (extendInfers b H2).
+          apply (extend_infers H2).
           intros p H3.
           destruct (eq_formula_dec p a) as [H_yes | H_no].
           * subst...
@@ -231,8 +231,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
         + apply (ImplicationE a b).
-          * apply (extendInfers (ImplicationF a b) H5)...
-          * apply (extendInfers a H6)...
+          * apply (extend_infers H5)...
+          * apply (extend_infers H6)...
     }
     { destruct IHinfers1 as [ps1 [H1 [hs1' [H3 H5]]]].
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
@@ -243,13 +243,13 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply in_append_iff; apply in_remove_iff_member_delete...
         + apply BiconditionalI.
-          { apply (extendInfers b H5).
+          { apply (extend_infers H5).
             intros p H7.
             destruct (eq_formula_dec p a) as [H_yes | H_no].
             - subst...
             - apply in_insert_iff, or_intror, in_union_iff, or_introl, in_delete_iff...
           }
-          { apply (extendInfers a H6).
+          { apply (extend_infers H6).
             intros p H7.
             destruct (eq_formula_dec p b) as [H_yes | H_no].
             - subst...
@@ -265,8 +265,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
         + apply (BiconditionalE1 a b).
-          * apply (extendInfers (BiconditionalF a b) H5)...
-          * apply (extendInfers a H6)...
+          * apply (extend_infers H5)...
+          * apply (extend_infers H6)...
     }
     { destruct IHinfers1 as [ps1 [H1 [hs1' [H3 H5]]]].
       destruct IHinfers2 as [ps2 [H2 [hs2' [H4 H6]]]].
@@ -277,8 +277,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         split.
         + apply (in_append_iff ps1 ps2 hs1' hs2' H3 H4).
         + apply (BiconditionalE2 a b).
-          * apply (extendInfers (BiconditionalF a b) H5)...
-          * apply (extendInfers b H6)...
+          * apply (extend_infers H5)...
+          * apply (extend_infers H6)...
     }
   Qed.
 
@@ -333,27 +333,27 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     end
   .
 
-  Lemma property1_of_inconsistent :
+  Lemma inconsistent_iff :
     forall hs : ensemble formula,
-    hs |- ContradictionF <-> inconsistent (Cl hs).
+    inconsistent (Cl hs) <-> hs |- ContradictionF.
   Proof with eauto with *.
     intros hs.
     split.
-    - intros H.
-      exists ContradictionF.
-      split...
-      apply TH_isSubsetOf_Cl...
     - intros [b' [H [H0 H1]]].
       assert (claim1 : member b' (TH hs)) by now apply (Cl_isSubsetOf_TH hs b' H).
       inversion claim1; subst.
       apply (cut_property b' ContradictionF).
       + exact H2.
-      + apply (extendInfers ContradictionF H0)...
+      + apply (extend_infers H0)...
+    - intros H.
+      exists ContradictionF.
+      split...
+      apply TH_isSubsetOf_Cl...
   Qed.
 
-  Local Hint Resolve fact1_of_1_2_8 fact2_of_1_2_8 fact3_of_1_2_8 fact4_of_1_2_8 fact5_of_1_2_8 lemma1_of_1_2_11 inconsistent_isSubsetOf property1_of_inconsistent : core.
+  Local Hint Resolve fact1_of_1_2_8 fact2_of_1_2_8 fact3_of_1_2_8 fact4_of_1_2_8 fact5_of_1_2_8 lemma1_of_1_2_11 inconsistent_isSubsetOf inconsistent_iff : core.
 
-  Lemma property1_of_equiconsistent :
+  Lemma equiconsistent_iff :
     forall hs1 : ensemble formula,
     forall hs2 : ensemble formula,
     isFilter hs1 ->
@@ -365,25 +365,25 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     - intros H.
       split.
       + intros H0.
-        apply property1_of_inconsistent.
+        apply inconsistent_iff.
         apply (inconsistent_isSubsetOf hs2)...
         apply H...
         apply (inconsistent_isSubsetOf (Cl hs1))...
-        apply property1_of_inconsistent...
+        apply inconsistent_iff...
       + intros H0.
-        apply property1_of_inconsistent.
+        apply inconsistent_iff.
         apply (inconsistent_isSubsetOf hs1)...
         apply H...
         apply (inconsistent_isSubsetOf (Cl hs2))...
-        apply property1_of_inconsistent...
+        apply inconsistent_iff...
     - intros H.
       split.
       + intros H0.
         apply (inconsistent_isSubsetOf (Cl hs2))...
-        apply property1_of_inconsistent, H, property1_of_inconsistent...
+        apply inconsistent_iff, H, inconsistent_iff...
       + intros H0.
         apply (inconsistent_isSubsetOf (Cl hs1))...
-        apply property1_of_inconsistent, H, property1_of_inconsistent...
+        apply inconsistent_iff, H, inconsistent_iff...
   Qed.
 
   Lemma lemma1_of_1_3_9 :
@@ -405,7 +405,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         - assert (H3 := H b H2).
           inversion H3; subst.
           constructor.
-          apply (extendInfers b H4).
+          apply (extend_infers H4).
           intros p H5.
           apply in_union_iff, or_introl...
         - constructor.
@@ -441,7 +441,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     assert (claim1 : inconsistent (TH (insert (NegationF c) hs))).
     { apply H_equiconsistent.
       enough (claim1_aux1 : inconsistent (Cl v))...
-      apply property1_of_inconsistent.
+      apply inconsistent_iff.
       apply (ContradictionI c).
       - apply ByAssumption.
         enough (claim1_aux2 : satisfies E c) by now inversion claim1_aux2; subst.
@@ -460,7 +460,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     { apply (inconsistent_isSubsetOf (TH (insert (NegationF c) hs)))...
       apply TH_isSubsetOf_Cl.
     }
-    apply NegationE, property1_of_inconsistent...
+    apply NegationE, inconsistent_iff...
   Qed.
 
   Definition MaximalConsistentSet : ensemble formula -> ensemble formula :=
@@ -469,7 +469,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
   .
 
   Inductive FullAxmSet : ensemble formula -> ensemble formula :=
-  | InFullAxmSet :
+  | in_FullAxmSet :
     forall n : nat,
     forall bs : ensemble formula,
     forall b : formula,
@@ -488,7 +488,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     assert (H1 := proj1 (lemma1_of_1_3_9 n bs) p H0).
     inversion H1; subst.
     constructor.
-    apply (extendInfers p H2)...
+    apply (extend_infers H2)...
   Qed.
 
   Lemma lemma3_of_1_3_9_aux1 :
@@ -609,7 +609,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
       - apply inconsistent_isSubsetOf.
         transitivity (insert p1 (MaximalConsistentSet bs))...
       - intros H0.
-        assert (claim5_aux1 : insert p1 (MaximalConsistentSet bs) |- ContradictionF) by now apply property1_of_inconsistent.
+        assert (claim5_aux1 : insert p1 (MaximalConsistentSet bs) |- ContradictionF) by now apply inconsistent_iff.
         exists ContradictionF.
         split.
         + apply H, claim3, NegationI...
@@ -630,21 +630,21 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         assert (claim6_aux1 : insert (ImplicationF p1 p2) (MaximalConsistentSet bs) |- ContradictionF).
         { apply (ContradictionI (ImplicationF p1 p2)).
           - apply ByAssumption, in_insert_iff, or_introl...
-          - apply (@extendInfers (MaximalConsistentSet bs) (NegationF (ImplicationF p1 p2))).
+          - apply (@extend_infers (MaximalConsistentSet bs)).
             + apply claim3...
             + apply lemma2.
         }
         assert (claim6_aux2 : MaximalConsistentSet bs |- ConjunctionF p1 (NegationF p2)).
         { apply (DisjunctionE p1 (NegationF p1)).
-          - apply (extendInfers (DisjunctionF p1 (NegationF p1)) (Law_of_Exclusive_Middle p1))...
+          - apply (extend_infers (Law_of_Exclusive_Middle p1))...
           - apply (DisjunctionE p2 (NegationF p2)).
-            + apply (extendInfers (DisjunctionF p2 (NegationF p2)) (Law_of_Exclusive_Middle p2))...
+            + apply (extend_infers (Law_of_Exclusive_Middle p2))...
             + apply ContradictionE.
               apply (cut_property (ImplicationF p1 p2)).
               * apply ImplicationI.
                 apply ByAssumption.
                 apply in_insert_iff, or_intror, in_insert_iff, or_introl...
-              * apply (extendInfers ContradictionF claim6_aux1).
+              * apply (extend_infers claim6_aux1).
                 apply isSubsetOf_insert.
                 transitivity (insert p1 (MaximalConsistentSet bs))...
             + apply ConjunctionI.
@@ -652,13 +652,13 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
                 apply in_insert_iff, or_intror, in_insert_iff, or_introl...
               }
               { apply (DisjunctionE p2 (NegationF p2)).
-                - apply (extendInfers (DisjunctionF p2 (NegationF p2)) (Law_of_Exclusive_Middle p2))...
+                - apply (extend_infers (Law_of_Exclusive_Middle p2))...
                 - apply ContradictionE.
                   apply (cut_property (ImplicationF p1 p2)).
                   + apply ImplicationI.
                     apply ByAssumption.
                     apply in_insert_iff, or_intror, in_insert_iff, or_introl...
-                  + apply (extendInfers ContradictionF claim6_aux1).
+                  + apply (extend_infers claim6_aux1).
                     apply isSubsetOf_insert.
                     transitivity (insert (NegationF p2) (insert p1 (MaximalConsistentSet bs))).
                     * transitivity (insert p1 (MaximalConsistentSet bs))...
@@ -673,7 +673,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
               * apply ByAssumption...
               * apply ByAssumption.
                 apply in_insert_iff, or_intror...
-            + apply (extendInfers ContradictionF claim6_aux1).
+            + apply (extend_infers claim6_aux1).
               apply isSubsetOf_insert...
         }
       assert (claim6_aux3 : MaximalConsistentSet bs |- p1) by now apply (ConjunctionE1 p1 (NegationF p2)).
