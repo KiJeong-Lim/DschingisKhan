@@ -291,9 +291,9 @@ Module SoundnessOfPL. (* Thanks to Taeseung Sohn *)
     inversion H4; subst...
   Qed.
 
-  Theorem SoundnessTheoremOfThePropositionalLogic (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
+  Theorem the_propositional_soundness_theorem (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
     hs |= c.
-  Proof with firstorder.
+  Proof with try now firstorder.
     induction H_infers.
     - apply (ByAssumption_preserves h)...
     - apply (ContradictionI_preserves a)...
@@ -550,7 +550,7 @@ Module CompletenessOfPL. (* Thanks to Taeseung Sohn *)
     induction p...
   Qed.
 
-  Corollary CompletenessTheoremOfThePropositionalLogic :
+  Corollary the_propositional_completeness_theorem :
     forall hs : ensemble formula,
     forall c : formula,
     hs |= c ->
