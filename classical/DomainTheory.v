@@ -73,7 +73,7 @@ Module ClassicalCpoTheory.
     split.
     - exists (f x0)...
     - intros y1 y1_in_image_f_X y2 y2_in_image_f_X.
-      rewrite in_image_iff in y1_in_image_f_X, y2_in_image_f_X.
+      apply in_image_iff in y1_in_image_f_X, y2_in_image_f_X.
       destruct y1_in_image_f_X as [x1 [Heq1 x1_in_X]].
       destruct y2_in_image_f_X as [x2 [Heq2 x2_in_X]].
       subst y1 y2.
@@ -185,35 +185,33 @@ Module ClassicalCpoTheory.
       exists sup_X, sup_Y...
     - intros characterstic_properties_of_continuous_map.
       assert (claim2 : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2).
-      { intros x1 x2 H.
+      { intros x1 x2 x1_le_x2.
         set (X := finite [x1; x2]).
         set (Y := image f X).
         assert (claim2_aux1 : isSupremum x2 X).
         { intros x.
           split.
-          - intros H0 x' H1.
-            apply in_finite_iff in H1.
-            destruct H1 as [H1 | [H1 | []]]; subst...
-          - intros H0...
+          - intros x2_le_x x0 x0_in_X.
+            apply in_finite_iff in x0_in_X.
+            destruct x0_in_X as [x1_eq_x0 | [x2_eq_x0 | []]]; subst...
+          - intros x_is_an_upper_bound_of_X...
         }
         assert (claim2_aux2 : isDirected X).
         { split.
           - exists x1...
-          - intros x1' H0 x2' H1.
+          - intros x1' x1'_in_X x2' x2'_in_X.
             exists x2.
-            enough (H3 : x1' =< x2 /\ x2' =< x2)...
+            enough (so_we_obtain : x1' =< x2 /\ x2' =< x2)...
         }
         destruct (characterstic_properties_of_continuous_map X claim2_aux2) as [sup_X [sup_Y [sup_X_isSupremum_of_X [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]]]].
         assert (sup_X_eq_x2 : sup_X == x2) by now apply (isSupremum_unique X).
         apply f_preserves_eq in sup_X_eq_x2.
-        transitivity (sup_Y).
-        - apply sup_Y_isSupremum_of_Y...
-        - transitivity (f sup_X)...
+        transitivity (sup_Y)...
       }
       intros O O_isOpen.
       split.
       + intros x1 x2 x_in_preimage_f_O x_le_y.
-        rewrite in_preimage_iff in x_in_preimage_f_O.
+        apply (in_preimage_iff x1) in x_in_preimage_f_O.
         constructor.
         apply (proj1 O_isOpen (f x1) (f x2))...
       + intros X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_preimage_f_O.
@@ -259,27 +257,25 @@ Module ClassicalCpoTheory.
     exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f))
   .
 
-(*
-
   Lemma sup_of_set_of_squigs_is_well_defined {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall F : ensemble (D ~> D'),
     isDirected F ->
     forall x : D,
     isDirected (image (fun f_i : D ~> D' => proj1_sig f_i x) F).
   Proof with eauto with *.
-    intros fs [H H0] x.
+    intros F [nonempty_F F_closed_under_le] x.
     split.
-    - destruct H as [f0].
+    - destruct nonempty_F as [f0].
       exists (proj1_sig f0 x).
-      apply (in_image f0 (fun f : D ~> D' => proj1_sig f x))...
-    - intros y1 H1 y2 H2.
-      inversion H1; subst.
-      inversion H2; subst.
-      rename x0 into f1, x1 into f2.
-      destruct (H0 f1 H3 f2 H4) as [f3 [H5 [H6 H7]]].
+      apply in_image_iff...
+    - intros y1 y1_in y2 y2_in.
+      apply in_image_iff in y1_in, y2_in.
+      destruct y1_in as [f1 [y1_is f1_in]].
+      destruct y2_in as [f2 [y2_is f2_in]].
+      subst y1 y2.
+      destruct (F_closed_under_le f1 f1_in f2 f2_in) as [f3 [f3_in [f1_le_f3 f2_le_f3]]].
       exists (proj1_sig f3 x).
       repeat split...
-      apply (in_image f3 (fun f : D ~> D' => proj1_sig f x))...
   Qed.
 
   Lemma sup_of_set_of_squigs_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
@@ -291,124 +287,130 @@ Module ClassicalCpoTheory.
     intros F F_isDirected f.
     assert (claim1 : isMonotonicMap f).
     { intros x1 x2 H.
-      unfold f.
-      destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x1)) as [sup_F1_x H0].
-      destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x2)) as [sup_F2_x H1].
-      simpl.
-      apply H0.
-      intros x' H2.
-      inversion H2; subst.
-      rename x into f_i.
+      assert (claim1_aux1 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x1)).
+      assert (claim1_aux2 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x2)).
+      apply claim1_aux1.
+      intros y y_in.
+      apply in_image_iff in y_in.
+      destruct y_in as [f_i [y1_is f_i_in]].
+      subst y.
       transitivity (proj1_sig f_i x2).
       - apply (ContinuousMapOnCpos_isMonotonic)...
         membership.
-      - apply H1...
-        apply (in_image f_i (fun f_i' : D ~> D' => proj1_sig f_i' x2))...
+      - apply claim1_aux2...
     }
-    apply (the_main_reason_for_introducing_ScottTopology (exist isMonotonicMap f claim1)).
-    unfold characterization_of_ContinuousMap_on_cpos.
-    simpl.
-    intros X H.
+    apply (the_main_reason_for_introducing_ScottTopology f (MonotonicMap_preservesSetoid f claim1)).
+    intros X X_isDirected.
     set (Y := image f X).
-    destruct (square_up_exists X H) as [sup_X H0].
+    destruct (square_up_exists X X_isDirected) as [sup_X sup_X_isSupremum_of_X].
     assert ( claim2 :
       forall f_i : D ~> D',
       member f_i F ->
       isSupremum (proj1_sig f_i sup_X) (image (fun x : D => proj1_sig f_i x) X)
     ).
-    { intros f_i H1.
-      assert (H2 : isContinuousMap (proj1_sig f_i)) by membership.
-      assert (H3 : characterization_of_ContinuousMap_on_cpos (proj1_sig f_i)) by apply (the_main_reason_for_introducing_ScottTopology (squig_isMonotonic f_i)), (proj2_sig f_i).
-      destruct (H3 X H) as [sup_X' [sup_Y' [H4 [H5 H6]]]].
-      assert (H7 : sup_X' == sup_X) by now apply (isSupremum_unique X).
-      assert (H8 : proj1_sig f_i sup_X' == proj1_sig f_i sup_X) by apply (MonotonicMap_preservesSetoid (proj1_sig f_i) (proj2_sig (squig_isMonotonic f_i)) sup_X' sup_X H7).
-      apply (proj2 (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X) _ H5 (proj1_sig f_i sup_X))).
-      transitivity (proj1_sig f_i sup_X')...
+    { intros f_i f_i_in.
+      assert (f_i_continuous : isContinuousMap (proj1_sig f_i)) by membership.
+      assert (f_i_preserves_eq := MonotonicMap_preservesSetoid (proj1_sig f_i) (ContinuousMapOnCpos_isMonotonic (proj1_sig f_i) f_i_continuous)).
+      assert (f_i_property : characterization_of_ContinuousMap_on_cpos (proj1_sig f_i)) by apply (the_main_reason_for_introducing_ScottTopology (proj1_sig (squig_isMonotonic f_i)) f_i_preserves_eq), (proj2_sig f_i).
+      destruct (f_i_property X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_i_X f_i_sup_X'_eq_sup_Y']]]].
+      assert (sup_X'_eq_sup_X : sup_X' == sup_X) by now apply (isSupremum_unique X).
+      assert (f_i_sup_X_eq_f_i_sup_X' : proj1_sig f_i sup_X' == proj1_sig f_i sup_X) by now apply f_i_preserves_eq.
+      apply (proj2 (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X) sup_Y' sup_Y'_isSupremum_of_image_f_i_X (proj1_sig f_i sup_X)))...
     }
     assert (claim3 : isSupremum (f sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected sup_X))).
     assert (claim4 : isSupremum (f sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F))).
     { apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs.
-      - intros ys H1.
-        inversion H1; subst.
-        rename x into f_i.
-        exists (proj1_sig f_i sup_X)...
+      - intros ys ys_in.
+        apply in_image_iff in ys_in.
+        destruct ys_in as [f_i [ys_is f_i_in]].
+        subst ys...
       - intros y.
         split.
-        + intros H1 y' [ys [H2 H3]].
-          inversion H2; subst.
-          rename x into f_i.
-          assert (H5 := claim2 f_i H4).
-          assert (H6 : y' == proj1_sig f_i sup_X) by now apply (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X)).
-          assert (H7 : member (proj1_sig f_i sup_X) (image (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X) F)) by now apply (in_image f_i (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X)).
-          assert (H8 : proj1_sig f_i sup_X =< y)...
-        + intros H1.
+        + intros f_sup_X_le_y y' [ys [ys_in y'_isSupremum_of_ys]].
+          apply in_image_iff in ys_in.
+          destruct ys_in as [f_i [ys_is f_i_in]].
+          subst ys.
+          assert (f_i_sup_X_isSupremum := claim2 f_i f_i_in).
+          assert (y'_eq : y' == proj1_sig f_i sup_X) by now apply (isSupremum_unique (image (fun x : D => proj1_sig f_i x) X)).
+          assert (f_i_sup_X_in : member (proj1_sig f_i sup_X) (image (fun f_i0 : D ~> D' => proj1_sig f_i0 sup_X) F))...
+        + intros y_is_an_upper_bound.
           apply claim3.
-          intros y' H2.
-          inversion H2; subst.
-          rename x into f_i.
-          apply H1.
+          intros y' y'_in.
+          apply in_image_iff in y'_in.
+          destruct y'_in as [f_i [y'_is f_i_in]].
+          subst y'.
+          apply y_is_an_upper_bound.
           exists (image (fun x : D => proj1_sig f_i x) X).
           split...
-          apply (in_image f_i (fun f_i0 : D ~> D' => image (fun x : D => proj1_sig f_i0 x) X))...
     }
     assert (claim5 : isSupremum (f sup_X) (unions (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))).
-    { enough (H2 : forall x' : D', member x' (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F)) <-> member x' (unions (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))) by now apply (proj2 (isSupremum_ext _ _ H2 _ claim4 _) (Setoid_refl (f sup_X))).
+    { enough (claim5_aux1 : forall x' : D', member x' (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F)) <-> member x' (unions (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))) by now apply (proj2 (isSupremum_ext _ _ claim5_aux1 _ claim4 _) (Setoid_refl (f sup_X))).
       intros y.
       split.
-      - intros H1.
-        inversion H1; subst.
-        rename X0 into ys.
-        inversion H3; subst.
-        rename x into f_i.
-        inversion H2; subst.
-        apply (in_unions (proj1_sig f_i x) (image (fun f_i' : D ~> D' => proj1_sig f_i' x) F)).
-        + apply (in_image f_i (fun f_i' : D ~> D' => proj1_sig f_i' x))...
-        + apply (in_image x (fun x0 : D => image (fun f_i0 : D ~> D' => proj1_sig f_i0 x0) F))...
-      - intros H1.
-        inversion H1; subst.
-        rename X0 into ys.
-        inversion H3; subst.
-        inversion H2; subst.
-        rename x0 into f_i.
-        apply (in_unions (proj1_sig f_i x) (image (fun x' : D => proj1_sig f_i x') X)).
-        + apply (in_image x (fun x' : D => proj1_sig f_i x'))...
-        + apply (in_image f_i (fun f_i0 : D ~> D' => image (fun x0 : D => proj1_sig f_i0 x0) X))...
+      - intros y_in.
+        apply in_unions_iff in y_in.
+        destruct y_in as [ys [y_in ys_in]].
+        apply in_image_iff in ys_in.
+        destruct ys_in as [f_i [ys_is f_i_in]].
+        subst ys.
+        apply in_image_iff in y_in.
+        destruct y_in as [x [y_is x_in]].
+        subst y.
+        exists (image (fun f_i' : D ~> D' => proj1_sig f_i' x) F)...
+      - intros y_in.
+        apply in_unions_iff in y_in.
+        destruct y_in as [ys [y_in ys_in]].
+        apply in_image_iff in ys_in.
+        destruct ys_in as [x [ys_is x_in]].
+        subst ys.
+        apply in_image_iff in y_in.
+        destruct y_in as [f_i [y_is f_i_in]].
+        subst y.
+        exists (image (fun x' : D => proj1_sig f_i x') X)...
     }
     assert (claim6 : isSupremum (f sup_X) (image_sup (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))).
     { apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs...
-      intros ys H1.
-      inversion H1; subst.
+      intros ys ys_in.
+      apply in_image_iff in ys_in.
+      destruct ys_in as [x [ys_is x_in_X]].
+      subst ys.
       exists (f x).
       intros y.
       split.
-      - intros H3 y' H4.
-        inversion H4; subst.
-        rename x0 into f_i.
+      - intros f_x_le_y y' y'_in.
+        apply in_image_iff in y'_in.
+        destruct y'_in as [f_i [y'_is f_i_in]].
+        subst y'.
         apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x)))...
-      - intros H3.
-        assert (H5 : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
-        apply H5...
+      - intros y_is_an_upper_bound.
+        assert (f_i_sup_X_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+        apply f_i_sup_X_isSupremum...
     }
     assert (claim7 : isSupremum (f sup_X) (image f X)).
     { intros y.
       split.
-      - intros H1 y' H2.
-        inversion H2; subst.
+      - intros f_sup_X_le_y y' y'_in.
+        apply in_image_iff in y'_in.
+        destruct y'_in as [x [y'_is x_in]].
+        subst y'.
         apply claim6...
         exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F).
-        split.
-        + apply (in_image x (fun x0 : D => image (fun f_i : D ~> D' => proj1_sig f_i x0) F))...
-        + apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
-      - intros H1.
+        split...
+        apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+      - intros y_is_an_upper_bound.
         apply claim6.
-        intros y' [ys [H2 H3]].
-        inversion H2; subst.
-        assert (H5 : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
-        assert (H6 : y' == f x) by now apply (isSupremum_unique (image (fun f_i : D ~> D' => proj1_sig f_i x) F)).
+        intros y' [ys [ys_in y'_isSupremum_of_ys]].
+        apply in_image_iff in ys_in.
+        destruct ys_in as [x [ys_is x_in_X]].
+        subst ys.
+        assert (f_x_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+        assert (y'_eq_f_x : y' == f x) by now apply (isSupremum_unique (image (fun f_i : D ~> D' => proj1_sig f_i x) F)).
         transitivity (f x)...
     }
     exists sup_X, (f sup_X)...
   Qed.
+
+(*
 
   Definition sup_of_set_of_squigs {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : forall F : ensemble (D ~> D'), isDirected F -> (D ~> D') :=
     fun F : ensemble (D ~> D') =>
