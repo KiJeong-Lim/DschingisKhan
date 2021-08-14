@@ -35,14 +35,14 @@ Module ExclusiveMiddle.
 
   Lemma Peirce :
     ((P -> Q) -> P) ->
-    (P).
+    P.
   Proof with tauto.
     destruct (classic P)...
   Qed.
 
   Lemma not_imply_elim :
     (~ (P -> Q)) ->
-    (P).
+    P.
   Proof with tauto.
     destruct (classic P)...
   Qed.

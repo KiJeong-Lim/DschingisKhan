@@ -16,7 +16,7 @@ Module ClassicalCpoTheory.
 
   Global Hint Unfold U : my_hints.
 
-  Lemma U_x_isOpen {D : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} :
+  Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     forall x : D,
     isOpen (U x).
   Proof with eauto with *. (* Thanks to Clare Jang *)
@@ -28,201 +28,226 @@ Module ClassicalCpoTheory.
       y =< z ->
       member z (U x)
     ).
-    { intros x y z H H0 H1.
-      contradiction H...
+    { intros x y z y_in_U_x y_le_z z_in_U_x.
+      contradiction y_in_U_x...
     }
     intros x.
     split...
-    intros X H sup_X H0 H1.
-    inversion H; subst.
-    assert (claim2 : ~ (forall x0 : D, x0 =< x \/ ~ member x0 X)).
-    { intros H4.
-      contradiction H1.
-      apply (proj2 (H0 x)).
-      intros x0 H5.
-      destruct (H4 x0) as [H6 | H6]; [apply H6 | contradiction].
+    intros X [nonempty_X X_closed_under_le] sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
+    assert (claim2 : ~ (forall x' : D, x' =< x \/ ~ member x' X)).
+    { intros every_member_of_X_is_either_less_than_or_equal_to_x.
+      contradiction sup_X_in_U_x.
+      apply (proj2 (sup_X_isSupremum_of_X x)).
+      firstorder.
     }
-    apply not_all_ex_not in claim2.
-    destruct claim2 as [x1 H4].
-    exists x1.
-    apply not_or_and in H4.
-    destruct H4 as [H4 H5].
-    apply NNPP in H5...
+    destruct (not_all_ex_not D (fun x0 : D => (x0 =< x \/ ~ member x0 X)) claim2) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
+    exists x0.
+    apply in_intersection_iff.
+    destruct (classic (member x0 X)); tauto.
   Qed.
 
-  Lemma ContinuousMapOnCpos_isMonotonic {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma ContinuousMapOnCpos_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     isMonotonicMap f.
   Proof with eauto with *.
-    intros f H x1 x2 H0.
+    intros f f_continuous x1 x2 x1_le_x2.
     apply NNPP.
-    intros H1.
-    assert (H2 : member (f x1) (U (f x2))) by now unfold U.
-    assert (H3 : member x1 (preimage f (U (f x2)))) by now constructor.
-    assert (H4 : isOpen (preimage f (U (f x2)))) by now apply H, U_x_isOpen.
-    assert (H5 : member x2 (preimage f (U (f x2)))) by now apply (proj1 H4 x1 x2).
-    assert (H6 : member (f x2) (U (f x2))) by now inversion H5...
+    intros f_x1_le_f_x2_is_false.
+    assert (f_x1_in_U_f_x2 : member (f x1) (U (f x2))) by now unfold U.
+    assert (x1_in_preimage_f_U_f_x2 : member x1 (preimage f (U (f x2)))) by now constructor.
+    assert (preimage_f_U_f_x2_isOpen : isOpen (preimage f (U (f x2)))) by now apply f_continuous, U_x_isOpen.
+    assert (x2_in_f_U_f_x2 : member x2 (preimage f (U (f x2)))) by now apply (proj1 preimage_f_U_f_x2_isOpen x1 x2).
+    assert (f_x2_in_U_f_x2 : member (f x2) (U (f x2))) by now inversion x2_in_f_U_f_x2...
   Qed.
 
-  Lemma ContinuousMapOnCpos_preservesDirected {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma ContinuousMapOnCpos_preservesDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
     isDirected (image f X).
   Proof with eauto with *.
-    intros f H X [[x0 H0] H1].
-    assert (H2 : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
+    intros f f_continuous X [[x0 x0_in_X] X_closed_under_le].
+    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
     split.
     - exists (f x0)...
-    - intros y1 H3 y2 H4.
-      inversion H3; subst.
-      rename x into x1.
-      inversion H4; subst.
-      rename x into x2.
-      destruct (H1 x1 H5 x2 H6) as [x3 [H7 [H8 H9]]].
+    - intros y1 y1_in_image_f_X y2 y2_in_image_f_X.
+      rewrite in_image_iff in y1_in_image_f_X, y2_in_image_f_X.
+      destruct y1_in_image_f_X as [x1 [Heq1 x1_in_X]].
+      destruct y2_in_image_f_X as [x2 [Heq2 x2_in_X]].
+      subst y1 y2.
+      destruct (X_closed_under_le x1 x1_in_X x2 x2_in_X) as [x3 [x3_in_X [x1_le_x3 x2_le_x3]]].
       exists (f x3).
       repeat split...
   Qed.
 
-(* [Fix Me: "Refactoring"]
-
-  Lemma square_up_image {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma ContinuousMapOnCpos_preservesSupremum_aux1 {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    forall H2 : isDirected (image f X),
-    f sup_X == proj1_sig (square_up_exists (image f X) H2).
+    forall image_f_X_isDirected : isDirected (image f X),
+    f sup_X == proj1_sig (square_up_exists (image f X) image_f_X_isDirected).
   Proof with eauto with *.
-    intros f H X H0 sup_X H1 H2.
+    intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected.
     set (Y := image f X).
-    assert (H3 : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
-    destruct (square_up_exists Y H2) as [sup_Y H4].
+    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
+    destruct (square_up_exists Y image_f_X_isDirected) as [sup_Y sup_Y_isSupremum_of_Y].
     assert (claim1 : sup_Y =< f sup_X).
-    { apply H4.
-      intros y H5.
-      inversion H5; subst.
-      apply H3, H1...
+    { apply sup_Y_isSupremum_of_Y.
+      intros y y_in_Y.
+      apply in_image_iff in y_in_Y.
+      destruct y_in_Y as [x [Heq x_in_X]].
+      subst y...
     }
     assert (claim2 : f sup_X =< sup_Y).
     { apply NNPP.
-      intros H5.
-      assert (H6 : member (f sup_X) (U sup_Y)) by now unfold U.
-      assert (H7 : member sup_X (preimage f (U sup_Y))) by now constructor.
-      assert (H8 : isOpen (preimage f (U sup_Y))) by now apply H, U_x_isOpen.
-      destruct H8 as [H8 H9].
-      destruct (H9 X H0 sup_X H1 H7) as [x1 H10].
-      inversion H10; subst.
-      inversion H12; subst.
-      contradiction H13...
+      intros f_sup_X_le_sup_Y_is_false.
+      assert (f_sup_X_in_U_sup_Y : member (f sup_X) (U sup_Y)) by now unfold U.
+      assert (sup_X_in_preimage_f_U_sup_Y : member sup_X (preimage f (U sup_Y))) by now constructor.
+      assert (f_U_sup_Y_isOpen : isOpen (preimage f (U sup_Y))) by now apply f_continuous, U_x_isOpen.
+      destruct ((proj2 f_U_sup_Y_isOpen) X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_preimage_f_U_sup_Y) as [x1 x1_in_both_X_and_preimage_f_U_sup_Y].
+      apply in_intersection_iff in x1_in_both_X_and_preimage_f_U_sup_Y.
+      assert (f_x1_in_image_f_X : member (f x1) (image f X)) by now constructor; apply (proj1 x1_in_both_X_and_preimage_f_U_sup_Y).
+      assert (f_x1_in_U_sup_Y : member (f x1) (U sup_Y)) by now apply in_preimage_iff.
+      contradiction f_x1_in_U_sup_Y.
+      apply sup_Y_isSupremum_of_Y...
     }
     apply Poset_asym...
   Qed.
 
-  Definition ContinuousMaps_preservesSupremum {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma ContinuousMapsOnCpo_preservesSupremum_aux2 {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    isDirected (image f X) ->
-    {sup_Y : D' | isSupremum sup_Y (image f X) /\ f sup_X == sup_Y}.
-  Proof.
-    intros f H X H0 sup_X H1 H2.
-    destruct (square_up_exists (image f X) H2) as [sup_Y H4] eqn: H5.
-    exists sup_Y.
+    forall sup_Y : D',
+    isSupremum sup_Y (image f X) <-> f sup_X == sup_Y.
+  Proof with eauto with *.
+    intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X sup_Y.
+    assert (image_f_X_isDirected := ContinuousMapOnCpos_preservesDirected f f_continuous X X_isDirected).
     split.
-    - exact H4.
-    - assert (H6 := square_up_image f H X H0 sup_X H1 H2).
-      rewrite H5 in H6.
-      exact H6.
-  Defined.
+    - assert (claim1 := square_up_isSupremum (image f X) image_f_X_isDirected).
+      transitivity (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)).
+      + exact (ContinuousMapOnCpos_preservesSupremum_aux1 f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected).
+      + apply (isSupremum_unique (image f X))...
+    - intros f_sup_X_eq_sup_Y.
+      assert (claim2 := ContinuousMapOnCpos_preservesSupremum_aux1 f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected).
+      assert (claim3 := square_up_isSupremum (image f X) (image_f_X_isDirected)).
+      assert (claim4 := proj2 (isSupremum_unique (image f X) (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)) claim3 sup_Y)).
+      apply claim4...
+  Qed.
 
-  Definition characterization_of_ContinuousMap_on_cpos {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} : (D -> D') -> Prop :=
-    fun f : D -> D' =>
+  Global Hint Resolve ContinuousMapsOnCpo_preservesSupremum_aux2 : my_hints.
+
+  Definition ContinuousMapsOnCpo_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+    forall f : D -> D',
+    isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
-    let Y : ensemble D' := image f X in
-    exists sup_X : D, exists sup_Y : D', isSupremum sup_X X /\ isSupremum sup_Y Y /\ f sup_X == sup_Y
+    forall sup_X : D,
+    isSupremum sup_X X ->
+    {sup_Y : D' | isSupremum sup_Y (image f X) /\ f sup_X == sup_Y}.
+  Proof.
+    intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X.
+    exists (f sup_X).
+    split.
+    - apply (proj2 (ContinuousMapsOnCpo_preservesSupremum_aux2 f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X (f sup_X)))...
+      reflexivity.
+    - reflexivity.
+  Defined.
+
+  Definition characterization_of_ContinuousMap_on_cpos {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
+    fun f : D -> D' =>
+    forall X : ensemble D,
+    @isDirected D D_isPoset X ->
+    exists sup_X : D, exists sup_Y : D', @isSupremum D D_isPoset sup_X X /\ @isSupremum D' D'_isPoset sup_Y (image f X) /\ @eqProp D' (@Poset_requiresSetoid D' D'_isPoset) (f sup_X) sup_Y
   .
 
-  Theorem the_main_reason_for_introducing_ScottTopology {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
-    forall f : D >=> D',
-    isContinuousMap (proj1_sig f) <-> characterization_of_ContinuousMap_on_cpos (proj1_sig f).
+  Theorem the_main_reason_for_introducing_ScottTopology {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+    forall f : D -> D',
+    (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
+    isContinuousMap f <-> characterization_of_ContinuousMap_on_cpos f.
   Proof with eauto with *.
     assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2) by apply (fun f : D >=> D' => ContinuousMapOnCpos_isMonotonic (proj1_sig f)).
+    intros f f_preserves_eq.
     split.
-    - intros H X H0.
-      inversion H0; subst.
-      set (Y := image (proj1_sig f) X).
+    - intros f_continuous X X_isDirected.
+      set (Y := image f X).
       assert (H3 : isDirected Y) by now apply ContinuousMapOnCpos_preservesDirected.
-      destruct (square_up_exists X H0) as [sup_X H4].
-      destruct (ContinuousMaps_preservesSupremum (proj1_sig f) H X H0 sup_X H4 H3) as [sup_Y H5].
+      destruct (square_up_exists X X_isDirected) as [sup_X sup_X_isSupremum_of_X].
+      destruct (ContinuousMapsOnCpo_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X) as [sup_Y [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]].
       exists sup_X, sup_Y...
-    - intros H.
-      assert (claim2 : forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2).
-      { intros x1 x2 H0.
+    - intros characterstic_properties_of_continuous_map.
+      assert (claim2 : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2).
+      { intros x1 x2 H.
         set (X := finite [x1; x2]).
-        set (Y := image (proj1_sig f) X).
+        set (Y := image f X).
         assert (claim2_aux1 : isSupremum x2 X).
         { intros x.
           split.
-          - intros H1 x' H2.
-            inversion H2; subst.
-            destruct H3 as [H3 | [H3 | []]]; subst...
-          - intros H1...
+          - intros H0 x' H1.
+            apply in_finite_iff in H1.
+            destruct H1 as [H1 | [H1 | []]]; subst...
+          - intros H0...
         }
         assert (claim2_aux2 : isDirected X).
         { split.
           - exists x1...
-          - intros x1' H1 x2' H2.
+          - intros x1' H0 x2' H1.
             exists x2.
-            enough (H4 : x1' =< x2 /\ x2' =< x2)...
+            enough (H3 : x1' =< x2 /\ x2' =< x2)...
         }
-        destruct (H X claim2_aux2) as [sup_X [sup_Y [H1 [H2 H3]]]].
-        assert (H4 : sup_X == x2) by now apply (isSupremum_unique X).
-        apply (proj2_sig f)...
+        destruct (characterstic_properties_of_continuous_map X claim2_aux2) as [sup_X [sup_Y [sup_X_isSupremum_of_X [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]]]].
+        assert (sup_X_eq_x2 : sup_X == x2) by now apply (isSupremum_unique X).
+        apply f_preserves_eq in sup_X_eq_x2.
+        transitivity (sup_Y).
+        - apply sup_Y_isSupremum_of_Y...
+        - transitivity (f sup_X)...
       }
-      intros O H0.
+      intros O O_isOpen.
       split.
-      + intros x1 x2 H1 H2.
-        inversion H1; subst.
+      + intros x1 x2 x_in_preimage_f_O x_le_y.
+        rewrite in_preimage_iff in x_in_preimage_f_O.
         constructor.
-        apply (proj1 H0 (proj1_sig f x1) (proj1_sig f x2))...
-      + intros X H1 sup_X H2 H3.
-        destruct (H X H1) as [sup_X' [sup_Y [H4 [H5 H6]]]].
-        assert (H7 : sup_X == sup_X') by now apply (isSupremum_unique X).
-        assert (H8 : member (proj1_sig f sup_X) O) by now inversion H3; subst.
-        assert (claim3 : isDirected (image (proj1_sig f) X)).
-        { destruct H1 as [[x1_0 H1] H9].
+        apply (proj1 O_isOpen (f x1) (f x2))...
+      + intros X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_preimage_f_O.
+        destruct (characterstic_properties_of_continuous_map X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_X f_sup_X'_eq_sup_Y']]]].
+        assert (sup_X_eq_sup_X' : sup_X == sup_X') by now apply (isSupremum_unique X).
+        assert (f_sup_X_in_O : member (f sup_X) O) by now apply in_preimage_iff.
+        assert (claim3 : isDirected (image f X)).
+        { destruct X_isDirected as [[x1_0 x1_0_in_X] X_closed_under_le].
           split.
-          - exists (proj1_sig f x1_0)...
-          - intros y1 H10 y2 H11.
-            inversion H10; subst.
-            inversion H11; subst.
-            rename x into x1, x0 into x2.
-            destruct (H9 x1 H12 x2 H13) as [x3 [H14 [H15 H16]]].
-            exists (proj1_sig f x3).
+          - exists (f x1_0)...
+          - intros y1 y1_in_image_f_X y2 y2_in_image_f_X.
+            apply in_image_iff in y1_in_image_f_X, y2_in_image_f_X.
+            destruct y1_in_image_f_X as [x1 [Heq1 x1_in_X]].
+            destruct y2_in_image_f_X as [x2 [Heq2 x2_in_X]].
+            subst y1 y2.
+            destruct (X_closed_under_le x1 x1_in_X x2 x2_in_X) as [x3 [x3_in_X [x1_le_x3 x2_le_x3]]].
+            exists (f x3).
             repeat split...
         }
-        assert (claim4 : nonempty (intersection (image (proj1_sig f) X) O)).
-        { apply (proj2 H0 (image (proj1_sig f) X) claim3 (proj1_sig f sup_X))...
-          assert (claim4_aux1 : sup_Y == proj1_sig f sup_X).
-          { transitivity (proj1_sig f sup_X').
-            - symmetry...
-            - apply Poset_asym; apply (proj2_sig f)...
-          }
-          apply (isSupremum_unique (image (proj1_sig f) X) _ H5)...
+        assert (claim4 : sup_Y' == f sup_X).
+        { transitivity (f sup_X').
+          - symmetry...
+          - apply f_preserves_eq...
         }
-        destruct claim4 as [y1 H9].
-        inversion H9; subst.
-        inversion H10; subst.
-        exists x...
+        assert (claim5 : nonempty (intersection (image f X) O)).
+        { apply (proj2 O_isOpen (image f X) claim3 (f sup_X))...
+          apply (isSupremum_unique (image f X) sup_Y' sup_Y'_isSupremum_of_image_f_X)...
+        }
+        destruct claim5 as [y y_in_image_f_X_and_O].
+        apply in_intersection_iff in y_in_image_f_X_and_O.
+        destruct y_in_image_f_X_and_O as [y_in_image_f_X y_in_O].
+        apply in_image_iff in y_in_image_f_X.
+        destruct y_in_image_f_X as [x [y_eq_f_x x_in_X]].
+        subst y...
   Qed.
 
   Local Instance ContinuousMap_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : isPoset (@sig (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder))) :=
@@ -233,6 +258,8 @@ Module ClassicalCpoTheory.
     fun f : D ~> D' =>
     exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f))
   .
+
+(*
 
   Lemma sup_of_set_of_squigs_is_well_defined {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
     forall F : ensemble (D ~> D'),

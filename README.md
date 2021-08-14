@@ -11,7 +11,7 @@ coq_makefile -f _CoqProject *.v -o Makefile
 make
 ```
 
-## CAUTION
+## CAUTIONS
 
 - If you fail to do `QUICK START` on Linux-like OS, please remove all newlines in the file `_CoqProject`.
 

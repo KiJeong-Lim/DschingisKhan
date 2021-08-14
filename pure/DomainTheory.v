@@ -1006,6 +1006,15 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     }
   .
 
+  Lemma square_up_isSupremum {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall X : ensemble D,
+    forall X_isDirected : @isDirected D D_isPoset X,
+    @isSupremum D D_isPoset (proj1_sig (square_up_exists X X_isDirected)) X.
+  Proof.
+    intros X X_isDirected.
+    exact (proj2_sig (square_up_exists X X_isDirected)).
+  Qed.
+
   Local Instance CompleteLattice_isCompletePartialOrder {D : Type} `{D_isPoset : isPoset D} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) : @isCompletePartialOrder D D_isPoset :=
     { bottom_exists :=
       exist _ bot bot_isBottom

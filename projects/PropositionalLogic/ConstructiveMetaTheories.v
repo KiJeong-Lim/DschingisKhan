@@ -471,6 +471,8 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic.
 
+  Local Hint Constructors infers : core.
+
   Variant Th (hs : ensemble formula) : ensemble formula :=
   | in_Th :
     forall c : formula,

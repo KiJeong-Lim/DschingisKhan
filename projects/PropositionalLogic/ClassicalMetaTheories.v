@@ -369,8 +369,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       (member (AtomF i) hs_hat <-> eval_formula (preimage AtomF hs_hat) (AtomF i))
     ).
     { intros i.
-      transitivity (member i (preimage AtomF hs_hat))...
-      rewrite in_preimage_iff...
+      rewrite <- (in_preimage_iff i)...
     }
     assert ( case_ContradictonF :
       (member ContradictionF hs_hat <-> eval_formula (preimage AtomF hs_hat) ContradictionF)
@@ -530,21 +529,18 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
   Proof with try now firstorder.
     intros hs c H_entails.
     destruct (classic (hs |- c)) as [H_yes | H_no].
-    - apply H_yes.
+    - exact H_yes.
     - assert (claim1 : ~ insert (NegationF c) hs |- ContradictionF).
       { intros H_impossible.
         apply H_no, NegationE...
       }
       assert (claim2 : isFilter (MaximalConsistentSet (insert (NegationF c) hs))) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
-      assert (H_eq := ModelExistsIfConsistent (insert (NegationF c) hs) claim1).
+      assert (claim3 := ModelExistsIfConsistent (insert (NegationF c) hs) claim1).
+      assert (claim4 := theorem_of_1_3_10 (insert (NegationF c) hs)).
       apply (completeness_theorem_prototype hs c H_entails (makeModelFromMaximalConsistentSet (MaximalConsistentSet (insert (NegationF c) hs)))).
-      + unfold equiconsistent.
-        transitivity (inconsistent (MaximalConsistentSet (insert (NegationF c) hs))).
-        * apply theorem_of_1_3_10.
-        * split; apply inconsistent_isSubsetOf...
-      + transitivity (MaximalConsistentSet (insert (NegationF c) hs)).
-        * apply theorem_of_1_3_10.
-        * now firstorder.
+      + unfold equiconsistent in *.
+        transitivity (inconsistent (MaximalConsistentSet (insert (NegationF c) hs)))...
+      + transitivity (MaximalConsistentSet (insert (NegationF c) hs))...
       + apply (isFilter_ext_eq (MaximalConsistentSet (insert (NegationF c) hs)) claim2)...
   Qed.
 

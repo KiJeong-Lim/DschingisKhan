@@ -273,7 +273,7 @@ Module InferenceRulesOfPL.
   | BiconditionalE2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs b -> infers hs a
   .
 
-  Global Hint Constructors infers : my_hints.
+  Local Hint Constructors infers : core.
 
   Global Notation " hs '|-' c " := (infers hs c) (at level 70, no associativity) : type_scope.
 
