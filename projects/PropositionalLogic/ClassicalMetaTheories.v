@@ -1,14 +1,14 @@
 Require Import Coq.Lists.List.
 Require Import DschingisKhan.classical.ExclusiveMiddle.
+Require Import DschingisKhan.projects.PropositionalLogic.Base.
+Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheories.
 Require Import DschingisKhan.pure.CBA.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
-Require Import DschingisKhan.projects.PropositionalLogic.Basics.
-Require Import DschingisKhan.projects.PropositionalLogic.ConstructiveMetaTheories.
 
 Module SoundnessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
 
-  Import MyEnsemble MyEnsembleNova ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
+  Import MyEnsemble MyEnsembleNova ExclusiveMiddle SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
   Lemma ByAssumption_preserves {hs : ensemble formula} :
     forall a : formula,
@@ -317,7 +317,7 @@ End SoundnessOfPropositionLogic.
 
 Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ClassicalLogic SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
+  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ExclusiveMiddle SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
 
   Definition makeModelFromMaximalConsistentSet : ensemble formula -> env :=
     preimage AtomF

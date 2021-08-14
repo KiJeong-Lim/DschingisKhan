@@ -2,10 +2,10 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import DschingisKhan.projects.PropositionalLogic.Base.
 Require Import DschingisKhan.pure.CBA.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
-Require Import DschingisKhan.projects.PropositionalLogic.Basics.
 
 Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 

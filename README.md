@@ -27,7 +27,7 @@ coqc -Q . DschingisKhan pure/CBA.v
 coqc -Q . DschingisKhan pure/MyCoin.v
 coqc -Q . DschingisKhan classical/ExclusiveMiddle.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
-coqc -Q . DschingisKhan projects/PropositionalLogic/Basics.v
+coqc -Q . DschingisKhan projects/PropositionalLogic/Base.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/ConstructiveMetaTheories.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/ClassicalMetaTheories.v
 coqc -Q . DschingisKhan projects/PropositionalLogic.v

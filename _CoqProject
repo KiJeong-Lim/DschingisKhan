@@ -8,7 +8,7 @@ pure/CBA.v
 pure/MyCoin.v
 classical/ExclusiveMiddle.v
 classical/DomainTheory.v
-projects/PropositionalLogic/Basics.v
+projects/PropositionalLogic/Base.v
 projects/PropositionalLogic/ConstructiveMetaTheories.v
 projects/PropositionalLogic/ClassicalMetaTheories.v
 projects/PropositionalLogic.v

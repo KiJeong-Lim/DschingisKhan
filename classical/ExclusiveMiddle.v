@@ -1,6 +1,6 @@
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module ClassicalLogic.
+Module ExclusiveMiddle.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
@@ -103,4 +103,4 @@ Module ClassicalLogic.
 
   End Classical_Pred_Type.
 
-End ClassicalLogic.
+End ExclusiveMiddle.
