@@ -2,22 +2,24 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module ExclusiveMiddle.
 
+  Import FunFact.
+
   Axiom classic : forall A : Prop, A \/ ~ A.
 
   Definition proof_irrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2 :=
-    FUN_FACT.proof_irrelevance classic
+    exclusive_middle_implies_proof_irrelevance classic
   .
 
   Definition eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
-    FUN_FACT.eq_rect_eq classic
+    proof_irrelevance_implies_eq_rect_eq proof_irrelevance
   .
 
   Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
-    FUN_FACT.Streicher_K eq_rect_eq
+    eq_rect_eq_implies_Streicher_K eq_rect_eq
   .
 
   Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
-    FUN_FACT.existT_inj2_eq eq_rect_eq
+    eq_rect_eq_implies_existT_inj2_eq eq_rect_eq
   .
 
   Section Classical_Prop.

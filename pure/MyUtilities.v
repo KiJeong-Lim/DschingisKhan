@@ -1127,7 +1127,7 @@ Module MyUniverses.
 
 End MyUniverses.
 
-Module FUN_FACT.
+Module FunFact.
 
   Import EqFacts MyUtilities.
 
@@ -1147,7 +1147,7 @@ Module FUN_FACT.
 
   Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Lemma Streicher_K (A : Type) :
+  Lemma eq_rect_eq_implies_Streicher_K (A : Type) :
     forall x : A,
     forall phi : x = x -> Type,
     phi (eq_reflexivity x) ->
@@ -1184,7 +1184,7 @@ Module FUN_FACT.
     RuleJ phi'
   .
 
-  Definition existT_inj2_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Definition eq_rect_eq_implies_existT_inj2_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun x : A =>
     fun y1 : B x =>
     fun y2 : B x =>
@@ -1285,7 +1285,7 @@ Module FUN_FACT.
     replace (fun u : U => NOT (u U u)) with (R U)...
   Qed.
 
-  Theorem law_of_exclusive_middle_implies_proof_irrelevance :
+  Theorem exclusive_middle_implies_proof_irrelevance :
     T = F.
   Proof with tauto.
     destruct (EXCLUSIVE_MIDDLE (RUSSEL = T)) as [H | H].
@@ -1299,4 +1299,4 @@ Module FUN_FACT.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
-End FUN_FACT.
+End FunFact.
