@@ -219,17 +219,15 @@ Module SemanticsOfPL.
     pvar -> value
   .
 
-  Definition eval_formula : env -> formula -> value :=
-    fun v : env =>
-    fix eval_formula_fix (p : formula) {struct p} : value :=
+  Fixpoint eval_formula (v : env) (p : formula) : value :=
     match p with
     | AtomF i => v i
     | ContradictionF => False
-    | NegationF p1 => ~ eval_formula_fix p1
-    | ConjunctionF p1 p2 => eval_formula_fix p1 /\ eval_formula_fix p2
-    | DisjunctionF p1 p2 => eval_formula_fix p1 \/ eval_formula_fix p2
-    | ImplicationF p1 p2 => eval_formula_fix p1 -> eval_formula_fix p2
-    | BiconditionalF p1 p2 => eval_formula_fix p1 <-> eval_formula_fix p2
+    | NegationF p1 => ~ eval_formula v p1
+    | ConjunctionF p1 p2 => eval_formula v p1 /\ eval_formula v p2
+    | DisjunctionF p1 p2 => eval_formula v p1 \/ eval_formula v p2
+    | ImplicationF p1 p2 => eval_formula v p1 -> eval_formula v p2
+    | BiconditionalF p1 p2 => eval_formula v p1 <-> eval_formula v p2
     end
   .
 
