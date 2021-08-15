@@ -1,12 +1,29 @@
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
-Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.pure.MyUtilities.
 
 Module FunFacts.
 
   Import EqFacts MyUtilities.
+
+  Record RETRACT (A : Prop) (B : Prop) : Prop :=
+    { _i : A -> B
+    ; _j : B -> A
+    ; _inv : forall a : A, _j (_i a) = a
+    }
+  .
+
+  Record RETRACT_COND (A : Prop) (B : Prop) : Prop :=
+    { _i2 : A -> B
+    ; _j2 : B -> A
+    ; _inv2 : RETRACT A B -> forall a : A, _j2 (_i2 a) = a
+    }
+  .
+
+  Inductive BB : Prop :=
+  | TRUE_BB : BB
+  | FALSE_BB : BB
+  .
+
+  Local Hint Constructors RETRACT RETRACT_COND : core.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -74,24 +91,6 @@ Module FunFacts.
   Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
   Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
-
-  Record RETRACT (A : Prop) (B : Prop) : Prop :=
-    { _i : A -> B
-    ; _j : B -> A
-    ; _inv : forall a : A, _j (_i a) = a
-    }
-  .
-
-  Local Hint Constructors RETRACT : core.
-
-  Record RETRACT_COND (A : Prop) (B : Prop) : Prop :=
-    { _i2 : A -> B
-    ; _j2 : B -> A
-    ; _inv2 : RETRACT A B -> forall a : A, _j2 (_i2 a) = a
-    }
-  .
-
-  Local Hint Constructors RETRACT_COND : core.
 
   Let CHOICE {A : Prop} {B : Prop} :
     forall r : RETRACT_COND A B,
@@ -214,5 +213,67 @@ Module FunFacts.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
+
+  Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
+
+  Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
+
+  Let A_eq_A_to_A_if_A_is_inhabited (A : Prop) `{A_inhabited : inhabited A} :
+    A = (A -> A).
+  Proof with tauto.
+    destruct A_inhabited as [a].
+    apply (propositional_extensionality A (A -> A))...
+  Qed.
+
+  Let RETRACT_of_A_to_A_and_A (A : Prop) `{A_inhabited : inhabited A} :
+    RETRACT (A -> A) A.
+  Proof with eauto.
+    replace (A -> A) with A...
+    exists (fun a : A => a) (fun a : A => a)...
+  Qed.
+
+  Let CIRCULAR (A : Prop) `{A_inhabited : inhabited A} :
+    exists fix_A : (A -> A) -> A, forall f : A -> A, fix_A f = f (fix_A f).
+  Proof.
+    destruct (@RETRACT_of_A_to_A_and_A A A_inhabited) as [lam_A app_A beta_A].
+    set (Y_com := fun f : A -> A => app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x)))).
+    exists Y_com.
+    intros f.
+    enough (claim1 : app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x))) = f (Y_com f)) by exact claim1.
+    rewrite (beta_A (fun x : A => f (app_A x x))).
+    exact (eq_reflexivity (f (Y_com f))).
+  Qed.
+
+  Let NOT_BB : BB -> BB :=
+    fun b : BB =>
+    match b with
+    | TRUE_BB => FALSE_BB
+    | FALSE_BB => TRUE_BB
+    end
+  .
+
+  Let PARADOX_OF_RUSSEL :
+    TRUE_BB = FALSE_BB.
+  Proof with eauto.
+    assert (BB_inhabited : inhabited BB) by now constructor; left.
+    destruct (@CIRCULAR BB BB_inhabited) as [fix_BB fix_BB_spec].
+    assert (claim1 : fix_BB NOT_BB = NOT_BB (fix_BB NOT_BB)) by now apply fix_BB_spec.
+    set (RUSSEL := fix_BB NOT_BB).
+    fold RUSSEL in claim1.
+    unfold NOT_BB in claim1.
+    destruct RUSSEL as [|]...
+  Qed.
+
+  Context (BOOL : Prop) (T : BOOL) (F : BOOL).
+
+  Theorem propositional_extensionality_implies_proof_irrelevance :
+    T = F.
+  Proof with eauto.
+    set (go := fun b : BB => if b then T else F).
+    assert (claim1 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go TRUE_BB FALSE_BB PARADOX_OF_RUSSEL).
+    simpl in claim1...
+  Qed.
+
+  End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
 
 End FunFacts.
