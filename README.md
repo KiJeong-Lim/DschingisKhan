@@ -48,7 +48,7 @@ coqc -Q . DschingisKhan projects/SmullyanGIT.v
 
 - `Soonwon Moon` https://github.com/damhiya
 
-## LICENSE
+## THE LICENSE
 
 ```
 This is free and unencumbered software released into the public domain.

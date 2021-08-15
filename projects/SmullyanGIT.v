@@ -188,8 +188,6 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   End AbstractFormOfTheTheorems.
 
-(* [Fix Me: "Refactoring"]
-
   Definition vr : Set :=
     nat
   .
@@ -600,14 +598,14 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   Fixpoint relation_of_arity (n : nat) : Type :=
     match n with
-    | 0 => Prop
+    | O => Prop
     | S n' => nat -> relation_of_arity n'
     end
   .
 
   Fixpoint lift_relation (n : nat) : relation_of_arity (S n) -> nat -> relation_of_arity n :=
     match n as n0 return relation_of_arity (S n0) -> nat -> relation_of_arity n0 with
-    | 0 =>
+    | O =>
       fun pred : nat -> Prop =>
       fun val : nat =>
       pred val
@@ -621,7 +619,7 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   Fixpoint express_relation (n : nat) : form -> relation_of_arity n -> Prop :=
     match n as n0 return form -> relation_of_arity n0 -> Prop with
-    | 0 =>
+    | O =>
       fun f : form =>
       fun pred : Prop =>
       (forall x : vr, occursFreeIn_form x f = false) /\ (~ ~ pred <-> forall va : value_assignment, eval_form va f)
@@ -634,14 +632,14 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   Fixpoint function_of_arity (n : nat) : Type :=
     match n with
-    | 0 => nat
+    | O => nat
     | S n' => nat -> function_of_arity n'
     end
   .
 
   Fixpoint lift_function (n : nat) : function_of_arity (S n) -> nat -> function_of_arity n :=
     match n as n0 return function_of_arity (S n0) -> nat -> function_of_arity n0 with
-    | 0 =>
+    | O =>
       fun func : nat -> nat =>
       fun val : nat =>
       func val
@@ -655,7 +653,7 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   Fixpoint express_function (n : nat) : form -> function_of_arity n -> Prop :=
     match n as n0 return form -> function_of_arity n0 -> Prop with
-    | 0 =>
+    | O =>
       fun f : form =>
       fun func : nat =>
       forall val : nat,
@@ -701,7 +699,5 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
         eval_in_vr_eq_dec H0.
         simpl_in_eval_tm_make_numeral H0...
   Qed.
-
-*)
 
 End SmullyanGIT.

@@ -328,7 +328,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     ~ hs |- ContradictionF ->
     forall p : formula,
     member p (MaximalConsistentSet hs) <-> eval_formula (makeModelFromMaximalConsistentSet (MaximalConsistentSet hs)) p.
-  Proof with eauto with *.
+  Proof with eauto with *. (* Infinitely grateful for Taeseung's advice! *)
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
     { intros hs h b.
@@ -364,21 +364,21 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       apply (inconsistent_isSubsetOf (Cl (MaximalConsistentSet hs)))...
       apply fact5_of_1_2_8, theorem_of_1_2_14, lemma1_of_1_3_8.
     }
-    assert ( case_AtomF :
+    assert ( caseAtomF :
       forall i : pvar,
       (member (AtomF i) hs_hat <-> eval_formula (preimage AtomF hs_hat) (AtomF i))
     ).
     { intros i.
       rewrite <- (in_preimage_iff i)...
     }
-    assert ( case_ContradictonF :
+    assert ( caseContradictonF :
       (member ContradictionF hs_hat <-> eval_formula (preimage AtomF hs_hat) ContradictionF)
     ).
     { simpl.
       rewrite claim4, <- inconsistent_iff.
       tauto.
     }
-    assert ( case_NegationF :
+    assert ( caseNegationF :
       forall p1 : formula,
       (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
       (member (NegationF p1) hs_hat <-> eval_formula (preimage AtomF hs_hat) (NegationF p1))
@@ -396,16 +396,16 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
         apply claim4, claim5.
         intros H0.
         apply claim4, (ContradictionI (NegationF p1)).
-        + enough (aux1 : MaximalConsistentSet hs |- ImplicationF p1 ContradictionF).
+        + enough (caseNegationF_aux1 : MaximalConsistentSet hs |- ImplicationF p1 ContradictionF).
           { apply NegationI, (ImplicationE p1).
-            - apply (extend_infers aux1)...
+            - apply (extend_infers caseNegationF_aux1)...
             - apply ByAssumption...
           }
           apply claim4, claim6.
           tauto.
         + apply ByAssumption...
     }
-    assert ( case_ConjunctionF :
+    assert ( caseConjunctionF :
       forall p1 : formula,
       forall p2 : formula,
       (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
@@ -423,7 +423,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       - intros [H H0].
         apply claim4, ConjunctionI; apply claim4...
     }
-    assert ( case_DisjunctionF :
+    assert ( caseDisjunctionF :
       forall p1 : formula,
       forall p2 : formula,
       (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
@@ -446,7 +446,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
               + apply ByAssumption...
             - apply ImplicationI, ByAssumption, in_insert_iff, or_intror...
           }
-          { apply claim4, case_NegationF.
+          { apply claim4, caseNegationF.
             - apply IHp1.
             - simpl.
               intros H0.
@@ -458,7 +458,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
         + apply claim4, (DisjunctionI1 p1 p2), claim4...
         + apply claim4, (DisjunctionI2 p1 p2), claim4...
     }
-    assert ( case_ImplicationF :
+    assert ( caseImplicationF :
       forall p1 : formula,
       forall p2 : formula,
       (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
@@ -470,7 +470,7 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       simpl.
       tauto.
     }
-    assert ( case_BiconditionalF :
+    assert ( caseBiconditionalF :
       forall p1 : formula,
       forall p2 : formula,
       (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
@@ -512,9 +512,9 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
       }
       { split.
         - intros [H H0].
-          apply case_ImplicationF in H, H0...
+          apply caseImplicationF in H, H0...
         - intros [H H0].
-          apply case_ImplicationF in H, H0...
+          apply caseImplicationF in H, H0...
       }
     }
     unfold makeModelFromMaximalConsistentSet.
@@ -531,8 +531,8 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     destruct (classic (hs |- c)) as [H_yes | H_no].
     - exact H_yes.
     - assert (claim1 : ~ insert (NegationF c) hs |- ContradictionF).
-      { intros H_impossible.
-        apply H_no, NegationE...
+      { intros H_inconsistent.
+        apply H_no, NegationE, H_inconsistent.
       }
       assert (claim2 : isFilter (MaximalConsistentSet (insert (NegationF c) hs))) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
       assert (claim3 := ModelExistsIfConsistent (insert (NegationF c) hs) claim1).
