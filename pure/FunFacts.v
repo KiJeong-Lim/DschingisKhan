@@ -214,7 +214,7 @@ Module FunFacts.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
-  Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
+  Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.ClassicalFacts.html" *)
 
   Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
 
@@ -264,12 +264,14 @@ Module FunFacts.
     destruct RUSSEL as [|]...
   Qed.
 
-  Context (BOOL : Prop) (T : BOOL) (F : BOOL).
-
   Theorem propositional_extensionality_implies_proof_irrelevance :
-    T = F.
+    forall BOOL : Prop,
+    forall TRUE : BOOL,
+    forall FALSE : BOOL,
+    TRUE = FALSE.
   Proof with eauto.
-    set (go := fun b : BB => if b then T else F).
+    intros BOOL TRUE FALSE.
+    set (go := fun b : BB => if b then TRUE else FALSE).
     assert (claim1 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go TRUE_BB FALSE_BB PARADOX_OF_RUSSEL).
     simpl in claim1...
   Qed.
