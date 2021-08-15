@@ -1131,15 +1131,23 @@ Module FUN_FACT.
 
   Import EqFacts MyUtilities.
 
-  Section CLASSICAL_EQUALITY.
+  Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
-  Hypothesis EQ_EQ_RECT : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis proof_irrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2.
 
-  Section Axiom_K.
+  Theorem proof_irrelevance_implies_eq_rect_eq (A : Type) (x : A) (B : A -> Type) (y : B x) (H : x = x) :
+    y = eq_rect x B y x H.
+  Proof with reflexivity.
+    rewrite <- (proof_irrelevance (@eq A x x) (@eq_refl A x) H)...
+  Qed.
 
-  Context (A : Type).
+  End PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
-  Lemma Streicher_K :
+  Section EQ_RECT_EQ_implies_STREICHER_K.
+
+  Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+
+  Lemma Streicher_K (A : Type) :
     forall x : A,
     forall phi : x = x -> Type,
     phi (eq_reflexivity x) ->
@@ -1151,14 +1159,16 @@ Module FUN_FACT.
     intros phi phi_eq_val eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_eq_val.
-    - rewrite (EQ_EQ_RECT A x (eq x) eq_val eq_val0).
+    - rewrite (EQ_RECT_EQ A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Qed.
 
-  End Axiom_K.
+  End EQ_RECT_EQ_implies_STREICHER_K.
 
-  Section inj_pairT2.
+  Section EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
+
+  Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Context (A : Type) (B : A -> Type).
 
@@ -1179,20 +1189,14 @@ Module FUN_FACT.
     fun y1 : B x =>
     fun y2 : B x =>
     fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (EQ_EQ_RECT A x B y2 H0)) eq_refl
+    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (EQ_RECT_EQ A x B y2 H0)) eq_refl
   .
 
-  End inj_pairT2.
+  End EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
 
-  End CLASSICAL_EQUALITY.
+  Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Section EXCLUSIVE_MIDDLE.
-
-  Hypothesis EM : forall P : Prop, P \/ ~ P.
-
-  Section ProofIrrelevance. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
-
-  Section ParadoxOfBerardi.
+  Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
 
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
@@ -1212,7 +1216,7 @@ Module FUN_FACT.
 
   Local Hint Constructors RETRACT_COND : core.
 
-  Let AC {A : Prop} {B : Prop} :
+  Let CHOICE {A : Prop} {B : Prop} :
     forall r : RETRACT_COND A B,
     RETRACT A B ->
     forall a : A,
@@ -1235,7 +1239,7 @@ Module FUN_FACT.
     RETRACT_COND (POW A) (POW B).
   Proof with tauto.
     intros A B.
-    destruct (EM (RETRACT (POW A) (POW B))) as [[i j inv] | H].
+    destruct (EXCLUSIVE_MIDDLE (RETRACT (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : POW A => fun b : B => F) (fun pb : POW B => fun a : A => F)...
   Qed.
@@ -1259,7 +1263,7 @@ Module FUN_FACT.
 
   Let NOT : BOOL -> BOOL :=
     fun b : BOOL =>
-    match (EM (b = T)) with
+    match (EXCLUSIVE_MIDDLE (b = T)) with
     | or_introl H_yes => F
     | or_intror H_no => T
     end
@@ -1273,36 +1277,26 @@ Module FUN_FACT.
     R U R
   .
 
-  Let BERARDI_PARADOX :
+  Let PARADOX_OF_BERARDI :
     RUSSEL = NOT RUSSEL.
   Proof with eauto.
     set (app := fun p : POW U => fun u : U => p u).
-    enough (claim1 : RUSSEL = app (fun u : U => NOT (u U u)) R)...
+    enough (claim1 : RUSSEL = app (fun u : U => NOT (u U u)) R) by exact claim1.
     replace (fun u : U => NOT (u U u)) with (R U)...
   Qed.
 
-  Theorem proof_irrelevance :
+  Theorem law_of_exclusive_middle_implies_proof_irrelevance :
     T = F.
   Proof with tauto.
-    destruct (EM (RUSSEL = T)) as [H | H].
-    - assert (claim1 : T = NOT T) by (rewrite <- H; exact BERARDI_PARADOX).
+    destruct (EXCLUSIVE_MIDDLE (RUSSEL = T)) as [H | H].
+    - assert (claim1 : T = NOT T) by now rewrite <- H; exact PARADOX_OF_BERARDI.
       unfold NOT in claim1.
-      destruct (EM (T = T))...
-    - assert (claim1 : NOT RUSSEL <> T) by (rewrite <- BERARDI_PARADOX; exact H).
+      destruct (EXCLUSIVE_MIDDLE (T = T)) as [H_yes | H_no]...
+    - assert (claim1 : NOT RUSSEL <> T) by now rewrite <- PARADOX_OF_BERARDI; exact H.
       unfold NOT in claim1. 
-      destruct (EM (RUSSEL = T))...
+      destruct (EXCLUSIVE_MIDDLE (RUSSEL = T)) as [H_yes | H_no]...
   Qed.
 
-  End ParadoxOfBerardi.
-
-  Corollary eq_rect_eq (A : Type) (x : A) (B : A -> Type) (y : B x) (H : x = x) :
-    y = eq_rect x B y x H.
-  Proof with reflexivity.
-    rewrite <- (proof_irrelevance (@eq A x x) (@eq_refl A x) H)...
-  Qed.
-
-  End ProofIrrelevance.
-
-  End EXCLUSIVE_MIDDLE.
+  End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
 End FUN_FACT.
