@@ -19,7 +19,7 @@ Module ClassicalCpoTheory.
   Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     forall x : D,
     isOpen (U x).
-  Proof with eauto with *. (* Thanks to Clare Jang *)
+  Proof with eauto with *. (* Thanks to Juneyoung Jang *)
     assert ( claim1 :
       forall x : D,
       forall y : D,
@@ -34,13 +34,13 @@ Module ClassicalCpoTheory.
     intros x.
     split...
     intros X [nonempty_X X_closed_under_le] sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
-    assert (claim2 : ~ (forall x' : D, x' =< x \/ ~ member x' X)).
+    assert (JuneyoungJang'sAdvice : ~ (forall x' : D, x' =< x \/ ~ member x' X)).
     { intros every_member_of_X_is_either_less_than_or_equal_to_x.
       contradiction sup_X_in_U_x.
       apply (proj2 (sup_X_isSupremum_of_X x)).
       firstorder.
     }
-    destruct (not_all_ex_not D (fun x0 : D => (x0 =< x \/ ~ member x0 X)) claim2) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
+    destruct (not_all_ex_not D (fun x0 : D => (x0 =< x \/ ~ member x0 X)) JuneyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
     exists x0.
     apply in_intersection_iff.
     destruct (classic (member x0 X)); tauto.
@@ -876,7 +876,7 @@ Module ClassicalCpoTheory.
     transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonic | apply H]...
   Qed.
 
-  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : ((D ~> D') * D) >=> D' :=
+  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : ((D ~> D') * D) >=> D' :=
     exist _ (@uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)) ScottApp_isMontonic
   .
 
@@ -887,7 +887,7 @@ Module ClassicalCpoTheory.
     forall x2 : D,
     f1 == f2 ->
     x1 == x2 ->
-    proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (f1, x1) == proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (f2, x2).
+    proj1_sig ScottApp (f1, x1) == proj1_sig ScottApp (f2, x2).
   Proof with (membership || eauto with *).
     intros f1 f2 x1 x2 Heq_f Heq_x.
     simpl.
@@ -897,15 +897,15 @@ Module ClassicalCpoTheory.
   Qed.
 
   Lemma ScottApp_isContinuous {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
-    isContinuousMap (proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder)).
+    isContinuousMap (fun p : (D ~> D') * D => proj1_sig ScottApp p).
   Proof with (membership || eauto with *).
-    apply (separately_continuous_iff (proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder)) ScottApp_preserves_eq).
+    apply (separately_continuous_iff (fun p : (D ~> D') * D => proj1_sig ScottApp p) ScottApp_preserves_eq).
     split.
     - unfold ScottApp.
       simpl.
       intros f...
     - intros x.
-      assert (mayday : isMonotonicMap (fun f : D ~> D' => proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (f, x))).
+      assert (mayday : isMonotonicMap (fun f : D ~> D' => proj1_sig ScottApp (f, x))).
       { intros f1 f2 f1_le_f2.
         unfold ScottApp...
       }
@@ -913,7 +913,7 @@ Module ClassicalCpoTheory.
       + intros f1 f2 Heq_f.
         apply ScottApp_preserves_eq...
       + intros fs fs_isDirected.
-        set (Y := image (fun f_i : D ~> D' => proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (f_i, x)) fs).
+        set (Y := image (fun f_i : D ~> D' => proj1_sig ScottApp (f_i, x)) fs).
         set (f := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (sup_of_set_of_squigs_is_well_defined fs fs_isDirected x))).
         set (sup_fs := exist isContinuousMap f (sup_of_set_of_squigs_exists_if_it_is_directed fs fs_isDirected)).
         assert (claim1 : forall x : D, isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) fs)) by apply (fun x : D => proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (sup_of_set_of_squigs_is_well_defined fs fs_isDirected x))).
@@ -930,7 +930,7 @@ Module ClassicalCpoTheory.
             subst g'.
             apply (H f_i)...
         }
-        assert (claim3 : isSupremum (proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (sup_fs, x)) Y).
+        assert (claim3 : isSupremum (proj1_sig ScottApp (sup_fs, x)) Y).
         { intros y.
           split.
           - intros le_y y' y'_in.
@@ -938,7 +938,7 @@ Module ClassicalCpoTheory.
           - intros y_is_an_upper_bound.
             apply (claim1 x)...
         }
-        exists sup_fs, (proj1_sig (ScottApp D_isCompletePartialOrder D'_isCompletePartialOrder) (sup_fs, x))...
+        exists sup_fs, (proj1_sig ScottApp (sup_fs, x))...
   Qed.
 
 End ClassicalCpoTheory.
