@@ -1,6 +1,7 @@
 -Q . DschingisKhan
 pure/MyUtilities.v
 pure/MyStructures.v
+pure/FunFacts.v
 pure/DomainTheory.v
 pure/UntypedLambdaCalculus.v
 pure/SetTheory.v

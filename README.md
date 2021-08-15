@@ -24,6 +24,7 @@ make
 ```
 coqc -Q . DschingisKhan pure/MyUtilities.v
 coqc -Q . DschingisKhan pure/MyStructures.v
+coqc -Q . DschingisKhan pure/FunFacts.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v

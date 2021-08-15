@@ -1,8 +1,8 @@
-Require Import DschingisKhan.pure.MyUtilities.
+Require Import DschingisKhan.pure.FunFacts.
 
 Module ExclusiveMiddle.
 
-  Import FunFact.
+  Import FunFacts.
 
   Axiom classic : forall A : Prop, A \/ ~ A.
 
@@ -80,7 +80,7 @@ Module ExclusiveMiddle.
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
     H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n_ : U => ~ P n_) n H1)))
-  .
+  . 
 
   Lemma not_all_not_ex :
     (~ (forall n : U, ~ P n)) ->
