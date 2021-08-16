@@ -1372,9 +1372,8 @@ Module ClassicalCpoTheory.
       intros x1 x2.
       transitivity (sup_G (x1, x2)).
       + reflexivity.
-      + enough (claim6 : @leProp ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) sup_G (fun p : D1 * D2 => proj1_sig (proj1_sig h (fst p)) (snd p))).
-        * apply claim6.
-        * apply claim4...
+      + enough (claim6 : @leProp ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) sup_G (fun p : D1 * D2 => proj1_sig (proj1_sig h (fst p)) (snd p))) by apply claim6.
+        apply claim4...
   Qed.
 
   Definition ScottAbs {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) ~> (D1 ~> (D2 ~> D3)) :=
