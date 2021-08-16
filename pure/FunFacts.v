@@ -214,50 +214,59 @@ Module FunFacts.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
+  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSEL.
+
+  Hypothesis UNTYPED_LAMBDA_CALCULUS_FOR_BB : RETRACT (BB -> BB) BB.
+
+  Let Y_COMBINATOR_FOR_BB :
+    exists Y : (BB -> BB) -> BB, forall f : BB -> BB, Y f = f (Y f).
+  Proof.
+    destruct UNTYPED_LAMBDA_CALCULUS_FOR_BB as [lam_BB app_BB beta_BB].
+    set (Y_com := fun f : BB -> BB => app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x)))).
+    exists Y_com.
+    intros f.
+    enough (claim1 : app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x))) = f (Y_com f)) by exact claim1.
+    rewrite (beta_BB (fun x : BB => f (app_BB x x))).
+    exact (eq_reflexivity (f (Y_com f))).
+  Qed.
+
+  Let NOT_BB : BB -> BB :=
+    fun b : BB =>
+    match b return BB with
+    | TRUE_BB => FALSE_BB
+    | FALSE_BB => TRUE_BB
+    end
+  .
+
+  Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russel :
+    TRUE_BB = FALSE_BB.
+  Proof with eauto.
+    assert (BB_inhabited : inhabited BB) by now constructor; left.
+    destruct Y_COMBINATOR_FOR_BB as [Y Y_spec].
+    set (RUSSEL := Y NOT_BB).
+    assert (claim1 : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
+    unfold NOT_BB in claim1.
+    destruct RUSSEL...
+  Qed.
+
+  End UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSEL.
+
   Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.ClassicalFacts.html" *)
 
   Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
 
-  Let A_COERCE_A_ARROW_A (A : Prop) `{A_inhabited : inhabited A} :
+  Let A_coerce_A_ARROW_A_for_any_inhabited_Prop_A (A : Prop) (A_inhabited : inhabited A) :
     A = (A -> A).
   Proof with tauto.
     destruct A_inhabited as [a].
     apply (propositional_extensionality A (A -> A))...
   Qed.
 
-  Let UNTYPED_LAMBDA_CALCULUS (A : Prop) `{A_inhabited : inhabited A} :
+  Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (A : Prop) (A_inhabited : inhabited A) :
     RETRACT (A -> A) A.
   Proof with eauto.
     replace (A -> A) with A...
     exists (fun a : A => a) (fun a : A => a)...
-  Qed.
-
-  Let Y_COMBINATOR (A : Prop) `{A_inhabited : inhabited A} :
-    exists Y : (A -> A) -> A, forall f : A -> A, Y f = f (Y f).
-  Proof.
-    destruct (@UNTYPED_LAMBDA_CALCULUS A A_inhabited) as [lam_A app_A beta_A].
-    set (Y_com := fun f : A -> A => app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x)))).
-    exists Y_com.
-    intros f.
-    enough (claim1 : app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x))) = f (Y_com f)) by exact claim1.
-    rewrite (beta_A (fun x : A => f (app_A x x))).
-    exact (eq_reflexivity (f (Y_com f))).
-  Qed.
-
-  Let NOT_BB : BB -> BB :=
-    fun b : BB =>
-    if b then FALSE_BB else TRUE_BB
-  .
-
-  Let PARADOX_OF_RUSSEL :
-    TRUE_BB = FALSE_BB.
-  Proof with eauto.
-    assert (BB_inhabited : inhabited BB) by now constructor; left.
-    destruct (@Y_COMBINATOR BB BB_inhabited) as [Y Y_spec].
-    set (RUSSEL := Y NOT_BB).
-    assert (claim1 : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
-    unfold NOT_BB in claim1.
-    destruct RUSSEL as [|]...
   Qed.
 
   Theorem propositional_extensionality_implies_proof_irrelevance :
@@ -266,10 +275,12 @@ Module FunFacts.
     forall FALSE : BOOL,
     TRUE = FALSE.
   Proof with eauto.
+    assert (BB_inhabited : inhabited BB) by now constructor; left.
+    assert (claim1 := untyped_lambda_calculus_for_BB_implies_paradox_of_russel (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
     intros BOOL TRUE FALSE.
     set (go := fun b : BB => if b then TRUE else FALSE).
-    assert (claim1 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go TRUE_BB FALSE_BB).
-    simpl in claim1...
+    assert (claim2 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go).
+    simpl in claim2...
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
