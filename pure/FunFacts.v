@@ -41,7 +41,7 @@ Module FunFacts.
 
   Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Lemma eq_rect_eq_implies_Streicher_K (A : Type) :
+  Theorem eq_rect_eq_implies_Streicher_K (A : Type) :
     forall x : A,
     forall phi : x = x -> Type,
     phi (eq_reflexivity x) ->
