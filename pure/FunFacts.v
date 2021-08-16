@@ -278,8 +278,7 @@ Module FunFacts.
     assert (claim1 := untyped_lambda_calculus_for_BB_implies_paradox_of_russel (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
     intros BOOL TRUE FALSE.
     set (go := fun b : BB => if b then TRUE else FALSE).
-    assert (claim2 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go).
-    simpl in claim2...
+    assert (claim2 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go)...
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.

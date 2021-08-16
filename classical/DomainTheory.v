@@ -269,7 +269,7 @@ Module ClassicalCpoTheory.
         subst y...
   Qed.
 
-  Global Instance ContinuousMap_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : isPoset (@sig (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder))) :=
+  Global Instance set_of_ContinuousMapOnCpos_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : isPoset (@sig (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder))) :=
     @SubPoset (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder)) (arrow_isPoset D'_isPoset)
   .
 
@@ -278,7 +278,7 @@ Module ClassicalCpoTheory.
     exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f))
   .
 
-  Lemma sup_of_set_of_squigs_is_well_defined {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma Supremum_of_squigs_is_well_defined {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     isDirected F ->
     forall x : D,
@@ -297,21 +297,21 @@ Module ClassicalCpoTheory.
       repeat split...
   Qed.
 
-  Definition square_up_of_squigs {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : forall F : ensemble (D ~> D'), isDirected F -> (D -> D') :=
+  Definition Supremum_of_squigs {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : forall F : ensemble (D ~> D'), isDirected F -> (D -> D') :=
     fun F : ensemble (D ~> D') =>
     fun F_isDirected : isDirected F =>
     fun x : D =>
-    proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))
+    proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x))
   .
 
-  Lemma square_up_of_squigs_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma Supremum_of_squigs_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
-    isMonotonicMap (fun x : D => square_up_of_squigs F F_isDirected x).
+    isMonotonicMap (fun x : D => Supremum_of_squigs F F_isDirected x).
   Proof with eauto with *.
     intros F F_isDirected x1 x2 x1_le_x2.
-    assert (claim1_aux1 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x1)).
-    assert (claim1_aux2 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x2)).
+    assert (claim1_aux1 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (Supremum_of_squigs_is_well_defined F F_isDirected x1)).
+    assert (claim1_aux2 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (Supremum_of_squigs_is_well_defined F F_isDirected x2)).
     apply claim1_aux1.
     intros y y_in.
     apply in_image_iff in y_in.
@@ -335,22 +335,21 @@ Module ClassicalCpoTheory.
     isSupremum (proj1_sig f_i sup_X) (image (fun x : D => proj1_sig f_i x) X).
   Proof with eauto with *.
     intros F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X f_i f_i_in.
-    assert (claim1 := isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f_i) (proj2_sig f_i) X X_isDirected sup_X sup_X_isSupremum_of_X).
-    apply claim1...
+    apply (isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f_i) (proj2_sig f_i) X X_isDirected sup_X sup_X_isSupremum_of_X)...
   Qed.
 
-  Lemma sup_of_set_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    isSupremum (square_up_of_squigs F F_isDirected sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F)).
+    isSupremum (Supremum_of_squigs F F_isDirected sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F)).
   Proof with eauto with *.
     intros F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X.
     assert (claim1 := useful_lemma_for_f_i_sup_X F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
-    assert (claim2 : isSupremum (square_up_of_squigs F F_isDirected sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by now apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected sup_X)).
+    assert (claim2 : isSupremum (Supremum_of_squigs F F_isDirected sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by now apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (Supremum_of_squigs_is_well_defined F F_isDirected sup_X)).
     apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs.
     - intros ys ys_in.
       apply in_image_iff in ys_in.
@@ -431,7 +430,7 @@ Module ClassicalCpoTheory.
     intros F F_isDirected X X_isDirected.
     apply (isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X)).
     destruct (square_up_exists X X_isDirected) as [sup_X sup_X_isSupremum_of_X].
-    set (f := fun x : D => square_up_of_squigs F F_isDirected x).
+    set (f := fun x : D => Supremum_of_squigs F F_isDirected x).
     intros ys ys_in.
     apply in_image_iff in ys_in.
     destruct ys_in as [x [ys_is x_in_X]].
@@ -443,29 +442,29 @@ Module ClassicalCpoTheory.
       apply in_image_iff in y'_in.
       destruct y'_in as [f_i [y'_is f_i_in]].
       subst y'.
-      apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x)))...
+      apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x)))...
     - intros y_is_an_upper_bound.
-      assert (f_i_sup_X_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+      assert (f_i_sup_X_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x))).
       apply f_i_sup_X_isSupremum...
   Qed.
 
-  Lemma square_up_of_set_of_squigs_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma Supremum_of_squigs_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    isSupremum (square_up_of_squigs F F_isDirected sup_X) (image (square_up_of_squigs F F_isDirected) X).
+    isSupremum (Supremum_of_squigs F F_isDirected sup_X) (image (Supremum_of_squigs F F_isDirected) X).
   Proof with eauto with *.
     intros F F_isDirected.
-    set (f := fun x : D => square_up_of_squigs F F_isDirected x).
-    assert (claim1 := square_up_of_squigs_isMonotonic F F_isDirected).
+    set (f := fun x : D => Supremum_of_squigs F F_isDirected x).
+    assert (claim1 := Supremum_of_squigs_isMonotonic F F_isDirected).
     intros X X_isDirected sup_X sup_X_isSupremum_of_X.
     set (Y := image f X).
     assert (claim2 := useful_lemma_for_f_i_sup_X F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
-    assert (claim3 : isSupremum (f sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected sup_X))).
-    assert (claim4 : isSupremum (f sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F))) by now apply sup_of_set_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F.
+    assert (claim3 : isSupremum (f sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (Supremum_of_squigs_is_well_defined F F_isDirected sup_X))).
+    assert (claim4 : isSupremum (f sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F))) by now apply Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F.
     assert (claim5 : isSupremum (f sup_X) (unions (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))) by now apply lemma1_on_Supremum_commutation.
     assert (claim6 : isSupremum (f sup_X) (image_sup (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))) by now apply lemma2_on_Supremum_commutation.
     assert (claim7 : isSupremum (f sup_X) (image f X)).
@@ -478,64 +477,64 @@ Module ClassicalCpoTheory.
         apply claim6...
         exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F).
         split...
-        apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+        apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x))).
       - intros y_is_an_upper_bound.
         apply claim6.
         intros y' [ys [ys_in y'_isSupremum_of_ys]].
         apply in_image_iff in ys_in.
         destruct ys_in as [x [ys_is x_in_X]].
         subst ys.
-        assert (f_x_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))).
+        assert (f_x_isSupremum : isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x))).
         assert (y'_eq_f_x : y' == f x) by now apply (isSupremum_unique (image (fun f_i : D ~> D' => proj1_sig f_i x) F)).
         transitivity (f x)...
     }
     exact claim7.
   Qed.
 
-  Lemma sup_of_set_of_squigs_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma Supremum_of_squigs_exists_if_it_is_directed {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
-    isContinuousMap (fun x : D => square_up_of_squigs F F_isDirected x).
+    isContinuousMap (fun x : D => Supremum_of_squigs F F_isDirected x).
   Proof with eauto with *.
     intros F F_isDirected.
-    set (f := fun x : D => square_up_of_squigs F F_isDirected x).
-    assert (claim1 := square_up_of_squigs_isMonotonic F F_isDirected).
+    set (f := fun x : D => Supremum_of_squigs F F_isDirected x).
+    assert (claim1 := Supremum_of_squigs_isMonotonic F F_isDirected).
     fold f in claim1.
     apply (the_main_reason_for_introducing_ScottTopology f (MonotonicMap_preservesSetoid f claim1)).
     intros X X_isDirected.
     set (Y := image f X).
     destruct (square_up_exists X X_isDirected) as [sup_X sup_X_isSupremum_of_X].
-    assert (claim2 := square_up_of_set_of_squigs_preservesSupremum F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
+    assert (claim2 := Supremum_of_squigs_preservesSupremum F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
     exists sup_X, (f sup_X)...
   Qed.
 
-  Definition sup_of_set_of_squigs {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : forall F : ensemble (D ~> D'), isDirected F -> (D ~> D') :=
+  Definition square_up_of_squigs {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : forall F : ensemble (D ~> D'), isDirected F -> (D ~> D') :=
     fun F : ensemble (D ~> D') =>
     fun F_isDirected : isDirected F =>
-    exist isContinuousMap (fun x : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x))) (sup_of_set_of_squigs_exists_if_it_is_directed F F_isDirected)
+    exist isContinuousMap (fun x : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x))) (Supremum_of_squigs_exists_if_it_is_directed F F_isDirected)
   .
 
-  Lemma sup_of_set_of_squigs_isSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma square_up_of_squigs_isSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
-    isSupremum (sup_of_set_of_squigs F F_isDirected) F.
+    isSupremum (square_up_of_squigs F F_isDirected) F.
   Proof with eauto with *.
     intros F F_isDirected.
     split.
     - intros le_f f' f'_in.
-      assert (claim1 : forall x : D, proj1_sig f' x =< proj1_sig (sup_of_set_of_squigs F F_isDirected) x).
+      assert (claim1 : forall x : D, proj1_sig f' x =< proj1_sig (square_up_of_squigs F F_isDirected) x).
       { intros x.
-        unfold sup_of_set_of_squigs.
+        unfold square_up_of_squigs.
         simpl.
-        destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x)) as [sup_F_x sup_F_x_isSupremum].
+        destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x)) as [sup_F_x sup_F_x_isSupremum].
         simpl.
         apply sup_F_x_isSupremum...
       }
-      transitivity (sup_of_set_of_squigs F F_isDirected)...
+      transitivity (square_up_of_squigs F F_isDirected)...
     - intros f_is_an_upper_bound x.
-      unfold sup_of_set_of_squigs.
+      unfold square_up_of_squigs.
       simpl.
-      destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (sup_of_set_of_squigs_is_well_defined F F_isDirected x)) as [sup_F_x sup_F_x_isSupremum].
+      destruct (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) F) (Supremum_of_squigs_is_well_defined F F_isDirected x)) as [sup_F_x sup_F_x_isSupremum].
       simpl.
       apply sup_F_x_isSupremum.
       intros y y_in.
@@ -576,7 +575,7 @@ Module ClassicalCpoTheory.
     ; square_up_exists :=
       fun F : ensemble (D ~> D') =>
       fun F_isDirected : isDirected F =>
-      exist _ (sup_of_set_of_squigs F F_isDirected) (sup_of_set_of_squigs_isSupremum F F_isDirected)
+      exist _ (square_up_of_squigs F F_isDirected) (square_up_of_squigs_isSupremum F F_isDirected)
     }
   .
 
@@ -902,27 +901,28 @@ Module ClassicalCpoTheory.
         exists sup_X1, (f sup_X)...
   Qed.
 
-  Lemma ScottApp_isMontonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
-    isMonotonicMap (@uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)).
+  Definition ScottApp_aux {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : ((D ~> D') * D) -> D' :=
+    @uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)
+  .
+
+  Lemma ScottApp_aux_isMontonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+    isMonotonicMap (fun f_x : (D ~> D') * D => ScottApp_aux f_x).
   Proof with eauto with *.
+    unfold ScottApp_aux.
     intros [f1 x1] [f2 x2] [H H0].
     simpl in *.
     assert (claim1 : isContinuousMap (proj1_sig f1)) by membership.
     transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonic | apply H]...
   Qed.
 
-  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : ((D ~> D') * D) >=> D' :=
-    exist _ (@uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)) ScottApp_isMontonic
-  .
-
-  Lemma ScottApp_preserves_eq {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma ScottApp_aux_preserves_eq {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f1 : D ~> D',
     forall f2 : D ~> D',
     forall x1 : D,
     forall x2 : D,
     f1 == f2 ->
     x1 == x2 ->
-    proj1_sig ScottApp (f1, x1) == proj1_sig ScottApp (f2, x2).
+    ScottApp_aux (f1, x1) == ScottApp_aux (f2, x2).
   Proof with (membership || eauto with *).
     intros f1 f2 x1 x2 Heq_f Heq_x.
     simpl.
@@ -931,27 +931,27 @@ Module ClassicalCpoTheory.
     - apply Heq_f.
   Qed.
 
-  Lemma ScottApp_isContinuous {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
-    isContinuousMap (fun p : (D ~> D') * D => proj1_sig ScottApp p).
+  Lemma ScottApp_aux_isContinuous {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+    isContinuousMap (fun p : (D ~> D') * D => ScottApp_aux p).
   Proof with (membership || eauto with *).
-    apply (separately_continuous_iff (fun p : (D ~> D') * D => proj1_sig ScottApp p) ScottApp_preserves_eq).
+    apply (separately_continuous_iff (fun p : (D ~> D') * D => ScottApp_aux p) ScottApp_aux_preserves_eq).
     split.
-    - unfold ScottApp.
+    - unfold ScottApp_aux.
       simpl.
       intros f...
     - intros x.
-      assert (mayday : isMonotonicMap (fun f : D ~> D' => proj1_sig ScottApp (f, x))).
+      assert (mayday : isMonotonicMap (fun f : D ~> D' => ScottApp_aux (f, x))).
       { intros f1 f2 f1_le_f2.
-        unfold ScottApp...
+        unfold ScottApp_aux...
       }
       apply the_main_reason_for_introducing_ScottTopology.
       + intros f1 f2 Heq_f.
-        apply ScottApp_preserves_eq...
+        apply ScottApp_aux_preserves_eq...
       + intros fs fs_isDirected.
-        set (Y := image (fun f_i : D ~> D' => proj1_sig ScottApp (f_i, x)) fs).
-        set (f := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (sup_of_set_of_squigs_is_well_defined fs fs_isDirected x))).
-        set (sup_fs := exist isContinuousMap f (sup_of_set_of_squigs_exists_if_it_is_directed fs fs_isDirected)).
-        assert (claim1 : forall x : D, isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) fs)) by apply (fun x : D => proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (sup_of_set_of_squigs_is_well_defined fs fs_isDirected x))).
+        set (Y := image (fun f_i : D ~> D' => ScottApp_aux (f_i, x)) fs).
+        set (f := fun x : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (Supremum_of_squigs_is_well_defined fs fs_isDirected x))).
+        set (sup_fs := exist isContinuousMap f (Supremum_of_squigs_exists_if_it_is_directed fs fs_isDirected)).
+        assert (claim1 : forall x : D, isSupremum (f x) (image (fun f_i : D ~> D' => proj1_sig f_i x) fs)) by apply (fun x : D => proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x) fs) (Supremum_of_squigs_is_well_defined fs fs_isDirected x))).
         assert (claim2 : isSupremum sup_fs fs).
         { intros g.
           split.
@@ -965,7 +965,7 @@ Module ClassicalCpoTheory.
             subst g'.
             apply (H f_i)...
         }
-        assert (claim3 : isSupremum (proj1_sig ScottApp (sup_fs, x)) Y).
+        assert (claim3 : isSupremum (ScottApp_aux (sup_fs, x)) Y).
         { intros y.
           split.
           - intros le_y y' y'_in.
@@ -973,7 +973,36 @@ Module ClassicalCpoTheory.
           - intros y_is_an_upper_bound.
             apply (claim1 x)...
         }
-        exists sup_fs, (proj1_sig ScottApp (sup_fs, x))...
+        exists sup_fs, (ScottApp_aux (sup_fs, x))...
+  Qed.
+
+  Definition ScottApp {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : ((D ~> D') * D) ~> D' :=
+    exist isContinuousMap ScottApp_aux ScottApp_aux_isContinuous
+  .
+
+  Definition ScottAbs_aux {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) -> D1 -> D2 -> D3 :=
+    fun f : (D1 * D2) ~> D3 =>
+    fun x : D1 =>
+    fun y : D2 =>
+    proj1_sig f (x, y)
+  .
+
+  Definition ScottAbs_aux_preserves_eq {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
+    forall f1 : (D1 * D2) ~> D3,
+    forall f2 : (D1 * D2) ~> D3,
+    forall p1 : D1 * D2,
+    forall p2 : D1 * D2,
+    f1 == f2 ->
+    p1 == p2 ->
+    proj1_sig f1 p1 == proj1_sig f2 p2.
+  Proof with eauto with *.
+    intros f1 f2 [x1_1 x2_1] [x1_2 x2_2] Heq_f [Heq1 Heq2].
+    simpl in *.
+    assert (f1_monotonic : isMonotonicMap (proj1_sig f1)) by now apply ContinuousMapOnCpos_isMonotonic, proj2_sig.
+    transitivity (proj1_sig f1 (x1_2, x2_2)).
+    - apply (MonotonicMap_preservesSetoid (proj1_sig f1) f1_monotonic).
+      split...
+    - apply Heq_f.
   Qed.
 
 End ClassicalCpoTheory.

@@ -36,16 +36,15 @@ Module SyntaxOfPL.
 
   Section ENUMERATE_FORMULAS.
 
-  Definition rankOfFormula : formula -> nat :=
-    fix rankOfFormula_fix (p : formula) {struct p} : nat :=
+  Fixpoint rankOfFormula (p : formula) {struct p} : nat :=
     match p with
     | AtomF i => 0
     | ContradictionF => 1
-    | NegationF p1 => S (rankOfFormula_fix p1)
-    | ConjunctionF p1 p2 => S (max (rankOfFormula_fix p1) (rankOfFormula_fix p2))
-    | DisjunctionF p1 p2 => S (max (rankOfFormula_fix p1) (rankOfFormula_fix p2))
-    | ImplicationF p1 p2 => S (max (rankOfFormula_fix p1) (rankOfFormula_fix p2))
-    | BiconditionalF p1 p2 => S (max (rankOfFormula_fix p1) (rankOfFormula_fix p2))
+    | NegationF p1 => S (rankOfFormula p1)
+    | ConjunctionF p1 p2 => S (max (rankOfFormula p1) (rankOfFormula p2))
+    | DisjunctionF p1 p2 => S (max (rankOfFormula p1) (rankOfFormula p2))
+    | ImplicationF p1 p2 => S (max (rankOfFormula p1) (rankOfFormula p2))
+    | BiconditionalF p1 p2 => S (max (rankOfFormula p1) (rankOfFormula p2))
     end
   .
 
