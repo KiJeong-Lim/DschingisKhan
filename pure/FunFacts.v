@@ -101,7 +101,7 @@ Module FunFacts.
     intros [i2 j2 inv2] [i j inv]...
   Qed.
 
-  Context (BOOL : Prop) (T : BOOL) (F : BOOL).
+  Context (BOOL : Prop) (TRUE : BOOL) (FALSE : BOOL).
 
   Let POW : Prop -> Prop :=
     fun P : Prop =>
@@ -117,7 +117,7 @@ Module FunFacts.
     intros A B.
     destruct (EXCLUSIVE_MIDDLE (RETRACT (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
-    - exists (fun pa : POW A => fun b : B => F) (fun pb : POW B => fun a : A => F)...
+    - exists (fun pa : POW A => fun b : B => FALSE) (fun pb : POW B => fun a : A => FALSE)...
   Qed.
 
   Let U : Prop :=
@@ -139,9 +139,9 @@ Module FunFacts.
 
   Let NOT : BOOL -> BOOL :=
     fun b : BOOL =>
-    match (EXCLUSIVE_MIDDLE (b = T)) with
-    | or_introl H_yes => F
-    | or_intror H_no => T
+    match (EXCLUSIVE_MIDDLE (b = TRUE)) with
+    | or_introl H_yes => FALSE
+    | or_intror H_no => TRUE
     end
   .
 
@@ -162,15 +162,15 @@ Module FunFacts.
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
-    T = F.
+    TRUE = FALSE.
   Proof with tauto.
-    destruct (EXCLUSIVE_MIDDLE (RUSSEL = T)) as [H | H].
-    - assert (claim1 : T = NOT T) by now rewrite <- H; exact PARADOX_OF_BERARDI.
+    destruct (EXCLUSIVE_MIDDLE (RUSSEL = TRUE)) as [H | H].
+    - assert (claim1 : TRUE = NOT TRUE) by now rewrite <- H; exact PARADOX_OF_BERARDI.
       unfold NOT in claim1.
-      destruct (EXCLUSIVE_MIDDLE (T = T)) as [H_yes | H_no]...
-    - assert (claim1 : NOT RUSSEL <> T) by now rewrite <- PARADOX_OF_BERARDI; exact H.
+      destruct (EXCLUSIVE_MIDDLE (TRUE = TRUE)) as [H_yes | H_no]...
+    - assert (claim1 : NOT RUSSEL <> TRUE) by now rewrite <- PARADOX_OF_BERARDI; exact H.
       unfold NOT in claim1. 
-      destruct (EXCLUSIVE_MIDDLE (RUSSEL = T)) as [H_yes | H_no]...
+      destruct (EXCLUSIVE_MIDDLE (RUSSEL = TRUE)) as [H_yes | H_no]...
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
@@ -218,24 +218,24 @@ Module FunFacts.
 
   Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
 
-  Let A_eq_A_to_A_if_A_is_inhabited (A : Prop) `{A_inhabited : inhabited A} :
+  Let A_COERCE_A_ARROW_A (A : Prop) `{A_inhabited : inhabited A} :
     A = (A -> A).
   Proof with tauto.
     destruct A_inhabited as [a].
     apply (propositional_extensionality A (A -> A))...
   Qed.
 
-  Let RETRACT_of_A_to_A_and_A (A : Prop) `{A_inhabited : inhabited A} :
+  Let UNTYPED_LAMBDA_CALCULUS (A : Prop) `{A_inhabited : inhabited A} :
     RETRACT (A -> A) A.
   Proof with eauto.
     replace (A -> A) with A...
     exists (fun a : A => a) (fun a : A => a)...
   Qed.
 
-  Let CIRCULAR (A : Prop) `{A_inhabited : inhabited A} :
+  Let Y_COMBINATOR (A : Prop) `{A_inhabited : inhabited A} :
     exists fix_A : (A -> A) -> A, forall f : A -> A, fix_A f = f (fix_A f).
   Proof.
-    destruct (@RETRACT_of_A_to_A_and_A A A_inhabited) as [lam_A app_A beta_A].
+    destruct (@UNTYPED_LAMBDA_CALCULUS A A_inhabited) as [lam_A app_A beta_A].
     set (Y_com := fun f : A -> A => app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x)))).
     exists Y_com.
     intros f.
@@ -246,17 +246,14 @@ Module FunFacts.
 
   Let NOT_BB : BB -> BB :=
     fun b : BB =>
-    match b with
-    | TRUE_BB => FALSE_BB
-    | FALSE_BB => TRUE_BB
-    end
+    if b then FALSE_BB else TRUE_BB
   .
 
   Let PARADOX_OF_RUSSEL :
     TRUE_BB = FALSE_BB.
   Proof with eauto.
     assert (BB_inhabited : inhabited BB) by now constructor; left.
-    destruct (@CIRCULAR BB BB_inhabited) as [fix_BB fix_BB_spec].
+    destruct (@Y_COMBINATOR BB BB_inhabited) as [fix_BB fix_BB_spec].
     assert (claim1 : fix_BB NOT_BB = NOT_BB (fix_BB NOT_BB)) by now apply fix_BB_spec.
     set (RUSSEL := fix_BB NOT_BB).
     fold RUSSEL in claim1.
@@ -277,5 +274,7 @@ Module FunFacts.
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
+
+  Section AXIOM_OF_CHOICE_implies_EXCLUSIVE_MIDDLE.
 
 End FunFacts.
