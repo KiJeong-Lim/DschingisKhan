@@ -220,14 +220,13 @@ Module FunFacts.
 
   Let Y_COMBINATOR_FOR_BB :
     exists Y : (BB -> BB) -> BB, forall f : BB -> BB, Y f = f (Y f).
-  Proof.
+  Proof with try easy.
     destruct UNTYPED_LAMBDA_CALCULUS_FOR_BB as [lam_BB app_BB beta_BB].
     set (Y_com := fun f : BB -> BB => app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x)))).
     exists Y_com.
     intros f.
-    enough (claim1 : app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x))) = f (Y_com f)) by exact claim1.
-    rewrite (beta_BB (fun x : BB => f (app_BB x x))).
-    exact (eq_reflexivity (f (Y_com f))).
+    enough (claim1 : app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x))) = f (Y_com f))...
+    replace (app_BB (lam_BB (fun x : BB => f (app_BB x x)))) with (fun x : BB => f (app_BB x x))...
   Qed.
 
   Let NOT_BB : BB -> BB :=
@@ -255,18 +254,18 @@ Module FunFacts.
 
   Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
 
-  Let A_coerce_A_ARROW_A_for_any_inhabited_Prop_A (A : Prop) (A_inhabited : inhabited A) :
-    A = (A -> A).
+  Let D_coerce_D_ARROW_D_for_any_inhabited_Prop_D (D : Prop) (D_inhabited : inhabited D) :
+    D = (D -> D).
   Proof with tauto.
-    destruct A_inhabited as [a].
-    apply (propositional_extensionality A (A -> A))...
+    destruct D_inhabited as [d0].
+    apply (proj1 (propositional_extensionality D (D -> D)))...
   Qed.
 
-  Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (A : Prop) (A_inhabited : inhabited A) :
-    RETRACT (A -> A) A.
+  Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (D : Prop) (D_inhabited : inhabited D) :
+    RETRACT (D -> D) D.
   Proof with eauto.
-    replace (A -> A) with A...
-    exists (fun a : A => a) (fun a : A => a)...
+    replace (D -> D) with D...
+    exists (fun d : D => d) (fun d : D => d)...
   Qed.
 
   Theorem propositional_extensionality_implies_proof_irrelevance :

@@ -373,10 +373,10 @@ Module MyUtilities.
   Proof.
     induction n1 as [| n IH]; intros n2 [].
     - exact (eq_reflexivity (eq_reflexivity O)).
-    - unfold choice_eqnat, choice_eq, eq_lem_nat, eq_dec_nat in *.
+    - unfold choice_eqnat, choice_eq, eq_lem_nat in *.
       simpl.
       assert (claim1 := IH n (eq_reflexivity n)).
-      destruct (eq_dec_natc n n) as [Heq | Hne].
+      destruct (eq_dec_nat n n) as [Heq | Hne].
       + rewrite claim1.
         exact (eq_reflexivity (eq_reflexivity (S n))).
       + contradiction (Hne (eq_reflexivity n)).

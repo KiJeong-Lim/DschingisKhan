@@ -13,7 +13,7 @@ make
 
 ## CAUTIONS
 
-- If you fail to do `QUICK START` on Linux-like OS, please remove all newlines in the file `_CoqProject`.
+- It might be a solution to remove all newlines in the file `_CoqProject` if you fail to do `QUICK START` on Linux-like OS.
 
 ## COMPATIBLE COQ VERSIONS
 
@@ -23,8 +23,8 @@ make
 
 ```
 coqc -Q . DschingisKhan pure/MyUtilities.v
-coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/FunFacts.v
+coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/SetTheory.v
