@@ -353,7 +353,7 @@ Module MyUtilities.
   Definition eq_lem_nat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 \/ ~ eqnat n1 n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
-    match Nat.eq_dec n1 n2 return n1 = n2 \/ n1 <> n2 with
+    match eq_dec_nat n1 n2 return n1 = n2 \/ n1 <> n2 with
     | left H_yes => or_introl H_yes
     | right H_no => or_intror H_no
     end
@@ -376,7 +376,7 @@ Module MyUtilities.
     - unfold choice_eqnat, choice_eq, eq_lem_nat, eq_dec_nat in *.
       simpl.
       assert (claim1 := IH n (eq_reflexivity n)).
-      destruct (Nat.eq_dec n n) as [Heq | Hne].
+      destruct (eq_dec_natc n n) as [Heq | Hne].
       + rewrite claim1.
         exact (eq_reflexivity (eq_reflexivity (S n))).
       + contradiction (Hne (eq_reflexivity n)).
@@ -854,7 +854,7 @@ Module MyUtilities.
     enough (forall x : nat, p (first_nat p x) = true -> (forall y : nat, x < y -> first_nat p x = first_nat p y)).
     enough (forall x : nat, forall y : nat, p y = true -> first_nat p x <= y)...
     - intros x y H2.
-      destruct (Compare_dec.le_lt_dec x y).
+      destruct (n_le_m_or_m_lt_n_for_n_and_m x y).
       + eapply Nat.le_trans...
       + replace (first_nat p x) with (first_nat p y)...
     - intros x H1 y H2.
@@ -993,7 +993,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns; simpl...
     intros H n H0.
-    destruct (Compare_dec.le_lt_dec n a)...
+    destruct (n_le_m_or_m_lt_n_for_n_and_m n a)...
     enough (fold_right max 0 ns >= n)...
     destruct (Phi_dec n)...
     destruct (H n p)...
@@ -1010,7 +1010,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns; simpl...
     intros n.
-    destruct (Compare_dec.le_lt_dec a (fold_right Init.Nat.max 0 ns)); split.
+    destruct (n_le_m_or_m_lt_n_for_n_and_m a (fold_right Init.Nat.max 0 ns)); split.
     - intros H.
       assert (H0 : fold_right Init.Nat.max 0 ns > n)...
     - intros [i [[H | H] H0]]...
@@ -1048,7 +1048,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns1; simpl...
     intros ns2 H.
-    destruct (Compare_dec.le_lt_dec a (fold_right max 0 ns1)).
+    destruct (n_le_m_or_m_lt_n_for_n_and_m a (fold_right max 0 ns1)).
     - enough (fold_right max 0 ns1 <= fold_right max 0 ns2)...
     - enough (a <= fold_right max 0 ns2)...
       apply property4_of_fold_right_max_0...

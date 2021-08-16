@@ -1,6 +1,4 @@
-Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Lists.List.
-Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.projects.PropositionalLogic.Base.
 Require Import DschingisKhan.pure.CBA.
 Require Import DschingisKhan.pure.MyStructures.
@@ -761,9 +759,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     forall p : formula,
     In p ps ->
     exists n : nat, enum_formula n = p /\ n < bound.
-  Proof with lia || eauto with *.
+  Proof with eauto with *.
     induction ps as [| p ps [bound2 H]]; simpl.
-    - exists (O)...
+    - exists (O).
+      intros p [].
     - destruct (formula_is_enumerable p) as [bound1 H0].
       destruct (n_le_m_or_m_lt_n_for_n_and_m bound1 bound2) as [Hle | Hlt].
       + exists (S bound2).
@@ -976,7 +975,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         * apply (lemma1_of_1_2_12  n' n Hle (Th bs))...
       + exists (n').
         intros h [H2 | H2]; subst.
-        * assert (H3 : n <= n') by lia.
+        * assert (H3 : n <= n') by now apply le_S, le_elim_S_n_le_m in Hlt.
           apply (lemma1_of_1_2_12 n n' H3 (Th bs))...
         * apply H1...
   Qed.
