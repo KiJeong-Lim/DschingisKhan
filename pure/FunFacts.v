@@ -275,6 +275,4 @@ Module FunFacts.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
 
-  Section AXIOM_OF_CHOICE_implies_EXCLUSIVE_MIDDLE.
-
 End FunFacts.
