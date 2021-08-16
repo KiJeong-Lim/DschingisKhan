@@ -1187,7 +1187,7 @@ Module BasicTopology.
 
   End BuildSubspaceTopology.
 
-  Local Instance SubspaceTopology {A : Type} {P : A -> Prop} (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
+  Local Instance SubspaceTopology {A : Type} (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
     { isOpen := isOpen_SubspaceTopology A P A_requiresTopologicalSpace
     ; open_full := open_full_SubspaceTopolgy A P A_requiresTopologicalSpace
     ; open_unions := open_unions_SubspaceTopology A P A_requiresTopologicalSpace

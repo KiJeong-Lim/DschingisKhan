@@ -790,6 +790,15 @@ Module MyUtilities.
     enough (therefore : q = a / b)...
   Qed.
 
+  Lemma n_le_m_or_m_lt_n_for_n_and_m :
+    forall n : nat,
+    forall m : nat,
+    {n <= m} + {m < n}.
+  Proof with eauto.
+    intros n m.
+    destruct (Compare_dec.le_lt_dec n m)...
+  Qed.
+
   Definition first_nat : (nat -> bool) -> nat -> nat :=
     fun p : nat -> bool =>
     fix first_nat_fix (n : nat) {struct n} : nat :=

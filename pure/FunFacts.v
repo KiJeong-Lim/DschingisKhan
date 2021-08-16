@@ -202,13 +202,13 @@ Module FunFacts.
         split.
         - apply phi_i.
         - intros m phi_m.
-          destruct (Compare_dec.le_lt_dec i m) as [i_le_m | m_lt_i]; firstorder.
+          destruct (n_le_m_or_m_lt_n_for_n_and_m i m) as [i_le_m | m_lt_i]; firstorder.
       }
       exists n.
       split.
       + apply phi_n.
       + intros m phi_m.
-        destruct (Compare_dec.le_lt_dec n m) as [n_le_m | m_lt_n]; firstorder.
+        destruct (n_le_m_or_m_lt_n_for_n_and_m n m) as [n_le_m | m_lt_n]; firstorder.
     - destruct (EXCLUSIVE_MIDDLE (exists m : nat, isMinimal m)); firstorder.
   Qed.
 
@@ -254,9 +254,8 @@ Module FunFacts.
   Proof with eauto.
     assert (BB_inhabited : inhabited BB) by now constructor; left.
     destruct (@Y_COMBINATOR BB BB_inhabited) as [Y Y_spec].
-    assert (claim1 : Y NOT_BB = NOT_BB (Y NOT_BB)) by now apply Y_spec.
     set (RUSSEL := Y NOT_BB).
-    fold RUSSEL in claim1.
+    assert (claim1 : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
     unfold NOT_BB in claim1.
     destruct RUSSEL as [|]...
   Qed.
@@ -269,7 +268,7 @@ Module FunFacts.
   Proof with eauto.
     intros BOOL TRUE FALSE.
     set (go := fun b : BB => if b then TRUE else FALSE).
-    assert (claim1 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go TRUE_BB FALSE_BB PARADOX_OF_RUSSEL).
+    assert (claim1 : go TRUE_BB = go FALSE_BB) by now apply (eq_congruence go TRUE_BB FALSE_BB).
     simpl in claim1...
   Qed.
 
