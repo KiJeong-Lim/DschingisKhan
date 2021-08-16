@@ -233,7 +233,7 @@ Module FunFacts.
   Qed.
 
   Let Y_COMBINATOR (A : Prop) `{A_inhabited : inhabited A} :
-    exists fix_A : (A -> A) -> A, forall f : A -> A, fix_A f = f (fix_A f).
+    exists Y : (A -> A) -> A, forall f : A -> A, Y f = f (Y f).
   Proof.
     destruct (@UNTYPED_LAMBDA_CALCULUS A A_inhabited) as [lam_A app_A beta_A].
     set (Y_com := fun f : A -> A => app_A (lam_A (fun x : A => f (app_A x x))) (lam_A (fun x : A => f (app_A x x)))).
@@ -253,9 +253,9 @@ Module FunFacts.
     TRUE_BB = FALSE_BB.
   Proof with eauto.
     assert (BB_inhabited : inhabited BB) by now constructor; left.
-    destruct (@Y_COMBINATOR BB BB_inhabited) as [fix_BB fix_BB_spec].
-    assert (claim1 : fix_BB NOT_BB = NOT_BB (fix_BB NOT_BB)) by now apply fix_BB_spec.
-    set (RUSSEL := fix_BB NOT_BB).
+    destruct (@Y_COMBINATOR BB BB_inhabited) as [Y Y_spec].
+    assert (claim1 : Y NOT_BB = NOT_BB (Y NOT_BB)) by now apply Y_spec.
+    set (RUSSEL := Y NOT_BB).
     fold RUSSEL in claim1.
     unfold NOT_BB in claim1.
     destruct RUSSEL as [|]...
