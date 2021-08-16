@@ -1174,15 +1174,21 @@ Module ClassicalCpoTheory.
     exist isContinuousMap (ScottAbs_aux1 f x1) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)
   .
 
-  Lemma ScottAbs_aux2_isContinuousMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
+  Lemma image_ScottAbs_aux2_f_X1_eq_ScottAbs_aux2_f_sup_X1 {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
     forall f : (D1 * D2) ~> D3,
-    isContinuousMap (fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
+    forall X1 : ensemble D1,
+    isDirected X1 ->
+    forall sup_X1 : D1,
+    isSupremum sup_X1 X1 ->
+    forall sup_Y : D2 ~> D3,
+    isSupremum sup_Y (image (ScottAbs_aux2 f) X1) ->
+    arrow_eqProp D2 D3 (@Poset_requiresSetoid D3 D3_isPoset) (proj1_sig (ScottAbs_aux2 f sup_X1)) (proj1_sig sup_Y).
   Proof with eauto with *.
     intros f.
     assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonic, proj2_sig.
     assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> proj1_sig f p1 == proj1_sig f p2) by now apply (MonotonicMap_preservesSetoid (proj1_sig f)).
     set (ScottAbs := fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
-    assert (mayday :
+    assert ( mayday :
       forall x1_1 : D1,
       forall x1_2 : D1,
       x1_1 == x1_2 ->
@@ -1200,14 +1206,7 @@ Module ClassicalCpoTheory.
       apply f_monotonic.
       split...
     }
-    apply the_main_reason_for_introducing_ScottTopology...
-    intros X1 X1_isDirected.
-    assert (image_ScottAbs_X1_isDirected : isDirected (image ScottAbs X1)) by now apply MonotonicMap_preservesDirected.
-    destruct (square_up_exists X1 X1_isDirected) as [sup_X1 sup_X1_isSupremum].
-    set (sup_Y := square_up_of_squigs (image ScottAbs X1) image_ScottAbs_X1_isDirected).
-    assert (sup_Y_isSupremum := square_up_of_squigs_isSupremum (image ScottAbs X1) image_ScottAbs_X1_isDirected).
-    exists sup_X1, sup_Y.
-    enough (it_is_sufficient_to_show : arrow_eqProp D2 D3 (@Poset_requiresSetoid D3 D3_isPoset) (proj1_sig (ScottAbs sup_X1)) (proj1_sig sup_Y)) by tauto.
+    intros X1 X1_isDirected sup_X1 sup_X1_isSupremum sup_Y sup_Y_isSupremum.
     assert ( claim1 :
       forall x1 : D1,
       member x1 X1 ->
@@ -1236,7 +1235,7 @@ Module ClassicalCpoTheory.
         - apply in_image_iff.
           exists x1.
           split.
-          + rewrite (proof_irrelevance (isContinuousMap (fun x : D2 => proj1_sig f (x1, x))) f1_continuous (show_that_f1_isContinuousMap_if_f_isContinuousMap  (proj1_sig f) (proj2_sig f) x1))...
+          + rewrite (proof_irrelevance (isContinuousMap (fun x : D2 => proj1_sig f (x1, x))) f1_continuous (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1))...
           + apply x1_in.
       }
       apply claim3.
@@ -1258,21 +1257,128 @@ Module ClassicalCpoTheory.
         apply claim1...
   Qed.
 
+  Lemma ScottAbs_aux2_isContinuousMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
+    forall f : (D1 * D2) ~> D3,
+    isContinuousMap (fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
+  Proof with eauto with *.
+    intros f.
+    assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonic, proj2_sig.
+    assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> proj1_sig f p1 == proj1_sig f p2) by now apply (MonotonicMap_preservesSetoid (proj1_sig f)).
+    set (ScottAbs := fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
+    assert ( mayday :
+      forall x1_1 : D1,
+      forall x1_2 : D1,
+      x1_1 == x1_2 ->
+      ScottAbs x1_1 == ScottAbs x1_2
+    ).
+    { intros x1_1 x1_2 Heq1 x2.
+      apply (f_preserves_eq (x1_1, x2) (x1_2, x2)).
+      split...
+    }
+    assert (ScottAbs_monotonic : isMonotonicMap ScottAbs).
+    { intros x1_1 x1_2 Hle1 x2.
+      unfold ScottAbs.
+      simpl.
+      unfold ScottAbs_aux1.
+      apply f_monotonic.
+      split...
+    }
+    apply the_main_reason_for_introducing_ScottTopology...
+    intros X1 X1_isDirected.
+    assert (image_ScottAbs_X1_isDirected : isDirected (image ScottAbs X1)) by now apply MonotonicMap_preservesDirected.
+    destruct (square_up_exists X1 X1_isDirected) as [sup_X1 sup_X1_isSupremum].
+    set (sup_Y := square_up_of_squigs (image ScottAbs X1) image_ScottAbs_X1_isDirected).
+    assert (sup_Y_isSupremum := square_up_of_squigs_isSupremum (image ScottAbs X1) image_ScottAbs_X1_isDirected).
+    assert (it_is_sufficient_to_show := image_ScottAbs_aux2_f_X1_eq_ScottAbs_aux2_f_sup_X1 f X1 X1_isDirected sup_X1 sup_X1_isSupremum sup_Y sup_Y_isSupremum)...
+  Qed.
+
   Definition ScottAbs_aux3 {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) -> (D1 ~> (D2 ~> D3)) :=
     fun f : (D1 * D2) ~> D3 =>
     exist isContinuousMap (ScottAbs_aux2 f) (ScottAbs_aux2_isContinuousMap f)
   .
 
-  Lemma ScottAbs_aux3_isMonotonicMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
-    isMonotonicMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f).
-  Proof.
-    intros f1 f2 Hle_f x1 x2.
-    exact (Hle_f (x1, x2)).
-  Qed.
+  Definition ScottAbs_aux3_isMonotonicMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : isMonotonicMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f) :=
+    fun f1 : (D1 * D2) ~> D3 =>
+    fun f2 : (D1 * D2) ~> D3 =>
+    fun Hle_f : f1 =< f2 =>
+    fun x1 : D1 =>
+    fun x2 : D2 =>
+    Hle_f (x1, x2)
+  .
 
-(*
   Lemma ScottAbs_aux3_isContinuousMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
     isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f).
-*)
+  Proof with eauto with *.
+    assert (ScottAbs_aux3_monotonic : isMonotonicMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f)) by exact ScottAbs_aux3_isMonotonicMap.
+    assert (ScottAbs_aux3_preserves_eq : forall f1 : (D1 * D2) ~> D3, forall f2 : (D1 * D2) ~> D3, f1 == f2 -> ScottAbs_aux3 f1 == ScottAbs_aux3 f2) by now apply MonotonicMap_preservesSetoid.
+    apply the_main_reason_for_introducing_ScottTopology...
+    intros F F_isDirected.
+    set (sup_F := square_up_of_squigs F F_isDirected).
+    assert (sup_F_isSupremum := square_up_isSupremum F F_isDirected).
+    assert (claim1 := image_ScottAbs_aux2_f_X1_eq_ScottAbs_aux2_f_sup_X1 sup_F).
+    assert (claim2 : forall p : D1 * D2, isSupremum (proj1_sig (proj1_sig (ScottAbs_aux3 sup_F) (fst p)) (snd p)) (image (fun f_i : (D1 * D2) ~> D3 => proj1_sig f_i p) F)).
+    { intros [x1 x2].
+      exact (proj2_sig (square_up_exists (image (fun f_i : (D1 * D2) ~> D3 => proj1_sig f_i (x1, x2)) F) (Supremum_of_squigs_is_well_defined F F_isDirected (x1, x2)))).
+    }
+    set (sup_G := fun p : D1 * D2 => proj1_sig (proj1_sig (ScottAbs_aux3 sup_F) (fst p)) (snd p)).
+    assert (claim3 : @eqProp ((D1 * D2) -> D3) (@Poset_requiresSetoid ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset)) sup_G (proj1_sig sup_F)).
+    { intros [x1 x2].
+      reflexivity.
+    }
+    assert (claim4 : @isSupremum ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) sup_G (image (fun f_i : (D1 * D2) ~> D3 => proj1_sig f_i) F)).
+    { intros g1.
+      split.
+      - intros sup_G_le_g1 g2 g2_in.
+        apply in_image_iff in g2_in.
+        destruct g2_in as [f_i [g2_is f_i_in]].
+        subst g2.
+        apply (Poset_trans (proj1_sig f_i) sup_G g1).
+        + apply (Poset_trans (proj1_sig f_i) (proj1_sig sup_F) sup_G).
+          * apply sup_F_isSupremum...
+          * exact (Poset_refl2 sup_G (proj1_sig sup_F) claim3).
+        + apply sup_G_le_g1.
+      - intros g1_is_an_upper_bound [x1 x2].
+        apply claim2.
+        intros y y_in.
+        apply in_image_iff in y_in.
+        destruct y_in as [f_i [y_is f_i_in]].
+        subst y.
+        apply g1_is_an_upper_bound...
+    }
+    enough (it_is_sufficient_to_show : isSupremum (ScottAbs_aux3 sup_F) (image (fun f_i : (D1 * D2) ~> D3 => ScottAbs_aux3 f_i) F)) by now exists sup_F, (ScottAbs_aux3 sup_F).
+    intros h.
+    split.
+    - intros le_h h0 h0_in.
+      apply in_image_iff in h0_in.
+      destruct h0_in as [f_i [h0_is f_i_in]].
+      subst h0.
+      transitivity (ScottAbs_aux3 sup_F).
+      + apply ScottAbs_aux3_monotonic, sup_F_isSupremum...
+      + apply le_h.
+    - intros h_is_an_upper_bound.
+      assert ( claim5 :
+        forall g : (D1 * D2) -> D3,
+        member g (image (fun f_i : (D1 * D2) ~> D3 => proj1_sig f_i) F) ->
+        @leProp ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) g (fun p : D1 * D2 => proj1_sig (proj1_sig h (fst p)) (snd p))
+      ).
+      { intros g g_in.
+        apply in_image_iff in g_in.
+        destruct g_in as [f_i [g_is f_i_in]].
+        subst g.
+        assert (claim5_aux1 := h_is_an_upper_bound (ScottAbs_aux3 f_i)).
+        intros [x1 x2].
+        apply claim5_aux1...
+      }
+      intros x1 x2.
+      transitivity (sup_G (x1, x2)).
+      + reflexivity.
+      + enough (claim6 : @leProp ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) sup_G (fun p : D1 * D2 => proj1_sig (proj1_sig h (fst p)) (snd p))).
+        * apply claim6.
+        * apply claim4...
+  Qed.
+
+  Definition ScottAbs {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) ~> (D1 ~> (D2 ~> D3)) :=
+    exist isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f) ScottAbs_aux3_isContinuousMap
+  .
 
 End ClassicalCpoTheory.
