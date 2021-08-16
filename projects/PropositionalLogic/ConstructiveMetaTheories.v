@@ -1,5 +1,4 @@
 Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.projects.PropositionalLogic.Base.
@@ -9,7 +8,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 
-  Import BasicSetoidTheory MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
+  Import BasicSetoidTheory MyUtilities MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
 
   Local Program Instance formula_isSetoid : isSetoid formula :=
     { eqProp :=
@@ -469,7 +468,7 @@ End LindenbaumBooleanAlgebraOnPropositionLogic.
 
 Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 
-  Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic.
 
   Local Hint Constructors infers : core.
 
@@ -766,7 +765,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     induction ps as [| p ps [bound2 H]]; simpl.
     - exists (O)...
     - destruct (formula_is_enumerable p) as [bound1 H0].
-      destruct (le_lt_dec bound1 bound2) as [Hle | Hlt].
+      destruct (n_le_m_or_m_lt_n_for_n_and_m bound1 bound2) as [Hle | Hlt].
       + exists (S bound2).
         intros h [H1 | H1].
         * subst...
@@ -970,7 +969,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         apply ByAssumption...
       }
       destruct (IH bs claim1) as [n' H1].
-      destruct (le_lt_dec n' n) as [Hle | Hlt].
+      destruct (n_le_m_or_m_lt_n_for_n_and_m n' n) as [Hle | Hlt].
       + exists (n).
         intros h [H2 | H2].
         * subst...

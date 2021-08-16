@@ -233,6 +233,64 @@ Module MyUtilities.
     ACC n (nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n)
   .
 
+  Definition eq_dec_nat : forall n1 : nat, forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
+    fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
+    match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
+    | O =>
+      fun n2 : nat =>
+      match n2 as n return {O = n} + {O <> n} with
+      | O => left (eq_reflexivity O)
+      | S n2' => right (fun H : O = S n2' => S_eq_0_elim n2' (eq_symmetry O (S n2') H))
+      end
+    | S n1' =>
+      fun n2 : nat =>
+      match n2 as n return {S n1' = n} + {S n1' <> n} with
+      | O => right (fun H : S n1' = O => S_eq_0_elim n1' H)
+      | S n2' =>
+        match eq_dec_nat_fix n1' n2' return {S n1' = S n2'} + {S n1' <> S n2'} with
+        | left Heq => left (eq_congruence S n1' n2' Heq)
+        | right Hne => right (fun Heq : S n1' = S n2' => Hne (S_eq_S_elim n1' n2' Heq))
+        end
+      end
+    end
+  .
+
+  Definition n_le_m_and_n_ne_m_implies_n_lt_m : forall n : nat, forall m : nat, n <= m -> n <> m -> n < m :=
+    fun n : nat =>
+    fun m : nat =>
+    fun Hle : n <= m =>
+    match Hle in le _ m0 return n <> m0 -> n < m0 with
+    | le_n _ =>
+      fun Hne : n <> n =>
+      False_ind (n < n) (Hne (eq_reflexivity n))
+    | le_S _ m' Hle' =>
+      fun Hne : n <> S m' =>
+      le_intro_S_n_le_S_m n m' Hle'
+    end
+  .
+
+  Definition n_le_m_or_m_lt_n_for_n_and_m : forall n : nat, forall m : nat, {n <= m} + {m < n} :=
+    fix n_le_m_or_m_lt_n_for_n_and_m_fix (n : nat) {struct n} : forall m : nat, {n <= m} + {m < n} :=
+    match n as n0 return forall m : nat, {n0 <= m} + {m < n0} with
+    | O =>
+      fun m : nat =>
+      left (le_intro_0_le_n m)
+    | S n' =>
+      fun m : nat =>
+      match n_le_m_or_m_lt_n_for_n_and_m_fix n' m return {S n' <= m} + {m < S n'} with
+      | left Hle =>
+        match eq_dec_nat n' m return {S n' <= m} + {m < S n'} with
+        | left Heq =>
+          right (eq_ind m (fun x : nat => le (S m) (S x)) (le_n (S m)) n' (eq_symmetry n' m Heq))
+        | right Hne =>
+          left (n_le_m_and_n_ne_m_implies_n_lt_m n' m Hle Hne)
+        end
+      | right Hlt =>
+        right (le_S (S m) n' Hlt)
+      end
+    end
+  .
+
   End ARITH_WITHOUT_LIA.
 
   Section DecidableProofIrrelevance.
@@ -290,28 +348,6 @@ Module MyUtilities.
 
   Let eqnat : nat -> nat -> Prop :=
     @eq nat
-  .
-
-  Definition eq_dec_nat : forall n1 : nat, forall n2 : nat, {eqnat n1 n2} + {~ eqnat n1 n2} :=
-    fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
-    match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
-    | O =>
-      fun n2 : nat =>
-      match n2 as n return {O = n} + {O <> n} with
-      | O => left (eq_reflexivity O)
-      | S n2' => right (fun H : O = S n2' => S_eq_0_elim n2' (eq_symmetry O (S n2') H))
-      end
-    | S n1' =>
-      fun n2 : nat =>
-      match n2 as n return {S n1' = n} + {S n1' <> n} with
-      | O => right (fun H : S n1' = O => S_eq_0_elim n1' H)
-      | S n2' =>
-        match eq_dec_nat_fix n1' n2' return {S n1' = S n2'} + {S n1' <> S n2'} with
-        | left Heq => left (eq_congruence S n1' n2' Heq)
-        | right Hne => right (fun Heq : S n1' = S n2' => Hne (S_eq_S_elim n1' n2' Heq))
-        end
-      end
-    end
   .
 
   Definition eq_lem_nat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 \/ ~ eqnat n1 n2 :=
@@ -788,15 +824,6 @@ Module MyUtilities.
       enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
     }
     enough (therefore : q = a / b)...
-  Qed.
-
-  Lemma n_le_m_or_m_lt_n_for_n_and_m :
-    forall n : nat,
-    forall m : nat,
-    {n <= m} + {m < n}.
-  Proof with eauto.
-    intros n m.
-    destruct (Compare_dec.le_lt_dec n m)...
   Qed.
 
   Definition first_nat : (nat -> bool) -> nat -> nat :=
