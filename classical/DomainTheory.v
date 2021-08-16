@@ -1263,4 +1263,16 @@ Module ClassicalCpoTheory.
     exist isContinuousMap (ScottAbs_aux2 f) (ScottAbs_aux2_isContinuousMap f)
   .
 
+  Lemma ScottAbs_aux3_isMonotonicMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
+    isMonotonicMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f).
+  Proof.
+    intros f1 f2 Hle_f x1 x2.
+    exact (Hle_f (x1, x2)).
+  Qed.
+
+(*
+  Lemma ScottAbs_aux3_isContinuousMap {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
+    isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f).
+*)
+
 End ClassicalCpoTheory.
