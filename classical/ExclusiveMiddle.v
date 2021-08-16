@@ -22,7 +22,7 @@ Module ExclusiveMiddle.
     eq_rect_eq_implies_existT_inj2_eq eq_rect_eq
   .
 
-  Definition unrestricted_minimization : forall P : nat -> Prop, forall n : nat, phi n -> exists n0 : nat, phi n0 /\ (forall m : nat, phi m -> n0 <= m) :=
+  Definition unrestricted_minimization : forall phi : nat -> Prop, forall n : nat, phi n -> exists n0 : nat, phi n0 /\ (forall m : nat, phi m -> n0 <= m) :=
     exclusive_middle_implies_unrestricted_minimization classic
   .
 
