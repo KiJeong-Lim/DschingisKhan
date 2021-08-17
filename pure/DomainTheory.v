@@ -1108,6 +1108,23 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
       repeat (rewrite in_intersection_iff)...
   Qed.
 
+  Lemma isOpen_ScottTopology_ext_eq :
+    forall X1 : ensemble D,
+    isOpen_ScottTopology X1 ->
+    forall X2 : ensemble D,
+    (forall x : D, member x X1 <-> member x X2) ->
+    isOpen_ScottTopology X2.
+  Proof with firstorder.
+    intros X1 [H H0] X2 H1.
+    enough (claim1 : ScottOpen_cond2 X2) by firstorder.
+    intros X H2 sup_X H3 H4.
+    apply H1 in H4.
+    destruct (H0 X H2 sup_X H3 H4) as [x0 H5].
+    exists x0.
+    revert H5.
+    repeat (rewrite in_intersection_iff)...
+  Qed.
+
   End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=

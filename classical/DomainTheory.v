@@ -1504,47 +1504,57 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     inversion x_in; subst...
   Qed.
 
+  Lemma iteration_preservesContinuous {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall n : nat,
+    isContinuousMap (fun f_x : (D ~> D) * D => iteration n (proj1_sig (fst f_x)) (snd f_x)).
+  Proof with eauto with *.
+    admit.
+  Admitted.
+
+  Lemma iteration_f_bottom_isContinuousMap_if_f_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall n : nat,
+    isContinuousMap (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)).
+  Proof with eauto with *.
+    intros n.
+    apply (show_that_f2_isContinuousMap_if_f_isContinuousMap (fun f_x : (D ~> D) * D => iteration n (proj1_sig (fst f_x)) (snd f_x)) (iteration_preservesContinuous n)).
+  Qed.
+
   Lemma get_lfp_of_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     isContinuousMap (fun f : D ~> D => get_lfp_of f).
   Proof with eauto with *.
-    assert (iteration_preserves_eq : forall n : nat, forall f1 : D ~> D, forall f2 : D ~> D, f1 == f2 -> forall x : D, iteration n (proj1_sig f1) x == iteration n (proj1_sig f2) x).
-    { induction n.
-      - intros f1 f2 Heq_f x.
-        reflexivity.
-      - intros f1 f2 Heq_f x.
-        simpl.
-        transitivity (proj1_sig f1 (iteration n (proj1_sig f2) x)).
-        + apply (MonotonicMap_preservesSetoid (proj1_sig f1)).
-          * apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f1) (proj2_sig f1)).
-          * apply IHn...
-        + apply Heq_f.
+    intros O O_isOpen.
+    assert (claim1 : forall n : nat, isOpen (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)).
+    { intros n.
+      apply (iteration_f_bottom_isContinuousMap_if_f_isContinuousMap n O O_isOpen).
     }
-    assert (get_lfp_of_preserves_eq : forall f1 : D ~> D, forall f2 : D ~> D, f1 == f2 -> get_lfp_of f1 == get_lfp_of f2).
-    { intros f1 f2 Heq_f.
-      unfold get_lfp_of.
-      assert (claim1 := proj2_sig (square_up_exists (iterations (proj1_sig f1) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f1) (proj2_sig f1)))).
-      assert (claim2 := proj2_sig (square_up_exists (iterations (proj1_sig f2) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f2) (proj2_sig f2)))).
-      apply Poset_asym.
-      - apply claim1.
-        intros x x_in.
-        inversion x_in; subst.
-        transitivity (iteration n (proj1_sig f2) (proj1_sig bottom_exists)).
-        + apply Poset_refl1...
-        + apply claim2...
-      - apply claim2.
-        intros x x_in.
-        inversion x_in; subst.
-        transitivity (iteration n (proj1_sig f1) (proj1_sig bottom_exists)).
-        + apply Poset_refl2...
-        + apply claim1...
+    assert (claim2 : isOpen (unions (fun F : ensemble (D ~> D) => exists n : nat, F == (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)))).
+    { apply open_unions.
+      intros F [n H].
+      apply (isOpen_ScottTopology_ext_eq _ _ _ (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) (claim1 n)).
+      intros f.
+      symmetry.
+      exact (H f).
     }
-    apply (the_main_reason_for_introducing_ScottTopology (fun f : D ~> D => get_lfp_of f) get_lfp_of_preserves_eq).
-    intros F F_isDirected.
-    set (sup_F := square_up_of_squigs F F_isDirected).
-    assert (sup_F_isSupremum := square_up_of_squigs_isSupremum F F_isDirected).    
-    set (Y := image (fun f : D ~> D => get_lfp_of f) F).
-    assert (Y_isDirected := MonotonicMap_preservesDirected (fun f : D ~> D => get_lfp_of f) get_lfp_of_isMonotonic F F_isDirected).
-    enough (it_is_sufficient_to_show : isSupremum (get_lfp_of sup_F) (image (fun f : D ~> D => get_lfp_of f) F)).
-  Admitted.
+    apply (isOpen_ScottTopology_ext_eq _ _ _ (unions (fun F : ensemble (D ~> D) => exists n : nat, F == (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O))) claim2).
+    intros f.
+    split.
+    - intros f_in.
+      apply in_unions_iff in f_in.
+      destruct f_in as [F [f_in_F [n F_eq]]].
+      apply in_preimage_iff.
+      assert (f_in : member f (preimage (fun f_i : D ~> D => iteration n (proj1_sig f_i) (proj1_sig bottom_exists)) O)) by now apply F_eq.
+      rewrite in_preimage_iff in f_in.
+      apply (proj1 O_isOpen (iteration n (proj1_sig f) (proj1_sig bottom_exists)) (get_lfp_of f) f_in).
+      apply (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f))))...
+    - intros f_in.
+      rewrite in_preimage_iff in f_in.
+      destruct (proj2 O_isOpen (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))) f_in) as [f_i H].
+      apply in_intersection_iff in H.
+      destruct H as [H H0].
+      inversion H; subst.
+      apply in_unions_iff.
+      exists (preimage (fun f_i : D ~> D => iteration n (proj1_sig f_i) (proj1_sig bottom_exists)) O).
+      split...
+  Qed.
 
 End ClassicalCpoTheory.
