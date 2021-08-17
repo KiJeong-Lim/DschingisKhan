@@ -1084,7 +1084,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Qed.
 
   Definition ScottApp_aux1 {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : ((D ~> D') * D) -> D' :=
-    @uncurry (D ~> D') D D' (@proj1_sig (D -> D') isContinuousMap)
+    fun f_x : (D ~> D') * D =>
+    proj1_sig (fst f_x) (snd f_x) 
   .
 
   Lemma ScottApp_aux1_isMontonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -1109,7 +1110,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     intros f1 f2 x1 x2 Heq_f Heq_x.
     simpl.
     transitivity (proj1_sig f1 x2).
-    - apply Poset_asym; apply ContinuousMapOnCpos_isMonotonic...
+    - apply Poset_asym; apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f1) (proj2_sig f1))...
     - apply Heq_f.
   Qed.
 
@@ -1367,7 +1368,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       }
       assert (claim6 : @leProp ((D1 * D2) -> D3) (@arrow_isPoset (D1 * D2) D3 D3_isPoset) sup_G (fun p : D1 * D2 => proj1_sig (proj1_sig h (fst p)) (snd p))) by now apply claim4.
       intros x1 x2.
-      transitivity (sup_G (x1, x2))...
+      transitivity (sup_G (x1, x2)); [apply Poset_refl2 | apply claim6]...
   Qed.
 
   Definition ScottAbs {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) ~> (D1 ~> (D2 ~> D3)) :=
