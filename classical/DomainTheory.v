@@ -1375,4 +1375,133 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     exist isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f) (@ScottAbs_aux3_isContinuousMap D1 D2 D3 D1_isPoset D2_isPoset D3_isPoset D1_isCompletePartialOrder D2_isCompletePartialOrder D3_isCompletePartialOrder)
   .
 
+  Definition iteration {D : Type} : nat -> (D -> D) -> D -> D :=
+    fix iteration_fix (n : nat) {struct n} : (D -> D) -> D -> D :=
+    match n return (D -> D) -> (D -> D) with
+    | O =>
+      fun f : D -> D =>
+      fun x : D =>
+      x
+    | S n' =>
+      fun f : D -> D =>
+      fun x : D =>
+      f (iteration_fix n' f x)
+    end
+  .
+
+  Inductive iterations {D : Type} (f : D -> D) (x : D) : ensemble D :=
+  | in_iterations :
+    forall n : nat,
+    member (iteration n f x) (iterations f x)
+  .
+
+  Local Hint Constructors iterations : core.
+
+  Lemma iterations_f_bottom_isDirected_if_f_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall f : D -> D,
+    isContinuousMap f ->
+    isDirected (iterations f (proj1_sig bottom_exists)).
+  Proof with eauto with *.
+    assert (claim1 := n1_le_max_n1_n2).
+    assert (claim2 := n2_le_max_n1_n2).
+    intros f f_continuous.
+    assert (claim3 : forall n : nat, iteration n f (proj1_sig bottom_exists) =< iteration (S n) f (proj1_sig bottom_exists)).
+    { induction n as [| n' IH].
+      - exact (proj2_sig bottom_exists (f (proj1_sig bottom_exists))).
+      - exact (ContinuousMapOnCpos_isMonotonic f f_continuous (iteration n' f (proj1_sig bottom_exists)) (iteration (S n') f (proj1_sig bottom_exists)) IH).
+    }
+    assert (claim4 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> iteration n1 f (proj1_sig bottom_exists) =< iteration n2 f (proj1_sig bottom_exists)).
+    { intros n1 n2 n1_le_n2.
+      induction n1_le_n2 as [| n2 n1_le_n2 IH].
+      - reflexivity.
+      - transitivity (iteration n2 f (proj1_sig bottom_exists))...  
+    }
+    split.
+    - exists (iteration O f (proj1_sig bottom_exists))...
+    - intros x1 x1_in x2 x2_in.
+      inversion x1_in; subst.
+      rename n into n1.
+      inversion x2_in; subst.
+      rename n into n2.
+      exists (iteration (max n1 n2) f (proj1_sig bottom_exists))...
+  Qed.
+
+  Definition get_lfp_of {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} : (D ~> D) -> D :=
+    fun f : D ~> D =>
+    proj1_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))
+  .
+
+  Lemma every_continuous_function_has_a_fixed_point {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall f : D ~> D,
+    member (get_lfp_of f) (fixed_points (proj1_sig f)).
+  Proof with eauto with *.
+    intros f.
+    assert (claim1 := proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
+    fold (get_lfp_of f) in claim1.
+    assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< get_lfp_of f).
+    { intros n.
+      apply claim1...
+    }
+    assert (claim3 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
+    { induction n as [| n' IH].
+      - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
+      - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
+    }
+    assert (claim4 := isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f) (proj2_sig f) (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) claim1).
+    assert (it_is_sufficient_to_show : get_lfp_of f == proj1_sig f (get_lfp_of f)).
+    { symmetry.
+      apply claim4.
+      intros x.
+      split.
+      - intros le_x x1 x1_in.
+        apply in_image_iff in x1_in.
+        destruct x1_in as [x0 [x1_is x0_in]].
+        subst x1.
+        inversion x0_in; subst.
+        transitivity (get_lfp_of f).
+        + apply (claim2 (S n)).
+        + apply le_x.
+      - intros x_is_an_upper_bound.
+        apply claim1.
+        intros x0 x0_in.
+        inversion x0_in; subst.
+        destruct n as [| n'].
+        + apply (proj2_sig bottom_exists).
+        + apply x_is_an_upper_bound.
+          simpl...
+    }
+    exact it_is_sufficient_to_show.
+  Qed.
+
+  Lemma get_lfp_of_f_returns_the_least_fixed_point_of_f {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall f : D ~> D,
+    isLeastFixedPoint (get_lfp_of f) (proj1_sig f).
+  Proof with eauto with *.
+    intros f.
+    assert (claim1 := proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
+    fold (get_lfp_of f) in claim1.
+    assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< get_lfp_of f).
+    { intros n.
+      apply claim1...
+    }
+    assert (claim3 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
+    { induction n as [| n' IH].
+      - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
+      - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
+    }
+    assert (claim4 := every_continuous_function_has_a_fixed_point f).
+    assert (claim5 := ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f)).
+    enough (it_is_sufficient_to_show : forall y : D, y == proj1_sig f y -> get_lfp_of f =< y) by now split.
+    intros y y_is_fixpoint_of_f.
+    assert (claim6 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< y).
+    { induction n as [| n' IH].
+      - apply (proj2_sig bottom_exists).
+      - simpl.
+        transitivity (proj1_sig f y)...
+    }
+    apply claim1.
+    intros x x_in.
+    inversion x_in; subst...
+  Qed.
+
 End ClassicalCpoTheory.
