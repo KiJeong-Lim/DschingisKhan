@@ -1504,4 +1504,47 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     inversion x_in; subst...
   Qed.
 
+  Lemma get_lfp_of_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    isContinuousMap (fun f : D ~> D => get_lfp_of f).
+  Proof with eauto with *.
+    assert (iteration_preserves_eq : forall n : nat, forall f1 : D ~> D, forall f2 : D ~> D, f1 == f2 -> forall x : D, iteration n (proj1_sig f1) x == iteration n (proj1_sig f2) x).
+    { induction n.
+      - intros f1 f2 Heq_f x.
+        reflexivity.
+      - intros f1 f2 Heq_f x.
+        simpl.
+        transitivity (proj1_sig f1 (iteration n (proj1_sig f2) x)).
+        + apply (MonotonicMap_preservesSetoid (proj1_sig f1)).
+          * apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f1) (proj2_sig f1)).
+          * apply IHn...
+        + apply Heq_f.
+    }
+    assert (get_lfp_of_preserves_eq : forall f1 : D ~> D, forall f2 : D ~> D, f1 == f2 -> get_lfp_of f1 == get_lfp_of f2).
+    { intros f1 f2 Heq_f.
+      unfold get_lfp_of.
+      assert (claim1 := proj2_sig (square_up_exists (iterations (proj1_sig f1) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f1) (proj2_sig f1)))).
+      assert (claim2 := proj2_sig (square_up_exists (iterations (proj1_sig f2) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f2) (proj2_sig f2)))).
+      apply Poset_asym.
+      - apply claim1.
+        intros x x_in.
+        inversion x_in; subst.
+        transitivity (iteration n (proj1_sig f2) (proj1_sig bottom_exists)).
+        + apply Poset_refl1...
+        + apply claim2...
+      - apply claim2.
+        intros x x_in.
+        inversion x_in; subst.
+        transitivity (iteration n (proj1_sig f1) (proj1_sig bottom_exists)).
+        + apply Poset_refl2...
+        + apply claim1...
+    }
+    apply (the_main_reason_for_introducing_ScottTopology (fun f : D ~> D => get_lfp_of f) get_lfp_of_preserves_eq).
+    intros F F_isDirected.
+    set (sup_F := square_up_of_squigs F F_isDirected).
+    assert (sup_F_isSupremum := square_up_of_squigs_isSupremum F F_isDirected).    
+    set (Y := image (fun f : D ~> D => get_lfp_of f) F).
+    assert (Y_isDirected := MonotonicMap_preservesDirected (fun f : D ~> D => get_lfp_of f) get_lfp_of_isMonotonic F F_isDirected).
+    enough (it_is_sufficient_to_show : isSupremum (get_lfp_of sup_F) (image (fun f : D ~> D => get_lfp_of f) F)).
+  Admitted.
+
 End ClassicalCpoTheory.
