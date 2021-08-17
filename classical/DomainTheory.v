@@ -4,7 +4,7 @@ Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module ClassicalCpoTheory.
+Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Semantics" of "H. P. Barendregt." *)
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble MyEnsembleNova BasicPosetTheory BasicTopology ConstructiveCpoTheory ExclusiveMiddle.
 
@@ -1365,9 +1365,8 @@ Module ClassicalCpoTheory.
         apply in_image_iff in g_in.
         destruct g_in as [f_i [g_is f_i_in]].
         subst g.
-        assert (claim5_aux1 := h_is_an_upper_bound (ScottAbs_aux3 f_i)).
         intros [x1 x2].
-        apply claim5_aux1...
+        apply (h_is_an_upper_bound (ScottAbs_aux3 f_i))...
       }
       intros x1 x2.
       transitivity (sup_G (x1, x2)).
@@ -1377,7 +1376,7 @@ Module ClassicalCpoTheory.
   Qed.
 
   Definition ScottAbs {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} : ((D1 * D2) ~> D3) ~> (D1 ~> (D2 ~> D3)) :=
-    exist isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f) ScottAbs_aux3_isContinuousMap
+    exist isContinuousMap (fun f : (D1 * D2) ~> D3 => ScottAbs_aux3 f) (@ScottAbs_aux3_isContinuousMap D1 D2 D3 D1_isPoset D2_isPoset D3_isPoset D1_isCompletePartialOrder D2_isCompletePartialOrder D3_isCompletePartialOrder)
   .
 
 End ClassicalCpoTheory.
