@@ -532,10 +532,9 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
 
   Local Hint Resolve lemma2_of_1_2_13 : core.
 
-  Inductive CompleteFilter : ensemble B -> ensemble B :=
+  Variant CompleteFilter (bs : ensemble B) : ensemble B :=
   | in_CompleteFilter :
     forall n : nat,
-    forall bs : ensemble B,
     forall b : B,
     member b (improveFilter bs n) ->
     member b (CompleteFilter bs)
@@ -551,7 +550,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     intros bs H.
     split.
     - intros [b [H0 H1]].
-      assert (H2 := in_CompleteFilter 0).
+      assert (H2 := in_CompleteFilter bs 0).
       exists (b)...
     - intros [b [H0 H1]].
       inversion H0; subst.
@@ -588,12 +587,13 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     isSubsetOf bs (CompleteFilter bs) /\ isFilter (CompleteFilter bs) /\ isComplete (CompleteFilter bs) /\ equiconsistent bs (CompleteFilter bs).
   Proof with eauto with *.
     intros bs H.
-    assert (claim1 : isSubsetOf bs (CompleteFilter bs)) by exact (in_CompleteFilter 0 bs).
+    assert (claim1 : isSubsetOf bs (CompleteFilter bs)) by exact (in_CompleteFilter bs 0).
     assert (claim2 : forall b1 : B, forall b2 : B, member b1 (CompleteFilter bs) -> b1 =< b2 -> member b2 (CompleteFilter bs)).
     { intros b1 b2 H2 H3.
       inversion H2; subst.
       assert (H5 := lemma1_of_1_2_11 n bs H).
-      apply (in_CompleteFilter n), (proj1 (proj2 H5) b1 b2)...
+      exists n.
+      apply (proj1 (proj2 H5) b1 b2)...
     }
     assert (claim3 : forall b1 : B, forall b2 : B, forall b : B, member b1 (CompleteFilter bs) -> member b2 (CompleteFilter bs) -> b == andB b1 b2 -> member b (CompleteFilter bs)).
     { intros b1 b2 b H0 H1 H2.
@@ -604,10 +604,12 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       destruct H5 as [H5 | H5].
       - assert (H6 := lemma1_of_1_2_11 n2 bs H).
         assert (H7 := lemma1_of_1_2_12 n1 n2 H5 bs b1 H3).
-        apply (in_CompleteFilter n2), (proj2 (proj2 H6) b1 b2)...
+        exists n2.
+        apply (proj2 (proj2 H6) b1 b2)...
       - assert (H6 := lemma1_of_1_2_11 n1 bs H).
         assert (H7 := lemma1_of_1_2_12 n2 n1 H5 bs b2 H4).
-        apply (in_CompleteFilter n1), (proj2 (proj2 H6) b1 b2)...
+        exists n1.
+        apply (proj2 (proj2 H6) b1 b2)...
     }
     assert (claim4 : isFilter (CompleteFilter bs)).
     { split.
