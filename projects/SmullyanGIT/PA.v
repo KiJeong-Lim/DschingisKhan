@@ -9,7 +9,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module Tarski's_Theorem_for_Arithmetic.
 
-  Import ListNotations MyUtilities MyUniverses.
+  Import ListNotations MyUtilities.
 
   Section BasicSyntaxDefn.
 
@@ -72,11 +72,15 @@ Module Tarski's_Theorem_for_Arithmetic.
     nat
   .
 
-  Definition Env : InferiorUniverse :=
+  Let MyType : Type :=
+    Type
+  .
+
+  Definition Env : MyType :=
     Vr -> VrValue
   .
 
-  Definition TmValue : InferiorUniverse :=
+  Definition TmValue : MyType :=
     VrValue
   .
 
@@ -91,7 +95,7 @@ Module Tarski's_Theorem_for_Arithmetic.
     end
   .
 
-  Definition FormValue : InferiorUniverse :=
+  Definition FormValue : MyType :=
     Prop
   .
 
@@ -155,7 +159,7 @@ Module Tarski's_Theorem_for_Arithmetic.
 
   Section SubstitutionDefn.
 
-  Definition substitution: Set :=
+  Definition substitution : Set :=
     Vr -> Tm
   .
 
@@ -163,9 +167,9 @@ Module Tarski's_Theorem_for_Arithmetic.
     ivarTm
   .
 
-  Definition consSubst (x : Vr) (t : Tm) (sigma : substitution) : substitution :=
+  Definition consSubst (y : Vr) (t : Tm) (sigma : substitution) : substitution :=
     fun z : Vr =>
-    if Vr_eq_dec x z
+    if Vr_eq_dec y z
     then t
     else sigma z
   .
@@ -176,6 +180,14 @@ Module Tarski's_Theorem_for_Arithmetic.
 
   Definition getMaxNumOfFreeVarsInTm (t : Tm) : Vr :=
     fold_right_max_0 (getFreeVarsTm t)
+  .
+
+  Definition isFreshVarIn_applySubst_Tm (sigma : substitution) (z : Vr) (t : Tm) : Prop :=
+    forallb (fun x : Vr => negb (occursFreeInTm z (applySubst_Vr sigma x))) (getFreeVarsTm t) = true
+  .
+
+  Definition isFreshVarIn_applySubst_Form (sigma : substitution) (z : Vr) (f : Form) : Prop :=
+    forallb (fun x : Vr => negb (occursFreeInTm z (applySubst_Vr sigma x))) (getFreeVarsForm f) = true
   .
 
   Definition chi (sigma : substitution) (f : Form) : Vr :=
@@ -199,20 +211,80 @@ Module Tarski's_Theorem_for_Arithmetic.
     | leqF t1 t2 => leqF (applySubst_Tm sigma t1) (applySubst_Tm sigma t2)
     | negF f1 => negF (applySubst_Form sigma f1)
     | impF f1 f2 => impF (applySubst_Form sigma f1) (applySubst_Form sigma f2)
-    | allF x f1 =>
+    | allF y f1 =>
       let z : Vr := chi sigma f in
-      allF z (applySubst_Form (consSubst x (ivarTm z) sigma) f1)
+      allF z (applySubst_Form (consSubst y (ivarTm z) sigma) f1)
     end
   .
 
   End SubstitutionDefn.
 
+  Section BasicMetaTheories.
+
+  Lemma in_getFreeVarsForm_iff :
+    forall f : Form,
+    forall x : Vr,
+    In x (getFreeVarsForm f) <-> occursFreeInForm x f = true.
+  Proof with eauto.
+  Admitted.
+
+  Lemma getMaxNumOfFreeVarsInTm_lt_implies :
+    forall t : Tm,
+    forall x : Vr,
+    getMaxNumOfFreeVarsInTm t < x ->
+    occursFreeInTm x t = false.
+  Proof with eauto.
+  Admitted.
+
+  Lemma evalTm_equiv_if_FVs_equiv :
+    forall t : Tm,
+    forall E1 : Env,
+    forall E2 : Env,
+    (forall x : Vr, occursFreeInTm x t = true -> E1 x = E2 x) ->
+    evalTm E1 t = evalTm E2 t.
+  Proof with eauto.
+  Admitted.
+
+  Lemma evalForm_equiv_if_FVs_equiv :
+    forall f : Form,
+    forall E1 : Env,
+    forall E2 : Env,
+    (forall x : Vr, occursFreeInForm x f = true -> E1 x = E2 x) ->
+    evalForm E1 f <-> evalForm E2 f.
+  Proof with eauto.
+  Admitted.
+
+  Lemma applySubst_Tm_preserves_evalTm :
+    forall t : Tm,
+    forall sigma : substitution,
+    forall E : Env,
+    evalTm (fun z : Vr => evalTm E (applySubst_Vr sigma z)) t = evalTm E (applySubst_Tm sigma t).
+  Proof with eauto.
+  Admitted.
+
+  Lemma the_main_reason_for_introducing_chi :
+    forall f : Form,
+    forall sigma : substitution,
+    isFreshVarIn_applySubst_Form sigma (chi sigma f) f.
+  Proof with eauto.
+  Admitted.
+
+  Lemma applySubst_Form_preserves_evalForm :
+    forall f : Form,
+    forall sigma : substitution,
+    forall E : Env,
+    evalForm (fun z : Vr => evalTm E (applySubst_Vr sigma z)) f <-> evalForm E (applySubst_Form sigma f).
+  Proof with eauto.
+  Admitted.
+
+  End BasicMetaTheories.
+
 End Tarski's_Theorem_for_Arithmetic.
 
 Module The_Incompleteness_of_Peano_Arithmetic_With_Exponentation.
-  
+
 End The_Incompleteness_of_Peano_Arithmetic_With_Exponentation.
 
 Module Arithmetic_Without_the_Exponential.
-  
+
 End Arithmetic_Without_the_Exponential.

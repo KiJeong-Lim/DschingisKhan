@@ -13,14 +13,19 @@ Module PropertiesOfPropositionLogic.
     forall hs : ensemble formula,
     forall c : formula,
     hs |- c <-> hs |= c.
-  Proof with eauto using the_propositional_soundness_theorem, the_propositional_completeness_theorem.
+  Proof.
     intros hs c.
-    split...
+    split.
+    - exact (the_propositional_soundness_theorem hs c).
+    - exact (the_propositional_completeness_theorem hs c).
   Qed.
 
-  Theorem the_propositional_compactness_theorem (hs : ensemble formula) (c : formula) :
+  Theorem the_propositional_compactness_theorem :
+    forall hs : ensemble formula,
+    forall c : formula,
     hs |= c <-> (exists ps : list formula, (forall p : formula, In p ps -> member p hs) /\ (exists hs0 : ensemble formula, (forall h : formula, In h ps <-> member h hs0) /\ hs0 |= c)).
   Proof with try now firstorder.
+    intros hs c.
     split.
     - intros hs_entails_c.
       assert (hs_infers_c := proj2 (infers_iff_entails hs c) hs_entails_c).
