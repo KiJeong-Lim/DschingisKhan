@@ -1108,23 +1108,6 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
       repeat (rewrite in_intersection_iff)...
   Qed.
 
-  Lemma isOpen_ScottTopology_ext_eq :
-    forall X1 : ensemble D,
-    isOpen_ScottTopology X1 ->
-    forall X2 : ensemble D,
-    (forall x : D, member x X1 <-> member x X2) ->
-    isOpen_ScottTopology X2.
-  Proof with firstorder.
-    intros X1 [H H0] X2 H1.
-    enough (claim1 : ScottOpen_cond2 X2) by firstorder.
-    intros X H2 sup_X H3 H4.
-    apply H1 in H4.
-    destruct (H0 X H2 sup_X H3 H4) as [x0 H5].
-    exists x0.
-    revert H5.
-    repeat (rewrite in_intersection_iff)...
-  Qed.
-
   End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
@@ -1134,6 +1117,23 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     ; open_intersection := open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     }
   .
+
+  Lemma isOpen_ScottTopology_ext_eq {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+    forall O1 : ensemble D,
+    isOpen O1 ->
+    forall O2 : ensemble D,
+    (forall x : D, member x O1 <-> member x O2) ->
+    isOpen O2.
+  Proof with firstorder.
+    intros O1 [H H0] O2 H1.
+    enough (claim1 : forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O2 -> nonempty (intersection X O2)) by firstorder.
+    intros X H2 sup_X H3 H4.
+    apply H1 in H4.
+    destruct (H0 X H2 sup_X H3 H4) as [x0 H5].
+    exists x0.
+    revert H5.
+    repeat (rewrite in_intersection_iff)...
+  Qed.
 
   Lemma bot_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall p : D * D',

@@ -1509,12 +1509,12 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)).
   Proof with eauto with *.
     assert (iteration_isMonotonicMap : forall n : nat, isMonotonicMap (fun p : (D ~> D) * D => iteration n (proj1_sig (fst p)) (snd p))).
-    { induction n; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
+    { induction n as [| n IH]; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
       - exact Hle_x.
       - transitivity (proj1_sig f2 (iteration n (proj1_sig f1) x1)).
         + apply Hle_f.
         + apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f2) (proj2_sig f2)).
-          apply (IHn (f1, x1) (f2, x2)).
+          apply (IH (f1, x1) (f2, x2)).
           split...
     }
     induction n as [| n IH].
@@ -1547,7 +1547,6 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         }
         simpl (iteration (S n)) in sup_Y.
         cbn beta in sup_Y.
-        assert (sup_F_sup_X_isSupremum : isSupremum (proj1_sig sup_F sup_X) (image (proj1_sig sup_F) X)) by exact (Supremum_of_squigs_preservesSupremum F F_isDirected X X_isDirected sup_X sup_X_isSupremum).
         assert (sup_X_eq_iteration_n_sup_F_bot := proj1 (isSupremum_of_image_f_X_iff_f_sup_X_eq (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) IH F F_isDirected sup_F sup_F_isSupremum sup_X) sup_X_isSupremum).
         cbn beta in sup_X_eq_iteration_n_sup_F_bot.
         assert (sup_F_sup_X_eq_sup_Y : proj1_sig sup_F sup_X == sup_Y).
@@ -1558,7 +1557,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             + apply sup_X_isSupremum.
             + apply (proj2 (isSupremum_unique X sup_X sup_X_isSupremum (iteration n (proj1_sig sup_F) (proj1_sig bottom_exists))))...
         }
-        assert (mayday : isSupremum (proj1_sig sup_F sup_X) (unions (image (fun f_i : D ~> D => image (fun x : D => proj1_sig f_i x) X) F))) by exact (Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F F F_isDirected X X_isDirected sup_X sup_X_isSupremum).
+        assert (sup_F_sup_X_isSupremum : isSupremum (proj1_sig sup_F sup_X) (unions (image (fun f_i : D ~> D => image (fun x : D => proj1_sig f_i x) X) F))) by exact (Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F F F_isDirected X X_isDirected sup_X sup_X_isSupremum).
         intros y.
         split.
         { intros le_y y0 y0_in.
@@ -1577,7 +1576,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         { intros y_is_an_upper_bound.
           transitivity (proj1_sig sup_F sup_X).
           - apply Poset_refl2...
-          - apply mayday.
+          - apply sup_F_sup_X_isSupremum.
             intros y0 y0_in.
             apply in_unions_iff in y0_in.
             destruct y0_in as [ys [y0_in ys_in]].
@@ -1611,20 +1610,19 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     }
     assert (claim2 : isOpen (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O))).
     { apply open_unions.
-      intros F [n H].
-      apply (isOpen_ScottTopology_ext_eq _ _ _ (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) (claim1 n)).
-      intros f.
-      symmetry.
-      exact (H f).
+      intros F [n F_eq].
+      apply (isOpen_ScottTopology_ext_eq (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) (claim1 n)).
+      apply Setoid_sym in F_eq.
+      exact F_eq.
     }
     assert (get_lfp_of_isSupremum_of_iterations := fun f : D ~> D => (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f))))).
     assert (iteration_isMonotonicMap : forall n : nat, isMonotonicMap (fun p : (D ~> D) * D => iteration n (proj1_sig (fst p)) (snd p))).
-    { induction n; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
+    { induction n as [| n IH]; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
       - exact Hle_x.
       - transitivity (proj1_sig f2 (iteration n (proj1_sig f1) x1)).
         + apply Hle_f.
         + apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f2) (proj2_sig f2)).
-          apply (IHn (f1, x1) (f2, x2)).
+          apply (IH (f1, x1) (f2, x2)).
           split...
     }
     assert (get_lfp_of_isMonotonicMap : isMonotonicMap get_lfp_of).
@@ -1637,7 +1635,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         split...
       - apply (get_lfp_of_isSupremum_of_iterations f2)...
     }
-    apply (isOpen_ScottTopology_ext_eq _ _ _ (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)) claim2).
+    apply (isOpen_ScottTopology_ext_eq (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)) claim2).
     intros f.
     split.
     - intros f_in.
