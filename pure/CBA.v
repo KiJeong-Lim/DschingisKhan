@@ -115,7 +115,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     }
   .
 
-  Section Section2Chapter1.
+  Section Section2_of_Chapter1.
 
   Context {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid}.
 
@@ -711,7 +711,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       apply (corollary_of_1_2_16_aux2 bs1 H_filter1 H H0 H1 H2 bs2 H_filter2 H3 H4 b H5).
   Qed.
 
-  End Section2Chapter1.
+  End Section2_of_Chapter1.
 
   Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     andB with signature (@leCBA B B_isSetoid B_isCBA ==> @leCBA B B_isSetoid B_isCBA ==> @leCBA B B_isSetoid B_isCBA)

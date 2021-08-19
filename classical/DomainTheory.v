@@ -38,7 +38,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     { intros every_member_of_X_is_either_less_than_or_equal_to_x.
       contradiction sup_X_in_U_x.
       apply (proj2 (sup_X_isSupremum_of_X x)).
-      firstorder.
+      now firstorder.
     }
     destruct (not_all_ex_not D (fun x0 : D => (x0 =< x \/ ~ member x0 X)) JuneyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
     exists x0.
@@ -317,17 +317,15 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isMonotonicMap (fun x : D => Supremum_of_squigs F F_isDirected x).
   Proof with eauto with *.
     intros F F_isDirected x1 x2 x1_le_x2.
-    assert (claim1_aux1 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (Supremum_of_squigs_is_well_defined F F_isDirected x1)).
-    assert (claim1_aux2 := square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (Supremum_of_squigs_is_well_defined F F_isDirected x2)).
-    apply claim1_aux1.
+    apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x1) F) (Supremum_of_squigs_is_well_defined F F_isDirected x1)).
     intros y y_in.
     apply in_image_iff in y_in.
     destruct y_in as [f_i [y1_is f_i_in]].
     subst y.
     transitivity (proj1_sig f_i x2).
     - apply (ContinuousMapOnCpos_isMonotonic)...
-      membership.
-    - apply claim1_aux2...
+      exact (proj2_sig f_i).
+    - apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (Supremum_of_squigs_is_well_defined F F_isDirected x2))...
   Qed.
 
   Lemma useful_lemma_for_f_i_sup_X {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -1589,7 +1587,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma get_lfp_of_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     isContinuousMap (fun f : D ~> D => get_lfp_of f).
   Proof with eauto with *.
-    assert (get_lfp_of_isSupremum_of_iterations := fun f : D ~> D => (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f))))).
+    assert (get_lfp_of_isSupremum_of_iterations := fun f : D ~> D => proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
     assert (iteration_isMonotonicMap : forall n : nat, isMonotonicMap (fun p : (D ~> D) * D => iteration n (proj1_sig (fst p)) (snd p))).
     { induction n as [| n IH]; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
       - exact Hle_x.

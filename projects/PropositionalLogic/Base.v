@@ -48,7 +48,7 @@ Module SyntaxOfPL.
     end
   .
 
-  Fixpoint enum_formula_aux (rank : nat) {struct rank} : nat -> formula :=
+  Fixpoint enum_formula_for_rank (rank : nat) {struct rank} : nat -> formula :=
     match rank with
     | O => AtomF
     | S rank' =>
@@ -57,50 +57,50 @@ Module SyntaxOfPL.
       let piece : nat := snd (cantor_pairing seed0) in
       match piece with
       | 0 => ContradictionF
-      | 1 => NegationF (enum_formula_aux rank' seed1) 
+      | 1 => NegationF (enum_formula_for_rank rank' seed1) 
       | 2 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ConjunctionF (enum_formula_aux rank' seed2) (enum_formula_aux rank' seed3)
+        ConjunctionF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
       | 3 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        DisjunctionF (enum_formula_aux rank' seed2) (enum_formula_aux rank' seed3)
+        DisjunctionF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
       | 4 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ImplicationF (enum_formula_aux rank' seed2) (enum_formula_aux rank' seed3)
+        ImplicationF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
       | 5 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        BiconditionalF (enum_formula_aux rank' seed2) (enum_formula_aux rank' seed3)
+        BiconditionalF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
       | S (S (S (S (S (S i))))) => AtomF i
       end
     end
   .
 
-  Local Ltac enum_formula_aux_is_good_tac_aux1 :=
+  Local Ltac enum_formula_for_rank_is_good_tac_aux1 :=
     match goal with
     | H : cantor_pairing ?seed = ?rhs |- _ => rewrite H; simpl
     end
   .
 
-  Local Ltac enum_formula_aux_is_good_tac_aux2 :=
+  Local Ltac enum_formula_for_rank_is_good_tac_aux2 :=
     match goal with
-    | H : enum_formula_aux ?rank ?seed = ?p |- _ => rewrite <- H
+    | H : enum_formula_for_rank ?rank ?seed = ?p |- _ => rewrite <- H
     end
   .
 
-  Local Ltac enum_formula_aux_is_good_tac :=
-    (unfold enum_formula_aux); (repeat enum_formula_aux_is_good_tac_aux1); (repeat enum_formula_aux_is_good_tac_aux2); (eauto)
+  Local Ltac enum_formula_for_rank_is_good_tac :=
+    (unfold enum_formula_for_rank); (repeat enum_formula_for_rank_is_good_tac_aux1); (repeat enum_formula_for_rank_is_good_tac_aux2); (eauto)
   .
 
-  Lemma enum_formula_aux_is_good :
+  Lemma enum_formula_for_rank_is_good :
     forall p : formula,
     forall rank : nat,
     rankOfFormula p <= rank ->
-    {seed : nat | enum_formula_aux rank seed = p}.
-  Proof with enum_formula_aux_is_good_tac.
+    {seed : nat | enum_formula_for_rank rank seed = p}.
+  Proof with enum_formula_for_rank_is_good_tac.
     assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_is x y z)).
     induction p; simpl.
     { intros [| r'] H.
@@ -164,14 +164,18 @@ Module SyntaxOfPL.
     fun n : nat =>
     let rank : nat := fst (cantor_pairing n) in
     let seed : nat := snd (cantor_pairing n) in
-    enum_formula_aux rank seed
+    enum_formula_for_rank rank seed
   .
 
-  Definition formula_is_enumerable : forall p : formula, {n : nat | enum_formula n = p} :=
-    fun p : formula =>
-    let seed : nat := proj1_sig (enum_formula_aux_is_good p (rankOfFormula p) (le_n (rankOfFormula p))) in
-    exist (fun n : nat => enum_formula n = p) (sum_from_0_to (rankOfFormula p + seed) + seed) (eq_ind (rankOfFormula p, seed) (fun pr : nat * nat => enum_formula_aux (fst pr) (snd pr) = p) (proj2_sig (enum_formula_aux_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))) (cantor_pairing (sum_from_0_to (rankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (rankOfFormula p) seed))
-  .
+  Lemma formula_is_enumerable :
+    forall p : formula,
+    {n : nat | enum_formula n = p}.
+  Proof.
+    intros p.
+    set (seed := proj1_sig (enum_formula_for_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))).
+    exists (sum_from_0_to (rankOfFormula p + seed) + seed).
+    exact (eq_ind (rankOfFormula p, seed) (fun pr : nat * nat => enum_formula_for_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formula_for_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))) (cantor_pairing (sum_from_0_to (rankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (rankOfFormula p) seed)).
+  Qed.
 
   End ENUMERATE_FORMULAS.
 
@@ -183,7 +187,7 @@ Module FormulaNotationsOfPL.
 
   Global Declare Custom Entry pl_formula_scope.
 
-  Global Notation " $$ p $$ " := p (p custom pl_formula_scope at level 3, only parsing).
+  Global Notation " '$$' p '$$' " := p (p custom pl_formula_scope at level 3, only parsing).
 
   Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_scope at level 0, only parsing).
 
@@ -217,7 +221,7 @@ Module SemanticsOfPL.
     pvar -> value
   .
 
-  Fixpoint eval_formula (v : env) (p : formula) : value :=
+  Fixpoint eval_formula (v : env) (p : formula) {struct p} : value :=
     match p with
     | AtomF i => v i
     | ContradictionF => False

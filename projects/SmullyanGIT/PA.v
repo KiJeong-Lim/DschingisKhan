@@ -68,7 +68,7 @@ Module Tarski's_Theorem_for_Arithmetic.
 
   Section BasicSemanticsDefn.
 
-  Let VrValue : InferiorUniverse :=
+  Let VrValue : Set :=
     nat
   .
 

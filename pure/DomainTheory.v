@@ -1070,7 +1070,7 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     forall Xs : ensemble (ensemble D),
     (forall X : ensemble D, member X Xs -> isOpen_ScottTopology X) ->
     isOpen_ScottTopology (unions Xs).
-  Proof with firstorder.
+  Proof with try now firstorder.
     intros Xs H.
     split.
     - intros x y.
@@ -1089,7 +1089,7 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     isOpen_ScottTopology X1 ->
     isOpen_ScottTopology X2 ->
     isOpen_ScottTopology (intersection X1 X2).
-  Proof with firstorder.
+  Proof with try now firstorder.
     intros X1 X2 H H0.
     split.
     - intros x y.
