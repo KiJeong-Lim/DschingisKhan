@@ -36,6 +36,7 @@ coqc -Q . DschingisKhan projects/PropositionalLogic/Base.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/ConstructiveMetaTheories.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/ClassicalMetaTheories.v
 coqc -Q . DschingisKhan projects/PropositionalLogic.v
+coqc -Q . DschingisKhan projects/SmullyanGIT/PA.v
 coqc -Q . DschingisKhan projects/SmullyanGIT.v
 ```
 

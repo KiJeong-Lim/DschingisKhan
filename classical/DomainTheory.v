@@ -142,36 +142,32 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Proof with eauto with *.
     intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X sup_Y.
     assert (image_f_X_isDirected := ContinuousMapOnCpos_preservesDirected f f_continuous X X_isDirected).
+    assert (claim1 := square_up_isSupremum (image f X) image_f_X_isDirected).
+    assert (claim2 := f_sup_X_eq_square_up_image_f_X f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected).
+    assert (claim3 := square_up_isSupremum (image f X) (image_f_X_isDirected)).
     split.
-    - assert (claim1 := square_up_isSupremum (image f X) image_f_X_isDirected).
-      transitivity (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)).
+    - transitivity (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)).
       + exact (f_sup_X_eq_square_up_image_f_X f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected).
       + apply (isSupremum_unique (image f X))...
     - intros f_sup_X_eq_sup_Y.
-      assert (claim2 := f_sup_X_eq_square_up_image_f_X f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected).
-      assert (claim3 := square_up_isSupremum (image f X) (image_f_X_isDirected)).
-      assert (claim4 := proj2 (isSupremum_unique (image f X) (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)) claim3 sup_Y)).
-      apply claim4...
+      apply (proj2 (isSupremum_unique (image f X) (proj1_sig (square_up_exists (image f X) image_f_X_isDirected)) claim3 sup_Y))...
   Qed.
 
   Global Hint Resolve isSupremum_of_image_f_X_iff_f_sup_X_eq : my_hints.
 
-  Definition ContinuousMapsOnCpos_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma ContinuousMapsOnCpos_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     forall X : ensemble D,
     isDirected X ->
     forall sup_X : D,
     isSupremum sup_X X ->
-    {sup_Y : D' | isSupremum sup_Y (image f X) /\ f sup_X == sup_Y}.
+    isSupremum (f sup_X) (image f X).
   Proof.
     intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X.
-    exists (f sup_X).
-    split.
-    - apply (proj2 (isSupremum_of_image_f_X_iff_f_sup_X_eq f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X (f sup_X)))...
-      reflexivity.
-    - reflexivity.
-  Defined.
+    apply (proj2 (isSupremum_of_image_f_X_iff_f_sup_X_eq f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X (f sup_X))).
+    reflexivity.
+  Qed.
 
   Definition characterization_of_ContinuousMapsOnCpos {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
     fun f : D -> D' =>
@@ -246,12 +242,12 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     split.
     - intros f_continuous X X_isDirected.
       set (Y := image f X).
-      assert (H3 : isDirected Y) by now apply ContinuousMapOnCpos_preservesDirected.
+      assert (claim2 : isDirected Y) by now apply ContinuousMapOnCpos_preservesDirected.
       destruct (square_up_exists X X_isDirected) as [sup_X sup_X_isSupremum_of_X].
-      destruct (ContinuousMapsOnCpos_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X) as [sup_Y [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]].
-      exists sup_X, sup_Y...
+      assert (claim3 := ContinuousMapsOnCpos_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X).
+      exists sup_X, (f sup_X)...
     - intros f_property.
-      assert (claim2 := derive_monotonicity_from_characterization_of_ContinuousMapsOnCpos f f_preserves_eq f_property).
+      assert (claim4 := derive_monotonicity_from_characterization_of_ContinuousMapsOnCpos f f_preserves_eq f_property).
       intros O O_isOpen.
       split.
       + intros x1 x2 x_in_preimage_f_O x_le_y.
@@ -262,17 +258,17 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         destruct (f_property X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_X f_sup_X'_eq_sup_Y']]]].
         assert (sup_X_eq_sup_X' : sup_X == sup_X') by now apply (isSupremum_unique X).
         assert (f_sup_X_in_O : member (f sup_X) O) by now apply in_preimage_iff.
-        assert (claim3 := show_image_f_X_isDirected_if_f_satisfies_characterization_of_ContinuousMapsOnCpos_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
-        assert (claim4 : sup_Y' == f sup_X).
+        assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_characterization_of_ContinuousMapsOnCpos_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
+        assert (claim6 : sup_Y' == f sup_X).
         { transitivity (f sup_X').
           - symmetry...
           - apply f_preserves_eq...
         }
-        assert (claim5 : nonempty (intersection (image f X) O)).
-        { apply (proj2 O_isOpen (image f X) claim3 (f sup_X))...
+        assert (claim7 : nonempty (intersection (image f X) O)).
+        { apply (proj2 O_isOpen (image f X) claim5 (f sup_X))...
           apply (isSupremum_unique (image f X) sup_Y' sup_Y'_isSupremum_of_image_f_X)...
         }
-        destruct claim5 as [y y_in_image_f_X_and_O].
+        destruct claim7 as [y y_in_image_f_X_and_O].
         apply in_intersection_iff in y_in_image_f_X_and_O.
         destruct y_in_image_f_X_and_O as [y_in_image_f_X y_in_O].
         apply in_image_iff in y_in_image_f_X.
@@ -1516,26 +1512,21 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
           apply (IH (f1, x1) (f2, x2)).
           split...
     }
+    assert (claim1 : forall n : nat, isMonotonicMap (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists))).
+    { intros n f1 f2 f1_le_f2.
+      apply (iteration_isMonotonicMap n (f1, proj1_sig bottom_exists) (f2, proj1_sig bottom_exists)).
+      split...
+    }
     induction n as [| n IH].
     - apply (bot_of_squigs_isContinuous).
     - apply the_main_reason_for_introducing_ScottTopology.
-      + apply MonotonicMap_preservesSetoid.
-        intros f1 f2 Hle_f.
-        apply (iteration_isMonotonicMap (S n) (f1, proj1_sig bottom_exists) (f2, proj1_sig bottom_exists)).
-        split...
+      + apply MonotonicMap_preservesSetoid...
       + intros F F_isDirected.
         set (sup_F := square_up_of_squigs F F_isDirected).
         assert (sup_F_isSupremum : isSupremum sup_F F) by now apply square_up_of_squigs_isSupremum.
         set (sup_Y := proj1_sig sup_F (iteration n (proj1_sig sup_F) (proj1_sig bottom_exists))).
         set (Y := image (fun f : D ~> D => iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)) F).
-        assert (Y_isDirected : isDirected Y).
-        { apply MonotonicMap_preservesDirected.
-          - intros f1 f2 Hle_f.
-            apply (iteration_isMonotonicMap (S n) (f1, proj1_sig bottom_exists) (f2, proj1_sig bottom_exists)).
-            split...
-          - exact F_isDirected.
-        }
-        destruct (ContinuousMapsOnCpos_preservesSupremum ((fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists))) IH F F_isDirected sup_F sup_F_isSupremum) as [sup_X [sup_X_isSupremum Heq_sup_X]].
+        assert (Y_isDirected : isDirected Y) by now apply MonotonicMap_preservesDirected.
         set (X := image (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) F).
         assert (X_isDirected : isDirected X).
         { apply MonotonicMap_preservesDirected.
@@ -1543,13 +1534,14 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             exact IH.
           - exact F_isDirected.
         }
+        set (sup_X := iteration n (proj1_sig sup_F) (proj1_sig bottom_exists)).
+        assert (sup_X_isSupremum : isSupremum sup_X X) by exact (ContinuousMapsOnCpos_preservesSupremum (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) IH F F_isDirected sup_F sup_F_isSupremum).
         assert (sup_X_eq_iteration_n_sup_F_bot : iteration n (proj1_sig sup_F) (proj1_sig bottom_exists) == sup_X) by exact (proj1 (isSupremum_of_image_f_X_iff_f_sup_X_eq (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) IH F F_isDirected sup_F sup_F_isSupremum sup_X) sup_X_isSupremum).
         assert (sup_F_sup_X_eq_sup_Y : proj1_sig sup_F sup_X == sup_Y).
         { apply MonotonicMap_preservesSetoid.
-          - apply ContinuousMapOnCpos_isMonotonic.
-            apply (proj2_sig sup_F).
+          - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig sup_F) (proj2_sig sup_F)).
           - apply (isSupremum_unique X).
-            + apply sup_X_isSupremum.
+            + exact sup_X_isSupremum.
             + apply (proj2 (isSupremum_unique X sup_X sup_X_isSupremum (iteration n (proj1_sig sup_F) (proj1_sig bottom_exists))))...
         }
         assert (sup_F_sup_X_isSupremum : isSupremum (proj1_sig sup_F sup_X) (unions (image (fun f_i : D ~> D => image (fun x : D => proj1_sig f_i x) X) F))) by exact (Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F F F_isDirected X X_isDirected sup_X sup_X_isSupremum).
@@ -1589,8 +1581,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             + transitivity (proj1_sig f3 (iteration n (proj1_sig f2) (proj1_sig bottom_exists))).
               * apply f1_le_f3.
               * apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f3) (proj2_sig f3)).
-                apply (iteration_isMonotonicMap n (f2, proj1_sig bottom_exists) (f3, proj1_sig bottom_exists)).
-                split...
+                apply claim1...
             + apply y_is_an_upper_bound...
         }
   Qed.

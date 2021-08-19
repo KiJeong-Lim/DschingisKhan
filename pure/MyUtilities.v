@@ -5,6 +5,8 @@ Require Import Coq.micromega.Lia.
 
 Module EqFacts.
 
+  Import EqNotations.
+
   Definition RuleJ {A : Type} (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
     fun x : A =>
     fun y : A =>
@@ -38,7 +40,7 @@ Module EqFacts.
     fun f : A -> B =>
     fun x1 : A =>
     fun x2 : A =>
-    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
+    eq_ind x1 (fun x : A => f x1 = f x) (eq_reflexivity (f x1)) x2
   .
 
 End EqFacts.
@@ -49,7 +51,7 @@ Module MyUtilities.
 
   Global Create HintDb my_hints.
 
-  Section ARITH_WITHOUT_LIA.
+  Section ARITH_WITHOUT_SOLVER.
 
   Definition S_eq_0_elim {A : Type} : forall n : nat, S n = O -> A :=
     fun n : nat =>
@@ -291,7 +293,7 @@ Module MyUtilities.
     end
   .
 
-  End ARITH_WITHOUT_LIA.
+  End ARITH_WITHOUT_SOLVER.
 
   Section DecidableProofIrrelevance.
 

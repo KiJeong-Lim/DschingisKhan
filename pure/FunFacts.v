@@ -2,8 +2,6 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module FunFacts.
 
-  Set Primitive Projections.
-
   Import EqFacts MyUtilities.
 
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
@@ -13,7 +11,7 @@ Module FunFacts.
     }
   .
 
-  Record RETRACT_COND (A : Prop) (B : Prop) : Prop :=
+  Record RETRACT_CONDITIONAL (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
     ; _inv2 : RETRACT A B -> forall a : A, _j2 (_i2 a) = a
@@ -25,7 +23,7 @@ Module FunFacts.
   | FALSE_BB : BB
   .
 
-  Local Hint Constructors RETRACT RETRACT_COND : core.
+  Local Hint Constructors RETRACT RETRACT_CONDITIONAL : core.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -98,7 +96,7 @@ Module FunFacts.
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
   Let CHOICE {A : Prop} {B : Prop} :
-    forall r : RETRACT_COND A B,
+    forall r : RETRACT_CONDITIONAL A B,
     RETRACT A B ->
     forall a : A,
     _j2 A B r (_i2 A B r a) = a.
@@ -114,14 +112,15 @@ Module FunFacts.
     BOOL
   .
 
-  Let COND :
+  Let THE_CONDITION_HOLDS :
     forall A : Prop,
     forall B : Prop,
-    RETRACT_COND (POW A) (POW B).
+    RETRACT_CONDITIONAL (POW A) (POW B).
   Proof with tauto.
     intros A B.
-    destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [[i j inv] | H].
-    - exists i j...
+    destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [H_yes | H_no].
+    - destruct H_yes as [i j inv].
+      exists i j...
     - exists (fun pa : POW A => fun b : B => FALSE) (fun pb : POW B => fun a : A => FALSE)...
   Qed.
 
@@ -133,8 +132,8 @@ Module FunFacts.
   Let r : POW U -> U :=
     fun p : POW U =>
     fun P : Prop =>
-    let LEFT : POW U -> POW P := _j2 (POW P) (POW U) (COND P U) in
-    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (COND U U) in
+    let LEFT : POW U -> POW P := _j2 (POW P) (POW U) (THE_CONDITION_HOLDS P U) in
+    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (THE_CONDITION_HOLDS U U) in
     LEFT (RIGHT p)
   .
 
@@ -211,7 +210,7 @@ Module FunFacts.
       }
       exists n.
       split.
-      + apply phi_n.
+      + exact phi_n.
       + intros m phi_m.
         destruct (n_le_m_or_m_lt_n_for_n_and_m n m) as [n_le_m | m_lt_n]; firstorder.
     - destruct (exclusive_middle (exists m : nat, isMinimal m)); firstorder.
@@ -245,11 +244,11 @@ Module FunFacts.
   Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russel :
     TRUE_BB = FALSE_BB.
   Proof with eauto.
-    assert (BB_inhabited : inhabited BB) by now constructor; left.
+    assert (BB_inhabited : inhabited BB) by repeat constructor.
     destruct Y_COMBINATOR_FOR_BB as [Y Y_spec].
     set (RUSSEL := Y NOT_BB).
-    assert (claim1 : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
-    unfold NOT_BB in claim1.
+    assert (RUSSEL_PARADOX : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
+    unfold NOT_BB in RUSSEL_PARADOX.
     destruct RUSSEL...
   Qed.
 

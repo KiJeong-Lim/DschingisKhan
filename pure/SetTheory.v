@@ -416,9 +416,8 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Unfold isTransitiveSet : aczel_hint.
 
-  Variant isOrdinal : AczelSet -> Prop :=
+  Variant isOrdinal (alpha : AczelSet) : Prop :=
   | transitive_set_of_transtive_sets_isOrdinal :
-    forall alpha : AczelSet,
     isTransitiveSet alpha ->
     (forall beta : AczelSet, elem beta alpha -> isTransitiveSet beta) ->
     isOrdinal alpha
