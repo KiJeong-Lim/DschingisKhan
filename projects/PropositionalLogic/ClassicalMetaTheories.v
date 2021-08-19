@@ -536,11 +536,12 @@ Module CompletenessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     - exact H_yes.
     - assert (claim1 : ~ insert (NegationF c) hs |- ContradictionF).
       { intros H_inconsistent.
-        apply H_no, NegationE, H_inconsistent.
+        contradiction H_no.
+        apply NegationE, H_inconsistent.
       }
       assert (claim2 : isFilter (MaximalConsistentSet (insert (NegationF c) hs))) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
       assert (claim3 := ModelExistsIfConsistent (insert (NegationF c) hs) claim1).
-      assert (claim4 := theorem_of_1_3_10 (insert (NegationF c) hs)).
+      destruct (theorem_of_1_3_10 (insert (NegationF c) hs)) as [claim4 [claim5 [claim6 [claim7 claim8]]]].
       apply (completeness_theorem_prototype hs c H_entails (makeModelFromMaximalConsistentSet (MaximalConsistentSet (insert (NegationF c) hs)))).
       + unfold equiconsistent in *.
         transitivity (inconsistent (MaximalConsistentSet (insert (NegationF c) hs)))...

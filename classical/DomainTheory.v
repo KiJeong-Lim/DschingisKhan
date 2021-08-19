@@ -1535,7 +1535,6 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             split...
           - exact F_isDirected.
         }
-        enough (it_is_sufficient_to_show : isSupremum sup_Y Y) by now exists sup_F, sup_Y.
         destruct (ContinuousMapsOnCpos_preservesSupremum ((fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists))) IH F F_isDirected sup_F sup_F_isSupremum) as [sup_X [sup_X_isSupremum Heq_sup_X]].
         set (X := image (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) F).
         assert (X_isDirected : isDirected X).
@@ -1554,6 +1553,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             + apply (proj2 (isSupremum_unique X sup_X sup_X_isSupremum (iteration n (proj1_sig sup_F) (proj1_sig bottom_exists))))...
         }
         assert (sup_F_sup_X_isSupremum : isSupremum (proj1_sig sup_F sup_X) (unions (image (fun f_i : D ~> D => image (fun x : D => proj1_sig f_i x) X) F))) by exact (Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F F F_isDirected X X_isDirected sup_X sup_X_isSupremum).
+        enough (it_is_sufficient_to_show : isSupremum sup_Y Y) by now exists sup_F, sup_Y.
         intros y.
         split.
         { intros le_y y0 y0_in.

@@ -95,7 +95,7 @@ Module SyntaxOfPL.
     (unfold enum_formula_aux); (repeat enum_formula_aux_is_good_tac_aux1); (repeat enum_formula_aux_is_good_tac_aux2); (eauto)
   .
 
-  Definition enum_formula_aux_is_good :
+  Lemma enum_formula_aux_is_good :
     forall p : formula,
     forall rank : nat,
     rankOfFormula p <= rank ->
@@ -158,7 +158,7 @@ Module SyntaxOfPL.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
-  Defined.
+  Qed.
 
   Definition enum_formula : nat -> formula :=
     fun n : nat =>
@@ -238,7 +238,7 @@ Module SemanticsOfPL.
   Lemma extend_entails {hs1 : ensemble formula} {c : formula} :
     hs1 |= c ->
     forall hs2 : ensemble formula,
-    hs1 \subseteq hs2 ->
+    isSubsetOf hs1 hs2 ->
     hs2 |= c.
   Proof with eauto with *.
     intros H_entails hs2 H_incl...
