@@ -291,9 +291,13 @@ Module SoundnessOfPropositionLogic. (* Thanks to Taeseung Sohn *)
     inversion H4; subst...
   Qed.
 
-  Theorem the_propositional_soundness_theorem (hs : ensemble formula) (c : formula) (H_infers : hs |- c) :
+  Theorem the_propositional_soundness_theorem :
+    forall hs : ensemble formula,
+    forall c : formula,
+    hs |- c ->
     hs |= c.
   Proof with try now firstorder.
+    intros hs c H_infers.
     induction H_infers.
     - apply (ByAssumption_preserves h)...
     - apply (ContradictionI_preserves a)...

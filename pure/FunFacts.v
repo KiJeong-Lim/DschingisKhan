@@ -2,6 +2,8 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module FunFacts.
 
+  Set Primitive Projections.
+
   Import EqFacts MyUtilities.
 
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
@@ -39,7 +41,7 @@ Module FunFacts.
 
   Section EQ_RECT_EQ_implies_STREICHER_K.
 
-  Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Theorem eq_rect_eq_implies_Streicher_K (A : Type) :
     forall x : A,
@@ -53,7 +55,7 @@ Module FunFacts.
     intros phi phi_eq_val eq_val0.
     replace eq_val0 with eq_val.
     - apply phi_eq_val.
-    - rewrite (EQ_RECT_EQ A x (eq x) eq_val eq_val0).
+    - rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
       destruct eq_val0.
       reflexivity.
   Qed.
@@ -62,7 +64,7 @@ Module FunFacts.
 
   Section EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
 
-  Hypothesis EQ_RECT_EQ : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Context (A : Type) (B : A -> Type).
 
@@ -78,19 +80,22 @@ Module FunFacts.
     RuleJ phi'
   .
 
-  Definition eq_rect_eq_implies_existT_inj2_eq : forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
-    fun x : A =>
-    fun y1 : B x =>
-    fun y2 : B x =>
-    fun H : existT B x y1 = existT B x y2 =>
-    phi (existT B x y1) (existT B x y2) H (fun H0 : x = x => eq_symmetry y2 (eq_rect x B y2 x H0) (EQ_RECT_EQ A x B y2 H0)) eq_refl
-  .
+  Theorem eq_rect_eq_implies_existT_inj2_eq :
+    forall x : A,
+    forall y1 : B x,
+    forall y2 : B x,
+    existT B x y1 = existT B x y2 ->
+    y1 = y2.
+  Proof.
+    intros x y1 y2 Heq.
+    exact (phi (existT B x y1) (existT B x y2) Heq (fun H : x = x => eq_symmetry y2 (eq_rect x B y2 x H) (eq_rect_eq A x B y2 H)) (eq_reflexivity (projT1 (existT B x y1)))).
+  Qed.
 
   End EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
 
   Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
-  Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
   Let CHOICE {A : Prop} {B : Prop} :
     forall r : RETRACT_COND A B,
@@ -115,7 +120,7 @@ Module FunFacts.
     RETRACT_COND (POW A) (POW B).
   Proof with tauto.
     intros A B.
-    destruct (EXCLUSIVE_MIDDLE (RETRACT (POW A) (POW B))) as [[i j inv] | H].
+    destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [[i j inv] | H].
     - exists i j...
     - exists (fun pa : POW A => fun b : B => FALSE) (fun pb : POW B => fun a : A => FALSE)...
   Qed.
@@ -139,7 +144,7 @@ Module FunFacts.
 
   Let NOT : BOOL -> BOOL :=
     fun b : BOOL =>
-    match (EXCLUSIVE_MIDDLE (b = TRUE)) with
+    match (exclusive_middle (b = TRUE)) with
     | or_introl H_yes => FALSE
     | or_intror H_no => TRUE
     end
@@ -164,20 +169,20 @@ Module FunFacts.
   Theorem exclusive_middle_implies_proof_irrelevance :
     TRUE = FALSE.
   Proof with tauto.
-    destruct (EXCLUSIVE_MIDDLE (RUSSEL = TRUE)) as [H | H].
+    destruct (exclusive_middle (RUSSEL = TRUE)) as [H | H].
     - assert (claim1 : TRUE = NOT TRUE) by now rewrite <- H; exact PARADOX_OF_BERARDI.
       unfold NOT in claim1.
-      destruct (EXCLUSIVE_MIDDLE (TRUE = TRUE)) as [H_yes | H_no]...
+      destruct (exclusive_middle (TRUE = TRUE)) as [H_yes | H_no]...
     - assert (claim1 : NOT RUSSEL <> TRUE) by now rewrite <- PARADOX_OF_BERARDI; exact H.
       unfold NOT in claim1. 
-      destruct (EXCLUSIVE_MIDDLE (RUSSEL = TRUE)) as [H_yes | H_no]...
+      destruct (exclusive_middle (RUSSEL = TRUE)) as [H_yes | H_no]...
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
   Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
-  Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
   Context (phi : nat -> Prop).
 
@@ -192,7 +197,7 @@ Module FunFacts.
     exists n_min : nat, isMinimal n_min.
   Proof with eauto.
     intros n phi_n.
-    destruct (EXCLUSIVE_MIDDLE (forall x : nat, ~ isMinimal x)) as [H_yes | H_no].
+    destruct (exclusive_middle (forall x : nat, ~ isMinimal x)) as [H_yes | H_no].
     - assert (claim1 : forall x : nat, x < n -> ~ phi n).
       { intros x x_lt_n.
         pattern n.
@@ -209,19 +214,19 @@ Module FunFacts.
       + apply phi_n.
       + intros m phi_m.
         destruct (n_le_m_or_m_lt_n_for_n_and_m n m) as [n_le_m | m_lt_n]; firstorder.
-    - destruct (EXCLUSIVE_MIDDLE (exists m : nat, isMinimal m)); firstorder.
+    - destruct (exclusive_middle (exists m : nat, isMinimal m)); firstorder.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
   Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSEL.
 
-  Hypothesis UNTYPED_LAMBDA_CALCULUS_FOR_BB : RETRACT (BB -> BB) BB.
+  Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
 
   Let Y_COMBINATOR_FOR_BB :
     exists Y : (BB -> BB) -> BB, forall f : BB -> BB, Y f = f (Y f).
   Proof with try easy.
-    destruct UNTYPED_LAMBDA_CALCULUS_FOR_BB as [lam_BB app_BB beta_BB].
+    destruct untyped_lambda_calculus_for_BB as [lam_BB app_BB beta_BB].
     set (Y_com := fun f : BB -> BB => app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x)))).
     exists Y_com.
     intros f.

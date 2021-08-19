@@ -51,7 +51,7 @@ Module MyUtilities.
 
   Section ARITH_WITHOUT_LIA.
 
-  Definition S_eq_0_elim {A : Type} : forall n : nat, S n = 0 -> A :=
+  Definition S_eq_0_elim {A : Type} : forall n : nat, S n = O -> A :=
     fun n : nat =>
     fun H : S n = O =>
     False_rect A (eq_ind O (fun x : nat => if Nat.eqb O x then True else False) I (S n) (eq_symmetry (S n) O H))
@@ -63,7 +63,7 @@ Module MyUtilities.
     eq_congruence Nat.pred (S n1) (S n2)
   .
 
-  Definition lt_elim_n_lt_0 {A : Type} : forall n : nat, n < 0 -> A :=
+  Definition lt_elim_n_lt_0 {A : Type} : forall n : nat, n < O -> A :=
     fun n : nat =>
     fun H : S n <= O =>
     False_rect A (le_ind (S n) (fun x : nat => if Nat.eqb O x then False else True) I (fun m : nat => fun H0 : S n <= m => fun H1 : if Nat.eqb O m then False else True => I) O H)
