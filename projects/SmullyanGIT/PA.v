@@ -7,7 +7,7 @@ Require Import DschingisKhan.classical.ExclusiveMiddle.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module Tarski's_Theorem_for_Arithmetic.
+Module Tarski's_Theorem_for_Arithmetic. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond M. Smullyan" *)
 
   Import ListNotations MyUtilities.
 
@@ -408,12 +408,44 @@ Module Tarski's_Theorem_for_Arithmetic.
 
   End BasicMetaTheories.
 
+  Section Language_mathcalL_E.
+
+  Inductive Alphabet : Set :=
+  | alphabet1 : Alphabet
+  | alphabet2 : Alphabet
+  | alphabet3 : Alphabet
+  | alphabet4 : Alphabet
+  | alphabet5 : Alphabet
+  | alphabet6 : Alphabet
+  | alphabet7 : Alphabet
+  | alphabet8 : Alphabet
+  | alphabet9 : Alphabet
+  | alphabet10 : Alphabet
+  | alphabet11 : Alphabet
+  | alphabet12 : Alphabet
+  | alphabet13 : Alphabet
+  .
+
+  Lemma Alphabet_eq_dec :
+    forall x : Alphabet,
+    forall y : Alphabet,
+    {x = y} + {x <> y}.
+  Proof with try ((left; congruence) || (right; congruence)).
+    induction x; destruct y...
+  Qed.
+
+  Definition String : Set :=
+    list Alphabet
+  .
+
+  End Language_mathcalL_E.
+
 End Tarski's_Theorem_for_Arithmetic.
 
-Module The_Incompleteness_of_Peano_Arithmetic_With_Exponentation.
+Module The_Incompleteness_of_Peano_Arithmetic_With_Exponentation. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond M. Smullyan" *)
 
 End The_Incompleteness_of_Peano_Arithmetic_With_Exponentation.
 
-Module Arithmetic_Without_the_Exponential.
+Module Arithmetic_Without_the_Exponential. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond M. Smullyan" *)
 
 End Arithmetic_Without_the_Exponential.

@@ -112,7 +112,7 @@ Module FunFacts.
     BOOL
   .
 
-  Let THE_CONDITION_HOLDS :
+  Let GET_RETRACT_CONDITIONAL_POW_A_POW_B :
     forall A : Prop,
     forall B : Prop,
     RETRACT_CONDITIONAL (POW A) (POW B).
@@ -132,8 +132,8 @@ Module FunFacts.
   Let r : POW U -> U :=
     fun p : POW U =>
     fun P : Prop =>
-    let LEFT : POW U -> POW P := _j2 (POW P) (POW U) (THE_CONDITION_HOLDS P U) in
-    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (THE_CONDITION_HOLDS U U) in
+    let LEFT : POW U -> POW P := _j2 (POW P) (POW U) (GET_RETRACT_CONDITIONAL_POW_A_POW_B P U) in
+    let RIGHT : POW U -> POW U := _i2 (POW U) (POW U) (GET_RETRACT_CONDITIONAL_POW_A_POW_B U U) in
     LEFT (RIGHT p)
   .
 

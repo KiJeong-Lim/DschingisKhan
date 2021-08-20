@@ -71,8 +71,6 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     andB b1 b2 == b1
   .
 
-  Global Hint Unfold leCBA : cba_hints.
-
   Global Instance leCBA_Reflexive {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
     Reflexive (@leCBA B B_isSetoid B_requiresCBA).
   Proof with eauto with *.
@@ -116,6 +114,8 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   .
 
   Section Section2_of_Chapter1.
+
+  Local Hint Unfold leCBA : core.
 
   Context {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid}.
 
