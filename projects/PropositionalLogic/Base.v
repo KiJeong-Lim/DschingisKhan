@@ -20,7 +20,7 @@ Module SyntaxOfPL.
   | BiconditionalF : forall p1 : formula, forall p2 : formula, formula
   .
 
-  Definition eq_formula_dec :
+  Lemma eq_formula_dec :
     forall p1 : formula,
     forall p2 : formula,
     {p1 = p2} + {p1 <> p2}.
@@ -32,7 +32,7 @@ Module SyntaxOfPL.
     - destruct (IHp1_1 p2_1); destruct (IHp1_2 p2_2)...
     - destruct (IHp1_1 p2_1); destruct (IHp1_2 p2_2)...
     - destruct (IHp1_1 p2_1); destruct (IHp1_2 p2_2)...
-  Defined.
+  Qed.
 
   Section ENUMERATE_FORMULAS.
 
@@ -48,7 +48,7 @@ Module SyntaxOfPL.
     end
   .
 
-  Fixpoint enum_formula_for_rank (rank : nat) {struct rank} : nat -> formula :=
+  Fixpoint enum_formulas_of_rank (rank : nat) {struct rank} : nat -> formula :=
     match rank with
     | O => AtomF
     | S rank' =>
@@ -57,50 +57,50 @@ Module SyntaxOfPL.
       let piece : nat := snd (cantor_pairing seed0) in
       match piece with
       | 0 => ContradictionF
-      | 1 => NegationF (enum_formula_for_rank rank' seed1) 
+      | 1 => NegationF (enum_formulas_of_rank rank' seed1) 
       | 2 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ConjunctionF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
+        ConjunctionF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
       | 3 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        DisjunctionF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
+        DisjunctionF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
       | 4 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ImplicationF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
+        ImplicationF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
       | 5 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        BiconditionalF (enum_formula_for_rank rank' seed2) (enum_formula_for_rank rank' seed3)
+        BiconditionalF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
       | S (S (S (S (S (S i))))) => AtomF i
       end
     end
   .
 
-  Local Ltac enum_formula_for_rank_is_good_tac_aux1 :=
+  Local Ltac enum_formulas_of_rank_is_good_tac_aux1 :=
     match goal with
     | H : cantor_pairing ?seed = ?rhs |- _ => rewrite H; simpl
     end
   .
 
-  Local Ltac enum_formula_for_rank_is_good_tac_aux2 :=
+  Local Ltac enum_formulas_of_rank_is_good_tac_aux2 :=
     match goal with
-    | H : enum_formula_for_rank ?rank ?seed = ?p |- _ => rewrite <- H
+    | H : enum_formulas_of_rank ?rank ?seed = ?p |- _ => rewrite <- H
     end
   .
 
-  Local Ltac enum_formula_for_rank_is_good_tac :=
-    (unfold enum_formula_for_rank); (repeat enum_formula_for_rank_is_good_tac_aux1); (repeat enum_formula_for_rank_is_good_tac_aux2); (eauto)
+  Local Ltac enum_formulas_of_rank_is_good_tac :=
+    (unfold enum_formulas_of_rank); (repeat enum_formulas_of_rank_is_good_tac_aux1); (repeat enum_formulas_of_rank_is_good_tac_aux2); (eauto)
   .
 
-  Lemma enum_formula_for_rank_is_good :
+  Lemma enum_formulas_of_rank_is_good :
     forall p : formula,
     forall rank : nat,
     rankOfFormula p <= rank ->
-    {seed : nat | enum_formula_for_rank rank seed = p}.
-  Proof with enum_formula_for_rank_is_good_tac.
+    {seed : nat | enum_formulas_of_rank rank seed = p}.
+  Proof with enum_formulas_of_rank_is_good_tac.
     assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_is x y z)).
     induction p; simpl.
     { intros [| r'] H.
@@ -164,7 +164,7 @@ Module SyntaxOfPL.
     fun n : nat =>
     let rank : nat := fst (cantor_pairing n) in
     let seed : nat := snd (cantor_pairing n) in
-    enum_formula_for_rank rank seed
+    enum_formulas_of_rank rank seed
   .
 
   Lemma formula_is_enumerable :
@@ -172,9 +172,9 @@ Module SyntaxOfPL.
     {n : nat | enum_formula n = p}.
   Proof.
     intros p.
-    set (seed := proj1_sig (enum_formula_for_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))).
+    set (seed := proj1_sig (enum_formulas_of_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))).
     exists (sum_from_0_to (rankOfFormula p + seed) + seed).
-    exact (eq_ind (rankOfFormula p, seed) (fun pr : nat * nat => enum_formula_for_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formula_for_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))) (cantor_pairing (sum_from_0_to (rankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (rankOfFormula p) seed)).
+    exact (eq_ind (rankOfFormula p, seed) (fun pr : nat * nat => enum_formulas_of_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formulas_of_rank_is_good p (rankOfFormula p) (le_n (rankOfFormula p)))) (cantor_pairing (sum_from_0_to (rankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (rankOfFormula p) seed)).
   Qed.
 
   End ENUMERATE_FORMULAS.

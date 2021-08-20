@@ -756,8 +756,6 @@ Module MyUtilities.
 
   End SIMPLE_LOGIC.
 
-  Section BORING.
-
   Variant AckermannFuncSpec (ack : nat -> nat -> nat) : Prop :=
   | AckermannCharacterization :
     (forall n : nat, ack 0 n = n + 1) ->
@@ -1077,8 +1075,6 @@ Module MyUtilities.
     assert (claim2 := in_in_remove A_eq_dec)...
   Qed.
 
-  End BORING.
-
   Definition case_eqrefl {A : Type} : forall x : A, forall y : A, forall H : x = y, forall phi : forall x0 : A, x0 = y -> Type, phi y eq_refl -> phi x H :=
     fun x : A =>
     fun y : A =>
@@ -1119,7 +1115,7 @@ Module MyUtilities.
   Definition elemIndex {A : Type} : forall x : A, (forall x' : A, {x = x'} + {x <> x'}) -> forall xs : list A, option (FinSet (length xs)) :=
     fun x : A =>
     fun eq_dec : forall x' : A, {x = x'} + {x <> x'} =>
-    fix elemIndex_fix (xs : list A) : option (FinSet (length xs)) :=
+    fix elemIndex_fix (xs : list A) {struct xs} : option (FinSet (length xs)) :=
     match xs as xs0 return option (FinSet (length xs0)) with
     | [] => None
     | x' :: xs' => if eq_dec x' then Some (FZ (length xs')) else fmapMaybe (FS (length xs')) (elemIndex_fix xs')
