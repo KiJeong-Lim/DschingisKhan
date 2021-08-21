@@ -149,26 +149,26 @@ Module FunFacts.
 
   Local Notation " ⦃ x | phi ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => phi)) (at level 0, no associativity) : type_scope.
 
-  Let MEMBER : UNIV -> UNIV -> BOOL :=
+  Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BOOL :=
+    fun X : UNIV =>
     fun x : UNIV =>
-    fun y : UNIV =>
-    y UNIV x
+    X UNIV x
   .
 
-  Local Notation " x ∈ X " := (MEMBER x X) (at level 70, no associativity) : type_scope.
+  Local Notation " x ∈ X " := (HAS_AS_AN_ELEMENT X x) (at level 70, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION_SPEC :
     forall phi : UNIV -> BOOL,
     (fun z : UNIV => z ∈ ⦃ x | x `satisfies` phi ⦄) = phi.
   Proof with eauto.
-    unfold SET_BUILDER_NOTATION, MEMBER, SATISFIES.
+    unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT, SATISFIES.
     destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
   Let RETRACT_POW_UNIV_UNIV :
     RETRACT (POW UNIV) UNIV.
   Proof with eauto.
-    exists SET_BUILDER_NOTATION (fun X : UNIV => fun x : UNIV => x ∈ X)...
+    exists SET_BUILDER_NOTATION HAS_AS_AN_ELEMENT...
   Qed.
 
   Let NOT : BOOL -> BOOL :=
@@ -188,7 +188,7 @@ Module FunFacts.
   Proof with tauto.
     unfold NOT.
     intros b.
-    destruct (exclusive_middle (b = TRUE))...
+    destruct (exclusive_middle (b = TRUE)); simpl...
   Qed.
 
   Let NOT_SPEC2 :
@@ -198,7 +198,7 @@ Module FunFacts.
   Proof with tauto.
     unfold NOT.
     intros b.
-    destruct (exclusive_middle (b = TRUE))...
+    destruct (exclusive_middle (b = TRUE)); simpl...
   Qed.
 
   Let R : UNIV :=
@@ -212,7 +212,7 @@ Module FunFacts.
   Let PARADOX_OF_BERARDI :
     RUSSEL = ¬ RUSSEL.
   Proof with eauto.
-    enough (claim1 : RUSSEL = (R `satisfies` fun x : UNIV => ¬ (x ∈ x))) by exact claim1.
+    enough (claim1 : RUSSEL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact claim1.
     replace (fun x : UNIV => ¬ (x ∈ x)) with (R UNIV)...
   Qed.
 
