@@ -131,6 +131,12 @@ Module FunFacts.
     POW P
   .
 
+  Let satisfies : UNIV -> (UNIV -> BOOL) -> BOOL :=
+    fun x : UNIV =>
+    fun P : UNIV -> BOOL =>
+    P x
+  .
+
   Let SET_BUILDER_NOTATION : (UNIV -> BOOL) -> UNIV :=
     fun x : POW UNIV =>
     fun P : Prop =>
@@ -144,14 +150,14 @@ Module FunFacts.
   Let MEMBER : UNIV -> (UNIV -> BOOL) :=
     fun x : UNIV =>
     fun y : UNIV =>
-    x UNIV y
+    y UNIV x
   .
 
   Local Notation " x ∈ y " := (MEMBER x y) (at level 70, no associativity) : type_scope.
 
   Let MEMBER_SET_BUILDER_NOTATION_id :
     forall P : UNIV -> BOOL,
-    MEMBER (SET_BUILDER_NOTATION P) = P.
+    (fun x : UNIV => x ∈ ⦃ y | satisfies y P ⦄) = P.
   Proof with eauto.
     unfold SET_BUILDER_NOTATION, MEMBER.
     destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) as [lam_UNIV app_UNIV beta_UNIV].
@@ -161,7 +167,7 @@ Module FunFacts.
   Let RETRACT_POW_UNIV_UNIV :
     RETRACT (POW UNIV) UNIV.
   Proof.
-    exists SET_BUILDER_NOTATION MEMBER.
+    exists SET_BUILDER_NOTATION (fun x : UNIV => fun y : UNIV => y ∈ x).
     exact MEMBER_SET_BUILDER_NOTATION_id.
   Qed.
 
@@ -186,7 +192,6 @@ Module FunFacts.
   Let PARADOX_OF_BERARDI :
     RUSSEL = ¬ RUSSEL.
   Proof with eauto.
-    set (satisfies := fun x : UNIV => fun P : UNIV -> BOOL => P x).
     enough (claim1 : RUSSEL = satisfies R (fun x : UNIV => ¬ x ∈ x)) by exact claim1.
     replace (fun x : UNIV => ¬ x ∈ x) with (R UNIV)...
   Qed.
