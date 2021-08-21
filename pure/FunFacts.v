@@ -133,11 +133,11 @@ Module FunFacts.
 
   Let SATISFIES : UNIV -> (UNIV -> BOOL) -> BOOL :=
     fun x : UNIV =>
-    fun P : UNIV -> BOOL =>
-    P x
+    fun phi : UNIV -> BOOL =>
+    phi x
   .
 
-  Local Notation " x `satisfies` P " := (SATISFIES x P) (at level 60, no associativity) : type_scope.
+  Local Notation " x `satisfies` phi " := (SATISFIES x phi) (at level 60, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION : (UNIV -> BOOL) -> UNIV :=
     fun x : POW UNIV =>
@@ -150,12 +150,12 @@ Module FunFacts.
   Local Notation " ⦃ x | phi ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => phi)) (at level 0, no associativity) : type_scope.
 
   Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BOOL :=
-    fun X : UNIV =>
     fun x : UNIV =>
-    X UNIV x
+    fun z : UNIV =>
+    x UNIV z
   .
 
-  Local Notation " x ∈ X " := (HAS_AS_AN_ELEMENT X x) (at level 70, no associativity) : type_scope.
+  Local Notation " z ∈ x " := (HAS_AS_AN_ELEMENT x z) (at level 70, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION_SPEC :
     forall phi : UNIV -> BOOL,
@@ -179,7 +179,7 @@ Module FunFacts.
     end
   .
 
-  Local Notation " ¬ b " := (NOT b) (at level 60, right associativity) : type_scope.
+  Local Notation " ¬ b " := (NOT b) (at level 55, right associativity) : type_scope.
 
   Let NOT_SPEC1 :
     forall b : BOOL,
@@ -234,20 +234,21 @@ Module FunFacts.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
-  Context (phi : nat -> Prop).
-
-  Let isMinimal : nat -> Prop :=
+  Let isMinimal : nat -> (nat -> Prop) -> Prop :=
     fun n : nat =>
+    fun phi : nat -> Prop =>
     phi n /\ (forall m : nat, phi m -> n <= m)
   .
+
+  Context (phi : nat -> Prop).
 
   Theorem exclusive_middle_implies_unrestricted_minimization :
     forall n : nat,
     phi n ->
-    exists n_min : nat, isMinimal n_min.
+    exists n_min : nat, isMinimal n_min phi.
   Proof.
     intros n phi_n.
-    destruct (exclusive_middle (forall x : nat, ~ isMinimal x)) as [H_yes | H_no].
+    destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
     - assert (claim1 : forall x : nat, x < n -> ~ phi n).
       { intros x x_lt_n.
         pattern n.
@@ -264,7 +265,7 @@ Module FunFacts.
       + exact phi_n.
       + intros m phi_m.
         destruct (n_le_m_or_m_lt_n_for_n_and_m n m); now firstorder.
-    - destruct (exclusive_middle (exists m : nat, isMinimal m)); now firstorder.
+    - destruct (exclusive_middle (exists m : nat, isMinimal m phi)); now firstorder.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
