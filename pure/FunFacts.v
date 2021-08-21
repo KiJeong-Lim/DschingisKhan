@@ -131,11 +131,13 @@ Module FunFacts.
     POW P
   .
 
-  Let satisfies : UNIV -> (UNIV -> BOOL) -> BOOL :=
+  Let SATISFIES : UNIV -> (UNIV -> BOOL) -> BOOL :=
     fun x : UNIV =>
     fun P : UNIV -> BOOL =>
     P x
   .
+
+  Local Notation " x `satisfies` P " := (SATISFIES x P) (at level 60, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION : (UNIV -> BOOL) -> UNIV :=
     fun x : POW UNIV =>
@@ -157,17 +159,16 @@ Module FunFacts.
 
   Let SET_BUILDER_NOTATION_SPEC :
     forall P : UNIV -> BOOL,
-    (fun x : UNIV => x ∈ ⦃ y | satisfies y P ⦄) = P.
+    (fun z : UNIV => z ∈ ⦃ x | x `satisfies` P ⦄) = P.
   Proof with eauto.
-    unfold SET_BUILDER_NOTATION, MEMBER, satisfies.
+    unfold SET_BUILDER_NOTATION, MEMBER, SATISFIES.
     destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
   Let RETRACT_POW_UNIV_UNIV :
     RETRACT (POW UNIV) UNIV.
-  Proof.
-    exists SET_BUILDER_NOTATION (fun X : UNIV => fun x : UNIV => x ∈ X).
-    exact SET_BUILDER_NOTATION_SPEC.
+  Proof with eauto.
+    exists SET_BUILDER_NOTATION (fun X : UNIV => fun x : UNIV => x ∈ X)...
   Qed.
 
   Let NOT : BOOL -> BOOL :=
@@ -178,10 +179,30 @@ Module FunFacts.
     end
   .
 
-  Local Notation " ¬ P " := (NOT P) (at level 80, right associativity) : type_scope.
+  Local Notation " ¬ P " := (NOT P) (at level 60, right associativity) : type_scope.
+
+  Let NOT_SPEC1 :
+    forall b : BOOL,
+    b = TRUE ->
+    (¬ b) = FALSE.
+  Proof with tauto.
+    unfold NOT.
+    intros b.
+    destruct (exclusive_middle (b = TRUE))...
+  Qed.
+
+  Let NOT_SPEC2 :
+    forall b : BOOL,
+    ~ (b = TRUE) ->
+    (¬ b) = TRUE.
+  Proof with tauto.
+    unfold NOT.
+    intros b.
+    destruct (exclusive_middle (b = TRUE))...
+  Qed.
 
   Let R : UNIV :=
-    ⦃ x | ¬ x ∈ x ⦄
+    ⦃ x | ¬ (x ∈ x) ⦄
   .
 
   Let RUSSEL : BOOL :=
@@ -191,20 +212,20 @@ Module FunFacts.
   Let PARADOX_OF_BERARDI :
     RUSSEL = ¬ RUSSEL.
   Proof with eauto.
-    enough (claim1 : RUSSEL = satisfies R (fun x : UNIV => ¬ x ∈ x)) by exact claim1.
-    replace (fun x : UNIV => ¬ x ∈ x) with (R UNIV)...
+    enough (claim1 : RUSSEL = (R `satisfies` fun x : UNIV => ¬ (x ∈ x))) by exact claim1.
+    replace (fun x : UNIV => ¬ (x ∈ x)) with (R UNIV)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
     TRUE = FALSE.
   Proof.
-    destruct (exclusive_middle (RUSSEL = TRUE)) as [H | H].
-    - assert (claim1 : TRUE = NOT TRUE) by now rewrite <- H; exact PARADOX_OF_BERARDI.
-      unfold NOT in claim1.
-      now destruct (exclusive_middle (TRUE = TRUE)).
-    - assert (claim1 : NOT RUSSEL <> TRUE) by now rewrite <- PARADOX_OF_BERARDI; exact H.
-      unfold NOT in claim1. 
-      now destruct (exclusive_middle (RUSSEL = TRUE)).
+    destruct (exclusive_middle (RUSSEL = TRUE)) as [H_RUSSEL_eq_TRUE | H_RUSSEL_ne_TRUE].
+    - rewrite <- H_RUSSEL_eq_TRUE.
+      rewrite PARADOX_OF_BERARDI.
+      now apply NOT_SPEC1.
+    - contradiction H_RUSSEL_ne_TRUE.
+      rewrite PARADOX_OF_BERARDI.
+      now apply NOT_SPEC2.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
