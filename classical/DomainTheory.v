@@ -1597,7 +1597,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
           apply (IH (f1, x1) (f2, x2)).
           split...
     }
-    assert (get_lfp_of_isMonotonicMap : isMonotonicMap get_lfp_of).
+    assert (get_lfp_of_isMonotonicMap : isMonotonicMap (fun f : D ~> D => get_lfp_of f)).
     { intros f1 f2 f1_le_f2.
       apply (get_lfp_of_isSupremum_of_iterations f1).
       intros y y_in.

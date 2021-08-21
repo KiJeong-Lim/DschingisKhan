@@ -20,12 +20,14 @@ Module EqFacts.
   .
 
   Definition eq_reflexivity {A : Type} : forall x1 : A, x1 = x1 :=
-    @eq_refl A
+    fun x1 : A =>
+    @eq_refl A x1
   .
 
   Definition eq_symmetry {A : Type} : forall x1 : A, forall x2 : A, x1 = x2 -> x2 = x1 :=
     fun x1 : A =>
-    eq_ind x1 (fun x : A => x = x1) eq_refl
+    fun x2 : A =>
+    eq_ind x1 (fun x : A => x = x1) eq_refl x2
   .
 
   Definition eq_transitivity {A : Type} : forall x1 : A, forall x2 : A, forall x3 : A, x1 = x2 -> x2 = x3 -> x1 = x3 :=
@@ -40,7 +42,7 @@ Module EqFacts.
     fun f : A -> B =>
     fun x1 : A =>
     fun x2 : A =>
-    eq_ind x1 (fun x : A => f x1 = f x) (eq_reflexivity (f x1)) x2
+    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
   .
 
 End EqFacts.
