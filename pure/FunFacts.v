@@ -158,8 +158,8 @@ Module FunFacts.
   Local Notation " x ∈ X " := (MEMBER x X) (at level 70, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION_SPEC :
-    forall P : UNIV -> BOOL,
-    (fun z : UNIV => z ∈ ⦃ x | x `satisfies` P ⦄) = P.
+    forall phi : UNIV -> BOOL,
+    (fun z : UNIV => z ∈ ⦃ x | x `satisfies` phi ⦄) = phi.
   Proof with eauto.
     unfold SET_BUILDER_NOTATION, MEMBER, SATISFIES.
     destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
@@ -179,7 +179,7 @@ Module FunFacts.
     end
   .
 
-  Local Notation " ¬ P " := (NOT P) (at level 60, right associativity) : type_scope.
+  Local Notation " ¬ b " := (NOT b) (at level 60, right associativity) : type_scope.
 
   Let NOT_SPEC1 :
     forall b : BOOL,
