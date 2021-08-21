@@ -145,30 +145,29 @@ Module FunFacts.
     LEFT (RIGHT x)
   .
 
-  Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (at level 0, no associativity) : type_scope.
+  Local Notation " ⦃ x | phi ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => phi)) (at level 0, no associativity) : type_scope.
 
-  Let MEMBER : UNIV -> (UNIV -> BOOL) :=
+  Let MEMBER : UNIV -> UNIV -> BOOL :=
     fun x : UNIV =>
     fun y : UNIV =>
     y UNIV x
   .
 
-  Local Notation " x ∈ y " := (MEMBER x y) (at level 70, no associativity) : type_scope.
+  Local Notation " x ∈ X " := (MEMBER x X) (at level 70, no associativity) : type_scope.
 
-  Let MEMBER_SET_BUILDER_NOTATION_id :
+  Let SET_BUILDER_NOTATION_SPEC :
     forall P : UNIV -> BOOL,
     (fun x : UNIV => x ∈ ⦃ y | satisfies y P ⦄) = P.
   Proof with eauto.
-    unfold SET_BUILDER_NOTATION, MEMBER.
-    destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) as [lam_UNIV app_UNIV beta_UNIV].
-    apply beta_UNIV...
+    unfold SET_BUILDER_NOTATION, MEMBER, satisfies.
+    destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
   Let RETRACT_POW_UNIV_UNIV :
     RETRACT (POW UNIV) UNIV.
   Proof.
-    exists SET_BUILDER_NOTATION (fun x : UNIV => fun y : UNIV => y ∈ x).
-    exact MEMBER_SET_BUILDER_NOTATION_id.
+    exists SET_BUILDER_NOTATION (fun X : UNIV => fun x : UNIV => x ∈ X).
+    exact SET_BUILDER_NOTATION_SPEC.
   Qed.
 
   Let NOT : BOOL -> BOOL :=
