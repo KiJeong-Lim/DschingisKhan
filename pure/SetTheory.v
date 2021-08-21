@@ -425,7 +425,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
 
   Global Hint Constructors isOrdinal : aczel_hint.
 
-  Lemma isOrdinal_member_isOrdinal :
+  Lemma isOrdinal_elem_isOrdinal :
     forall alpha : AczelSet,
     isOrdinal alpha ->
     forall beta : AczelSet,
@@ -436,7 +436,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     inversion H; subst...
   Qed.
 
-  Global Hint Resolve isOrdinal_member_isOrdinal : aczel_hint.
+  Global Hint Resolve isOrdinal_elem_isOrdinal : aczel_hint.
 
   Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) :
     respect_ext_eq phi ->
@@ -450,7 +450,7 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     intros H.
     apply ind_claim...
     intros beta H0.
-    assert (H1 := isOrdinal_member_isOrdinal (RootNode children childtrees) H beta H0).
+    assert (H1 := isOrdinal_elem_isOrdinal (RootNode children childtrees) H beta H0).
     destruct H0 as [key H0].
     apply (ext_cong (childTreeOf (RootNode children childtrees) key))...
   Qed.

@@ -758,29 +758,41 @@ Module MyUtilities.
 
   End SIMPLE_LOGIC.
 
-  Variant AckermannFuncSpec (ack : nat -> nat -> nat) : Prop :=
-  | AckermannCharacterization :
-    (forall n : nat, ack 0 n = n + 1) ->
-    (forall m : nat, ack (m + 1) 0 = ack m 1) ->
-    (forall m : nat, forall n : nat, ack (m + 1) (n + 1) = ack m (ack (m + 1) n)) ->
-    AckermannFuncSpec ack
+  Section ACKERMANN.
+
+  Variant AckermannFuncSpec (f : nat -> nat -> nat) : Prop :=
+  | AckermannFuncCharacterization :
+    (forall n : nat, f 0 n = n + 1) ->
+    (forall m : nat, f (m + 1) 0 = f m 1) ->
+    (forall m : nat, forall n : nat, f (m + 1) (n + 1) = f m (f (m + 1) n)) ->
+    AckermannFuncSpec f
   .
 
-  Definition AckermannFunc : nat -> nat -> nat :=
-    let AckermannFunc_aux1 : nat -> (nat -> nat) -> nat := nat_rect (fun _ : nat => (nat -> nat) -> nat) (fun kont : nat -> nat => kont 1) (fun n' : nat => fun call_n' : (nat -> nat) -> nat => fun kont : nat -> nat => kont (call_n' kont)) in
-    fix AckermannFunc_fix (m : nat) {struct m} : nat -> nat :=
+  Let AckermannFunc_aux1 : nat -> (nat -> nat) -> nat :=
+    fix AckermannFunc_aux1_fix (n : nat) {struct n} : (nat -> nat) -> nat :=
+    match n return (nat -> nat) -> nat with
+    | O =>
+      fun kont : nat -> nat =>
+      kont 1
+    | S n' =>
+      fun kont : nat -> nat =>
+      kont (AckermannFunc_aux1_fix n' kont)
+    end
+  .
+
+  Fixpoint AckermannFunc (m : nat) {struct m} : nat -> nat :=
     match m return nat -> nat with
     | O => S
     | S m' =>
       fun n : nat =>
-      AckermannFunc_aux1 n (AckermannFunc_fix m')
+      AckermannFunc_aux1 n (AckermannFunc m')
     end
   .
 
-  Lemma AckermannFuncSatisfiesItsSpecification :
+  Theorem AckermannFunc_satisfies_its_specification :
     AckermannFuncSpec AckermannFunc.
   Proof with (lia || eauto).
-    constructor.
+    split.
     - induction n as [| n' IHn]; simpl...
     - intros m.
       replace (m + 1) with (S m)...
@@ -790,17 +802,18 @@ Module MyUtilities.
         rewrite IHn...
   Qed.
 
+  End ACKERMANN.
+
   Lemma greater_than_iff :
     forall x : nat,
     forall y : nat,
     x > y <-> (exists z : nat, x = S (y + z)).
-  Proof with try (lia || now (firstorder; eauto)).
+  Proof with try (lia || eauto).
     intros x y.
     split.
-    - intros H.
-      induction H as [| m H [z H0]]...
-      exists (S z)...
-    - intros [z H]...
+    - intros Hgt.
+      induction Hgt as [| m Hgt [z Heq]]; [exists 0 | rewrite Heq]...
+    - intros [z Heq]...
   Qed.
 
   Lemma div_mod_uniqueness :
