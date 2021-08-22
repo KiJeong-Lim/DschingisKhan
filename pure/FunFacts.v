@@ -205,25 +205,25 @@ Module FunFacts.
     ⦃ x | ¬ (x ∈ x) ⦄
   .
 
-  Let RUSSEL : BOOL :=
+  Let RUSSELL : BOOL :=
     R ∈ R
   .
 
   Let PARADOX_OF_BERARDI :
-    RUSSEL = ¬ RUSSEL.
+    RUSSELL = ¬ RUSSELL.
   Proof with eauto.
-    enough (claim1 : RUSSEL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact claim1.
+    enough (claim1 : RUSSELL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact claim1.
     replace (fun x : UNIV => ¬ (x ∈ x)) with (R UNIV)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
     TRUE = FALSE.
   Proof.
-    destruct (exclusive_middle (RUSSEL = TRUE)) as [H_RUSSEL_eq_TRUE | H_RUSSEL_ne_TRUE].
-    - rewrite <- H_RUSSEL_eq_TRUE.
+    destruct (exclusive_middle (RUSSELL = TRUE)) as [H_RUSSELL_eq_TRUE | H_RUSSELL_ne_TRUE].
+    - rewrite <- H_RUSSELL_eq_TRUE.
       rewrite PARADOX_OF_BERARDI.
       now apply NOT_SPEC1.
-    - contradiction H_RUSSEL_ne_TRUE.
+    - contradiction H_RUSSELL_ne_TRUE.
       rewrite PARADOX_OF_BERARDI.
       now apply NOT_SPEC2.
   Qed.
@@ -270,7 +270,7 @@ Module FunFacts.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
-  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSEL.
+  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
 
@@ -293,18 +293,18 @@ Module FunFacts.
     end
   .
 
-  Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russel :
+  Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell :
     TRUE_BB = FALSE_BB.
   Proof.
     assert (BB_inhabited : inhabited BB) by repeat constructor.
     destruct Y_COMBINATOR_FOR_BB as [Y Y_spec].
-    set (RUSSEL := Y NOT_BB).
-    assert (RUSSEL_PARADOX : RUSSEL = NOT_BB RUSSEL) by now apply Y_spec.
-    unfold NOT_BB in RUSSEL_PARADOX.
-    now destruct RUSSEL.
+    set (RUSSELL := Y NOT_BB).
+    assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by now apply Y_spec.
+    unfold NOT_BB in PARADOX_OF_RUSSELL.
+    now destruct RUSSELL.
   Qed.
 
-  End UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSEL.
+  End UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
 
   Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.ClassicalFacts.html" *)
 
@@ -330,7 +330,7 @@ Module FunFacts.
     TRUE = FALSE.
   Proof.
     assert (BB_inhabited : inhabited BB) by repeat constructor.
-    assert (claim1 := untyped_lambda_calculus_for_BB_implies_paradox_of_russel (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
+    assert (claim1 := untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
     intros BOOL TRUE FALSE.
     set (go := fun b : BB => if b then TRUE else FALSE).
     exact (eq_congruence go TRUE_BB FALSE_BB claim1).
