@@ -18,11 +18,6 @@ Module FunFacts.
     }
   .
 
-  Inductive BB : Prop :=
-  | TRUE_BB : BB
-  | FALSE_BB : BB
-  .
-
   Local Hint Constructors RETRACT RETRACT_CONDITIONAL : core.
 
   Lemma RETRACT_ID (A : Prop) :
@@ -32,6 +27,11 @@ Module FunFacts.
   Qed.
 
   Local Hint Resolve RETRACT_ID : core.
+
+  Inductive BB : Prop :=
+  | TRUE_BB : BB
+  | FALSE_BB : BB
+  .
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -106,15 +106,13 @@ Module FunFacts.
     _inv2 A B
   .
 
-  Context (BOOL : Prop) (TRUE : BOOL) (FALSE : BOOL).
-
   Let POW : Prop -> Prop :=
     fun P : Prop =>
     P ->
-    BOOL
+    BB
   .
 
-  Let GET_RETRACT_CONDITIONAL_POW_A_POW_B :
+  Let RETRACT_CONDITIONAL_POW_A_POW_B :
     forall A : Prop,
     forall B : Prop,
     RETRACT_CONDITIONAL (POW A) (POW B).
@@ -123,7 +121,7 @@ Module FunFacts.
     destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [H_yes | H_no].
     - destruct H_yes as [i j inv].
       exists i j...
-    - exists (fun pa : POW A => fun b : B => FALSE) (fun pb : POW B => fun a : A => FALSE)...
+    - exists (fun pa : POW A => fun b : B => FALSE_BB) (fun pb : POW B => fun a : A => FALSE_BB)...
   Qed.
 
   Let UNIV : Prop :=
@@ -131,25 +129,25 @@ Module FunFacts.
     POW P
   .
 
-  Let SATISFIES : UNIV -> (UNIV -> BOOL) -> BOOL :=
+  Let SATISFIES : UNIV -> (UNIV -> BB) -> BB :=
     fun x : UNIV =>
-    fun phi : UNIV -> BOOL =>
+    fun phi : UNIV -> BB =>
     phi x
   .
 
   Local Notation " x `satisfies` phi " := (SATISFIES x phi) (at level 60, no associativity) : type_scope.
 
-  Let SET_BUILDER_NOTATION : (UNIV -> BOOL) -> UNIV :=
-    fun phi : UNIV -> BOOL =>
+  Let SET_BUILDER_NOTATION : (UNIV -> BB) -> UNIV :=
+    fun phi : UNIV -> BB =>
     fun P : Prop =>
-    let LEFT : POW UNIV -> POW P := _j2 (POW P) (POW UNIV) (GET_RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
-    let RIGHT : POW UNIV -> POW UNIV := _i2 (POW UNIV) (POW UNIV) (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
+    let LEFT : POW UNIV -> POW P := _j2 (POW P) (POW UNIV) (RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
+    let RIGHT : POW UNIV -> POW UNIV := _i2 (POW UNIV) (POW UNIV) (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
     LEFT (RIGHT phi)
   .
 
   Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (at level 0, no associativity) : type_scope.
 
-  Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BOOL :=
+  Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BB :=
     fun x : UNIV =>
     fun z : UNIV =>
     x UNIV z
@@ -158,74 +156,76 @@ Module FunFacts.
   Local Notation " z ∈ x " := (HAS_AS_AN_ELEMENT x z) (at level 70, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION_SPEC :
-    forall phi : UNIV -> BOOL,
+    forall phi : UNIV -> BB,
     (fun z : UNIV => z ∈ ⦃ x | x `satisfies` phi ⦄) = phi.
   Proof with eauto.
     unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT, SATISFIES.
-    destruct (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
+    destruct (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
-  Let RETRACT_POW_UNIV_UNIV :
-    RETRACT (POW UNIV) UNIV.
-  Proof with eauto.
-    exists SET_BUILDER_NOTATION HAS_AS_AN_ELEMENT...
-  Qed.
+  Let RETRACT_POW_UNIV_UNIV : RETRACT (POW UNIV) UNIV :=
+    {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}
+  .
 
-  Let NOT : BOOL -> BOOL :=
-    fun b : BOOL =>
-    match (exclusive_middle (b = TRUE)) return BOOL with
-    | or_introl if_b_eq_TRUE => FALSE
-    | or_intror if_b_ne_TRUE => TRUE
+  Let NOT_BB : BB -> BB :=
+    fun b : BB =>
+    match exclusive_middle (b = TRUE_BB) return BB with
+    | or_introl if_b_eq_TRUE_BB => FALSE_BB
+    | or_intror if_b_ne_TRUE_BB => TRUE_BB
     end
   .
 
-  Local Notation " ¬ P " := (NOT P) (at level 55, right associativity) : type_scope.
+  Local Notation " ¬ b " := (NOT_BB b) (at level 55, right associativity) : type_scope.
 
-  Let NOT_SPEC1 :
-    forall b : BOOL,
-    (b = TRUE) ->
-    (¬ b) = FALSE.
+  Let NOT_BB_SPEC1 :
+    forall b : BB,
+    (b = TRUE_BB) ->
+    (¬ b) = FALSE_BB.
   Proof with tauto.
-    unfold NOT.
+    unfold NOT_BB.
     intros b.
-    destruct (exclusive_middle (b = TRUE)); simpl...
+    destruct (exclusive_middle (b = TRUE_BB)); simpl...
   Qed.
 
-  Let NOT_SPEC2 :
-    forall b : BOOL,
-    ~ (b = TRUE) ->
-    (¬ b) = TRUE.
+  Let NOT_BB_SPEC2 :
+    forall b : BB,
+    ~ (b = TRUE_BB) ->
+    (¬ b) = TRUE_BB.
   Proof with tauto.
-    unfold NOT.
+    unfold NOT_BB.
     intros b.
-    destruct (exclusive_middle (b = TRUE)); simpl...
+    destruct (exclusive_middle (b = TRUE_BB)); simpl...
   Qed.
 
   Let R : UNIV :=
     ⦃ x | ¬ (x ∈ x) ⦄
   .
 
-  Let RUSSELL : BOOL :=
+  Let RUSSELL : BB :=
     R ∈ R
   .
 
   Let PARADOX_OF_BERARDI :
     RUSSELL = ¬ RUSSELL.
   Proof with eauto.
-    enough (claim1 : RUSSELL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact claim1.
+    enough (it_is_sufficient_to_show : RUSSELL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact it_is_sufficient_to_show.
     replace (fun x : UNIV => ¬ (x ∈ x)) with (R UNIV)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
+    forall BOOL : Prop,
+    forall TRUE : BOOL,
+    forall FALSE : BOOL,
     TRUE = FALSE.
   Proof.
-    destruct (exclusive_middle (RUSSELL = TRUE)) as [H_RUSSELL_eq_TRUE | H_RUSSELL_ne_TRUE].
-    - rewrite <- H_RUSSELL_eq_TRUE.
+    enough (it_is_sufficient_to_show : TRUE_BB = FALSE_BB) by exact (fun BOOL : Prop => fun TRUE : BOOL => fun FALSE : BOOL => eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB it_is_sufficient_to_show).
+    destruct (exclusive_middle (RUSSELL = TRUE_BB)) as [H_RUSSELL_eq_TRUE_BB | H_RUSSELL_ne_TRUE_BB].
+    - rewrite <- H_RUSSELL_eq_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.
-      now apply NOT_SPEC1.
-    - contradiction H_RUSSELL_ne_TRUE.
+      now apply NOT_BB_SPEC1.
+    - contradiction H_RUSSELL_ne_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.
-      now apply NOT_SPEC2.
+      now apply NOT_BB_SPEC2.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
@@ -329,11 +329,9 @@ Module FunFacts.
     forall FALSE : BOOL,
     TRUE = FALSE.
   Proof.
+    enough (it_is_sufficient_to_show : TRUE_BB = FALSE_BB) by exact (fun BOOL : Prop => fun TRUE : BOOL => fun FALSE : BOOL => eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB it_is_sufficient_to_show).
     assert (BB_inhabited : inhabited BB) by repeat constructor.
-    assert (claim1 := untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
-    intros BOOL TRUE FALSE.
-    set (go := fun b : BB => if b then TRUE else FALSE).
-    exact (eq_congruence go TRUE_BB FALSE_BB claim1).
+    exact (untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
