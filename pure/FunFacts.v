@@ -249,14 +249,13 @@ Module FunFacts.
   Proof.
     intros n phi_n.
     destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
-    - assert (claim1 : forall x : nat, x < n -> ~ phi n).
-      { intros x x_lt_n.
-        pattern n.
+    - assert (claim1 : ~ phi n).
+      { pattern n.
         apply strong_induction.
         intros i acc phi_i.
         contradiction (H_yes i).
         split.
-        - apply phi_i.
+        - exact phi_i.
         - intros m phi_m.
           destruct (n_le_m_or_m_lt_n_for_n_and_m i m); now firstorder.
       }
