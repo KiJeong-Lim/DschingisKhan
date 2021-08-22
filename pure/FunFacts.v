@@ -140,14 +140,14 @@ Module FunFacts.
   Local Notation " x `satisfies` phi " := (SATISFIES x phi) (at level 60, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION : (UNIV -> BOOL) -> UNIV :=
-    fun x : POW UNIV =>
+    fun phi : UNIV -> BOOL =>
     fun P : Prop =>
     let LEFT : POW UNIV -> POW P := _j2 (POW P) (POW UNIV) (GET_RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
     let RIGHT : POW UNIV -> POW UNIV := _i2 (POW UNIV) (POW UNIV) (GET_RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
-    LEFT (RIGHT x)
+    LEFT (RIGHT phi)
   .
 
-  Local Notation " ⦃ x | phi ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => phi)) (at level 0, no associativity) : type_scope.
+  Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (at level 0, no associativity) : type_scope.
 
   Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BOOL :=
     fun x : UNIV =>
@@ -179,11 +179,11 @@ Module FunFacts.
     end
   .
 
-  Local Notation " ¬ b " := (NOT b) (at level 55, right associativity) : type_scope.
+  Local Notation " ¬ P " := (NOT P) (at level 55, right associativity) : type_scope.
 
   Let NOT_SPEC1 :
     forall b : BOOL,
-    b = TRUE ->
+    (b = TRUE) ->
     (¬ b) = FALSE.
   Proof with tauto.
     unfold NOT.
