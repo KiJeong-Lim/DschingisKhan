@@ -22,11 +22,23 @@ Module FunFacts.
 
   Lemma RETRACT_ID (A : Prop) :
     RETRACT A A.
-  Proof with eauto.
-    exists (fun x : A => x) (fun x : A => x)...
+  Proof.
+    exists (fun x : A => x) (fun x : A => x).
+    exact (@eq_refl A).
   Qed.
 
   Local Hint Resolve RETRACT_ID : core.
+
+  Lemma FIND_FIXED_POINT_COMBINATOR (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
+    {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
+  Proof.
+    destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
+    set (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
+    exists Y_combinator_of_Curry.
+    intros f.
+    enough (it_is_sufficient_to_show : app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x))) = f (Y_combinator_of_Curry f)) by exact it_is_sufficient_to_show.
+    now replace (app_D (lam_D (fun x : D => f (app_D x x)))) with (fun x : D => f (app_D x x)).
+  Qed.
 
   Inductive BB : Prop :=
   | TRUE_BB : BB
@@ -249,21 +261,15 @@ Module FunFacts.
   Proof.
     intros n phi_n.
     destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
-    - assert (claim1 : ~ phi n).
-      { pattern n.
-        apply strong_induction.
-        intros i acc phi_i.
-        contradiction (H_yes i).
-        split.
-        - exact phi_i.
-        - intros m phi_m.
-          destruct (n_le_m_or_m_lt_n_for_n_and_m i m); now firstorder.
-      }
-      exists n.
+    - enough (claim1 : ~ phi n) by contradiction claim1.
+      pattern n.
+      apply strong_induction.
+      intros i acc phi_i.
+      contradiction (H_yes i).
       split.
-      + exact phi_n.
+      + exact phi_i.
       + intros m phi_m.
-        destruct (n_le_m_or_m_lt_n_for_n_and_m n m); now firstorder.
+        destruct (n_le_m_or_m_lt_n_for_n_and_m i m); now firstorder.
     - destruct (exclusive_middle (exists m : nat, isMinimal m phi)); now firstorder.
   Qed.
 
@@ -272,17 +278,6 @@ Module FunFacts.
   Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
-
-  Let Y_COMBINATOR_FOR_BB :
-    exists Y : (BB -> BB) -> BB, forall f : BB -> BB, Y f = f (Y f).
-  Proof with try easy.
-    destruct untyped_lambda_calculus_for_BB as [lam_BB app_BB beta_BB].
-    set (Y_com := fun f : BB -> BB => app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x)))).
-    exists Y_com.
-    intros f.
-    enough (claim1 : app_BB (lam_BB (fun x : BB => f (app_BB x x))) (lam_BB (fun x : BB => f (app_BB x x))) = f (Y_com f))...
-    replace (app_BB (lam_BB (fun x : BB => f (app_BB x x)))) with (fun x : BB => f (app_BB x x))...
-  Qed.
 
   Let NOT_BB : BB -> BB :=
     fun b : BB =>
@@ -295,8 +290,7 @@ Module FunFacts.
   Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell :
     TRUE_BB = FALSE_BB.
   Proof.
-    assert (BB_inhabited : inhabited BB) by repeat constructor.
-    destruct Y_COMBINATOR_FOR_BB as [Y Y_spec].
+    destruct (FIND_FIXED_POINT_COMBINATOR BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
     set (RUSSELL := Y NOT_BB).
     assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by now apply Y_spec.
     unfold NOT_BB in PARADOX_OF_RUSSELL.
@@ -307,13 +301,13 @@ Module FunFacts.
 
   Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.ClassicalFacts.html" *)
 
-  Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) <-> (P1 = P2).
+  Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) -> (P1 = P2).
 
   Let D_coerce_D_ARROW_D_for_any_inhabited_Prop_D (D : Prop) (D_inhabited : inhabited D) :
     D = (D -> D).
   Proof with tauto.
     destruct D_inhabited as [d0].
-    apply (proj1 (propositional_extensionality D (D -> D)))...
+    apply (propositional_extensionality D (D -> D))...
   Qed.
 
   Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (D : Prop) (D_inhabited : inhabited D) :
