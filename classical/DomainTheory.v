@@ -46,7 +46,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     destruct (classic (member x0 X)); tauto.
   Qed.
 
-  Lemma ContinuousMapOnCpos_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma ContinuousMapOnCpos_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     isContinuousMap f ->
     isMonotonicMap f.
@@ -89,7 +89,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isDirected (image f X).
   Proof with eauto with *.
     intros f f_continuous X X_isDirected.
-    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonicMap.
     apply MonotonicMap_preservesDirected...
   Qed.
 
@@ -105,7 +105,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Proof with eauto with *.
     intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected.
     set (Y := image f X).
-    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMapOnCpos_isMonotonicMap.
     destruct (square_up_exists Y image_f_X_isDirected) as [sup_Y sup_Y_isSupremum_of_Y].
     assert (claim1 : sup_Y =< f sup_X).
     { apply sup_Y_isSupremum_of_Y.
@@ -169,17 +169,17 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     reflexivity.
   Qed.
 
-  Definition characterization_of_ContinuousMapsOnCpos {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
+  Definition preserves_Supremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
     fun f : D -> D' =>
     forall X : ensemble D,
     @isDirected D D_isPoset X ->
     exists sup_X : D, exists sup_Y : D', @isSupremum D D_isPoset sup_X X /\ @isSupremum D' D'_isPoset sup_Y (image f X) /\ @eqProp D' (@Poset_requiresSetoid D' D'_isPoset) (f sup_X) sup_Y
   .
 
-  Lemma derive_monotonicity_from_characterization_of_ContinuousMapsOnCpos {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma f_preserves_Supremum_implies_f_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    characterization_of_ContinuousMapsOnCpos f ->
+    preserves_Supremum f ->
     forall x1 : D,
     forall x2 : D,
     x1 =< x2 ->
@@ -209,16 +209,16 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     transitivity (sup_Y)...
   Qed.
 
-  Lemma show_image_f_X_isDirected_if_f_satisfies_characterization_of_ContinuousMapsOnCpos_and_X_isDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma show_image_f_X_isDirected_if_f_satisfies_preserves_Supremum_and_X_isDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    characterization_of_ContinuousMapsOnCpos f -> 
+    preserves_Supremum f -> 
     forall X : ensemble D,
     isDirected X ->
     isDirected (image f X).
   Proof with eauto with *.
     intros f f_preserves_eq f_property X X_isDirected.
-    assert (claim1 := derive_monotonicity_from_characterization_of_ContinuousMapsOnCpos f f_preserves_eq f_property).
+    assert (claim1 := f_preserves_Supremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
     destruct X_isDirected as [[x1_0 x1_0_in_X] X_closed_under_le].
     split.
     - exists (f x1_0)...
@@ -235,9 +235,9 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Theorem the_main_reason_for_introducing_ScottTopology {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    isContinuousMap f <-> characterization_of_ContinuousMapsOnCpos f.
+    isContinuousMap f <-> preserves_Supremum f.
   Proof with eauto with *.
-    assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2) by apply (fun f : D >=> D' => ContinuousMapOnCpos_isMonotonic (proj1_sig f)).
+    assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2) by apply (fun f : D >=> D' => ContinuousMapOnCpos_isMonotonicMap (proj1_sig f)).
     intros f f_preserves_eq.
     split.
     - intros f_continuous X X_isDirected.
@@ -247,7 +247,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       assert (claim3 := ContinuousMapsOnCpos_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X).
       exists sup_X, (f sup_X)...
     - intros f_property.
-      assert (claim4 := derive_monotonicity_from_characterization_of_ContinuousMapsOnCpos f f_preserves_eq f_property).
+      assert (claim4 := f_preserves_Supremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
       intros O O_isOpen.
       split.
       + intros x1 x2 x_in_preimage_f_O x_le_y.
@@ -258,7 +258,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         destruct (f_property X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_X f_sup_X'_eq_sup_Y']]]].
         assert (sup_X_eq_sup_X' : sup_X == sup_X') by now apply (isSupremum_unique X).
         assert (f_sup_X_in_O : member (f sup_X) O) by now apply in_preimage_iff.
-        assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_characterization_of_ContinuousMapsOnCpos_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
+        assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_preserves_Supremum_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
         assert (claim6 : sup_Y' == f sup_X).
         { transitivity (f sup_X').
           - symmetry...
@@ -282,7 +282,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
 
   Definition squig_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D ~> D') -> (D >=> D') :=
     fun f : D ~> D' =>
-    exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f))
+    exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f) (proj2_sig f))
   .
 
   Lemma Supremum_of_squigs_is_well_defined {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -323,7 +323,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     destruct y_in as [f_i [y1_is f_i_in]].
     subst y.
     transitivity (proj1_sig f_i x2).
-    - apply (ContinuousMapOnCpos_isMonotonic)...
+    - apply (ContinuousMapOnCpos_isMonotonicMap)...
       exact (proj2_sig f_i).
     - apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (Supremum_of_squigs_is_well_defined F F_isDirected x2))...
   Qed.
@@ -616,10 +616,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isSupremum (f (x1, sup_X2)) (image (fun x2 : D2 => f (x1, x2)) X2).
   Proof with eauto with *.
     intros f f_continuous.
-    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonicMap.
     assert (f1_monotonic : forall x1 : D1, isMonotonicMap (fun x2 : D2 => f (x1, x2))).
     { intros x1 x2_1 x2_2 Hle.
-      apply (ContinuousMapOnCpos_isMonotonic f f_continuous).
+      apply (ContinuousMapOnCpos_isMonotonicMap f f_continuous).
       split...
     }
     assert (mayday : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -714,10 +714,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap (fun x2 : D2 => f (x1, x2)).
   Proof with eauto with *.
     intros f f_continuous.
-    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonicMap.
     assert (f1_monotonic : forall x1 : D1, isMonotonicMap (fun x2 : D2 => f (x1, x2))).
     { intros x1 x2_1 x2_2 Hle.
-      apply (ContinuousMapOnCpos_isMonotonic f f_continuous).
+      apply (ContinuousMapOnCpos_isMonotonicMap f f_continuous).
       split...
     }
     assert (mayday : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -745,10 +745,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isSupremum (f (sup_X1, x2)) (image (fun x1 : D1 => f (x1, x2)) X1).
   Proof with eauto with *.
     intros f f_continuous.
-    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonicMap.
     assert (f2_monotonic : forall x2 : D2, isMonotonicMap (fun x1 : D1 => f (x1, x2))).
     { intros x1 x2_1 x2_2 Hle.
-      apply (ContinuousMapOnCpos_isMonotonic f f_continuous).
+      apply (ContinuousMapOnCpos_isMonotonicMap f f_continuous).
       split...
     }
     assert (mayday : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -843,10 +843,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap (fun x1 : D1 => f (x1, x2)).
   Proof with eauto with *.
     intros f f_continuous.
-    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonic.
+    assert (f_monotonic : isMonotonicMap f) by now apply ContinuousMapOnCpos_isMonotonicMap.
     assert (f2_monotonic : forall x2 : D2, isMonotonicMap (fun x1 : D1 => f (x1, x2))).
     { intros x1 x2_1 x2_2 Hle.
-      apply (ContinuousMapOnCpos_isMonotonic f f_continuous).
+      apply (ContinuousMapOnCpos_isMonotonicMap f f_continuous).
       split...
     }
     assert (mayday : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -876,8 +876,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isSupremum (f (sup_X1, sup_X2)) (image f X).
   Proof with eauto with *.
     intros f f1_continuous f2_continuous.
-    assert (f1_monotonic := fun x1 : D1 => ContinuousMapOnCpos_isMonotonic (fun x2 : D2 => f (x1, x2)) (f1_continuous x1)).
-    assert (f2_monotonic := fun x2 : D2 => ContinuousMapOnCpos_isMonotonic (fun x1 : D1 => f (x1, x2)) (f2_continuous x2)).
+    assert (f1_monotonic := fun x1 : D1 => ContinuousMapOnCpos_isMonotonicMap (fun x2 : D2 => f (x1, x2)) (f1_continuous x1)).
+    assert (f2_monotonic := fun x2 : D2 => ContinuousMapOnCpos_isMonotonicMap (fun x1 : D1 => f (x1, x2)) (f2_continuous x2)).
     assert (f1_preserves_eq := fun x1 : D1 => MonotonicMap_preservesSetoid (fun x2 : D2 => f (x1, x2)) (f1_monotonic x1)).
     assert (f2_preserves_eq := fun x2 : D2 => MonotonicMap_preservesSetoid (fun x1 : D1 => f (x1, x2)) (f2_monotonic x2)).
     assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -947,7 +947,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         apply in_image_iff in ys_in.
         destruct ys_in as [x2 [ys_is x2_in]].
         subst ys.
-        assert (f_sup_X1_x2_le_f_sup_X1_sup_X2 : f (sup_X1, x2) =< f (sup_X1, sup_X2)) by now apply (ContinuousMapOnCpos_isMonotonic (fun x2 : D2 => f (sup_X1, x2)) (f1_continuous sup_X1)), claim6.
+        assert (f_sup_X1_x2_le_f_sup_X1_sup_X2 : f (sup_X1, x2) =< f (sup_X1, sup_X2)) by now apply (ContinuousMapOnCpos_isMonotonicMap (fun x2 : D2 => f (sup_X1, x2)) (f1_continuous sup_X1)), claim6.
         apply y'_isSupremum_of_ys...
       - intros y_is_an_upper_bound.
         apply claim7.
@@ -998,8 +998,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         simpl in *.
         assert (claim11_aux1 : f (x1_1, x2_2) =< f (x1_3, x2_3)).
         { transitivity (f (x1_1, x2_3)).
-          - apply (ContinuousMapOnCpos_isMonotonic (fun x2 : D2 => f (x1_1, x2)) (f1_continuous x1_1))...
-          - apply (ContinuousMapOnCpos_isMonotonic (fun x1 : D1 => f (x1, x2_3)) (f2_continuous x2_3))...
+          - apply (ContinuousMapOnCpos_isMonotonicMap (fun x2 : D2 => f (x1_1, x2)) (f1_continuous x1_1))...
+          - apply (ContinuousMapOnCpos_isMonotonicMap (fun x1 : D1 => f (x1, x2_3)) (f2_continuous x2_3))...
         }
         transitivity (f (x1_3, x2_3))...
     }
@@ -1020,8 +1020,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap f.
   Proof with eauto with *.
     intros f f1_continuous f2_continuous.
-    assert (f1_monotonic := fun x1 : D1 => ContinuousMapOnCpos_isMonotonic (fun x2 : D2 => f (x1, x2)) (f1_continuous x1)).
-    assert (f2_monotonic := fun x2 : D2 => ContinuousMapOnCpos_isMonotonic (fun x1 : D1 => f (x1, x2)) (f2_continuous x2)).
+    assert (f1_monotonic := fun x1 : D1 => ContinuousMapOnCpos_isMonotonicMap (fun x2 : D2 => f (x1, x2)) (f1_continuous x1)).
+    assert (f2_monotonic := fun x2 : D2 => ContinuousMapOnCpos_isMonotonicMap (fun x1 : D1 => f (x1, x2)) (f2_continuous x2)).
     assert (f1_preserves_eq := fun x1 : D1 => MonotonicMap_preservesSetoid (fun x2 : D2 => f (x1, x2)) (f1_monotonic x1)).
     assert (f2_preserves_eq := fun x2 : D2 => MonotonicMap_preservesSetoid (fun x1 : D1 => f (x1, x2)) (f2_monotonic x2)).
     assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> f p1 == f p2).
@@ -1089,7 +1089,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     intros [f1 x1] [f2 x2] [H H0].
     simpl in *.
     assert (claim1 : isContinuousMap (proj1_sig f1)) by membership.
-    transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonic | apply H]...
+    transitivity (proj1_sig f1 x2); [apply ContinuousMapOnCpos_isMonotonicMap | apply H]...
   Qed.
 
   Lemma ScottApp_aux1_preserves_eq {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -1104,7 +1104,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     intros f1 f2 x1 x2 Heq_f Heq_x.
     simpl.
     transitivity (proj1_sig f1 x2).
-    - apply Poset_asym; apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f1) (proj2_sig f1))...
+    - apply Poset_asym; apply (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f1) (proj2_sig f1))...
     - apply Heq_f.
   Qed.
 
@@ -1180,7 +1180,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     arrow_eqProp D2 D3 (@Poset_requiresSetoid D3 D3_isPoset) (proj1_sig (ScottAbs_aux2 f sup_X1)) (proj1_sig sup_Y).
   Proof with eauto with *.
     intros f.
-    assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonic, proj2_sig.
+    assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonicMap, proj2_sig.
     assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> proj1_sig f p1 == proj1_sig f p2) by now apply (MonotonicMap_preservesSetoid (proj1_sig f)).
     set (ScottAbs := fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
     assert ( mayday :
@@ -1257,7 +1257,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap (fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
   Proof with eauto with *.
     intros f.
-    assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonic, proj2_sig.
+    assert (f_monotonic : isMonotonicMap (proj1_sig f)) by apply ContinuousMapOnCpos_isMonotonicMap, proj2_sig.
     assert (f_preserves_eq : forall p1 : D1 * D2, forall p2 : D1 * D2, p1 == p2 -> proj1_sig f p1 == proj1_sig f p2) by now apply (MonotonicMap_preservesSetoid (proj1_sig f)).
     set (ScottAbs := fun x1 : D1 => exist isContinuousMap (fun x2 : D2 => proj1_sig (ScottAbs_aux2 f x1) x2) (show_that_f1_isContinuousMap_if_f_isContinuousMap (proj1_sig f) (proj2_sig f) x1)).
     assert ( mayday :
@@ -1402,7 +1402,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim3 : forall n : nat, iteration n f (proj1_sig bottom_exists) =< iteration (S n) f (proj1_sig bottom_exists)).
     { induction n as [| n' IH].
       - exact (proj2_sig bottom_exists (f (proj1_sig bottom_exists))).
-      - exact (ContinuousMapOnCpos_isMonotonic f f_continuous (iteration n' f (proj1_sig bottom_exists)) (iteration (S n') f (proj1_sig bottom_exists)) IH).
+      - exact (ContinuousMapOnCpos_isMonotonicMap f f_continuous (iteration n' f (proj1_sig bottom_exists)) (iteration (S n') f (proj1_sig bottom_exists)) IH).
     }
     assert (claim4 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> iteration n1 f (proj1_sig bottom_exists) =< iteration n2 f (proj1_sig bottom_exists)).
     { intros n1 n2 n1_le_n2.
@@ -1434,7 +1434,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
     { induction n as [| n' IH].
       - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
-      - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
+      - exact (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
     }
     assert (claim3 := isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f) (proj2_sig f) (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) claim1).
     assert (it_is_sufficient_to_show : proj1_sig f (get_lfp_of f) == get_lfp_of f).
@@ -1471,10 +1471,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
     { induction n as [| n' IH].
       - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
-      - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
+      - exact (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
     }
     assert (claim3 := every_continuous_function_has_a_fixed_point f).
-    assert (claim4 := ContinuousMapOnCpos_isMonotonic (proj1_sig f) (proj2_sig f)).
+    assert (claim4 := ContinuousMapOnCpos_isMonotonicMap (proj1_sig f) (proj2_sig f)).
     enough (it_is_sufficient_to_show : forall y : D, y == proj1_sig f y -> get_lfp_of f =< y) by now split.
     intros y y_is_fixpoint_of_f.
     assert (claim5 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< y).
@@ -1497,7 +1497,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       - exact Hle_x.
       - transitivity (proj1_sig f2 (iteration n (proj1_sig f1) x1)).
         + apply Hle_f.
-        + apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f2) (proj2_sig f2)).
+        + apply (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f2) (proj2_sig f2)).
           apply (IH (f1, x1) (f2, x2)).
           split...
     }
@@ -1518,7 +1518,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         set (X := image (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) F).
         assert (X_isDirected : isDirected X).
         { apply MonotonicMap_preservesDirected.
-          - apply ContinuousMapOnCpos_isMonotonic.
+          - apply ContinuousMapOnCpos_isMonotonicMap.
             exact IH.
           - exact F_isDirected.
         }
@@ -1527,7 +1527,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         set (sup_Y := proj1_sig sup_F (iteration n (proj1_sig sup_F) (proj1_sig bottom_exists))).
         assert (sup_F_sup_X_eq_sup_Y : proj1_sig sup_F sup_X == sup_Y).
         { apply MonotonicMap_preservesSetoid.
-          - exact (ContinuousMapOnCpos_isMonotonic (proj1_sig sup_F) (proj2_sig sup_F)).
+          - exact (ContinuousMapOnCpos_isMonotonicMap (proj1_sig sup_F) (proj2_sig sup_F)).
           - symmetry...
         }
         assert (sup_X_eq_iteration_n_sup_F_bot : iteration n (proj1_sig sup_F) (proj1_sig bottom_exists) == sup_X) by exact (proj1 (isSupremum_of_image_f_X_iff_f_sup_X_eq (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) IH F F_isDirected sup_F sup_F_isSupremum sup_X) sup_X_isSupremum).
@@ -1541,7 +1541,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
           subst y0.
           transitivity (proj1_sig f_i sup_X).
           - simpl.
-            apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f_i) (proj2_sig f_i)).
+            apply (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f_i) (proj2_sig f_i)).
             apply sup_X_isSupremum...
           - transitivity (proj1_sig sup_F sup_X).
             + apply sup_F_isSupremum...
@@ -1567,7 +1567,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
             assert (so_we_obtain : proj1_sig f1 (iteration n (proj1_sig f2) (proj1_sig bottom_exists)) =< proj1_sig f3 (iteration n (proj1_sig f3) (proj1_sig bottom_exists))).
             { transitivity (proj1_sig f3 (iteration n (proj1_sig f2) (proj1_sig bottom_exists))).
               - apply f1_le_f3.
-              - apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f3) (proj2_sig f3)).
+              - apply (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f3) (proj2_sig f3)).
                 apply claim1...
             }
             transitivity (proj1_sig f3 (iteration n (proj1_sig f3) (proj1_sig bottom_exists)))...
@@ -1583,7 +1583,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       - exact Hle_x.
       - transitivity (proj1_sig f2 (iteration n (proj1_sig f1) x1)).
         + apply Hle_f.
-        + apply (ContinuousMapOnCpos_isMonotonic (proj1_sig f2) (proj2_sig f2)).
+        + apply (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f2) (proj2_sig f2)).
           apply (IH (f1, x1) (f2, x2)).
           split...
     }

@@ -42,8 +42,6 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros [x1 y1] [x2 y2]...
   Qed.
 
-  Global Notation "D1 >=> D2" := (@sig (D1 -> D2) (fun f : D1 -> D2 => isMonotonicMap f)) (at level 50, no associativity) : type_scope.
-
   Class isCompleteLattice {D : Type} (D_isPoset : isPoset D) : Type :=
     { supremum_always_exists_in_CompleteLattice :
       forall X : ensemble D,
