@@ -15,13 +15,13 @@ Module UntypedLamdbdaCalculus.
     nat
   .
 
-  Definition ivar_eq_dec :
+  Lemma ivar_eq_dec :
     forall x : ivar,
     forall y : ivar,
     {x = y} + {x <> y}.
   Proof.
     exact Nat.eq_dec.
-  Defined.
+  Qed.
 
   Inductive tm : Set :=
   | tmVar : forall x : ivar, tm

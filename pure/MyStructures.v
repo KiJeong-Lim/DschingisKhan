@@ -1137,7 +1137,7 @@ Module BasicTopology.
 
   Global Hint Unfold isContinuousMap : my_hints.
 
-  Global Notation " D1 '~>' D2 " := ({f : D1 -> D2 | isContinuousMap f}) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 '~>' D2 " := ({f : D1 -> D2 | isContinuousMap f}) (at level 100, right associativity) : type_scope.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
