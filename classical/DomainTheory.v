@@ -1445,11 +1445,9 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         destruct x1_in as [x0 [x1_is x0_in]].
         subst x1.
         inversion x0_in; subst.
-        transitivity (get_lfp_of f).
-        + transitivity (iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
-          * reflexivity.
-          * apply claim1...
-        + apply le_x.
+        transitivity (iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
+        + reflexivity.
+        + apply claim1...
       - intros x_is_an_upper_bound.
         apply claim1.
         intros x0 x0_in.
@@ -1477,10 +1475,9 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     enough (it_is_sufficient_to_show : forall y : D, y == proj1_sig f y -> get_lfp_of f =< y) by now split.
     intros y y_is_fixpoint_of_f.
     assert (claim5 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< y).
-    { induction n as [| n' IH].
+    { induction n as [| n' IH]; simpl.
       - apply (proj2_sig bottom_exists).
-      - simpl.
-        transitivity (proj1_sig f y)...
+      - transitivity (proj1_sig f y)...
     }
     apply claim1.
     intros x x_in.
@@ -1597,10 +1594,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       - apply (get_lfp_of_isSupremum_of_iterations f2)...
     }
     intros O O_isOpen.
-    assert (claim1 : forall n : nat, isOpen (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)).
-    { intros n.
-      apply (iteration_f_bottom_isContinuousMap_if_f_isContinuousMap n O O_isOpen).
-    }
+    assert (claim1 : forall n : nat, isOpen (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)) by exact (fun n : nat => iteration_f_bottom_isContinuousMap_if_f_isContinuousMap n O O_isOpen).
     assert (claim2 : isOpen (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O))).
     { apply open_unions.
       intros F [n F_eq].
@@ -1624,11 +1618,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       apply in_intersection_iff in f_i_in.
       destruct f_i_in as [f_i_in_iterations f_i_in_O].
       inversion f_i_in_iterations; subst.
-      apply in_unions_iff.
       exists (preimage (fun f_i : D ~> D => iteration n (proj1_sig f_i) (proj1_sig bottom_exists)) O)...
   Qed.
 
-  Definition getLeastFixedPoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} : (D ~> D) ~> D :=
+  Definition getLeastFixedPointOf {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} : (D ~> D) ~> D :=
     exist isContinuousMap (@get_lfp_of D D_isPoset D_isCompletePartialOrder) (@get_lfp_of_isContinuousMap D D_isPoset D_isCompletePartialOrder)
   .
 
