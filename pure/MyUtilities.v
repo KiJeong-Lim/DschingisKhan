@@ -90,6 +90,10 @@ Module MyUtilities.
     end
   .
 
+  Definition le_reflexivity : forall n1 : nat, n1 <= n1 :=
+    le_n
+  .
+
   Let le_transitivity_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
     fix le_transitivity_aux1_fix (n1 : nat) (n2 : nat) (Hle1 : le n1 n2) {struct Hle1} : forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
     match Hle1 in le _ m return forall n3 : nat, m <= n3 -> n1 <= n3 with
@@ -215,6 +219,20 @@ Module MyUtilities.
     | S n' =>
       fun Hle : S (S n') <= S n' =>
       not_n_lt_n_fix n' (le_elim_S_n_le_m (S n') (S n') Hle)
+    end
+  .
+
+  Definition le_asymmetry : forall n1 : nat, forall n2 : nat, n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    fun Hle1 : n1 <= n2 =>
+    match Hle1 in le _ m return m <= n1 -> n1 = m with
+    | le_n _ =>
+      fun Hle2 : n1 <= n1 =>
+      eq_reflexivity n1
+    | le_S _ m' Hle1' =>
+      fun Hle2 : S m' <= n1 =>
+      False_ind (n1 = S m') (not_n_lt_n m' (le_transitivity Hle2 Hle1'))
     end
   .
 
@@ -397,15 +415,6 @@ Module MyUtilities.
     exact (choice_eq_proof_irrelevance_prototype n (eq_lem_nat n) (choice_eqnat_is n)).
   Qed.
 
-  Corollary eqnat_K :
-    forall n : nat,
-    forall H_EQ : eqnat n n,
-    H_EQ = eq_reflexivity n.
-  Proof.
-    intros n H_EQ.
-    exact (eqnat_proof_irrelevance n n H_EQ (eq_reflexivity n)).
-  Qed.
-
   Let lenat : nat -> nat -> Prop :=
     le
   .
@@ -436,7 +445,7 @@ Module MyUtilities.
       end
     ).
     - intros H_EQ.
-      rewrite (eqnat_K n1 H_EQ).
+      rewrite (eqnat_proof_irrelevance n1 n1 H_EQ (eq_reflexivity n1)).
       reflexivity.
     - intros H_EQ.
       assert (Hlt : m2' < n1) by now rewrite H_EQ; constructor.
@@ -445,15 +454,11 @@ Module MyUtilities.
       assert (Hlt : m1' < n1) by now rewrite H_EQ; constructor.
       contradiction (le_lt_False n1 m1' H_LE1' Hlt).
     - intros H_EQ.
-      refine (
-        match S_eq_S_elim m2' m1' H_EQ in eq _ m return forall Heq : S m2' = S m, forall Hle1 : n1 <= m, le_S n1 m Hle1 = eq_ind (S m2') (le n1) (le_S n1 m2' H_LE2') (S m) Heq with
-        | eq_refl => _
-        end H_EQ H_LE1'
-      ).
-      intros h_EQ h_LE1'.
-      rewrite (eqnat_K (S m2') h_EQ).
-      apply (eq_congruence (le_S n1 m2') h_LE1' H_LE2').
-      exact (lenat_proof_irrelevance_fix m2' h_LE1' H_LE2').
+      assert (Heq : m2' = m1') by exact (S_eq_S_elim m2' m1' H_EQ).
+      destruct Heq as [].
+      rewrite (eqnat_proof_irrelevance (S m2') (S m2') H_EQ (eq_reflexivity (S m2'))).
+      apply (eq_congruence (le_S n1 m2')).
+      exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
   Qed.
 
   End ArithProofIrrelevance.
@@ -1178,20 +1183,37 @@ End MyUniverses.
 
 Module Scratch.
 
-  Import MyUtilities.
+  Import EqFacts MyUtilities.
 
   Inductive leq (n : nat) : nat -> Set :=
-  | leq_refl : leq n n
+  | leq_init : leq n n
   | leq_step : forall m : nat, leq n m -> leq n (S m)
   .
 
   Local Hint Constructors leq : core.
 
-  Lemma leq_reflexitivity :
+  Lemma leq_reflexivity :
     forall n : nat,
     leq n n.
   Proof.
-    exact leq_refl.
+    exact leq_init.
+  Qed.
+
+  Lemma leq_intro_leq_0_n :
+    forall n : nat,
+    leq 0 n.
+  Proof with eauto.
+    induction n as [| n IH]...
+  Qed.
+
+  Lemma leq_intro_leq_S_n_S_m :
+    forall n : nat,
+    forall m : nat,
+    leq n m ->
+    leq (S n) (S m).
+  Proof with eauto.
+    intros n m Hleq.
+    induction Hleq as [| m Hleq IH]...
   Qed.
 
   Lemma leq_transitivity :
@@ -1206,7 +1228,7 @@ Module Scratch.
     induction l; intros n m H H0; inversion H; subst...
   Qed.
 
-  Local Hint Resolve leq_reflexitivity leq_transitivity : core.
+  Local Hint Resolve leq_transitivity : core.
 
   Theorem accumulation_leq (phi : nat -> Type) :
     (forall n : nat, (forall i : nat, leq i n -> i <> n -> phi i) -> phi n) ->
@@ -1219,7 +1241,7 @@ Module Scratch.
     all: inversion leq_m_n; subst...
   Qed.
 
-  Proposition leq_implies_le :
+  Lemma leq_implies_le :
     forall n : nat,
     forall m : nat,
     leq n m ->
@@ -1229,21 +1251,17 @@ Module Scratch.
     induction Hleq as [| m Hleq IH]...
   Qed.
 
-  Proposition leq_intro_leq_0_n :
-    forall n : nat,
-    leq 0 n.
-  Proof with eauto.
-    induction n as [| n IH]...
-  Qed.
-
-  Proposition leq_intro_leq_S_n_S_m :
-    forall n : nat,
-    forall m : nat,
-    leq n m ->
-    leq (S n) (S m).
-  Proof with eauto.
-    intros n m Hleq.
-    induction Hleq as [| m Hleq IH]...
+  Lemma leq_asymmetry :
+    forall n1 : nat,
+    forall n2 : nat,
+    leq n1 n2 ->
+    leq n2 n1 ->
+    n1 = n2.
+  Proof.
+    intros n1 n2 Hleq1 Hleq2.
+    apply le_asymmetry.
+    - exact (leq_implies_le n1 n2 Hleq1).
+    - exact (leq_implies_le n2 n1 Hleq2).
   Qed.
 
   Lemma le_implies_leq :
