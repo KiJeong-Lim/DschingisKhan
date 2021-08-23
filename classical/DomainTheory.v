@@ -169,17 +169,17 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     reflexivity.
   Qed.
 
-  Definition preserves_Supremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
+  Definition preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D -> D') -> Prop :=
     fun f : D -> D' =>
     forall X : ensemble D,
     @isDirected D D_isPoset X ->
     exists sup_X : D, exists sup_Y : D', @isSupremum D D_isPoset sup_X X /\ @isSupremum D' D'_isPoset sup_Y (image f X) /\ @eqProp D' (@Poset_requiresSetoid D' D'_isPoset) (f sup_X) sup_Y
   .
 
-  Lemma f_preserves_Supremum_implies_f_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma f_preservesSupremum_implies_f_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    preserves_Supremum f ->
+    preservesSupremum f ->
     forall x1 : D,
     forall x2 : D,
     x1 =< x2 ->
@@ -209,16 +209,16 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     transitivity (sup_Y)...
   Qed.
 
-  Lemma show_image_f_X_isDirected_if_f_satisfies_preserves_Supremum_and_X_isDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma show_image_f_X_isDirected_if_f_satisfies_preservesSupremum_and_X_isDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    preserves_Supremum f -> 
+    preservesSupremum f -> 
     forall X : ensemble D,
     isDirected X ->
     isDirected (image f X).
   Proof with eauto with *.
     intros f f_preserves_eq f_property X X_isDirected.
-    assert (claim1 := f_preserves_Supremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
+    assert (claim1 := f_preservesSupremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
     destruct X_isDirected as [[x1_0 x1_0_in_X] X_closed_under_le].
     split.
     - exists (f x1_0)...
@@ -235,7 +235,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Theorem the_main_reason_for_introducing_ScottTopology {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
-    isContinuousMap f <-> preserves_Supremum f.
+    isContinuousMap f <-> preservesSupremum f.
   Proof with eauto with *.
     assert (claim1 : forall f : D >=> D', isContinuousMap (proj1_sig f) -> forall x1 : D, forall x2 : D, x1 =< x2 -> proj1_sig f x1 =< proj1_sig f x2) by apply (fun f : D >=> D' => ContinuousMapOnCpos_isMonotonicMap (proj1_sig f)).
     intros f f_preserves_eq.
@@ -247,7 +247,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       assert (claim3 := ContinuousMapsOnCpos_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X).
       exists sup_X, (f sup_X)...
     - intros f_property.
-      assert (claim4 := f_preserves_Supremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
+      assert (claim4 := f_preservesSupremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
       intros O O_isOpen.
       split.
       + intros x1 x2 x_in_preimage_f_O x_le_y.
@@ -258,7 +258,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         destruct (f_property X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_X f_sup_X'_eq_sup_Y']]]].
         assert (sup_X_eq_sup_X' : sup_X == sup_X') by now apply (isSupremum_unique X).
         assert (f_sup_X_in_O : member (f sup_X) O) by now apply in_preimage_iff.
-        assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_preserves_Supremum_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
+        assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_preservesSupremum_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
         assert (claim6 : sup_Y' == f sup_X).
         { transitivity (f sup_X').
           - symmetry...
@@ -280,7 +280,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     @SubPoset (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder)) (arrow_isPoset D'_isPoset)
   .
 
-  Definition squig_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D ~> D') -> (D >=> D') :=
+  Definition squig_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D ~> D') -> (D >=> D') :=
     fun f : D ~> D' =>
     exist isMonotonicMap (proj1_sig f) (ContinuousMapOnCpos_isMonotonicMap (proj1_sig f) (proj2_sig f))
   .
@@ -328,21 +328,6 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     - apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i x2) F) (Supremum_of_squigs_is_well_defined F F_isDirected x2))...
   Qed.
 
-  Lemma useful_lemma_for_f_i_sup_X {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
-    forall F : ensemble (D ~> D'),
-    forall F_isDirected : isDirected F,
-    forall X : ensemble D,
-    isDirected X ->
-    forall sup_X : D,
-    isSupremum sup_X X ->
-    forall f_i : D ~> D',
-    member f_i F ->
-    isSupremum (proj1_sig f_i sup_X) (image (fun x : D => proj1_sig f_i x) X).
-  Proof with eauto with *.
-    intros F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X f_i f_i_in.
-    apply (isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f_i) (proj2_sig f_i) X X_isDirected sup_X sup_X_isSupremum_of_X)...
-  Qed.
-
   Lemma Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall F : ensemble (D ~> D'),
     forall F_isDirected : isDirected F,
@@ -353,7 +338,14 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isSupremum (Supremum_of_squigs F F_isDirected sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F)).
   Proof with eauto with *.
     intros F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X.
-    assert (claim1 := useful_lemma_for_f_i_sup_X F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
+    assert ( claim1 :
+      forall f_i : D ~> D',
+      member f_i F ->
+      isSupremum (proj1_sig f_i sup_X) (image (fun x : D => proj1_sig f_i x) X)
+    ).
+    { intros f_i f_i_in.
+      apply (isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f_i) (proj2_sig f_i) X X_isDirected sup_X sup_X_isSupremum_of_X)...
+    }
     assert (claim2 : isSupremum (Supremum_of_squigs F F_isDirected sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by now apply (square_up_isSupremum (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (Supremum_of_squigs_is_well_defined F F_isDirected sup_X)).
     apply isSupremum_unions_Xs_iff_isSupremum_image_sup_Xs.
     - intros ys ys_in.
@@ -467,7 +459,14 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim1 := Supremum_of_squigs_isMonotonic F F_isDirected).
     intros X X_isDirected sup_X sup_X_isSupremum_of_X.
     set (Y := image f X).
-    assert (claim2 := useful_lemma_for_f_i_sup_X F F_isDirected X X_isDirected sup_X sup_X_isSupremum_of_X).
+    assert ( claim2 :
+      forall f_i : D ~> D',
+      member f_i F ->
+      isSupremum (proj1_sig f_i sup_X) (image (fun x : D => proj1_sig f_i x) X)
+    ).
+    { intros f_i f_i_in.
+      apply (isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f_i) (proj2_sig f_i) X X_isDirected sup_X sup_X_isSupremum_of_X)...
+    }
     assert (claim3 : isSupremum (f sup_X) (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F)) by apply (proj2_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i sup_X) F) (Supremum_of_squigs_is_well_defined F F_isDirected sup_X))).
     assert (claim4 : isSupremum (f sup_X) (unions (image (fun f_i : D ~> D' => image (fun x : D => proj1_sig f_i x) X) F))) by now apply Supremum_of_squigs_sup_X_isSupremum_unions_i_image_f_i_X_F.
     assert (claim5 : isSupremum (f sup_X) (unions (image (fun x : D => image (fun f_i : D ~> D' => proj1_sig f_i x) F) X))) by now apply lemma1_on_Supremum_commutation.
