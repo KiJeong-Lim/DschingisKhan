@@ -7,14 +7,14 @@ Module FunFacts.
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B
     ; _j : B -> A
-    ; _inv : forall a : A, _j (_i a) = a
+    ; _inv : forall x : A, _j (_i x) = x
     }
   .
 
   Record RETRACT_CONDITIONAL (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
-    ; _inv2 : RETRACT A B -> forall a : A, _j2 (_i2 a) = a
+    ; _inv2 : RETRACT A B -> forall x : A, _j2 (_i2 x) = x
     }
   .
 
@@ -29,7 +29,7 @@ Module FunFacts.
 
   Local Hint Resolve RETRACT_ID : core.
 
-  Lemma FIND_FIXED_POINT_COMBINATOR (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
+  Lemma FIND_FIXEDPOINT_COMBINATOR (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
     destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
@@ -44,6 +44,17 @@ Module FunFacts.
   | TRUE_BB : BB
   | FALSE_BB : BB
   .
+
+  Lemma TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance :
+    TRUE_BB = FALSE_BB ->
+    forall BOOL : Prop,
+    forall TRUE : BOOL,
+    forall FALSE : BOOL,
+    TRUE = FALSE.
+  Proof.
+    intros Heq BOOL TRUE FALSE.
+    exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB Heq).
+  Qed.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -225,12 +236,12 @@ Module FunFacts.
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
-    forall BOOL : Prop,
-    forall TRUE : BOOL,
-    forall FALSE : BOOL,
-    TRUE = FALSE.
+    forall P : Prop,
+    forall p1 : P,
+    forall p2 : P,
+    p1 = p2.
   Proof.
-    enough (it_is_sufficient_to_show : TRUE_BB = FALSE_BB) by exact (fun BOOL : Prop => fun TRUE : BOOL => fun FALSE : BOOL => eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB it_is_sufficient_to_show).
+    apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
     destruct (exclusive_middle (RUSSELL = TRUE_BB)) as [H_RUSSELL_eq_TRUE_BB | H_RUSSELL_ne_TRUE_BB].
     - rewrite <- H_RUSSELL_eq_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.
@@ -290,7 +301,7 @@ Module FunFacts.
   Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell :
     TRUE_BB = FALSE_BB.
   Proof.
-    destruct (FIND_FIXED_POINT_COMBINATOR BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
+    destruct (FIND_FIXEDPOINT_COMBINATOR BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
     set (RUSSELL := Y NOT_BB).
     assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by now apply Y_spec.
     unfold NOT_BB in PARADOX_OF_RUSSELL.
@@ -317,12 +328,12 @@ Module FunFacts.
   Qed.
 
   Theorem propositional_extensionality_implies_proof_irrelevance :
-    forall BOOL : Prop,
-    forall TRUE : BOOL,
-    forall FALSE : BOOL,
-    TRUE = FALSE.
+    forall P : Prop,
+    forall p1 : P,
+    forall p2 : P,
+    p1 = p2.
   Proof.
-    enough (it_is_sufficient_to_show : TRUE_BB = FALSE_BB) by exact (fun BOOL : Prop => fun TRUE : BOOL => fun FALSE : BOOL => eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB it_is_sufficient_to_show).
+    apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
     assert (BB_inhabited : inhabited BB) by repeat constructor.
     exact (untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
   Qed.
