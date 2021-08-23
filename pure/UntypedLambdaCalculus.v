@@ -40,7 +40,7 @@ Module UntypedLamdbdaCalculus.
     - destruct (ivar_eq_dec y y0); destruct (IHM1 M2)...
   Defined.
 
-  Section Subterm.
+  Section SUBTERM.
 
   Fixpoint getRank (M : tm) {struct M} : nat :=
     match M with
@@ -162,7 +162,7 @@ Module UntypedLamdbdaCalculus.
     exact (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
   Defined.
 
-  End Subterm.
+  End SUBTERM.
 
   Fixpoint getFVs (M : tm) : list ivar :=
     match M with
@@ -187,7 +187,7 @@ Module UntypedLamdbdaCalculus.
     induction M...
   Qed.
 
-  Section Substitution. (* Reference: "https://github.com/ernius/formalmetatheory-stoughton/tree/7eea5b526ec58a49838daa7b21b02fafcbf9065e" *)
+  Section SUBSTITUTION. (* Reference: "https://github.com/ernius/formalmetatheory-stoughton/tree/7eea5b526ec58a49838daa7b21b02fafcbf9065e" *)
 
   Definition substitution : Set :=
     ivar -> tm
@@ -213,7 +213,8 @@ Module UntypedLamdbdaCalculus.
   .
 
   Definition get_max_ivar : tm -> ivar :=
-    fun M : tm => fold_right_max_0 (getFVs M)
+    fun M : tm =>
+    fold_right_max_0 (getFVs M)
   .
 
   Lemma get_max_ivar_lt (M : tm) :
@@ -347,7 +348,7 @@ Module UntypedLamdbdaCalculus.
   Proof with auto_rewrite.
     unfold chi.
     intros sigma1 sigma2 M H.
-    enough (H0 : (map (fun x : ivar => get_max_ivar (sigma1 x)) (getFVs M)) = (map (fun x : ivar => get_max_ivar (sigma2 x)) (getFVs M))) by congruence.
+    enough (it_is_sufficient_to_show : (map (fun x : ivar => get_max_ivar (sigma1 x)) (getFVs M)) = (map (fun x : ivar => get_max_ivar (sigma2 x)) (getFVs M))) by congruence.
     apply map_ext_in.
     intros x H0.
     rewrite (H x (proj1 (getFVs_isFreeIn M x) H0))...
@@ -634,7 +635,7 @@ Module UntypedLamdbdaCalculus.
       destruct H as [H | H]; [rewrite H0 in H | contradiction n]...
   Qed.
 
-  End Substitution.
+  End SUBSTITUTION.
 
   Class isPreLambdaStructure (Dom : Type) `{Dom_isSetoid : isSetoid Dom} : Type :=
     { runApp : Dom -> (Dom -> Dom)
@@ -655,10 +656,6 @@ Module UntypedLamdbdaCalculus.
     }
   .
 
-  Global Hint Resolve runApp_ext : my_hints.
-
-  Global Hint Resolve runLam_ext : my_hints.
-
   Section PreliminariesOfSemantics.
 
   Context {D : Type} `{D_isSetoid : isSetoid D} `{D_isPreLambdaStructure : @isPreLambdaStructure D D_isSetoid}.
@@ -667,12 +664,11 @@ Module UntypedLamdbdaCalculus.
     ivar -> D
   .
 
-  Definition eval_tm : env -> tm -> D :=
-    fix eval_tm_fix (E : env) (M : tm) {struct M} : D :=
+  Fixpoint eval_tm (E : env) (M : tm) {struct M} : D :=
     match M with
     | tmVar x => E x
-    | tmApp P1 P2 => runApp (eval_tm_fix E P1) (eval_tm_fix E P2)
-    | tmLam y Q => runLam (fun v : D => eval_tm_fix (fun z : ivar => if ivar_eq_dec y z then v else E z) Q)
+    | tmApp P1 P2 => runApp (eval_tm E P1) (eval_tm E P2)
+    | tmLam y Q => runLam (fun v : D => eval_tm (fun z : ivar => if ivar_eq_dec y z then v else E z) Q)
     end
   .
 
@@ -687,13 +683,12 @@ Module UntypedLamdbdaCalculus.
     - intros E1 E2 H.
       apply H...
     - intros E1 E2 H.
-      apply runApp_ext; [apply IHM1 | apply IHM2].
-      all: intros z H0; apply H...
+      apply runApp_ext; [apply IHM1 | apply IHM2]; intros z H0; apply H...
     - intros E1 E2 H.
       apply runLam_ext.
       intros v.
       apply (IHM (fun z : ivar => if ivar_eq_dec y z then v else E1 z) (fun z : ivar => if ivar_eq_dec y z then v else E2 z))...
-      destruct (ivar_eq_dec y z); [reflexivity | apply H]...
+      destruct (ivar_eq_dec y z); [subst | apply H]...
   Qed.
 
   Local Hint Resolve eval_tm_ext : core.
@@ -707,12 +702,12 @@ Module UntypedLamdbdaCalculus.
     induction M.
     - intros sigma E...
     - intros sigma E.
-      simpl...
+      apply runApp_ext...
     - intros sigma E.
-      enough (claim1 : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z) (run_substitution_on_tm (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) M)) by now apply runLam_ext.
+      enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z) (run_substitution_on_tm (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) M)) by now apply runLam_ext.
       intros v.
       assert (H := IHM (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z)).
-      assert ( claim2 :
+      assert ( claim1 :
         forall z : ivar,
         isFreeIn z M = true ->
         eval_tm (fun x : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) x then v else E x) (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma z) == (if ivar_eq_dec y z then v else eval_tm E (sigma z))
@@ -747,12 +742,5 @@ Module UntypedLamdbdaCalculus.
   .
 
   Local Hint Constructors beta1 : core.
-
-  Global Notation " M '~~beta~>*' N " := (clos_refl_trans_n1 tm beta1 M N) (at level 70, no associativity) : type_scope.
-
-  Definition getDeBruijnIndex : ivar -> forall xs : list ivar, option (FinSet (length xs)) :=
-    fun x : ivar =>
-    elemIndex x (ivar_eq_dec x)
-  .
 
 End UntypedLamdbdaCalculus.
