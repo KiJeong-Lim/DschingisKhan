@@ -544,7 +544,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma bot_of_squigs_isContinuousMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     isContinuousMap (fun _ : D => proj1_sig bottom_exists).
   Proof with eauto with *.
-    intros Y Y_isOpen.
+    intros O O_isOpen.
     split.
     - intros x1 x2 x1_in x1_le_x2.
       apply (in_preimage_iff x1) in x1_in...
@@ -559,11 +559,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma bot_of_squigs_isBottom {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D ~> D',
     bot_of_squigs =< f.
-  Proof with eauto with *.
-    unfold bot_of_squigs.
-    intros f x.
-    simpl.
-    apply (proj2_sig bottom_exists).
+  Proof.
+    exact (fun f : D ~> D' => fun x : D => proj2_sig bottom_exists (proj1_sig f x)).
   Qed.
 
   Global Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@SubPoset (D -> D') isContinuousMap (arrow_isPoset D'_isPoset)) :=
@@ -897,7 +894,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       forall x2 : D2,
       exists sup_X1_x2 : D1, exists sup_f_X1_x2 : D3, isSupremum sup_X1_x2 X1 /\ isSupremum sup_f_X1_x2 (image (fun x1 : D1 => f (x1, x2)) X1) /\ f (sup_X1_x2, x2) == sup_f_X1_x2
     ).
-    { intros x1.
+    { intros x2.
       apply the_main_reason_for_introducing_ScottTopology...
     }
     set (sup_X1 := proj1_sig (square_up_exists X1 claim1)).
@@ -905,7 +902,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     fold sup_X1 sup_X2 in mayday.
     assert (claim5 := proj2_sig (square_up_exists X1 claim1)).
     assert (claim6 := proj2_sig (square_up_exists X2 claim2)).
-    simpl in claim5, claim6.
+    cbn beta in claim5, claim6.
     fold sup_X1 in claim5.
     fold sup_X2 in claim6.
     assert (claim7 : isSupremum (f (sup_X1, sup_X2)) (image (fun x2 : D2 => f (sup_X1, x2)) X2)).
@@ -1031,20 +1028,6 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     fold claim1 claim2 in mayday.
     fold X1 in claim1, mayday.
     fold X2 in claim2, mayday.
-    assert ( claim3 :
-      forall x1 : D1,
-      exists sup_X2_x1 : D2, exists sup_f_X2_x1 : D3, isSupremum sup_X2_x1 X2 /\ isSupremum sup_f_X2_x1 (image (fun x2 : D2 => f (x1, x2)) X2) /\ f (x1, sup_X2_x1) == sup_f_X2_x1
-    ).
-    { intros x1.
-      apply the_main_reason_for_introducing_ScottTopology...
-    }
-    assert ( claim4 :
-      forall x2 : D2,
-      exists sup_X1_x2 : D1, exists sup_f_X1_x2 : D3, isSupremum sup_X1_x2 X1 /\ isSupremum sup_f_X1_x2 (image (fun x1 : D1 => f (x1, x2)) X1) /\ f (sup_X1_x2, x2) == sup_f_X1_x2
-    ).
-    { intros x1.
-      apply the_main_reason_for_introducing_ScottTopology...
-    }
     set (sup_X1 := proj1_sig (square_up_exists X1 claim1)).
     set (sup_X2 := proj1_sig (square_up_exists X2 claim2)).
     fold sup_X1 sup_X2 in mayday.
@@ -1053,7 +1036,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     cbn beta in sup_X1_isSupremum, sup_X2_isSupremum.
     fold sup_X1 in sup_X1_isSupremum.
     fold sup_X2 in sup_X2_isSupremum.
-    assert (claim7 := f_sup_X1_sup_X2_isSupremum_f_X1_X2 f f1_continuous f2_continuous X X_isDirected sup_X1 sup_X1_isSupremum sup_X2 sup_X2_isSupremum)...
+    assert (it_is_sufficient_to_show := f_sup_X1_sup_X2_isSupremum_f_X1_X2 f f1_continuous f2_continuous X X_isDirected sup_X1 sup_X1_isSupremum sup_X2 sup_X2_isSupremum)...
   Qed.
 
   Lemma separately_continuous_iff {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} `{D1_isCompletePartialOrder : @isCompletePartialOrder D1 D1_isPoset} `{D2_isCompletePartialOrder : @isCompletePartialOrder D2 D2_isPoset} `{D3_isCompletePartialOrder : @isCompletePartialOrder D3 D3_isPoset} :
@@ -1103,14 +1086,9 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isContinuousMap (fun p : (D ~> D') * D => ScottApp_aux1 p).
   Proof with (membership || eauto with *).
     apply show_that_f_isContinuousMap_if_f1_isContinuousMap_and_f2_isContinuousMap.
-    - unfold ScottApp_aux1.
-      simpl.
-      intros f...
+    - exact (fun f : D ~> D' => proj2_sig f).
     - intros x.
-      assert (mayday : isMonotonicMap (fun f : D ~> D' => ScottApp_aux1 (f, x))).
-      { intros f1 f2 f1_le_f2.
-        unfold ScottApp_aux1...
-      }
+      assert (mayday : isMonotonicMap (fun f : D ~> D' => ScottApp_aux1 (f, x))) by now unfold ScottApp_aux1.
       apply the_main_reason_for_introducing_ScottTopology.
       + intros f1 f2 Heq_f.
         apply ScottApp_aux1_preserves_eq...
