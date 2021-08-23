@@ -275,17 +275,13 @@ Module FunFacts.
 
   Variable phi : nat -> Prop.
 
-  Theorem exclusive_middle_implies_unrestricted_minimization :
-    forall n : nat,
-    phi n ->
+  Theorem exclusive_middle_implies_unrestricted_minimization (n : nat) (phi_n : phi n) :
     exists n_min : nat, isMinimal n_min phi.
   Proof.
-    intros n phi_n.
     destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
     - enough (claim1 : ~ phi n) by contradiction claim1.
-      pattern n.
-      apply strong_induction.
-      intros i acc phi_i.
+      apply (@strong_induction (fun x : nat => ~ phi x)).
+      intros i acc_hyp phi_i.
       contradiction (H_yes i).
       split.
       + exact phi_i.

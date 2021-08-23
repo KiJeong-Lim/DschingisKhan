@@ -40,6 +40,8 @@ Module UntypedLamdbdaCalculus.
     - destruct (ivar_eq_dec y y0); destruct (IHM1 M2)...
   Defined.
 
+  Section Subterm.
+
   Fixpoint getRank (M : tm) {struct M} : nat :=
     match M with
     | tmVar x => 0
@@ -54,6 +56,8 @@ Module UntypedLamdbdaCalculus.
   | subtmAppR : forall M : tm, forall P1 : tm, forall P2 : tm, subtm M P2 -> subtm M (tmApp P1 P2)
   | subtmLAbs : forall M : tm, forall y : ivar, forall Q : tm, subtm M Q -> subtm M (tmLam y Q)
   .
+
+  Local Hint Constructors subtm : core.
 
   Lemma subtm_getRank :
     forall M : tm,
@@ -84,7 +88,7 @@ Module UntypedLamdbdaCalculus.
     forall M1 : tm,
     subtm M1 M1.
   Proof.
-    apply subtmRefl.
+    exact subtmRefl.
   Qed.
 
   Lemma subtm_asym :
@@ -110,9 +114,6 @@ Module UntypedLamdbdaCalculus.
   Proof with eauto.
     enough (claim1 : forall L : tm, forall N : tm, forall M : tm, subtm N L -> subtm M N -> subtm M L) by firstorder.
     induction L; intros N M H H0; inversion H; subst...
-    - constructor 2...
-    - constructor 3...
-    - constructor 4...
   Qed.
 
   Local Hint Resolve subtm_refl subtm_asym subtm_trans : core.
@@ -160,6 +161,8 @@ Module UntypedLamdbdaCalculus.
     }
     exact (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
   Defined.
+
+  End Subterm.
 
   Fixpoint getFVs (M : tm) : list ivar :=
     match M with

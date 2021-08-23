@@ -28,7 +28,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       y =< z ->
       member z (U x)
     ).
-    { intros x y z y_in_U_x y_le_z z_in_U_x.
+    { intros x y z y_in_U_x y_le_z z_le_x.
       contradiction y_in_U_x...
     }
     intros x.

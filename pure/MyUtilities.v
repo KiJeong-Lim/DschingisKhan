@@ -1175,3 +1175,90 @@ Module MyUniverses.
   .
 
 End MyUniverses.
+
+Module Scratch.
+
+  Import MyUtilities.
+
+  Inductive leq (n : nat) : nat -> Set :=
+  | leq_refl : leq n n
+  | leq_step : forall m : nat, leq n m -> leq n (S m)
+  .
+
+  Local Hint Constructors leq : core.
+
+  Lemma leq_reflexitivity :
+    forall n : nat,
+    leq n n.
+  Proof.
+    exact leq_refl.
+  Qed.
+
+  Lemma leq_transitivity :
+    forall n1 : nat,
+    forall n2 : nat,
+    forall n3 : nat,
+    leq n1 n2 ->
+    leq n2 n3 ->
+    leq n1 n3.
+  Proof with eauto.
+    enough (it_is_sufficient_to_show : forall l : nat, forall n : nat, forall m : nat, leq n l -> leq m n -> leq m l) by firstorder.
+    induction l; intros n m H H0; inversion H; subst...
+  Qed.
+
+  Local Hint Resolve leq_reflexitivity leq_transitivity : core.
+
+  Theorem accumulation_leq (phi : nat -> Type) :
+    (forall n : nat, (forall i : nat, leq i n -> i <> n -> phi i) -> phi n) ->
+    forall n : nat,
+    phi n.
+  Proof with (congruence || eauto).
+    intros acc_hyp.
+    enough (it_is_sufficient_to_show : forall n : nat, forall i : nat, leq i n -> phi i)...
+    induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
+    all: inversion leq_m_n; subst...
+  Qed.
+
+  Proposition leq_implies_le :
+    forall n : nat,
+    forall m : nat,
+    leq n m ->
+    n <= m.
+  Proof with eauto.
+    intros n m Hleq.
+    induction Hleq as [| m Hleq IH]...
+  Qed.
+
+  Proposition leq_intro_leq_0_n :
+    forall n : nat,
+    leq 0 n.
+  Proof with eauto.
+    induction n as [| n IH]...
+  Qed.
+
+  Proposition leq_intro_leq_S_n_S_m :
+    forall n : nat,
+    forall m : nat,
+    leq n m ->
+    leq (S n) (S m).
+  Proof with eauto.
+    intros n m Hleq.
+    induction Hleq as [| m Hleq IH]...
+  Qed.
+
+  Lemma le_implies_leq :
+    forall n : nat,
+    forall m : nat,
+    n <= m ->
+    leq n m.
+  Proof.
+    induction n as [| n IH].
+    - intros m Hle.
+      apply leq_intro_leq_0_n.
+    - intros [| m] Hle.
+      + exact (lt_elim_n_lt_0 n Hle).
+      + apply leq_intro_leq_S_n_S_m, IH.
+        exact (le_elim_S_n_le_m n (S m) Hle).
+  Qed.
+
+End Scratch.
