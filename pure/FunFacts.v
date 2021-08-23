@@ -20,16 +20,40 @@ Module FunFacts.
 
   Local Hint Constructors RETRACT RETRACT_CONDITIONAL : core.
 
-  Lemma RETRACT_ID (A : Prop) :
+  Definition get_i {A : Prop} {B : Prop} : RETRACT A B -> A -> B :=
+    _i A B
+  .
+
+  Definition get_j {A : Prop} {B : Prop} : RETRACT A B -> B -> A :=
+    _j A B
+  .
+
+  Definition get_inv {A : Prop} {B : Prop} : forall r : RETRACT A B, forall x : A, get_j r (get_i r x) = x :=
+    _inv A B
+  .
+
+  Definition get_i2 {A : Prop} {B : Prop} : RETRACT_CONDITIONAL A B -> A -> B :=
+    _i2 A B
+  .
+
+  Definition get_j2 {A : Prop} {B : Prop} : RETRACT_CONDITIONAL A B -> B -> A :=
+    _j2 A B
+  .
+
+  Definition get_inv2 {A : Prop} {B : Prop} : forall r : RETRACT_CONDITIONAL A B, RETRACT A B -> forall x : A, get_j2 r (get_i2 r x) = x :=
+    _inv2 A B
+  .
+
+  Lemma RETRACT_A_A (A : Prop) :
     RETRACT A A.
   Proof.
     exists (fun x : A => x) (fun x : A => x).
     exact (@eq_refl A).
   Qed.
 
-  Local Hint Resolve RETRACT_ID : core.
+  Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
-  Lemma FIND_FIXEDPOINT_COMBINATOR (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
+  Lemma find_fixedpoint_combinator (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
     destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
@@ -125,25 +149,17 @@ Module FunFacts.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
-  Let inv2 {A : Prop} {B : Prop} : forall r : RETRACT_CONDITIONAL A B, RETRACT A B -> forall a : A, _j2 A B r (_i2 A B r a) = a :=
-    _inv2 A B
-  .
-
   Let POW : Prop -> Prop :=
     fun P : Prop =>
     P ->
     BB
   .
 
-  Let RETRACT_CONDITIONAL_POW_A_POW_B :
-    forall A : Prop,
-    forall B : Prop,
+  Let RETRACT_CONDITIONAL_POW_A_POW_B (A : Prop) (B : Prop) :
     RETRACT_CONDITIONAL (POW A) (POW B).
   Proof with tauto.
-    intros A B.
     destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [H_yes | H_no].
-    - destruct H_yes as [i j inv].
-      exists i j...
+    - exact ({| _i2 := get_i H_yes; _j2 := get_j H_yes; _inv2 := fun _ : RETRACT (POW A) (POW B) => get_inv H_yes |}).
     - exists (fun pa : POW A => fun b : B => FALSE_BB) (fun pb : POW B => fun a : A => FALSE_BB)...
   Qed.
 
@@ -163,8 +179,8 @@ Module FunFacts.
   Let SET_BUILDER_NOTATION : (UNIV -> BB) -> UNIV :=
     fun phi : UNIV -> BB =>
     fun P : Prop =>
-    let LEFT : POW UNIV -> POW P := _j2 (POW P) (POW UNIV) (RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
-    let RIGHT : POW UNIV -> POW UNIV := _i2 (POW UNIV) (POW UNIV) (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
+    let LEFT : POW UNIV -> POW P := get_j2 (RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
+    let RIGHT : POW UNIV -> POW UNIV := get_i2 (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
     LEFT (RIGHT phi)
   .
 
@@ -200,24 +216,18 @@ Module FunFacts.
 
   Local Notation " ¬ b " := (NOT_BB b) (at level 55, right associativity) : type_scope.
 
-  Let NOT_BB_SPEC1 :
-    forall b : BB,
-    (b = TRUE_BB) ->
+  Let NOT_BB_SPEC1 (b : BB) (if_b_eq_TRUE_BB : b = TRUE_BB) :
     (¬ b) = FALSE_BB.
   Proof with tauto.
     unfold NOT_BB.
-    intros b.
-    destruct (exclusive_middle (b = TRUE_BB)); simpl...
+    destruct (exclusive_middle (b = TRUE_BB))...
   Qed.
 
-  Let NOT_BB_SPEC2 :
-    forall b : BB,
-    ~ (b = TRUE_BB) ->
+  Let NOT_BB_SPEC2 (b : BB) (if_b_ne_TRUE_BB : b <> TRUE_BB) :
     (¬ b) = TRUE_BB.
   Proof with tauto.
     unfold NOT_BB.
-    intros b.
-    destruct (exclusive_middle (b = TRUE_BB)); simpl...
+    destruct (exclusive_middle (b = TRUE_BB))...
   Qed.
 
   Let R : UNIV :=
@@ -263,7 +273,7 @@ Module FunFacts.
     phi n /\ (forall m : nat, phi m -> n <= m)
   .
 
-  Context (phi : nat -> Prop).
+  Variable phi : nat -> Prop.
 
   Theorem exclusive_middle_implies_unrestricted_minimization :
     forall n : nat,
@@ -301,9 +311,9 @@ Module FunFacts.
   Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell :
     TRUE_BB = FALSE_BB.
   Proof.
-    destruct (FIND_FIXEDPOINT_COMBINATOR BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
+    destruct (find_fixedpoint_combinator BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
     set (RUSSELL := Y NOT_BB).
-    assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by now apply Y_spec.
+    assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by exact (Y_spec NOT_BB).
     unfold NOT_BB in PARADOX_OF_RUSSELL.
     now destruct RUSSELL.
   Qed.
@@ -317,8 +327,8 @@ Module FunFacts.
   Let D_coerce_D_ARROW_D_for_any_inhabited_Prop_D (D : Prop) (D_inhabited : inhabited D) :
     D = (D -> D).
   Proof with tauto.
-    destruct D_inhabited as [d0].
-    apply (propositional_extensionality D (D -> D))...
+    destruct D_inhabited as [D_holds].
+    apply propositional_extensionality...
   Qed.
 
   Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (D : Prop) (D_inhabited : inhabited D) :
