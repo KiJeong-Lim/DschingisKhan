@@ -34,16 +34,15 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     intros x.
     split...
     intros X [nonempty_X X_closed_under_le] sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
-    assert (JuneyoungJang'sAdvice : ~ (forall x' : D, x' =< x \/ ~ member x' X)).
+    assert (JuneyoungJang'sAdvice : ~ (forall x0 : D, member x0 X -> x0 =< x)).
     { intros every_member_of_X_is_either_less_than_or_equal_to_x.
       contradiction sup_X_in_U_x.
-      apply (proj2 (sup_X_isSupremum_of_X x)).
-      now firstorder.
+      exact (proj2 (sup_X_isSupremum_of_X x) every_member_of_X_is_either_less_than_or_equal_to_x).
     }
-    destruct (not_all_ex_not D (fun x0 : D => (x0 =< x \/ ~ member x0 X)) JuneyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
+    destruct (not_all_ex_not D (fun x0 : D => (member x0 X -> x0 =< x)) JuneyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
     exists x0.
     apply in_intersection_iff.
-    destruct (classic (member x0 X)); tauto.
+    classic_tauto.
   Qed.
 
   Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -54,11 +53,11 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     intros f f_continuous x1 x2 x1_le_x2.
     apply NNPP.
     intros f_x1_le_f_x2_is_false.
-    assert (f_x1_in_U_f_x2 : member (f x1) (U (f x2))) by now unfold U.
+    assert (f_x1_in_U_f_x2 : member (f x1) (U (f x2))) by exact f_x1_le_f_x2_is_false.
     assert (x1_in_preimage_f_U_f_x2 : member x1 (preimage f (U (f x2)))) by now constructor.
     assert (preimage_f_U_f_x2_isOpen : isOpen (preimage f (U (f x2)))) by now apply f_continuous, U_x_isOpen.
-    assert (x2_in_f_U_f_x2 : member x2 (preimage f (U (f x2)))) by now apply (proj1 preimage_f_U_f_x2_isOpen x1 x2).
-    assert (f_x2_in_U_f_x2 : member (f x2) (U (f x2))) by now inversion x2_in_f_U_f_x2.
+    assert (x2_in_preimage_f_U_f_x2 : member x2 (preimage f (U (f x2)))) by now apply (proj1 preimage_f_U_f_x2_isOpen x1 x2).
+    assert (f_x2_in_U_f_x2 : member (f x2) (U (f x2))) by now inversion x2_in_preimage_f_U_f_x2; subst.
     now contradiction f_x2_in_U_f_x2.
   Qed.
 

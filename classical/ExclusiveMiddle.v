@@ -109,4 +109,8 @@ Module ExclusiveMiddle.
 
   End Classical_Pred_Type.
 
+  Global Ltac classic_tauto :=
+    apply NNPP; tauto
+  .
+
 End ExclusiveMiddle.
