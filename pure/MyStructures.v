@@ -1162,8 +1162,6 @@ Module BasicTopology.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
 
-  Local Hint Resolve open_ext_eq : core.
-
   Context (A : Type) (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
 
   Let is_subset_rep : ensemble (@sig A P) -> ensemble A -> Prop :=
