@@ -74,6 +74,13 @@ Module ExclusiveMiddle.
     destruct (classic P)...
   Qed.
 
+  Lemma law1_of_DeMorgan :
+    ~ (~ P /\ ~ Q) ->
+    P \/ Q.
+  Proof with tauto.
+    destruct (classic (P \/ Q))...
+  Qed.
+
   End Classical_Prop.
 
   Section Classical_Pred_Type.
@@ -109,8 +116,24 @@ Module ExclusiveMiddle.
 
   End Classical_Pred_Type.
 
+  Local Ltac classic_tauto_aux1 P :=
+    match P with
+    | ?P1 /\ ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
+    | ?P1 \/ ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
+    | ?P1 -> ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
+    | ~ ?P1 => classic_tauto_aux1 P1
+    | True => idtac
+    | False => idtac
+    | ?x = ?x => idtac
+    | forall x : ?A, ?B => intro x; classic_tauto_aux1 B
+    | ?Atom => destruct (classic Atom)
+    end
+  .
+
   Global Ltac classic_tauto :=
-    apply NNPP; tauto
+    match goal with
+    | |- ?P => classic_tauto_aux1 P; tauto
+    end
   .
 
 End ExclusiveMiddle.
