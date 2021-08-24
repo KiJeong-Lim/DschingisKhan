@@ -27,7 +27,7 @@ coqc -Q . DschingisKhan pure/FunFacts.v
 coqc -Q . DschingisKhan pure/MyStructures.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
-coqc -Q . DschingisKhan pure/SetTheory.v
+coqc -Q . DschingisKhan pure/AczelSet.v
 coqc -Q . DschingisKhan pure/CBA.v
 coqc -Q . DschingisKhan pure/MyCoin.v
 coqc -Q . DschingisKhan classical/ExclusiveMiddle.v

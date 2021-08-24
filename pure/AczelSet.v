@@ -6,7 +6,7 @@ Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
+Module ConstructiveTheoryOfAczelTree. (* Thanks to Hanul Jeon *)
 
   Import MyUtilities MyUniverses BasicSetoidTheory BasicPosetTheory.
 
@@ -455,4 +455,4 @@ Module ConstructiveSetTheory. (* Thanks to Hanul Jeon *)
     apply (ext_cong (childTreeOf (RootNode children childtrees) key))...
   Qed.
 
-End ConstructiveSetTheory.
+End ConstructiveTheoryOfAczelTree.

@@ -1062,7 +1062,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     unfold ScottApp_aux1.
     intros [f1 x1] [f2 x2] [Hle_f Hle_x].
     simpl in *.
-    assert (claim1 : isContinuousMap (proj1_sig f1)) by membership.
+    assert (claim1 : isContinuousMap (proj1_sig f1)) by exact (proj2_sig f1).
     transitivity (proj1_sig f1 x2); [apply ContinuousMap_isMonotonicMap | apply Hle_f]...
   Qed.
 
@@ -1074,7 +1074,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     f1 == f2 ->
     x1 == x2 ->
     ScottApp_aux1 (f1, x1) == ScottApp_aux1 (f2, x2).
-  Proof with (membership || eauto with *).
+  Proof with eauto with *.
     intros f1 f2 x1 x2 Heq_f Heq_x.
     simpl.
     transitivity (proj1_sig f1 x2).
@@ -1084,14 +1084,14 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
 
   Lemma ScottApp_aux1_isContinuousMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     isContinuousMap (fun p : (D ~> D') * D => ScottApp_aux1 p).
-  Proof with (membership || eauto with *).
+  Proof with eauto with *.
     apply show_that_f_isContinuousMap_if_f1_isContinuousMap_and_f2_isContinuousMap.
     - exact (fun f : D ~> D' => proj2_sig f).
     - intros x.
       assert (mayday : isMonotonicMap (fun f : D ~> D' => ScottApp_aux1 (f, x))) by now unfold ScottApp_aux1.
       apply the_main_reason_for_introducing_ScottTopology.
       + intros f1 f2 Heq_f.
-        apply ScottApp_aux1_preserves_eq...
+        apply (ScottApp_aux1_preserves_eq f1 f2 x x Heq_f)...
       + intros fs fs_isDirected.
         set (Y := image (fun f_i : D ~> D' => ScottApp_aux1 (f_i, x)) fs).
         set (f := fun x0 : D => proj1_sig (square_up_exists (image (fun f_i : D ~> D' => proj1_sig f_i x0) fs) (Supremum_of_squigs_is_well_defined fs fs_isDirected x0))).
