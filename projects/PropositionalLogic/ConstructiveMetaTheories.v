@@ -764,7 +764,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     - exists (O).
       intros p [].
     - destruct (formula_is_enumerable p) as [bound1 H0].
-      destruct (n_le_m_or_m_lt_n_for_n_and_m bound1 bound2) as [Hle | Hlt].
+      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m bound1 bound2) as [Hle | Hlt].
       + exists (S bound2).
         intros h [H1 | H1].
         * subst...
@@ -968,7 +968,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
         apply ByAssumption...
       }
       destruct (IH bs claim1) as [n' H1].
-      destruct (n_le_m_or_m_lt_n_for_n_and_m n' n) as [Hle | Hlt].
+      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n' n) as [Hle | Hlt].
       + exists (n).
         intros h [H2 | H2].
         * subst...

@@ -286,7 +286,7 @@ Module FunFacts.
       split.
       + exact phi_i.
       + intros m phi_m.
-        destruct (n_le_m_or_m_lt_n_for_n_and_m i m); now firstorder.
+        destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m i m); now firstorder.
     - destruct (exclusive_middle (exists m : nat, isMinimal m phi)); now firstorder.
   Qed.
 

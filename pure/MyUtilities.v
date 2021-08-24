@@ -222,6 +222,17 @@ Module MyUtilities.
     end
   .
 
+  Definition le_lt_False : forall m : nat, forall n : nat, m <= n -> n < m -> False :=
+    fun m : nat =>
+    fix le_lt_False_fix (n : nat) (Hle : m <= n) {struct Hle} : n < m -> False :=
+    match Hle in le _ n0 return n0 < m -> False with
+    | le_n _ => not_n_lt_n m
+    | le_S _ n' Hle' =>
+      fun Hlt : S n' < m =>
+      le_lt_False_fix n' Hle' (le_transitivity (le_S (S n') (S n') (le_n (S n'))) Hlt)
+    end
+  .
+
   Definition le_asymmetry : forall n1 : nat, forall n2 : nat, n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
@@ -231,19 +242,8 @@ Module MyUtilities.
       fun Hle2 : n1 <= n1 =>
       eq_reflexivity n1
     | le_S _ m' Hle1' =>
-      fun Hle2 : S m' <= n1 =>
-      False_ind (n1 = S m') (not_n_lt_n m' (le_transitivity Hle2 Hle1'))
-    end
-  .
-
-  Definition le_lt_False : forall m : nat, forall n : nat, m <= n -> n < m -> False :=
-    fun m : nat =>
-    fix le_lt_False_fix (n : nat) (Hle : m <= n) {struct Hle} : n < m -> False :=
-    match Hle in le _ n0 return n0 < m -> False with
-    | le_n _ => not_n_lt_n m
-    | le_S _ n' Hle' =>
-      fun Hlt : S n' < m =>
-      le_lt_False_fix n' Hle' (le_transitivity (le_S (S n') (S n') (le_n (S n'))) Hlt)
+      fun Hle2 : m' < n1 =>
+      False_ind (n1 = S m') (le_lt_False n1 m' Hle1' Hle2)
     end
   .
 
@@ -291,15 +291,15 @@ Module MyUtilities.
     end
   .
 
-  Definition n_le_m_or_m_lt_n_for_n_and_m : forall n : nat, forall m : nat, {n <= m} + {m < n} :=
-    fix n_le_m_or_m_lt_n_for_n_and_m_fix (n : nat) {struct n} : forall m : nat, {n <= m} + {m < n} :=
+  Definition n_le_m_or_m_lt_n_holds_for_any_n_and_any_m : forall n : nat, forall m : nat, {n <= m} + {m < n} :=
+    fix n_le_m_or_m_lt_n_holds_for_any_n_and_any_m_fix (n : nat) {struct n} : forall m : nat, {n <= m} + {m < n} :=
     match n as n0 return forall m : nat, {n0 <= m} + {m < n0} with
     | O =>
       fun m : nat =>
       left (le_intro_0_le_n m)
     | S n' =>
       fun m : nat =>
-      match n_le_m_or_m_lt_n_for_n_and_m_fix n' m return {S n' <= m} + {m < S n'} with
+      match n_le_m_or_m_lt_n_holds_for_any_n_and_any_m_fix n' m return {S n' <= m} + {m < S n'} with
       | left Hle =>
         match eq_dec_nat n' m return {S n' <= m} + {m < S n'} with
         | left Heq =>
@@ -416,7 +416,9 @@ Module MyUtilities.
   Qed.
 
   Let lenat : nat -> nat -> Prop :=
-    le
+    fun n1 : nat =>
+    fun n2 : nat =>
+    n1 <= n2
   .
 
   Theorem lenat_proof_irrelevance :
@@ -874,7 +876,7 @@ Module MyUtilities.
     enough (forall x : nat, p (first_nat p x) = true -> (forall y : nat, x < y -> first_nat p x = first_nat p y)).
     enough (forall x : nat, forall y : nat, p y = true -> first_nat p x <= y)...
     - intros x y H2.
-      destruct (n_le_m_or_m_lt_n_for_n_and_m x y).
+      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m x y).
       + eapply Nat.le_trans...
       + replace (first_nat p x) with (first_nat p y)...
     - intros x H1 y H2.
@@ -1013,7 +1015,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns; simpl...
     intros H n H0.
-    destruct (n_le_m_or_m_lt_n_for_n_and_m n a)...
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n a)...
     enough (fold_right max 0 ns >= n)...
     destruct (Phi_dec n)...
     destruct (H n p)...
@@ -1030,7 +1032,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns; simpl...
     intros n.
-    destruct (n_le_m_or_m_lt_n_for_n_and_m a (fold_right Init.Nat.max 0 ns)); split.
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m a (fold_right Init.Nat.max 0 ns)); split.
     - intros H.
       assert (H0 : fold_right Init.Nat.max 0 ns > n)...
     - intros [i [[H | H] H0]]...
@@ -1068,7 +1070,7 @@ Module MyUtilities.
   Proof with try now (lia || firstorder; eauto).
     induction ns1; simpl...
     intros ns2 H.
-    destruct (n_le_m_or_m_lt_n_for_n_and_m a (fold_right max 0 ns1)).
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m a (fold_right max 0 ns1)).
     - enough (fold_right max 0 ns1 <= fold_right max 0 ns2)...
     - enough (a <= fold_right max 0 ns2)...
       apply property4_of_fold_right_max_0...

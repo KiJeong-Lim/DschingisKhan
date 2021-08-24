@@ -50,7 +50,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     forall f : D -> D',
     isContinuousMap f ->
     isMonotonicMap f.
-  Proof with eauto with *.
+  Proof.
     intros f f_continuous x1 x2 x1_le_x2.
     apply NNPP.
     intros f_x1_le_f_x2_is_false.
@@ -58,7 +58,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (x1_in_preimage_f_U_f_x2 : member x1 (preimage f (U (f x2)))) by now constructor.
     assert (preimage_f_U_f_x2_isOpen : isOpen (preimage f (U (f x2)))) by now apply f_continuous, U_x_isOpen.
     assert (x2_in_f_U_f_x2 : member x2 (preimage f (U (f x2)))) by now apply (proj1 preimage_f_U_f_x2_isOpen x1 x2).
-    assert (f_x2_in_U_f_x2 : member (f x2) (U (f x2))) by now inversion x2_in_f_U_f_x2...
+    assert (f_x2_in_U_f_x2 : member (f x2) (U (f x2))) by now inversion x2_in_f_U_f_x2.
+    now contradiction f_x2_in_U_f_x2.
   Qed.
 
   Lemma MonotonicMap_preservesDirected {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
