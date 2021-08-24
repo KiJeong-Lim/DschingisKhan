@@ -492,13 +492,13 @@ Module BasicPosetTheory.
 
   Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
 
-  Global Notation " D1 '>=>' D2 " := (@sig (D1 -> D2) isMonotonicMap) (at level 50, no associativity) : type_scope.
+  Global Notation " D1 '>=>' D2 " := (@sig (D1 -> D2) isMonotonicMap) (at level 100, right associativity) : type_scope.
 
-  Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (H : isMonotonicMap f) : 
+  Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (f_monotonic : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
   as MonotonicMap_Morphism.
   Proof.
-    exact (MonotonicMap_preservesSetoid f H).
+    exact (MonotonicMap_preservesSetoid f f_monotonic).
   Defined.
 
   Global Instance impl_PreOrder :
@@ -1107,7 +1107,7 @@ End MyEnsembleNova.
 
 Module BasicTopology.
 
-  Import MyUtilities MyEnsemble MyEnsembleNova.
+  Import MyUtilities BasicSetoidTheory MyEnsemble MyEnsembleNova.
 
   Class isTopologicalSpace (A : Type) : Type :=
     { isOpen : ensemble A -> Prop
@@ -1123,10 +1123,31 @@ Module BasicTopology.
       isOpen X1 ->
       isOpen X2 ->
       isOpen (intersection X1 X2)
+    ; open_ext_eq :
+      forall X1 : ensemble A,
+      isOpen X1 ->
+      forall X2 : ensemble A,
+      X1 == X2 ->
+      isOpen X2
     }
   .
 
   Global Hint Resolve open_full open_unions open_intersection : my_hints.
+
+  Lemma open_emptyset {A : Type} `{A_isTopologicalSpace : isTopologicalSpace A} :
+    isOpen \emptyset.
+  Proof with try now firstorder; eauto with *.
+    assert (claim1 : isOpen (\bigcup \emptyset)).
+    { apply open_unions.
+      intros X X_in.
+      apply in_empty_iff in X_in...
+    }
+    apply (open_ext_eq (\bigcup \emptyset) claim1).
+    enough (it_is_sufficient_to_show : forall a : A, member a (\bigcup \emptyset) <-> member a \emptyset) by exact it_is_sufficient_to_show.
+    assert (claim2 := @in_empty_iff (ensemble A)).
+    intros a.
+    rewrite in_empty_iff, in_unions_iff...
+  Qed.
 
   Definition isContinuousMap {A : Type} {B : Type} `{A_isTopologicalSpace : isTopologicalSpace A} `{B_isTopologicalSpace : isTopologicalSpace B} : (A -> B) -> Prop :=
     fun f : A -> B =>
@@ -1140,6 +1161,8 @@ Module BasicTopology.
   Global Notation " A '~>' B " := (@sig (A -> B) isContinuousMap) (at level 100, right associativity) : type_scope.
 
   Section BuildSubspaceTopology. (* Reference: "https://github.com/Abastro/Coq-Practice/blob/aeca5f68c521fe0bb07f5e12c67156060c402799/src/Topology.v" *)
+
+  Local Hint Resolve open_ext_eq : core.
 
   Context (A : Type) (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
 
@@ -1185,6 +1208,16 @@ Module BasicTopology.
     split; [apply open_intersection | intros x; do 2 rewrite in_intersection_iff]...
   Qed.
 
+  Lemma SubspaceTopology_preserves_open_ext_eq :
+    forall X1 : ensemble (sig P),
+    isOpen_SubspaceTopology X1 ->
+    forall X2 : ensemble (sig P),
+    X1 == X2 ->
+    isOpen_SubspaceTopology X2.
+  Proof with try now firstorder; eauto with *.
+    intros X1 [O [O_isOpen O_corresponds_to_X1]] X2 H_X1_eq_X2...
+  Qed.
+
   End BuildSubspaceTopology.
 
   Local Instance SubspaceTopology {A : Type} (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A) : isTopologicalSpace {x : A | P x} :=
@@ -1192,6 +1225,7 @@ Module BasicTopology.
     ; open_full := open_full_SubspaceTopolgy A P A_requiresTopologicalSpace
     ; open_unions := open_unions_SubspaceTopology A P A_requiresTopologicalSpace
     ; open_intersection := open_intersection_SubspaceTopology A P A_requiresTopologicalSpace
+    ; open_ext_eq := SubspaceTopology_preserves_open_ext_eq A P A_requiresTopologicalSpace
     }
   .
 

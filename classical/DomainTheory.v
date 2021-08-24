@@ -1564,10 +1564,10 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim2 : isOpen (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O))).
     { apply open_unions.
       intros F [n F_eq].
-      apply (isOpen_ScottTopology_ext_eq (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) (claim1 n)).
+      apply (open_ext_eq (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) (claim1 n)).
       exact (Setoid_sym F (preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O) F_eq).
     }
-    apply (isOpen_ScottTopology_ext_eq (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)) claim2).
+    apply (open_ext_eq (unions (fun F : ensemble (D ~> D) => exists n : nat, F == preimage (fun f : D ~> D => iteration n (proj1_sig f) (proj1_sig bottom_exists)) O)) claim2).
     intros f.
     split.
     - intros f_in.
@@ -1575,11 +1575,11 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       destruct f_in as [F [f_in_F [n F_eq]]].
       apply in_preimage_iff.
       assert (f_in : member f (preimage (fun f_i : D ~> D => iteration n (proj1_sig f_i) (proj1_sig bottom_exists)) O)) by now apply F_eq.
-      rewrite in_preimage_iff in f_in.
+      apply (in_preimage_iff f) in f_in.
       apply (proj1 O_isOpen (iteration n (proj1_sig f) (proj1_sig bottom_exists)) (get_lfp_of f) f_in)...
     - intros f_in.
-      rewrite in_preimage_iff in f_in.
-      destruct (proj2 O_isOpen (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))) f_in) as [f_i f_i_in].
+      apply (in_preimage_iff f) in f_in.
+      destruct (proj2 O_isOpen (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) (get_lfp_of_isSupremum_of_iterations f) f_in) as [f_i f_i_in].
       apply in_intersection_iff in f_i_in.
       destruct f_i_in as [f_i_in_iterations f_i_in_O].
       inversion f_i_in_iterations; subst.

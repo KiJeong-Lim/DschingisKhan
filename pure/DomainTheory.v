@@ -1106,6 +1106,22 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
       repeat (rewrite in_intersection_iff)...
   Qed.
 
+  Lemma open_ext_eq_ScottTopology :
+    forall O1 : ensemble D,
+    isOpen_ScottTopology O1 ->
+    forall O2 : ensemble D,
+    (forall x : D, member x O1 <-> member x O2) ->
+    isOpen_ScottTopology O2.
+  Proof with try now firstorder.
+    intros O1 [H H0] O2 H1.
+    enough (it_is_sufficient_to_show : forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O2 -> nonempty (intersection X O2)) by firstorder.
+    intros X H2 sup_X H3 H4.
+    assert (H5 := proj2 (H1 sup_X) H4).
+    destruct (H0 X H2 sup_X H3 H5) as [x0 H6].
+    exists x0.
+    rewrite in_intersection_iff in *...
+  Qed.
+
   End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
@@ -1113,25 +1129,9 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     ; open_full := open_full_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     ; open_unions := open_unions_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     ; open_intersection := open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_ext_eq := open_ext_eq_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     }
   .
-
-  Lemma isOpen_ScottTopology_ext_eq {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
-    forall O1 : ensemble D,
-    isOpen O1 ->
-    forall O2 : ensemble D,
-    (forall x : D, member x O1 <-> member x O2) ->
-    isOpen O2.
-  Proof with firstorder.
-    intros O1 [H H0] O2 H1.
-    enough (claim1 : forall X : ensemble D, isDirected X -> forall sup_X : D, isSupremum sup_X X -> member sup_X O2 -> nonempty (intersection X O2)) by firstorder.
-    intros X H2 sup_X H3 H4.
-    apply H1 in H4.
-    destruct (H0 X H2 sup_X H3 H4) as [x0 H5].
-    exists x0.
-    revert H5.
-    repeat (rewrite in_intersection_iff)...
-  Qed.
 
   Lemma bot_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall p : D * D',
