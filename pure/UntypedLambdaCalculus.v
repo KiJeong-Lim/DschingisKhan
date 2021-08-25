@@ -1,8 +1,12 @@
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
+Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
@@ -202,7 +206,9 @@ Module UntypedLamdbdaCalculus.
     fun M : tm =>
     fun sigma : substitution =>
     fun y : ivar =>
-    if ivar_eq_dec x y then M else sigma y
+    if ivar_eq_dec x y
+    then M
+    else sigma y
   .
 
   Fixpoint mk_substitution (sigma : list (ivar * tm)) {struct sigma} : substitution :=
@@ -231,7 +237,8 @@ Module UntypedLamdbdaCalculus.
   Definition isFreshIn_substitution : ivar -> substitution -> tm -> bool :=
     fun x : ivar =>
     fun sigma : substitution =>
-    fun M : tm => forallb (fun z : ivar => negb (isFreeIn x (sigma z))) (getFVs M)
+    fun M : tm =>
+    forallb (fun z : ivar => negb (isFreeIn x (sigma z))) (getFVs M)
   .
 
   Definition chi : substitution -> tm -> ivar :=
@@ -637,10 +644,10 @@ Module UntypedLamdbdaCalculus.
 
   End SUBSTITUTION.
 
-  Local Notation " M '{' x '+->' N '}' " := (run_substitution_on_tm (cons_substitution x N nil_subtitution) M) (at level 10, no associativity).
+  Local Notation " M '{'  x '↦' N  '}' " := (run_substitution_on_tm (cons_substitution x N nil_subtitution) M) (at level 10, no associativity).
 
   Example run_substitution_on_tm_example1 :
-    (tmLam 3 (tmLam 5 (tmApp (tmVar 3) (tmVar 1)))) { 1 +-> tmApp (tmVar 4) (tmVar 3) } = tmLam 5 (tmLam 6 (tmApp (tmVar 5) (tmApp (tmVar 4) (tmVar 3)))).
+    (tmLam 3 (tmLam 5 (tmApp (tmVar 3) (tmVar 1)))) { 1 ↦ tmApp (tmVar 4) (tmVar 3) } = tmLam 5 (tmLam 6 (tmApp (tmVar 5) (tmApp (tmVar 4) (tmVar 3)))).
   Proof.
     reflexivity.
   Qed.
@@ -742,7 +749,102 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Section ASSIGN_TYPE.
+  Section ALPHA_EQUIV_DEFN.
+
+  Let MyType : Type :=
+    Set
+  .
+
+  Inductive DB (vr : MyType) : MyType :=
+  | VarDB : vr -> DB vr
+  | AppDB : DB vr -> DB vr -> DB vr
+  | LamDB : DB vr -> DB vr
+  .
+
+  Definition mkVarDB {vr : MyType} : vr -> DB vr :=
+    VarDB vr
+  .
+
+  Definition mkAppDB {vr : MyType} : DB vr -> DB vr -> DB vr :=
+    AppDB vr
+  .
+
+  Definition mkLamDB {vr : MyType} : DB vr -> DB vr :=
+    LamDB vr
+  .
+
+  Definition fmapDB {A : MyType} {B : MyType} : (A -> B) -> DB A -> DB B :=
+    fun f : A -> B =>
+    fix fmapDB_fix (M : DB A) {struct M} : DB B :=
+    match M with
+    | VarDB _ vr => mkVarDB (f vr)
+    | AppDB _ P1 P2 => mkAppDB (fmapDB_fix P1) (fmapDB_fix P2)
+    | LamDB _ Q => mkLamDB (fmapDB_fix Q)
+    end
+  .
+
+  Fixpoint toDB (ys : list ivar) (M : tm) {struct M} : DB (prod (list ivar) ivar) :=
+    match M with
+    | tmVar x => mkVarDB (ys, x)
+    | tmApp P1 P2 => mkAppDB (toDB ys P1) (toDB ys P2)
+    | tmLam y Q => mkLamDB (toDB (y :: ys) Q)
+    end
+  .
+
+  Let IDX : MyType :=
+    nat
+  .
+
+  Inductive vr : MyType :=
+  | BVAR : IDX -> vr
+  | FVAR : ivar -> vr
+  .
+
+  Definition get_vr : list ivar -> ivar -> vr :=
+    fun ys : list ivar =>
+    fun x : ivar =>
+    maybe (FVAR x) (fun idx : FinSet (length ys) => BVAR (proj1_sig (runFinSet (length ys) idx))) (elemIndex x (ivar_eq_dec x) ys)
+  .
+
+  Let db : MyType :=
+    DB vr
+  .
+
+  Definition mkDeBruijn : tm -> db :=
+    fun M : tm =>
+    fmapDB (fun pr : prod (list ivar) ivar => get_vr (fst pr) (snd pr)) (toDB [] M)
+  .
+
+  Definition alpha : tm -> tm -> Prop :=
+    fun M1 : tm =>
+    fun M2 : tm =>
+    mkDeBruijn M1 = mkDeBruijn M2
+  .
+
+  Local Instance alpha_Equivalence :
+    Equivalence alpha.
+  Proof.
+    split.
+    - intros M1.
+      unfold alpha in *.
+      now reflexivity.
+    - intros M1 M2 Heq1.
+      unfold alpha in *.
+      now symmetry.
+    - intros M1 M2 M3 Heq1 Heq2.
+      unfold alpha in *.
+      now transitivity (mkDeBruijn M2).
+  Qed.
+
+  End ALPHA_EQUIV_DEFN.
+
+  Global Instance tm_isSetoid : isSetoid tm :=
+    { eqProp := alpha
+    ; Setoid_requiresEquivalence := alpha_Equivalence
+    }
+  .
+
+  Section ASSIGN_SIMPLE_TYPE.
 
   Variable tvar : Set.
 
@@ -795,57 +897,8 @@ Module UntypedLamdbdaCalculus.
     typing Gamma (tmLam y Q) (tau → sigma)
   .
 
-  Local Notation " Gamma '⊢' M  ';;' tau " := (typing Gamma M tau) (at level 70, no associativity) : type_scope.
+  Local Notation " Gamma '⊢' M '\isof' tau " := (typing Gamma M tau) (at level 70, no associativity) : type_scope.
 
-(* [PROVE ME] 2021-08-25
-
-  Theorem SubstitutionLemma :
-    forall M : tm,
-    forall sigma : ty,
-    forall Gamma : tyctx,
-    forall z : ivar,
-    forall N : tm,
-    forall tau : ty,
-    Gamma ⊢ N ;; tau ->
-    (z, tau) :: Gamma ⊢ M ;; sigma ->
-    Gamma ⊢ M { z +-> N } ;; sigma.
-  Proof.
-  Admitted.
-
-*)
-
-  End ASSIGN_TYPE.
-
-  Section DE_BRUIJN.
-
-  Inductive DB (vr : Type) : Type :=
-  | VarDB : vr -> DB vr
-  | AppDB : DB vr -> DB vr -> DB vr
-  | LamDB : DB vr -> DB vr
-  .
-
-  Definition mkVarDB {vr : Type} : vr -> DB vr :=
-    VarDB vr
-  .
-
-  Definition mkAppDB {vr : Type} : DB vr -> DB vr -> DB vr :=
-    AppDB vr
-  .
-
-  Definition mkLamDB {vr : Type} : DB vr -> DB vr :=
-    LamDB vr
-  .
-
-  Definition fmapDB {A : Type} {B : Type} : (A -> B) -> DB A -> DB B :=
-    fun f : A -> B =>
-    fix fmapDB_fix (M : DB A) {struct M} : DB B :=
-    match M with
-    | VarDB _ vr => mkVarDB (f vr)
-    | AppDB _ P1 P2 => mkAppDB (fmapDB_fix P1) (fmapDB_fix P2)
-    | LamDB _ Q => mkLamDB (fmapDB_fix Q)
-    end
-  .
-
-  End DE_BRUIJN.
+  End ASSIGN_SIMPLE_TYPE.
 
 End UntypedLamdbdaCalculus.

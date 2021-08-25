@@ -1134,6 +1134,16 @@ Module MyUtilities.
     end
   .
 
+  Definition maybe {A : Type} {B : Type} : B -> (A -> B) -> option A -> B :=
+    fun NONE_A : B =>
+    fun SOME_A : A -> B =>
+    fun OPTION_A : option A =>
+    match OPTION_A with
+    | None => NONE_A
+    | Some a => SOME_A a
+    end
+  .
+
   Definition elemIndex {A : Type} : forall x : A, (forall x' : A, {x = x'} + {x <> x'}) -> forall xs : list A, option (FinSet (length xs)) :=
     fun x : A =>
     fun eq_dec : forall x' : A, {x = x'} + {x <> x'} =>
