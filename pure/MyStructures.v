@@ -1164,15 +1164,19 @@ Module BasicTopology.
 
   Context (A : Type) (P : A -> Prop) (A_requiresTopologicalSpace : isTopologicalSpace A).
 
-  Let is_subset_rep : ensemble (@sig A P) -> ensemble A -> Prop :=
-    fun O_sub : ensemble (@sig A P) =>
+  Let filter_P : Type :=
+    @sig A P
+  .
+
+  Let is_subset_rep : ensemble filter_P-> ensemble A -> Prop :=
+    fun O_sub : ensemble filter_P =>
     fun O : ensemble A =>
-    forall x : @sig A P,
+    forall x : filter_P,
     member (proj1_sig x) O <-> member x O_sub
   .
 
-  Definition isOpen_SubspaceTopology : ensemble (@sig A P) -> Prop :=
-    fun O_sub : ensemble (@sig A P) =>
+  Definition isOpen_SubspaceTopology : ensemble filter_P -> Prop :=
+    fun O_sub : ensemble filter_P =>
     exists O : ensemble A, isOpen O /\ is_subset_rep O_sub O
   .
 
@@ -1185,18 +1189,18 @@ Module BasicTopology.
   Qed.
 
   Lemma open_unions_SubspaceTopology :
-    forall Xs : ensemble (ensemble (sig P)),
-    (forall X : ensemble (sig P), member X Xs -> isOpen_SubspaceTopology X) ->
+    forall Xs : ensemble (ensemble filter_P),
+    (forall X : ensemble filter_P, member X Xs -> isOpen_SubspaceTopology X) ->
     isOpen_SubspaceTopology (unions Xs).
   Proof with try now firstorder; eauto with *.
     intros Xs H.
-    exists (unions (fun O : ensemble A => exists O_sub : ensemble (sig P), member O_sub Xs /\ is_subset_rep O_sub O /\ isOpen O)).
+    exists (unions (fun O : ensemble A => exists O_sub : ensemble filter_P, member O_sub Xs /\ is_subset_rep O_sub O /\ isOpen O)).
     split; [apply open_unions | intros x; do 2 rewrite in_unions_iff]...
   Qed.
 
   Lemma open_intersection_SubspaceTopology :
-    forall X1 : ensemble (sig P),
-    forall X2 : ensemble (sig P),
+    forall X1 : ensemble filter_P,
+    forall X2 : ensemble filter_P,
     isOpen_SubspaceTopology X1 ->
     isOpen_SubspaceTopology X2 ->
     isOpen_SubspaceTopology (intersection X1 X2).
@@ -1206,10 +1210,10 @@ Module BasicTopology.
     split; [apply open_intersection | intros x; do 2 rewrite in_intersection_iff]...
   Qed.
 
-  Lemma SubspaceTopology_preserves_open_ext_eq :
-    forall X1 : ensemble (sig P),
+  Lemma open_ext_eq_SubspaceTopology :
+    forall X1 : ensemble filter_P,
     isOpen_SubspaceTopology X1 ->
-    forall X2 : ensemble (sig P),
+    forall X2 : ensemble filter_P,
     X1 == X2 ->
     isOpen_SubspaceTopology X2.
   Proof with try now firstorder; eauto with *.
@@ -1223,7 +1227,7 @@ Module BasicTopology.
     ; open_full := open_full_SubspaceTopolgy A P A_requiresTopologicalSpace
     ; open_unions := open_unions_SubspaceTopology A P A_requiresTopologicalSpace
     ; open_intersection := open_intersection_SubspaceTopology A P A_requiresTopologicalSpace
-    ; open_ext_eq := SubspaceTopology_preserves_open_ext_eq A P A_requiresTopologicalSpace
+    ; open_ext_eq := open_ext_eq_SubspaceTopology A P A_requiresTopologicalSpace
     }
   .
 

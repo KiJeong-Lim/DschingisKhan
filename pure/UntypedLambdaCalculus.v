@@ -734,13 +734,26 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Inductive beta1 : tm -> tm -> Prop :=
-  | BetaOnce {x : ivar} {M : tm} {N : tm} : beta1 (tmApp (tmLam x M) N) (run_substitution_on_tm (cons_substitution x N nil_subtitution) M)
-  | BetaAppL {P1 : tm} {P1' : tm} {P2 : tm} : beta1 P1 P1' -> beta1 (tmApp P1 P2) (tmApp P1' P2)
-  | BetaAppR {P1 : tm} {P2 : tm} {P2' : tm} : beta1 P2 P2' -> beta1 (tmApp P1 P2) (tmApp P1 P2')
-  | BetaLAbs {y : ivar} {Q : tm} {Q' : tm} : beta1 Q Q' -> beta1 (tmLam y Q) (tmLam y Q')
+  Section DE_BRUIJN.
+
+  Inductive DB (vr : Set) : Set :=
+  | VarDB : vr -> DB vr
+  | AppDB : DB vr -> DB vr -> DB vr
+  | LamDB : DB vr -> DB vr
   .
 
-  Local Hint Constructors beta1 : core.
+  Definition mkVarDB {vr : Set} : vr -> DB vr :=
+    VarDB vr
+  .
+
+  Definition mkAppDB {vr : Set} : DB vr -> DB vr -> DB vr :=
+    AppDB vr
+  .
+
+  Definition mkLamDB {vr : Set} : DB vr -> DB vr :=
+    LamDB vr
+  .
+
+  End DE_BRUIJN.
 
 End UntypedLamdbdaCalculus.
