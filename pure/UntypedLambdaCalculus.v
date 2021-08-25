@@ -15,13 +15,13 @@ Module UntypedLamdbdaCalculus.
     nat
   .
 
-  Lemma ivar_eq_dec :
+  Definition ivar_eq_dec :
     forall x : ivar,
     forall y : ivar,
     {x = y} + {x <> y}.
   Proof.
     exact Nat.eq_dec.
-  Qed.
+  Defined.
 
   Inductive tm : Set :=
   | tmVar : forall x : ivar, tm
@@ -466,8 +466,8 @@ Module UntypedLamdbdaCalculus.
       + destruct H as [y [H H0]]...
     - intros z sigma...
       split.
-      + intros [H | H]; [enough (H0 : exists y : ivar, isFreeIn y M1 = true /\ isFreeIn z (sigma y) = true) | enough (H0 : exists y : ivar, isFreeIn y M2 = true /\ isFreeIn z (sigma y) = true)]...
-        all: destruct H0 as [y [H0 H1]]; exists y...
+      + intros [H | H]; [assert (it_is_sufficient_to_show : exists y : ivar, isFreeIn y M1 = true /\ isFreeIn z (sigma y) = true) | assert (it_is_sufficient_to_show : exists y : ivar, isFreeIn y M2 = true /\ isFreeIn z (sigma y) = true)]...
+        all: destruct it_is_sufficient_to_show as [y [H0 H1]]; exists y...
       + intros [y [H H0]]...
     - intros x sigma...
       split; intros H.
@@ -637,6 +637,14 @@ Module UntypedLamdbdaCalculus.
 
   End SUBSTITUTION.
 
+  Local Notation " M '{' x '+->' N '}' " := (run_substitution_on_tm (cons_substitution x N nil_subtitution) M) (at level 10, no associativity).
+
+  Example run_substitution_on_tm_example1 :
+    (tmLam 3 (tmLam 5 (tmApp (tmVar 3) (tmVar 1)))) { 1 +-> tmApp (tmVar 4) (tmVar 3) } = tmLam 5 (tmLam 6 (tmApp (tmVar 5) (tmApp (tmVar 4) (tmVar 3)))).
+  Proof.
+    reflexivity.
+  Qed.
+
   Class isPreLambdaStructure (Dom : Type) `{Dom_isSetoid : isSetoid Dom} : Type :=
     { runApp : Dom -> (Dom -> Dom)
     ; runLam : (Dom -> Dom) -> Dom
@@ -734,24 +742,106 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
+  Section ASSIGN_TYPE.
+
+  Variable tvar : Set.
+
+  Inductive ty : Set :=
+  | tyVar : forall a : tvar, ty
+  | tyArr : forall tau : ty, forall sigma : ty, ty
+  .
+
+  Local Coercion tyVar : tvar >-> ty.
+
+  Local Notation " tau → sigma " := (tyArr tau sigma) (at level 60, right associativity).
+
+  Let tyctx : Set :=
+    list (ivar * ty)
+  .
+
+  Fixpoint lookup_tyctx (x : ivar) (Gamma : tyctx) {struct Gamma} : option ty :=
+    match Gamma with
+    | [] => None
+    | (z, tau) :: Gamma' =>
+      if ivar_eq_dec x z
+      then Some tau
+      else lookup_tyctx x Gamma'
+    end
+  .
+
+  Inductive typing : tyctx -> tm -> ty -> Prop :=
+  | typingVar :
+    forall Gamma : tyctx,
+    forall x : ivar,
+    forall tau : ty,
+    Some tau = lookup_tyctx x Gamma ->
+    typing Gamma (tmVar x) tau
+  | typingApp :
+    forall Gamma : tyctx,
+    forall P1 : tm,
+    forall P2 : tm,
+    forall tau : ty,
+    forall sigma : ty,
+    typing Gamma P1 (tau → sigma) ->
+    typing Gamma P2 tau ->
+    typing Gamma (tmApp P1 P2) sigma
+  | typingLam :
+    forall Gamma : tyctx,
+    forall y : ivar,
+    forall Q : tm,
+    forall tau : ty,
+    forall sigma : ty,
+    typing ((y, tau) :: Gamma) Q sigma ->
+    typing Gamma (tmLam y Q) (tau → sigma)
+  .
+
+  Local Notation " Gamma ⊢ M '\isof' tau " := (typing Gamma M tau) (at level 70, no associativity) : type_scope.
+
+(*
+  Theorem SubstitutionLemma :
+    forall M : tm,
+    forall sigma : ty,
+    forall Gamma : tyctx,
+    forall z : ivar,
+    forall N : tm,
+    forall tau : ty,
+    Gamma ⊢ N \isof tau ->
+    (z, tau) :: Gamma ⊢ M \isof sigma ->
+    Gamma ⊢ M { z +-> N } \isof sigma.
+  Proof.
+  Admitted.
+*)
+
+  End ASSIGN_TYPE.
+
   Section DE_BRUIJN.
 
-  Inductive DB (vr : Set) : Set :=
+  Inductive DB (vr : Type) : Type :=
   | VarDB : vr -> DB vr
   | AppDB : DB vr -> DB vr -> DB vr
   | LamDB : DB vr -> DB vr
   .
 
-  Definition mkVarDB {vr : Set} : vr -> DB vr :=
+  Definition mkVarDB {vr : Type} : vr -> DB vr :=
     VarDB vr
   .
 
-  Definition mkAppDB {vr : Set} : DB vr -> DB vr -> DB vr :=
+  Definition mkAppDB {vr : Type} : DB vr -> DB vr -> DB vr :=
     AppDB vr
   .
 
-  Definition mkLamDB {vr : Set} : DB vr -> DB vr :=
+  Definition mkLamDB {vr : Type} : DB vr -> DB vr :=
     LamDB vr
+  .
+
+  Definition fmapDB {A : Type} {B : Type} : (A -> B) -> DB A -> DB B :=
+    fun f : A -> B =>
+    fix fmapDB_fix (M : DB A) {struct M} : DB B :=
+    match M with
+    | VarDB _ vr => mkVarDB (f vr)
+    | AppDB _ P1 P2 => mkAppDB (fmapDB_fix P1) (fmapDB_fix P2)
+    | LamDB _ Q => mkLamDB (fmapDB_fix Q)
+    end
   .
 
   End DE_BRUIJN.
