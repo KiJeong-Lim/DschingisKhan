@@ -753,7 +753,7 @@ Module UntypedLamdbdaCalculus.
 
   Local Coercion tyVar : tvar >-> ty.
 
-  Local Notation " tau → sigma " := (tyArr tau sigma) (at level 60, right associativity).
+  Local Notation " tau '→' sigma " := (tyArr tau sigma) (at level 60, right associativity).
 
   Let tyctx : Set :=
     list (ivar * ty)
@@ -795,9 +795,10 @@ Module UntypedLamdbdaCalculus.
     typing Gamma (tmLam y Q) (tau → sigma)
   .
 
-  Local Notation " Gamma ⊢ M '\isof' tau " := (typing Gamma M tau) (at level 70, no associativity) : type_scope.
+  Local Notation " Gamma '⊢' M  ';;' tau " := (typing Gamma M tau) (at level 70, no associativity) : type_scope.
 
-(*
+(* [PROVE ME] 2021-08-25
+
   Theorem SubstitutionLemma :
     forall M : tm,
     forall sigma : ty,
@@ -805,11 +806,12 @@ Module UntypedLamdbdaCalculus.
     forall z : ivar,
     forall N : tm,
     forall tau : ty,
-    Gamma ⊢ N \isof tau ->
-    (z, tau) :: Gamma ⊢ M \isof sigma ->
-    Gamma ⊢ M { z +-> N } \isof sigma.
+    Gamma ⊢ N ;; tau ->
+    (z, tau) :: Gamma ⊢ M ;; sigma ->
+    Gamma ⊢ M { z +-> N } ;; sigma.
   Proof.
   Admitted.
+
 *)
 
   End ASSIGN_TYPE.
