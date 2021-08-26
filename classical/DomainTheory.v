@@ -111,7 +111,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       destruct ((proj2 f_U_sup_Y_isOpen) X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_preimage_f_U_sup_Y) as [x1 x1_in_both_X_and_preimage_f_U_sup_Y].
       apply in_intersection_iff in x1_in_both_X_and_preimage_f_U_sup_Y.
       assert (f_x1_in_image_f_X : member (f x1) (image f X)) by now constructor; apply (proj1 x1_in_both_X_and_preimage_f_U_sup_Y).
-      assert (f_x1_in_U_sup_Y : member (f x1) (U sup_Y)) by now apply in_preimage_iff.
+      assert (f_x1_in_U_sup_Y : member (f x1) (U sup_Y)) by now apply (in_preimage_iff x1).
       contradiction f_x1_in_U_sup_Y.
       apply sup_Y_isSupremum_of_Y...
     }
@@ -251,7 +251,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       + intros X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_preimage_f_O.
         destruct (f_property X X_isDirected) as [sup_X' [sup_Y' [sup_X'_isSupremum_of_X [sup_Y'_isSupremum_of_image_f_X f_sup_X'_eq_sup_Y']]]].
         assert (sup_X_eq_sup_X' : sup_X == sup_X') by now apply (isSupremum_unique X).
-        assert (f_sup_X_in_O : member (f sup_X) O) by now apply in_preimage_iff.
+        assert (f_sup_X_in_O : member (f sup_X) O) by now apply (in_preimage_iff sup_X).
         assert (claim5 := show_image_f_X_isDirected_if_f_satisfies_preservesSupremum_and_X_isDirected f f_preserves_eq f_property X X_isDirected).
         assert (claim6 : sup_Y' == f sup_X).
         { transitivity (f sup_X').
@@ -1573,7 +1573,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     - intros f_in.
       apply in_unions_iff in f_in.
       destruct f_in as [F [f_in_F [n F_eq]]].
-      apply in_preimage_iff.
+      apply (in_preimage_iff f).
       assert (f_in : member f (preimage (fun f_i : D ~> D => iteration n (proj1_sig f_i) (proj1_sig bottom_exists)) O)) by now apply F_eq.
       apply (in_preimage_iff f) in f_in.
       apply (proj1 O_isOpen (iteration n (proj1_sig f) (proj1_sig bottom_exists)) (get_lfp_of f) f_in)...

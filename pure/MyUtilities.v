@@ -1197,6 +1197,8 @@ Module Scratch.
 
   Import EqFacts MyUtilities.
 
+  Section SET_LEVEL_LE.
+
   Inductive leq (n : nat) : nat -> Set :=
   | leq_init : leq n n
   | leq_step : forall m : nat, leq n m -> leq n (S m)
@@ -1290,5 +1292,7 @@ Module Scratch.
       + apply leq_intro_leq_S_n_S_m, IH.
         exact (le_elim_S_n_le_m n (S m) Hle).
   Qed.
+
+  End SET_LEVEL_LE.
 
 End Scratch.
