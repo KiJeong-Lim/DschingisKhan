@@ -7,7 +7,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module PropertiesOfPropositionLogic.
 
-  Import ListNotations MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPropositionLogic CompletenessOfPropositionLogic.
+  Import ListNotations MyEnsemble MyEnsembleNova SyntaxOfPL SemanticsOfPL InferenceRulesOfPL ConstructiveMetaTheoryOnPropositonalLogic SoundnessOfPropositionalLogic CompletenessOfPropositionalLogic.
 
   Theorem infers_iff_entails :
     forall hs : ensemble formula,
