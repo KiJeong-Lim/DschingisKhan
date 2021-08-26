@@ -11,10 +11,6 @@ coq_makefile -f _CoqProject *.v -o Makefile
 make
 ```
 
-## CAUTIONS
-
-1. It might be a solution to remove all newlines in the file `_CoqProject` if you fail to do `QUICK START` on Linux-like OS.
-
 ## COMPATIBLE COQ VERSIONS
 
 1. With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.

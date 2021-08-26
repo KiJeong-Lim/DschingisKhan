@@ -1,20 +1,20 @@
--Q . DschingisKhan
-
-pure/MyUtilities.v
-pure/FunFacts.v
-pure/MyStructures.v
-pure/DomainTheory.v
-pure/UntypedLambdaCalculus.v
-pure/AczelSet.v
-pure/CBA.v
-pure/MyCoin.v
-
-classical/ExclusiveMiddle.v
-classical/DomainTheory.v
-
-projects/PropositionalLogic/Base.v
-projects/PropositionalLogic/ConstructiveMetaTheories.v
-projects/PropositionalLogic/ClassicalMetaTheories.v
-projects/PropositionalLogic.v
-projects/SmullyanGIT/PA.v
-projects/SmullyanGIT.v
+-Q . DschingisKhan #
+#
+pure/MyUtilities.v #
+pure/FunFacts.v #
+pure/MyStructures.v #
+pure/DomainTheory.v #
+pure/UntypedLambdaCalculus.v #
+pure/AczelSet.v #
+pure/CBA.v #
+pure/MyCoin.v #
+#
+classical/ExclusiveMiddle.v #
+classical/DomainTheory.v #
+#
+projects/PropositionalLogic/Base.v #
+projects/PropositionalLogic/ConstructiveMetaTheories.v #
+projects/PropositionalLogic/ClassicalMetaTheories.v #
+projects/PropositionalLogic.v #
+projects/SmullyanGIT/PA.v #
+projects/SmullyanGIT.v #

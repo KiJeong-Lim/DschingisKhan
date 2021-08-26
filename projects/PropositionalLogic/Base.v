@@ -48,7 +48,7 @@ Module SyntaxOfPL.
     end
   .
 
-  Fixpoint enum_formulas_of_rank (rank : nat) {struct rank} : nat -> formula :=
+  Fixpoint enum_formulae_of_rank (rank : nat) {struct rank} : nat -> formula :=
     match rank with
     | O => AtomF
     | S rank' =>
@@ -57,53 +57,53 @@ Module SyntaxOfPL.
       let piece : nat := snd (cantor_pairing seed0) in
       match piece with
       | 0 => ContradictionF
-      | 1 => NegationF (enum_formulas_of_rank rank' seed1) 
+      | 1 => NegationF (enum_formulae_of_rank rank' seed1) 
       | 2 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ConjunctionF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
+        ConjunctionF (enum_formulae_of_rank rank' seed2) (enum_formulae_of_rank rank' seed3)
       | 3 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        DisjunctionF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
+        DisjunctionF (enum_formulae_of_rank rank' seed2) (enum_formulae_of_rank rank' seed3)
       | 4 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        ImplicationF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
+        ImplicationF (enum_formulae_of_rank rank' seed2) (enum_formulae_of_rank rank' seed3)
       | 5 =>
         let seed2 : nat := fst (cantor_pairing seed1) in
         let seed3 : nat := snd (cantor_pairing seed1) in
-        BiconditionalF (enum_formulas_of_rank rank' seed2) (enum_formulas_of_rank rank' seed3)
+        BiconditionalF (enum_formulae_of_rank rank' seed2) (enum_formulae_of_rank rank' seed3)
       | S (S (S (S (S (S i))))) => AtomF i
       end
     end
   .
 
-  Local Ltac enum_formulas_of_rank_is_good_tac_aux1 :=
+  Local Ltac enum_formulae_of_rank_is_good_tac_aux1 :=
     match goal with
     | H : cantor_pairing ?seed = ?rhs |- _ => rewrite H; simpl
     end
   .
 
-  Local Ltac enum_formulas_of_rank_is_good_tac_aux2 :=
+  Local Ltac enum_formulae_of_rank_is_good_tac_aux2 :=
     match goal with
-    | H : enum_formulas_of_rank ?rank ?seed = ?p |- _ => rewrite <- H
+    | H : enum_formulae_of_rank ?rank ?seed = ?p |- _ => rewrite <- H
     end
   .
 
-  Local Ltac enum_formulas_of_rank_is_good_tac :=
-    (unfold enum_formulas_of_rank); (repeat enum_formulas_of_rank_is_good_tac_aux1); (repeat enum_formulas_of_rank_is_good_tac_aux2); (eauto)
+  Local Ltac enum_formulae_of_rank_is_good_tac :=
+    (unfold enum_formulae_of_rank); (repeat enum_formulae_of_rank_is_good_tac_aux1); (repeat enum_formulae_of_rank_is_good_tac_aux2); (eauto)
   .
 
-  Lemma enum_formulas_of_rank_is_good :
+  Lemma enum_formulae_of_rank_is_good :
     forall p : formula,
     forall rank : nat,
     getRankOfFormula p <= rank ->
-    {seed : nat | enum_formulas_of_rank rank seed = p}.
-  Proof with enum_formulas_of_rank_is_good_tac.
+    {seed : nat | enum_formulae_of_rank rank seed = p}.
+  Proof with enum_formulae_of_rank_is_good_tac.
     assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_is x y z)).
-    induction p; simpl.
-    { intros [| r'] H.
+    induction p as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2]; simpl.
+    { intros [ | r'] H.
       - exists (i)...
       - assert (H0 : cantor_pairing (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))) = (0, S (S (S (S (S (S i))))))) by now apply claim1.
         exists (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i))))))...
@@ -113,8 +113,8 @@ Module SyntaxOfPL.
       exists (piece)...
     }
     { set (piece := 1).
-      assert (H1 : getRankOfFormula p <= rank) by now apply le_elim_S_n_le_m.
-      destruct (IHp rank H1) as [seed2 H2].
+      assert (H1 : getRankOfFormula p1 <= rank) by now apply le_elim_S_n_le_m.
+      destruct (IH1 rank H1) as [seed2 H2].
       assert (H3 : cantor_pairing (sum_from_0_to (seed2 + piece) + piece) = (seed2, piece)) by now apply claim1.
       exists (sum_from_0_to (seed2 + piece) + piece)...
     }
@@ -122,8 +122,8 @@ Module SyntaxOfPL.
       assert (H1 : max (getRankOfFormula p1) (getRankOfFormula p2) <= rank) by now apply le_elim_S_n_le_m.
       assert (H2 : getRankOfFormula p1 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
       assert (H3 : getRankOfFormula p2 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
-      destruct (IHp1 rank H2) as [seed2 H4].
-      destruct (IHp2 rank H3) as [seed3 H5].
+      destruct (IH1 rank H2) as [seed2 H4].
+      destruct (IH2 rank H3) as [seed3 H5].
       assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
@@ -132,8 +132,8 @@ Module SyntaxOfPL.
       assert (H1 : max (getRankOfFormula p1) (getRankOfFormula p2) <= rank) by now apply le_elim_S_n_le_m.
       assert (H2 : getRankOfFormula p1 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
       assert (H3 : getRankOfFormula p2 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
-      destruct (IHp1 rank H2) as [seed2 H4].
-      destruct (IHp2 rank H3) as [seed3 H5].
+      destruct (IH1 rank H2) as [seed2 H4].
+      destruct (IH2 rank H3) as [seed3 H5].
       assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
@@ -142,8 +142,8 @@ Module SyntaxOfPL.
       assert (H1 : max (getRankOfFormula p1) (getRankOfFormula p2) <= rank) by now apply le_elim_S_n_le_m.
       assert (H2 : getRankOfFormula p1 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
       assert (H3 : getRankOfFormula p2 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
-      destruct (IHp1 rank H2) as [seed2 H4].
-      destruct (IHp2 rank H3) as [seed3 H5].
+      destruct (IH1 rank H2) as [seed2 H4].
+      destruct (IH2 rank H3) as [seed3 H5].
       assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
@@ -152,8 +152,8 @@ Module SyntaxOfPL.
       assert (H1 : max (getRankOfFormula p1) (getRankOfFormula p2) <= rank) by now apply le_elim_S_n_le_m.
       assert (H2 : getRankOfFormula p1 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
       assert (H3 : getRankOfFormula p2 <= rank) by now apply (le_elim_max_n1_n2_le_m (getRankOfFormula p1) (getRankOfFormula p2)).
-      destruct (IHp1 rank H2) as [seed2 H4].
-      destruct (IHp2 rank H3) as [seed3 H5].
+      destruct (IH1 rank H2) as [seed2 H4].
+      destruct (IH2 rank H3) as [seed3 H5].
       assert (H6 : cantor_pairing (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece) = (sum_from_0_to (seed2 + seed3) + seed3, piece)) by now apply claim1.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
@@ -164,7 +164,7 @@ Module SyntaxOfPL.
     fun n : nat =>
     let rank : nat := fst (cantor_pairing n) in
     let seed : nat := snd (cantor_pairing n) in
-    enum_formulas_of_rank rank seed
+    enum_formulae_of_rank rank seed
   .
 
   Lemma formula_is_enumerable :
@@ -172,9 +172,9 @@ Module SyntaxOfPL.
     {n : nat | enum_formula n = p}.
   Proof.
     intros p.
-    set (seed := proj1_sig (enum_formulas_of_rank_is_good p (getRankOfFormula p) (le_n (getRankOfFormula p)))).
+    set (seed := proj1_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) (le_reflexivity (getRankOfFormula p)))).
     exists (sum_from_0_to (getRankOfFormula p + seed) + seed).
-    exact (eq_ind (getRankOfFormula p, seed) (fun pr : nat * nat => enum_formulas_of_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formulas_of_rank_is_good p (getRankOfFormula p) (le_n (getRankOfFormula p)))) (cantor_pairing (sum_from_0_to (getRankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (getRankOfFormula p) seed)).
+    exact (eq_ind (getRankOfFormula p, seed) (fun pr : nat * nat => enum_formulae_of_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) (le_reflexivity (getRankOfFormula p)))) (cantor_pairing (sum_from_0_to (getRankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (getRankOfFormula p) seed)).
   Qed.
 
   End ENUMERATE_FORMULAS.
