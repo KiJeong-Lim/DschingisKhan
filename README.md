@@ -13,11 +13,21 @@ make
 
 ## CAUTIONS
 
-- It might be a solution to remove all newlines in the file `_CoqProject` if you fail to do `QUICK START` on Linux-like OS.
+1. It might be a solution to remove all newlines in the file `_CoqProject` if you fail to do `QUICK START` on Linux-like OS.
 
 ## COMPATIBLE COQ VERSIONS
 
-- With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.
+1. With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.
+
+## THANKS TO
+
+- `Junyoung Jang` https://github.com/Ailrun
+
+- `Taeseung Sohn` https://github.com/paulsohn
+
+- `Hanul Jeon` https://github.com/hanuljeon95
+
+- `Soonwon Moon` https://github.com/damhiya
 
 ## BUILD BY HANDS
 
@@ -39,16 +49,6 @@ coqc -Q . DschingisKhan projects/PropositionalLogic.v
 coqc -Q . DschingisKhan projects/SmullyanGIT/PA.v
 coqc -Q . DschingisKhan projects/SmullyanGIT.v
 ```
-
-## THANKS TO
-
-- `Junyoung Jang` https://github.com/Ailrun
-
-- `Taeseung Sohn` https://github.com/paulsohn
-
-- `Hanul Jeon` https://github.com/hanuljeon95
-
-- `Soonwon Moon` https://github.com/damhiya
 
 ## THE LICENSE
 
