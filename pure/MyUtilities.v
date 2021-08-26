@@ -1293,6 +1293,50 @@ Module Scratch.
         exact (le_elim_S_n_le_m n (S m) Hle).
   Qed.
 
+  Theorem leq_unique :
+    forall n1 : nat,
+    forall n2 : nat,
+    forall Hleq1 : leq n1 n2,
+    forall Hleq2 : leq n1 n2,
+    Hleq1 = Hleq2.
+  Proof.
+    refine (
+      fun n1 : nat =>
+      fix lenat_proof_irrelevance_fix (n2 : nat) (Hleq1 : leq n1 n2) {struct Hleq1} : forall Hleq2 : leq n1 n2, Hleq1 = Hleq2 :=
+      match Hleq1 as Hleq in leq _ m1 return forall Hleq2 : leq n1 m1, Hleq = Hleq2 with
+      | leq_init _ =>
+        fun Hleq2 : leq n1 n1 =>
+        match Hleq2 as Hleq in leq _ m2 return forall Heq : n1 = m2, eq_rec n1 (leq n1) (leq_init n1) m2 Heq = Hleq with
+        | leq_init _ => _
+        | leq_step _ m2' H_LE2' => _
+        end (eq_reflexivity n1)
+      | leq_step _ m1' Hleq1' =>
+        fun Hleq2 : leq n1 (S m1') =>
+        match Hleq2 as Hleq in leq _ m2 return forall Heq : m2 = S m1', leq_step n1 m1' Hleq1' = eq_rec m2 (leq n1) Hleq (S m1') Heq with
+        | leq_init _ => _
+        | leq_step _ m2' Hleq2' => _
+        end (eq_reflexivity (S m1'))
+      end
+    ).
+    - intros Heq.
+      rewrite (eqnat_proof_irrelevance n1 n1 Heq (eq_reflexivity n1)).
+      reflexivity.
+    - intros Heq.
+      assert (Hlt : m2' < n1) by now rewrite Heq; constructor.
+      assert (Hle : n1 <= m2') by now apply leq_implies_le.
+      contradiction (le_lt_False n1 m2' Hle Hlt).
+    - intros Heq.
+      assert (Hlt : m1' < n1) by now rewrite Heq; constructor.
+      assert (Hle : n1 <= m1') by now apply leq_implies_le.
+      contradiction (le_lt_False n1 m1' Hle Hlt).
+    - intros Heq.
+      assert (Heq' : m2' = m1') by exact (S_eq_S_elim m2' m1' Heq).
+      destruct Heq' as [].
+      rewrite (eqnat_proof_irrelevance (S m2') (S m2') Heq (eq_reflexivity (S m2'))).
+      apply (eq_congruence (leq_step n1 m2')).
+      exact (lenat_proof_irrelevance_fix m2' Hleq1' Hleq2').
+  Qed.
+
   End SET_LEVEL_LE.
 
 End Scratch.
