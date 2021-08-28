@@ -349,19 +349,10 @@ Module MyUtilities.
     forall H_EQ2 : x = y,
     H_EQ1 = H_EQ2.
   Proof.
-    assert ( claim1 :
-      forall y : A,
-      forall H_EQ : x = y,
-      eq_ind x (fun z : A => z = y) (choice_eq y H_EQ) x (choice_eq x (eq_reflexivity x)) = H_EQ
-    ).
-    { rewrite (choice_eq_is x (eq_reflexivity x)).
-      exact choice_eq_is.
-    }
     intros y H_EQ1 H_EQ2.
-    rewrite <- (claim1 y H_EQ1).
-    rewrite <- (claim1 y H_EQ2).
-    rewrite <- (choice_eq_const y H_EQ1 H_EQ2).
-    reflexivity.
+    rewrite <- (choice_eq_is y H_EQ1).
+    rewrite <- (choice_eq_is y H_EQ2).
+    exact (choice_eq_const y H_EQ1 H_EQ2).
   Qed.
 
   End DecidableProofIrrelevance.
@@ -395,9 +386,9 @@ Module MyUtilities.
   Proof.
     induction n1 as [| n IH]; intros n2 [].
     - exact (eq_reflexivity (eq_reflexivity O)).
-    - unfold choice_eqnat, choice_eq, eq_lem_nat in *.
+    - assert (claim1 : choice_eqnat n n (eq_reflexivity n) = eq_reflexivity n) by exact (IH n (eq_reflexivity n)).
+      unfold choice_eqnat, choice_eq, eq_lem_nat in *.
       simpl.
-      assert (claim1 := IH n (eq_reflexivity n)).
       destruct (eq_dec_nat n n) as [Heq | Hne].
       + rewrite claim1.
         exact (eq_reflexivity (eq_reflexivity (S n))).
