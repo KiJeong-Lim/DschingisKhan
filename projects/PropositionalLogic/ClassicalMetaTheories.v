@@ -323,16 +323,10 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
 
   Import ListNotations BasicSetoidTheory MyEnsemble BasicPosetTheory MyEnsembleNova CountableBooleanAlgebra ExclusiveMiddle SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOnPropositionLogic ConstructiveMetaTheoryOnPropositonalLogic.
 
-  Definition findModelFromMaximalConsistentSet : ensemble formula -> env :=
-    fun hs : ensemble formula =>
-    preimage AtomF (MaximalConsistentSet hs)
-  .
-
-  Theorem canFindModelIfConsistent :
+  Theorem hasModelIfConsistent :
     forall hs : ensemble formula,
     ~ hs |- ContradictionF ->
-    forall p : formula,
-    member p (MaximalConsistentSet hs) <-> eval_formula (findModelFromMaximalConsistentSet hs) p.
+    isSubsetOf hs (MaximalConsistentSet hs) /\ isStructure (MaximalConsistentSet hs).
   Proof with eauto with *. (* Infinitely grateful for Taeseung's advice! *)
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
@@ -522,8 +516,13 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
           apply caseImplicationF in H, H0...
       }
     }
-    unfold findModelFromMaximalConsistentSet.
-    induction p...
+    split.
+    - intros h h_in_hs.
+      exists (O).
+      constructor.
+      apply ByAssumption...
+    - intros h.
+      induction h...
   Qed.
 
   Corollary the_propositional_completeness_theorem :
@@ -542,12 +541,12 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
         apply NegationE, H_inconsistent.
       }
       assert (claim2 : isFilter (MaximalConsistentSet hs')) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
-      assert (claim3 := canFindModelIfConsistent hs' claim1).
+      assert (claim3 := proj2 (hasModelIfConsistent hs' claim1)).
       assert (claim4 : forall p : formula, member p (Th hs') -> member p (MaximalConsistentSet hs')) by exact (proj1 (theorem_of_1_3_10 hs')).
       assert (claim5 := proj1 (proj2 (theorem_of_1_3_10 hs'))).
       assert (claim6 := proj1 (proj2 (proj2 (theorem_of_1_3_10 hs')))).
       assert (claim7 : forall hs1 : ensemble formula, forall hs2 : ensemble formula, (forall h : formula, member h hs1 -> member h hs2) -> inconsistent hs1 -> inconsistent hs2) by exact (@inconsistent_isSubsetOf formula formula_isSetoid formula_isCBA).
-      apply (completeness_theorem_prototype hs c H_entails (findModelFromMaximalConsistentSet hs')).
+      apply (completeness_theorem_prototype hs c H_entails (preimage AtomF (MaximalConsistentSet hs'))).
       + unfold equiconsistent in *.
         transitivity (inconsistent (MaximalConsistentSet hs'))...
       + transitivity (MaximalConsistentSet hs')...

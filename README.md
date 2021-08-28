@@ -13,7 +13,7 @@ make
 
 ## COMPATIBLE COQ VERSIONS
 
-1. With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.
+- With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.
 
 ## THANKS TO
 
@@ -24,6 +24,8 @@ make
 - `Hanul Jeon` https://github.com/hanuljeon95
 
 - `Soonwon Moon` https://github.com/damhiya
+
+- `Minki Cho` https://github.com/minkiminki
 
 ## BUILD BY HANDS
 

@@ -1193,7 +1193,7 @@ Module MyUniverses.
 
 End MyUniverses.
 
-Module Scratch.
+Module MyScratch.
 
   Import EqFacts MyUtilities.
 
@@ -1339,4 +1339,4 @@ Module Scratch.
 
   End SET_LEVEL_LE.
 
-End Scratch.
+End MyScratch.

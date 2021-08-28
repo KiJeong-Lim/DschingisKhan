@@ -2,7 +2,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module FunFacts.
 
-  Import EqFacts MyUtilities Scratch.
+  Import EqFacts MyUtilities.
 
   Record RETRACT (A : Prop) (B : Prop) : Prop :=
     { _i : A -> B

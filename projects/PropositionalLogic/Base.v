@@ -239,6 +239,26 @@ Module SemanticsOfPL.
 
   Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
 
+  Definition isStructure : ensemble formula -> Prop :=
+    fun hs : ensemble formula =>
+    forall h : formula,
+    member h hs <-> eval_formula (preimage AtomF hs) h
+  .
+
+  Definition structure_gives_its_subset_model :
+    forall hs : ensemble formula,
+    forall hs_hat : ensemble formula,
+    (isSubsetOf hs hs_hat /\ isStructure hs_hat) ->
+    {v : env | forall h : formula, member h hs -> satisfies v h}.
+  Proof.
+    intros hs hs_hat [hs_isSubsetOf_hs_hat hs_hat_isStructure].
+    exists (preimage AtomF hs_hat).
+    intros h h_in_hs.
+    constructor.
+    apply (proj1 (hs_hat_isStructure h)).
+    exact (hs_isSubsetOf_hs_hat h h_in_hs).
+  Defined.
+
   Lemma extend_entails {hs1 : ensemble formula} {c : formula} :
     hs1 |= c ->
     forall hs2 : ensemble formula,
