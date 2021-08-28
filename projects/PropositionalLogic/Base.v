@@ -246,17 +246,20 @@ Module SemanticsOfPL.
   .
 
   Definition structure_gives_its_subset_model :
-    forall hs : ensemble formula,
     forall hs_hat : ensemble formula,
-    (isSubsetOf hs hs_hat /\ isStructure hs_hat) ->
-    {v : env | forall h : formula, member h hs -> satisfies v h}.
+    isStructure hs_hat ->
+    forall hs : ensemble formula,
+    isSubsetOf hs hs_hat ->
+    {v : env | (forall h : formula, member h hs -> satisfies v h) /\ (v = preimage AtomF hs_hat)}.
   Proof.
-    intros hs hs_hat [hs_isSubsetOf_hs_hat hs_hat_isStructure].
+    intros hs_hat hs_hat_isStructure hs hs_isSubsetOf_hs_hat.
     exists (preimage AtomF hs_hat).
-    intros h h_in_hs.
-    constructor.
-    apply (proj1 (hs_hat_isStructure h)).
-    exact (hs_isSubsetOf_hs_hat h h_in_hs).
+    split.
+    - intros h h_in_hs.
+      constructor.
+      apply (proj1 (hs_hat_isStructure h)).
+      exact (hs_isSubsetOf_hs_hat h h_in_hs).
+    - reflexivity.
   Defined.
 
   Lemma extend_entails {hs1 : ensemble formula} {c : formula} :
