@@ -168,14 +168,6 @@ Module FunFacts.
     POW P
   .
 
-  Let SATISFIES : UNIV -> (UNIV -> BB) -> BB :=
-    fun x : UNIV =>
-    fun phi : UNIV -> BB =>
-    phi x
-  .
-
-  Local Notation " x `satisfies` phi " := (SATISFIES x phi) (at level 60, no associativity) : type_scope.
-
   Let SET_BUILDER_NOTATION : (UNIV -> BB) -> UNIV :=
     fun phi : UNIV -> BB =>
     fun P : Prop =>
@@ -188,17 +180,16 @@ Module FunFacts.
 
   Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BB :=
     fun x : UNIV =>
-    fun z : UNIV =>
-    x UNIV z
+    x UNIV
   .
 
   Local Notation " z ∈ x " := (HAS_AS_AN_ELEMENT x z) (at level 70, no associativity) : type_scope.
 
   Let SET_BUILDER_NOTATION_SPEC :
     forall phi : UNIV -> BB,
-    (fun z : UNIV => z ∈ ⦃ x | x `satisfies` phi ⦄) = phi.
+    (fun z : UNIV => z ∈ ⦃ x | phi x ⦄) = phi.
   Proof with eauto.
-    unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT, SATISFIES.
+    unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT.
     destruct (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
@@ -230,8 +221,13 @@ Module FunFacts.
     destruct (exclusive_middle (b = TRUE_BB))...
   Qed.
 
+  Let russell : UNIV -> BB :=
+    fun x : UNIV =>
+    ¬ (x ∈ x)
+  .
+
   Let R : UNIV :=
-    ⦃ x | ¬ (x ∈ x) ⦄
+    ⦃ x | russell x ⦄
   .
 
   Let RUSSELL : BB :=
@@ -241,8 +237,8 @@ Module FunFacts.
   Let PARADOX_OF_BERARDI :
     RUSSELL = ¬ RUSSELL.
   Proof with eauto.
-    enough (it_is_sufficient_to_show : RUSSELL = (R `satisfies` (fun x : UNIV => ¬ (x ∈ x)))) by exact it_is_sufficient_to_show.
-    replace (fun x : UNIV => ¬ (x ∈ x)) with (R UNIV)...
+    enough (it_is_sufficient_to_show : RUSSELL = russell R) by exact it_is_sufficient_to_show.
+    replace (russell) with (fun x : UNIV => x ∈ R)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :
