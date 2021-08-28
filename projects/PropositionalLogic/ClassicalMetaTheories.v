@@ -325,8 +325,8 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
 
   Theorem hasModelIfConsistent :
     forall hs : ensemble formula,
-    ~ hs |- ContradictionF ->
-    isSubsetOf hs (MaximalConsistentSet hs) /\ isStructure (MaximalConsistentSet hs).
+    (~ hs |- ContradictionF) ->
+    (isSubsetOf hs (MaximalConsistentSet hs) /\ isStructure (MaximalConsistentSet hs)).
   Proof with eauto with *. (* Infinitely grateful for Taeseung's advice! *)
     assert (lemma1 := @isSubsetOf_intro_singleton formula).
     assert (lemma2 : forall hs : ensemble formula, forall h : formula, isSubsetOf hs (insert h hs)).
@@ -520,9 +520,9 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     - intros h h_in_hs.
       exists (O).
       constructor.
-      apply ByAssumption...
-    - intros h.
-      induction h...
+      exact (ByAssumption h h_in_hs).
+    - intros p.
+      induction p...
   Qed.
 
   Corollary the_propositional_completeness_theorem :
@@ -531,26 +531,27 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     hs |= c ->
     hs |- c.
   Proof with try now firstorder.
-    intros hs c H_entails.
-    destruct (classic (hs |- c)) as [H_yes | H_no].
-    - exact H_yes.
-    - set (hs' := insert (NegationF c) hs).
-      assert (claim1 : ~ hs' |- ContradictionF).
-      { intros H_inconsistent.
-        contradiction H_no.
-        apply NegationE, H_inconsistent.
-      }
-      assert (claim2 : isFilter (MaximalConsistentSet hs')) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
-      assert (claim3 := proj2 (hasModelIfConsistent hs' claim1)).
-      assert (claim4 : forall p : formula, member p (Th hs') -> member p (MaximalConsistentSet hs')) by exact (proj1 (theorem_of_1_3_10 hs')).
-      assert (claim5 := proj1 (proj2 (theorem_of_1_3_10 hs'))).
-      assert (claim6 := proj1 (proj2 (proj2 (theorem_of_1_3_10 hs')))).
-      assert (claim7 : forall hs1 : ensemble formula, forall hs2 : ensemble formula, (forall h : formula, member h hs1 -> member h hs2) -> inconsistent hs1 -> inconsistent hs2) by exact (@inconsistent_isSubsetOf formula formula_isSetoid formula_isCBA).
-      apply (completeness_theorem_prototype hs c H_entails (preimage AtomF (MaximalConsistentSet hs'))).
-      + unfold equiconsistent in *.
-        transitivity (inconsistent (MaximalConsistentSet hs'))...
-      + transitivity (MaximalConsistentSet hs')...
-      + apply (isFilter_ext_eq (MaximalConsistentSet hs') claim2)...
+    intros hs c hs_entails_c.
+    apply NNPP.
+    intros it_is_false_that_hs_infers_c.
+    set (hs' := insert (NegationF c) hs).
+    assert (claim1 : ~ hs' |- ContradictionF).
+    { intros H_inconsistent.
+      contradiction it_is_false_that_hs_infers_c.
+      apply NegationE, H_inconsistent.
+    }
+    assert (claim2 : isFilter (MaximalConsistentSet hs')) by now apply theorem_of_1_2_14, lemma1_of_1_3_8.
+    assert (claim3 : forall p : formula, member p (MaximalConsistentSet hs') <-> eval_formula (preimage AtomF (MaximalConsistentSet hs')) p) by exact (proj2 (hasModelIfConsistent hs' claim1)).
+    assert (claim4 : forall p : formula, member p (Th hs') -> member p (MaximalConsistentSet hs')) by exact (proj1 (theorem_of_1_3_10 hs')).
+    assert (claim5 : equiconsistent (Th hs') (MaximalConsistentSet hs')) by exact (proj1 (proj2 (theorem_of_1_3_10 hs'))).
+    assert (claim6 : forall p : formula, member p (MaximalConsistentSet hs') <-> MaximalConsistentSet hs' |- p) by exact (proj1 (proj2 (proj2 (theorem_of_1_3_10 hs')))).
+    assert (claim7 : forall hs1 : ensemble formula, forall hs2 : ensemble formula, (forall h : formula, member h hs1 -> member h hs2) -> inconsistent hs1 -> inconsistent hs2) by exact (inconsistent_isSubsetOf).
+    contradiction it_is_false_that_hs_infers_c.
+    apply (completeness_theorem_prototype hs c hs_entails_c (preimage AtomF (MaximalConsistentSet hs'))).
+    - unfold equiconsistent in *.
+      transitivity (inconsistent (MaximalConsistentSet hs'))...
+    - transitivity (MaximalConsistentSet hs')...
+    - apply (isFilter_ext_eq (MaximalConsistentSet hs') claim2)...
   Qed.
 
 End CompletenessOfPropositionalLogic.

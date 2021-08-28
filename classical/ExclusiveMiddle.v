@@ -90,7 +90,7 @@ Module ExclusiveMiddle.
   Let forall_exists_False : (~ (forall n : U, P n)) -> (~ (exists n : U, (~ P n))) -> False :=
     fun H : ~ (forall n : U, P n) =>
     fun H0 : ~ (exists n : U, ~ P n) =>
-    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n_ : U => ~ P n_) n H1)))
+    H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n0 : U => ~ P n0) n H1)))
   . 
 
   Lemma not_all_not_ex :
@@ -115,25 +115,5 @@ Module ExclusiveMiddle.
   Qed.
 
   End Classical_Pred_Type.
-
-  Local Ltac classic_tauto_aux1 P :=
-    match P with
-    | ?P1 /\ ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
-    | ?P1 \/ ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
-    | ?P1 -> ?P2 => classic_tauto_aux1 P1; classic_tauto_aux1 P2
-    | ~ ?P1 => classic_tauto_aux1 P1
-    | True => idtac
-    | False => idtac
-    | ?x = ?x => idtac
-    | forall x : ?A, ?B => intro x; classic_tauto_aux1 B
-    | ?Atom => destruct (classic Atom)
-    end
-  .
-
-  Global Ltac classic_tauto :=
-    match goal with
-    | |- ?P => classic_tauto_aux1 P; tauto
-    end
-  .
 
 End ExclusiveMiddle.

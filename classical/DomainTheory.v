@@ -19,30 +19,22 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     forall x : D,
     isOpen (U x).
-  Proof with eauto with *. (* Thanks to Juneyoung Jang *)
-    assert ( claim1 :
-      forall x : D,
-      forall y : D,
-      forall z : D,
-      member y (U x) ->
-      y =< z ->
-      member z (U x)
-    ).
-    { intros x y z y_in_U_x y_le_z z_le_x.
-      contradiction y_in_U_x...
-    }
+  Proof with tauto. (* Thanks to Junyoung Jang *)
     intros x.
-    split...
-    intros X [nonempty_X X_closed_under_le] sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
-    assert (JuneyoungJang'sAdvice : ~ (forall x0 : D, member x0 X -> x0 =< x)).
-    { intros every_member_of_X_is_either_less_than_or_equal_to_x.
-      contradiction sup_X_in_U_x.
-      exact (proj2 (sup_X_isSupremum_of_X x) every_member_of_X_is_either_less_than_or_equal_to_x).
-    }
-    destruct (not_all_ex_not D (fun x0 : D => (member x0 X -> x0 =< x)) JuneyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
-    exists x0.
-    apply in_intersection_iff.
-    classic_tauto.
+    split.
+    - intros y z y_in_U_x y_le_z z_le_x.
+      contradiction y_in_U_x.
+      transitivity z...
+    - intros Y [nonempty_Y Y_closed_under_le] sup_Y sup_Y_isSupremum_of_Y sup_Y_in_U_x.
+      assert (JunyoungJang'sAdvice : ~ (forall y : D, member y Y -> y =< x)).
+      { intros every_member_of_Y_is_either_less_than_or_equal_to_x.
+        contradiction sup_Y_in_U_x.
+        exact (proj2 (sup_Y_isSupremum_of_Y x) every_member_of_Y_is_either_less_than_or_equal_to_x).
+      }
+      destruct (not_all_ex_not D (fun y : D => member y Y -> y =< x) JunyoungJang'sAdvice) as [y0 y0_is_a_member_of_Y_which_is_less_than_or_equal_to_x].
+      exists y0.
+      apply in_intersection_iff.
+      destruct (classic (member y0 Y /\ ~ y0 =< x))...
   Qed.
 
   Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
@@ -92,8 +84,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     f sup_X == proj1_sig (square_up_exists (image f X) image_f_X_isDirected).
   Proof with eauto with *.
     intros f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X image_f_X_isDirected.
-    set (Y := image f X).
     assert (f_monotonic : forall x1 : D, forall x2 : D, x1 =< x2 -> f x1 =< f x2) by now apply ContinuousMap_isMonotonicMap.
+    set (Y := image f X).
     destruct (square_up_exists Y image_f_X_isDirected) as [sup_Y sup_Y_isSupremum_of_Y].
     assert (claim1 : sup_Y =< f sup_X).
     { apply sup_Y_isSupremum_of_Y.
@@ -167,7 +159,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     exists sup_X : D, exists sup_Y : D', @isSupremum D D_isPoset sup_X X /\ @isSupremum D' D'_isPoset sup_Y (image f X) /\ @eqProp D' (@Poset_requiresSetoid D' D'_isPoset) (f sup_X) sup_Y
   .
 
-  Lemma f_preservesSupremum_implies_f_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma isMonotonicMap_if_preservesSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall f : D -> D',
     (forall x1 : D, forall x2 : D, x1 == x2 -> f x1 == f x2) ->
     preservesSupremum f ->
@@ -208,7 +200,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isDirected (image f X).
   Proof with eauto with *.
     intros f f_preserves_eq f_property X X_isDirected.
-    assert (claim1 := f_preservesSupremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
+    assert (claim1 := isMonotonicMap_if_preservesSupremum f f_preserves_eq f_property).
     destruct X_isDirected as [[x1_0 x1_0_in_X] X_closed_under_le].
     split.
     - exists (f x1_0)...
@@ -241,7 +233,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       assert (claim3 := ContinuousMapsOnCpos_preservesSupremum f f_continuous X X_isDirected sup_X sup_X_isSupremum_of_X).
       exists sup_X, (f sup_X)...
     - intros f_property.
-      assert (claim4 := f_preservesSupremum_implies_f_isMonotonicMap f f_preserves_eq f_property).
+      assert (claim4 := isMonotonicMap_if_preservesSupremum f f_preserves_eq f_property).
       intros O O_isOpen.
       split.
       + intros x1 x2 x_in_preimage_f_O x_le_y.

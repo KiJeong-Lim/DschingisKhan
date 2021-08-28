@@ -229,8 +229,8 @@ Module UntypedLamdbdaCalculus.
     isFreeIn x M = false.
   Proof with lia.
     intros x.
-    enough (get_max_ivar M < x -> ~ In x (getFVs M)) by now rewrite getFVs_isFreeIn, not_true_iff_false in H.
-    assert (H1 : In x (getFVs M) -> fold_right_max_0 (getFVs M) >= x) by apply fold_right_max_0_in.
+    enough (it_is_sufficient_to_show : get_max_ivar M < x -> ~ In x (getFVs M)) by now rewrite getFVs_isFreeIn, not_true_iff_false in it_is_sufficient_to_show.
+    assert (In x (getFVs M) -> fold_right_max_0 (getFVs M) >= x) by now apply fold_right_max_0_in.
     enough (fold_right_max_0 (getFVs M) >= x -> fold_right_max_0 (getFVs M) < x -> False) by eauto...
   Qed.
 

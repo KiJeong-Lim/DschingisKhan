@@ -241,8 +241,8 @@ Module SemanticsOfPL.
 
   Definition isStructure : ensemble formula -> Prop :=
     fun hs : ensemble formula =>
-    forall h : formula,
-    member h hs <-> eval_formula (preimage AtomF hs) h
+    forall p : formula,
+    member p hs <-> eval_formula (preimage AtomF hs) p
   .
 
   Definition structure_gives_its_subset_model :
