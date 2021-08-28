@@ -7,7 +7,7 @@
 ```
 git clone https://github.com/KiJeong-Lim/DschingisKhan.git
 cd DschingisKhan
-coq_makefile -f _CoqProject *.v -o Makefile
+coq_makefile -f _CoqProject -o Makefile
 make
 ```
 
