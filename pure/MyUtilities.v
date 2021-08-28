@@ -1302,7 +1302,7 @@ Module MyScratch.
   Proof.
     refine (
       fun n1 : nat =>
-      fix lenat_proof_irrelevance_fix (n2 : nat) (Hleq1 : leq n1 n2) {struct Hleq1} : forall Hleq2 : leq n1 n2, Hleq1 = Hleq2 :=
+      fix leq_unique_fix (n2 : nat) (Hleq1 : leq n1 n2) {struct Hleq1} : forall Hleq2 : leq n1 n2, Hleq1 = Hleq2 :=
       match Hleq1 as Hleq in leq _ m1 return forall Hleq2 : leq n1 m1, Hleq = Hleq2 with
       | leq_init _ =>
         fun Hleq2 : leq n1 n1 =>
@@ -1334,7 +1334,7 @@ Module MyScratch.
       destruct Heq' as [].
       rewrite (eqnat_proof_irrelevance (S m2') (S m2') Heq (eq_reflexivity (S m2'))).
       apply (eq_congruence (leq_step n1 m2')).
-      exact (lenat_proof_irrelevance_fix m2' Hleq1' Hleq2').
+      exact (leq_unique_fix m2' Hleq1' Hleq2').
   Qed.
 
   End SET_LEVEL_LE.
