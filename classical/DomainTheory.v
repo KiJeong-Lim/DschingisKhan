@@ -25,16 +25,16 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     - intros y z y_in_U_x y_le_z z_le_x.
       contradiction y_in_U_x.
       transitivity z...
-    - intros Y [nonempty_Y Y_closed_under_le] sup_Y sup_Y_isSupremum_of_Y sup_Y_in_U_x.
-      assert (JunyoungJang'sAdvice : ~ (forall y : D, member y Y -> y =< x)).
-      { intros every_member_of_Y_is_either_less_than_or_equal_to_x.
-        contradiction sup_Y_in_U_x.
-        exact (proj2 (sup_Y_isSupremum_of_Y x) every_member_of_Y_is_either_less_than_or_equal_to_x).
+    - intros X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
+      assert (JunyoungJang'sAdvice : ~ (forall x0 : D, member x0 X -> x0 =< x)).
+      { intros x_is_an_upper_bound_of_X.
+        contradiction sup_X_in_U_x.
+        exact (proj2 (sup_X_isSupremum_of_X x) x_is_an_upper_bound_of_X).
       }
-      destruct (not_all_ex_not D (fun y : D => member y Y -> y =< x) JunyoungJang'sAdvice) as [y0 y0_is_a_member_of_Y_which_is_less_than_or_equal_to_x].
-      exists y0.
+      destruct (not_all_ex_not D (fun x0 : D => member x0 X -> x0 =< x) JunyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
+      exists x0.
       apply in_intersection_iff.
-      destruct (classic (member y0 Y /\ ~ y0 =< x))...
+      destruct (classic (member x0 X /\ ~ x0 =< x))...
   Qed.
 
   Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
