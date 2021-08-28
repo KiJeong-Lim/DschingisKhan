@@ -339,12 +339,12 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
       apply in_insert_iff...
     }
     intros hs claim1.
-    set (hs_hat := MaximalConsistentSet hs).
+    set (hs_dagger := MaximalConsistentSet hs).
     destruct (theorem_of_1_3_10 hs) as [claim2 [claim3 [claim4 [claim5 claim6]]]].
-    fold hs_hat in claim2, claim3, claim4, claim5, claim6.
+    fold hs_dagger in claim2, claim3, claim4, claim5, claim6.
     assert (claim7 := Th_isSubsetOf_Cl hs).
     assert (claim8 := Cl_isSubsetOf_Th hs).
-    assert (claim9 : equiconsistent (Cl hs) hs_hat).
+    assert (claim9 : equiconsistent (Cl hs) hs_dagger).
     { split.
       - apply inconsistent_isSubsetOf.
         transitivity (Th hs)...
@@ -352,12 +352,12 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
         apply (inconsistent_isSubsetOf (Th hs))...
         apply claim3...
     }
-    assert (claim10 : ~ inconsistent hs_hat).
+    assert (claim10 : ~ inconsistent hs_dagger).
     { intros H.
       contradiction claim1.
       apply inconsistent_iff, claim9...
     }
-    assert (claim11 : ~ inconsistent (Cl hs_hat)).
+    assert (claim11 : ~ inconsistent (Cl hs_dagger)).
     { intros H.
       contradiction claim10.
       apply (inconsistent_isSubsetOf (Cl (MaximalConsistentSet hs)))...
@@ -365,13 +365,13 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     }
     assert ( caseAtomF :
       forall i : pvar,
-      (member (AtomF i) hs_hat <-> eval_formula (preimage AtomF hs_hat) (AtomF i))
+      (member (AtomF i) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (AtomF i))
     ).
     { intros i.
-      rewrite <- (in_preimage_iff i)...
+      rewrite <- (in_preimage_iff i AtomF hs_dagger)...
     }
     assert ( caseContradictonF :
-      (member ContradictionF hs_hat <-> eval_formula (preimage AtomF hs_hat) ContradictionF)
+      (member ContradictionF hs_dagger <-> eval_formula (preimage AtomF hs_dagger) ContradictionF)
     ).
     { simpl.
       rewrite claim4, <- inconsistent_iff.
@@ -379,8 +379,8 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     }
     assert ( caseNegationF :
       forall p1 : formula,
-      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
-      (member (NegationF p1) hs_hat <-> eval_formula (preimage AtomF hs_hat) (NegationF p1))
+      (member p1 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p1) ->
+      (member (NegationF p1) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (NegationF p1))
     ).
     { intros p1 IHp1.
       simpl.
@@ -390,7 +390,7 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
         contradiction claim11.
         apply inconsistent_iff, (ContradictionI p1).
         + apply claim4...
-        + apply H.
+        + exact H.
       - intros H.
         apply claim4, claim5.
         intros H0.
@@ -407,9 +407,9 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     assert ( caseConjunctionF :
       forall p1 : formula,
       forall p2 : formula,
-      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
-      (member p2 hs_hat <-> eval_formula (preimage AtomF hs_hat) p2) ->
-      (member (ConjunctionF p1 p2) hs_hat <-> eval_formula (preimage AtomF hs_hat) (ConjunctionF p1 p2))
+      (member p1 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p1) ->
+      (member p2 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p2) ->
+      (member (ConjunctionF p1 p2) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (ConjunctionF p1 p2))
     ).
     { intros p1 p2 IHp1 IHp2.
       simpl.
@@ -425,17 +425,18 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     assert ( caseDisjunctionF :
       forall p1 : formula,
       forall p2 : formula,
-      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
-      (member p2 hs_hat <-> eval_formula (preimage AtomF hs_hat) p2) ->
-      (member (DisjunctionF p1 p2) hs_hat <-> eval_formula (preimage AtomF hs_hat) (DisjunctionF p1 p2))
+      (member p1 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p1) ->
+      (member p2 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p2) ->
+      (member (DisjunctionF p1 p2) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (DisjunctionF p1 p2))
     ).
     { intros p1 p2 IHp1 IHp2.
       simpl.
       rewrite <- IHp1, <- IHp2.
       split.
       - intros H.
-        destruct (classic (hs_hat |- p1)) as [H_yes | H_no].
-        + apply or_introl, claim4...
+        destruct (classic (hs_dagger |- p1)) as [H_yes | H_no].
+        + apply or_introl, claim4.
+          exact H_yes.
         + apply or_intror, claim4.
           apply (ImplicationE (NegationF p1)).
           { apply (DisjunctionE p1 p2 (ImplicationF (NegationF p1) p2)).
@@ -460,9 +461,9 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     assert ( caseImplicationF :
       forall p1 : formula,
       forall p2 : formula,
-      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
-      (member p2 hs_hat <-> eval_formula (preimage AtomF hs_hat) p2) ->
-      (member (ImplicationF p1 p2) hs_hat <-> eval_formula (preimage AtomF hs_hat) (ImplicationF p1 p2))
+      (member p1 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p1) ->
+      (member p2 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p2) ->
+      (member (ImplicationF p1 p2) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (ImplicationF p1 p2))
     ).
     { intros p1 p2 IHp1 IHp2.
       rewrite (claim6 p1 p2).
@@ -472,24 +473,24 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     assert ( caseBiconditionalF :
       forall p1 : formula,
       forall p2 : formula,
-      (member p1 hs_hat <-> eval_formula (preimage AtomF hs_hat) p1) ->
-      (member p2 hs_hat <-> eval_formula (preimage AtomF hs_hat) p2) ->
-      (member (BiconditionalF p1 p2) hs_hat <-> eval_formula (preimage AtomF hs_hat) (BiconditionalF p1 p2))
+      (member p1 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p1) ->
+      (member p2 hs_dagger <-> eval_formula (preimage AtomF hs_dagger) p2) ->
+      (member (BiconditionalF p1 p2) hs_dagger <-> eval_formula (preimage AtomF hs_dagger) (BiconditionalF p1 p2))
     ).
     { intros p1 p2 IHp1 IHp2.
       simpl.
-      transitivity (member (ImplicationF p1 p2) hs_hat /\ member (ImplicationF p2 p1) hs_hat).
+      transitivity (member (ImplicationF p1 p2) hs_dagger /\ member (ImplicationF p2 p1) hs_dagger).
       { split.
         - intros H.
           split.
           { apply claim4, ImplicationI, (BiconditionalE1 p1 p2).
-            - apply (@extend_infers hs_hat).
+            - apply (@extend_infers hs_dagger).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption... 
           }
           { apply claim4, ImplicationI, (BiconditionalE2 p1 p2).
-            - apply (@extend_infers hs_hat).
+            - apply (@extend_infers hs_dagger).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption... 
@@ -497,13 +498,13 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
         - intros [H H0].
           apply claim4, (BiconditionalI p1 p2).
           { apply (ImplicationE p1 p2).
-            - apply (@extend_infers hs_hat).
+            - apply (@extend_infers hs_dagger).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption...
           }
           { apply (ImplicationE p2 p1).
-            - apply (@extend_infers hs_hat).
+            - apply (@extend_infers hs_dagger).
               + apply claim4...
               + apply lemma2.
             - apply ByAssumption...
@@ -518,7 +519,7 @@ Module CompletenessOfPropositionalLogic. (* Thanks to Taeseung Sohn *)
     }
     split.
     - intros h h_in_hs.
-      exists (O).
+      exists (0).
       constructor.
       exact (ByAssumption h h_in_hs).
     - intros p.
