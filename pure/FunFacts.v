@@ -248,11 +248,11 @@ Module FunFacts.
     p1 = p2.
   Proof.
     apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
-    destruct (exclusive_middle (RUSSELL = TRUE_BB)) as [H_RUSSELL_eq_TRUE_BB | H_RUSSELL_ne_TRUE_BB].
-    - rewrite <- H_RUSSELL_eq_TRUE_BB.
+    destruct (exclusive_middle (RUSSELL = TRUE_BB)) as [RUSSELL_eq_TRUE_BB | RUSSELL_ne_TRUE_BB].
+    - rewrite <- RUSSELL_eq_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.
       now apply NOT_BB_SPEC1.
-    - contradiction H_RUSSELL_ne_TRUE_BB.
+    - contradiction RUSSELL_ne_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.
       now apply NOT_BB_SPEC2.
   Qed.
@@ -271,11 +271,15 @@ Module FunFacts.
 
   Variable phi : nat -> Prop.
 
-  Theorem exclusive_middle_implies_unrestricted_minimization (n : nat) (phi_n : phi n) :
+  Theorem exclusive_middle_implies_unrestricted_minimization :
+    (~ forall n : nat, ~ phi n) ->
     exists n_min : nat, isMinimal n_min phi.
   Proof.
+    intros not_forall_n_not_phi_n.
+    assert (claim1 : exists n : nat, phi n) by now destruct (exclusive_middle (exists n : nat, phi n)); firstorder.
+    destruct claim1 as [n phi_n].
     destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
-    - enough (claim1 : ~ phi n) by contradiction claim1.
+    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction it_is_sufficient_to_show.
       apply (@strong_induction (fun x : nat => ~ phi x)).
       intros i acc_hyp phi_i.
       contradiction (H_yes i).
