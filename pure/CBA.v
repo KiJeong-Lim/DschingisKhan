@@ -592,7 +592,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
     { intros b1 b2 H2 H3.
       inversion H2; subst.
       assert (H5 := lemma1_of_1_2_11 n bs H).
-      exists n.
+      exists (n).
       apply (proj1 (proj2 H5) b1 b2)...
     }
     assert (claim3 : forall b1 : B, forall b2 : B, forall b : B, member b1 (CompleteFilter bs) -> member b2 (CompleteFilter bs) -> b == andB b1 b2 -> member b (CompleteFilter bs)).
@@ -604,11 +604,11 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
       destruct H5 as [H5 | H5].
       - assert (H6 := lemma1_of_1_2_11 n2 bs H).
         assert (H7 := lemma1_of_1_2_12 n1 n2 H5 bs b1 H3).
-        exists n2.
+        exists (n2).
         apply (proj2 (proj2 H6) b1 b2)...
       - assert (H6 := lemma1_of_1_2_11 n1 bs H).
         assert (H7 := lemma1_of_1_2_12 n2 n1 H5 bs b2 H4).
-        exists n1.
+        exists (n1).
         apply (proj2 (proj2 H6) b1 b2)...
     }
     assert (claim4 : isFilter (CompleteFilter bs)).
@@ -716,7 +716,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   Add Parametric Morphism {B : Type} `{B_isSetoid : isSetoid B} `{B_isCBA : @isCBA B B_isSetoid} :
     andB with signature (@leCBA B B_isSetoid B_isCBA ==> @leCBA B B_isSetoid B_isCBA ==> @leCBA B B_isSetoid B_isCBA)
   as leCBA_andB_commutes.
-  Proof with firstorder.
+  Proof with try now firstorder.
     assert (claim1 := andB_leCBA_andB).
     cbn in claim1...
   Qed.

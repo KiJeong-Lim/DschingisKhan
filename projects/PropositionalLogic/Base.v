@@ -239,29 +239,6 @@ Module SemanticsOfPL.
 
   Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
 
-  Definition isStructure : ensemble formula -> Prop :=
-    fun hs : ensemble formula =>
-    forall p : formula,
-    member p hs <-> eval_formula (preimage AtomF hs) p
-  .
-
-  Definition structure_gives_its_subset_model :
-    forall hs_hat : ensemble formula,
-    isStructure hs_hat ->
-    forall hs : ensemble formula,
-    isSubsetOf hs hs_hat ->
-    {v : env | (forall h : formula, member h hs -> satisfies v h) /\ (v = preimage AtomF hs_hat)}.
-  Proof.
-    intros hs_hat hs_hat_isStructure hs hs_isSubsetOf_hs_hat.
-    exists (preimage AtomF hs_hat).
-    split.
-    - intros h h_in_hs.
-      constructor.
-      apply (proj1 (hs_hat_isStructure h)).
-      exact (hs_isSubsetOf_hs_hat h h_in_hs).
-    - reflexivity.
-  Defined.
-
   Lemma extend_entails {hs1 : ensemble formula} {c : formula} :
     hs1 |= c ->
     forall hs2 : ensemble formula,
@@ -270,6 +247,29 @@ Module SemanticsOfPL.
   Proof with eauto with *.
     intros H_entails hs2 H_incl...
   Qed.
+
+  Definition isStructure : ensemble formula -> Prop :=
+    fun ps : ensemble formula =>
+    forall p : formula,
+    member p ps <-> eval_formula (preimage AtomF ps) p
+  .
+
+  Definition structure_gives_its_subset_model :
+    forall ps_dagger : ensemble formula,
+    isStructure ps_dagger ->
+    forall ps : ensemble formula,
+    isSubsetOf ps ps_dagger ->
+    {v : env | (forall p : formula, member p ps -> satisfies v p) /\ (v = preimage AtomF ps_dagger)}.
+  Proof.
+    intros ps_dagger ps_dagger_isStructure ps ps_isSubsetOf_ps_dagger.
+    exists (preimage AtomF ps_dagger).
+    split.
+    - intros p p_in_ps.
+      constructor.
+      apply (proj1 (ps_dagger_isStructure p)).
+      exact (ps_isSubsetOf_ps_dagger p p_in_ps).
+    - reflexivity.
+  Defined.
 
 End SemanticsOfPL.
 
@@ -302,12 +302,12 @@ Module InferenceRulesOfPL.
 
   Lemma Law_of_Exclusive_Middle (p : formula) :
     \emptyset |- $$p \/ ~ p$$.
-  Proof with eauto with *.
+  Proof with reflexivity.
     eapply NegationE, ContradictionI.
     - eapply DisjunctionI2, NegationI, ContradictionI.
-      + eapply DisjunctionI1, ByAssumption...
-      + eapply ByAssumption, in_insert_iff, or_intror...
-    - eapply ByAssumption...
+      + eapply DisjunctionI1, ByAssumption, in_insert_iff, or_introl...
+      + eapply ByAssumption, in_insert_iff, or_intror, in_insert_iff, or_introl...
+    - eapply ByAssumption, in_insert_iff, or_introl...
   Qed.
 
   Lemma cut_property {hs : ensemble formula} :
