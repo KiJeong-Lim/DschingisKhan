@@ -313,6 +313,26 @@ Module MyUtilities.
     end
   .
 
+  Definition le_intro_plus1 : forall n : nat, forall m : nat, n <= n + m :=
+    fix le_intro_plus1_fix (n : nat) {struct n} : forall m : nat, n <= n + m :=
+    match n as n0 return forall m : nat, n0 <= n0 + m with
+    | O => le_intro_0_le_n
+    | S n' =>
+      fun m : nat =>
+      le_intro_S_n_le_S_m n' (n' + m) (le_intro_plus1_fix n' m)
+    end
+  .
+
+  Definition le_intro_plus2 : forall n : nat, forall m : nat, m <= n + m :=
+    fix le_intro_plus2_fix (n : nat) {struct n} : forall m : nat, m <= n + m :=
+    match n as n0 return forall m : nat, m <= n0 + m with
+    | O => le_n
+    | S n' =>
+      fun m : nat =>
+      le_S m (n' + m) (le_intro_plus2_fix n' m)
+    end
+  .
+
   End ARITH_WITHOUT_SOLVER.
 
   Section DecidableEqProofIrrelevance.
@@ -359,11 +379,7 @@ Module MyUtilities.
 
   Section ArithProofIrrelevance.
 
-  Let eqnat : nat -> nat -> Prop :=
-    @eq nat
-  .
-
-  Definition eq_lem_nat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 \/ ~ eqnat n1 n2 :=
+  Let eq_lem_nat : forall n1 : nat, forall n2 : nat, n1 = n2 \/ n1 <> n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
     match eq_dec_nat n1 n2 return n1 = n2 \/ n1 <> n2 with
@@ -372,19 +388,19 @@ Module MyUtilities.
     end
   .
 
-  Definition choice_eqnat : forall n1 : nat, forall n2 : nat, eqnat n1 n2 -> eqnat n1 n2 :=
+  Let choice_eqnat : forall n1 : nat, forall n2 : nat, n1 = n2 -> n1 = n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
     choice_eq n1 (eq_lem_nat n1) n2
   .
 
-  Lemma choice_eqnat_spec :
+  Let choice_eqnat_spec :
     forall n1 : nat,
     forall n2 : nat,
-    forall H_EQ : eqnat n1 n2,
+    forall H_EQ : n1 = n2,
     choice_eqnat n1 n2 H_EQ = H_EQ.
   Proof.
-    induction n1 as [| n IH]; intros n2 [].
+    induction n1 as [| n IH]; intros n2 H_EQ; subst n2.
     - exact (eq_reflexivity (eq_reflexivity O)).
     - assert (claim1 : choice_eqnat n n (eq_reflexivity n) = eq_reflexivity n) by exact (IH n (eq_reflexivity n)).
       unfold choice_eqnat, choice_eq, eq_lem_nat in *.
@@ -398,25 +414,19 @@ Module MyUtilities.
   Theorem eqnat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
-    forall H_EQ1 : eqnat n1 n2,
-    forall H_EQ2 : eqnat n1 n2,
+    forall H_EQ1 : n1 = n2,
+    forall H_EQ2 : n1 = n2,
     H_EQ1 = H_EQ2.
   Proof.
     intros n1 n2.
     exact (choice_eq_spec_implies_eq_pirrel n1 (eq_lem_nat n1) n2 (choice_eqnat_spec n1 n2)).
   Qed.
 
-  Let lenat : nat -> nat -> Prop :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    n1 <= n2
-  .
-
   Theorem lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
-    forall H_LE1 : lenat n1 n2,
-    forall H_LE2 : lenat n1 n2,
+    forall H_LE1 : n1 <= n2,
+    forall H_LE2 : n1 <= n2,
     H_LE1 = H_LE2.
   Proof.
     refine (
@@ -448,7 +458,7 @@ Module MyUtilities.
       contradiction (le_lt_False n1 m1' H_LE1' Hlt).
     - intros H_EQ.
       assert (Heq : m2' = m1') by exact (S_eq_S_elim m2' m1' H_EQ).
-      destruct Heq as [].
+      subst m1'.
       rewrite (eqnat_proof_irrelevance (S m2') (S m2') H_EQ (eq_reflexivity (S m2'))).
       apply (eq_congruence (le_S n1 m2')).
       exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
@@ -580,23 +590,6 @@ Module MyUtilities.
     end
   .
 
-  Definition liftFinSet {m : nat} : forall n : nat, FinSet n -> FinSet (n + m) :=
-    fix liftFinSet_fix (n : nat) (i : FinSet n) {struct i} : FinSet (n + m) :=
-    match i in FinSet Sn0 return FinSet (Sn0 + m) with
-    | FZ n0 => FZ (n0 + m)
-    | FS n0 i' => FS (n0 + m) (liftFinSet_fix n0 i')
-    end
-  .
-
-  Definition incrFinSet {m : nat} : forall n : nat, FinSet m -> FinSet (n + m) :=
-    fix incrFinSet_fix (n : nat) {struct n} : FinSet m -> FinSet (n + m) :=
-    fun i : FinSet m =>
-    match n as n0 return FinSet (n0 + m) with
-    | O => i
-    | S n' => FS (n' + m) (incrFinSet_fix n' i)
-    end
-  .
-
   Definition mkFinSet_ext : forall n : nat, forall i : nat, forall Hlt1 : i < n, forall Hlt2 : i < n, mkFinSet n i Hlt1 = mkFinSet n i Hlt2 :=
     fix mkFinSet_ext_fix (n : nat) {struct n} : forall i : nat, forall Hlt1 : i < n, forall Hlt2 : i < n, mkFinSet n i Hlt1 = mkFinSet n i Hlt2 :=
     match n as n0 return forall i : nat, forall Hlt1 : i < n0, forall Hlt2 : i < n0, mkFinSet n0 i Hlt1 = mkFinSet n0 i Hlt2 with
@@ -651,33 +644,165 @@ Module MyUtilities.
       reflexivity.
   Defined.
 
-  Let runFinSet_same_if_proj1_runFinSet_same :
-    forall n : nat,
-    forall i1 : FinSet n,
-    forall i2 : FinSet n,
-    proj1_sig (runFinSet n i1) = proj1_sig (runFinSet n i2) ->
-    runFinSet n i1 = runFinSet n i2.
+  Definition evalFinSet {n : nat} : FinSet n -> nat :=
+    fun i : FinSet n =>
+    proj1_sig (runFinSet n i)
+  .
+
+  Definition evalFinSet_lt {n : nat} :
+    forall i : FinSet n,
+    @evalFinSet n i < n.
   Proof.
-    intros n i1 i2 Heq.
-    destruct (runFinSet n i2) as [m Hlt].
-    simpl in Heq.
-    subst m.
-    assert (H_EQ : proj2_sig (runFinSet n i1) = Hlt) by exact (lenat_proof_irrelevance (S (proj1_sig (runFinSet n i1))) n (proj2_sig (runFinSet n i1)) Hlt).
-    subst Hlt.
-    now destruct (runFinSet n i1).
+    exact (fun i : FinSet n => proj2_sig (runFinSet n i)).
+  Defined.
+
+  Theorem evalFinSet_spec :
+    forall n : nat,
+    forall i : FinSet n,
+    forall m : nat,
+    forall Hlt : m < n,
+    (@evalFinSet n i = m) <-> (mkFinSet n m Hlt = i).
+  Proof.
+    unfold evalFinSet.
+    intros n i m Hlt.
+    split.
+    - intros Heq.
+      subst m.
+      rewrite (lenat_proof_irrelevance (S (proj1_sig (runFinSet n i))) n Hlt (proj2_sig (runFinSet n i))).
+      exact (mkFinSet_runFinSet_identity n i).
+    - intros Heq.
+      subst i.
+      rewrite (runFinSet_mkFinSet_identity m n Hlt).
+      reflexivity.
   Qed.
 
-  Theorem FinSet_ext_eq :
+  Theorem evalFinSet_inj :
     forall n : nat,
     forall i1 : FinSet n,
     forall i2 : FinSet n,
-    proj1_sig (runFinSet n i1) = proj1_sig (runFinSet n i2) ->
+    @evalFinSet n i1 = @evalFinSet n i2 ->
     i1 = i2.
-  Proof with eauto.
+  Proof.
     intros n i1 i2 Heq.
-    rewrite <- (mkFinSet_runFinSet_identity n i1).
-    rewrite <- (mkFinSet_runFinSet_identity n i2).
-    replace (runFinSet n i2) with (runFinSet n i1)...
+    apply (proj1 (evalFinSet_spec n i1 (@evalFinSet n i2) (@evalFinSet_lt n i2))) in Heq.
+    subst i1.
+    apply (proj1 (evalFinSet_spec n i2 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
+    reflexivity.
+  Qed.
+
+  Definition castFinSet {m : nat} {n : nat} : FinSet m -> m = n -> FinSet n :=
+    fun i : FinSet m =>
+    eq_rect m FinSet i n
+  .
+
+  Lemma castFinSet_evalFinSet {n : nat} :
+    forall m : nat,
+    forall i : FinSet n,
+    forall Heq : n = m,
+    evalFinSet (castFinSet i Heq) = evalFinSet i.
+  Proof.
+    intros m i Heq.
+    destruct Heq as [].
+    reflexivity.
+  Qed.
+
+  Definition liftFinSet : forall m : nat, forall n : nat, FinSet n -> FinSet (n + m) :=
+    fun m : nat =>
+    fix liftFinSet_fix (n : nat) (i : FinSet n) {struct i} : FinSet (n + m) :=
+    match i in FinSet Sn0 return FinSet (Sn0 + m) with
+    | FZ n0 => FZ (n0 + m)
+    | FS n0 i' => FS (n0 + m) (liftFinSet_fix n0 i')
+    end
+  .
+
+  Lemma liftFinSet_evalFinSet :
+    forall m : nat,
+    forall n : nat,
+    forall i : FinSet n,
+    evalFinSet (liftFinSet m n i) = evalFinSet i.
+  Proof.
+    intros m n i.
+    apply (proj2 (evalFinSet_spec (n + m) (liftFinSet m n i) (evalFinSet i) (le_transitivity (@evalFinSet_lt n i) (le_intro_plus1 n m)))).
+    induction i as [n' | n' i' IH].
+    - reflexivity.
+    - apply (proj1 (evalFinSet_spec (S n' + m) (liftFinSet m (S n') (FS n' i')) (evalFinSet (FS n' i')) (le_transitivity (evalFinSet_lt (FS n' i')) (le_intro_plus1 (S n') m)))).
+      apply (proj2 (evalFinSet_spec (n' + m) (liftFinSet m n' i') (evalFinSet i') (le_transitivity (evalFinSet_lt i') (le_intro_plus1 n' m)))) in IH.
+      unfold evalFinSet in *.
+      simpl.
+      destruct (runFinSet (n' + m) (liftFinSet m n' i')) as [m2 Hlt2].
+      simpl in *.
+      subst m2.
+      destruct (runFinSet n' i') as [m1 Hlt1].
+      reflexivity.
+  Qed.
+
+  Definition incrFinSet {m : nat} : forall n : nat, FinSet m -> FinSet (n + m) :=
+    fix incrFinSet_fix (n : nat) {struct n} : FinSet m -> FinSet (n + m) :=
+    fun i : FinSet m =>
+    match n as n0 return FinSet (n0 + m) with
+    | O => i
+    | S n' => FS (n' + m) (incrFinSet_fix n' i)
+    end
+  .
+
+  Lemma incrFinSet_evalFinSet :
+    forall n : nat,
+    forall m : nat,
+    forall i : FinSet m,
+    evalFinSet (incrFinSet n i) = n + evalFinSet i.
+  Proof.
+    induction n as [| n IH]; intros m i; simpl.
+    - reflexivity.
+    - rewrite <- (IH m i).
+      unfold evalFinSet.
+      simpl.
+      destruct (runFinSet (n + m) (incrFinSet n i)) as [m2 Hlt2].
+      reflexivity.
+  Qed.
+
+  Let eq_lem_FinSet : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 \/ i1 <> i2 :=
+    fun n : nat =>
+    fun i1 : FinSet n =>
+    fun i2 : FinSet n =>
+    match FinSet_eq_dec n i1 i2 return i1 = i2 \/ i1 <> i2 with
+    | left H_yes => or_introl H_yes
+    | right H_no => or_intror H_no
+    end
+  .
+
+  Let choice_eqFinSet : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 -> i1 = i2 :=
+    fun n : nat =>
+    fun i1 : FinSet n =>
+    fun i2 : FinSet n =>
+    choice_eq i1 (eq_lem_FinSet n i1) i2
+  .
+
+  Let choice_eqFinSet_spec (n : nat) :
+    forall i1 : FinSet n,
+    forall i2 : FinSet n,
+    forall H_EQ : i1 = i2,
+    choice_eqFinSet n i1 i2 H_EQ = H_EQ.
+  Proof.
+    induction i1 as [n' | n' i' IH]; intros i2 H_EQ; subst i2.
+    - exact (eq_reflexivity (eq_reflexivity (FZ n'))).
+    - assert (claim1 : choice_eqFinSet n' i' i' (eq_reflexivity i') = eq_reflexivity i') by exact (IH i' (eq_reflexivity i')). 
+      unfold choice_eqFinSet, choice_eq, eq_lem_FinSet in *.
+      simpl.
+      destruct (FinSet_eq_dec n' i' i') as [Heq | Hne].
+      + rewrite claim1.
+        exact (eq_reflexivity (eq_reflexivity (FS n' i'))).
+      + contradiction (Hne (eq_reflexivity i')).
+  Qed.
+
+  Theorem eqFinSet_proof_irrelevance {n : nat} :
+    forall i1 : FinSet n,
+    forall i2 : FinSet n,
+    forall H_EQ1 : i1 = i2,
+    forall H_EQ2 : i1 = i2,
+    H_EQ1 = H_EQ2.
+  Proof.
+    intros i1 i2.
+    exact (choice_eq_spec_implies_eq_pirrel i1 (eq_lem_FinSet n i1) i2 (choice_eqFinSet_spec n i1 i2)).
   Qed.
 
   End MyFin.
