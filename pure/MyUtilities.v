@@ -658,104 +658,6 @@ Module MyUtilities.
 
   End MyFin.
 
-  Section SIMPLE_LOGIC.
-
-  Lemma not_imply_elim2 :
-    forall P : Prop,
-    forall Q : Prop,
-    (~ (P -> Q)) ->
-    (~ Q).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma or_to_imply :
-    forall P : Prop,
-    forall Q : Prop,
-    (~ P \/ Q) ->
-    (P) ->
-    (Q).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma or_not_and :
-    forall P : Prop,
-    forall Q : Prop,
-    (~ P \/ ~ Q) ->
-    (~ (P /\ Q)).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma not_or_and :
-    forall P : Prop,
-    forall Q : Prop,
-    (~ (P \/ Q)) ->
-    (~ P /\ ~ Q).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma and_not_or :
-    forall P : Prop,
-    forall Q : Prop,
-    (~ P /\ ~ Q) ->
-    (~ (P \/ Q)).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma imply_and_or :
-    forall P : Prop,
-    forall Q : Prop,
-    (P -> Q) ->
-    (P \/ Q) ->
-    (Q).
-  Proof with tauto.
-    intros P Q...
-  Qed.
-
-  Lemma imply_and_or2 :
-    forall P : Prop,
-    forall Q : Prop,
-    forall R : Prop,
-    (P -> Q) ->
-    (P \/ R) ->
-    (Q \/ R).
-  Proof with tauto.
-    intros P Q R...
-  Qed.
-
-  Lemma not_ex_all_not :
-    forall U : Type,
-    forall P : U -> Prop,
-    (~ exists n : U, P n) ->
-    (forall n : U, ~ P n).
-  Proof with firstorder.
-    intros U P...
-  Qed.
-
-  Lemma ex_not_not_all :
-    forall U : Type,
-    forall P : U -> Prop,
-    (exists n : U, ~ P n) ->
-    (~ forall n : U, P n).
-  Proof with firstorder.
-    intros U P...
-  Qed.
-
-  Lemma all_not_not_ex :
-    forall U : Type,
-    forall P : U -> Prop,
-    (forall n : U, ~ P n) ->
-    (~ exists n : U, P n).
-  Proof with firstorder.
-    intros U P...
-  Qed.
-
-  End SIMPLE_LOGIC.
-
   Lemma greater_than_iff :
     forall x : nat,
     forall y : nat,
@@ -808,7 +710,7 @@ Module MyUtilities.
     p n = true ->
     let m : nat := first_nat p n in
     p m = true /\ (forall i : nat, p i = true -> i >= m).
-  Proof with eauto. (* This proof has been improved by JunYoung Clare Jang. *)
+  Proof with eauto. (* This proof has been improved by Junyoung Clare Jang. *)
     intros p n H3 m.
     assert (forall x : nat, p x = true -> p (first_nat p x) = true).
     { induction x...
@@ -1321,8 +1223,8 @@ Module MyScratch.
     split.
     - intros n; replace (n + 1) with (S n)...
     - intros m; replace (m + 1) with (S m)...
-    - induction m as [| m IHm]; induction n as [| n IHn]; cbn in *...
-      all: replace (m + 1) with (S m) in *...
+    - destruct m as [| m']; induction n as [| n IHn]; cbn in *...
+      all: replace (m' + 1) with (S m') in *...
   Qed.
 
   End ACKERMANN.
