@@ -335,51 +335,65 @@ Module MyUtilities.
 
   End ARITH_WITHOUT_SOLVER.
 
-  Section DecidableEqProofIrrelevance.
+  Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
 
-  Context {A : Type} (x : A) (eq_lem : forall y : A, x = y \/ x <> y).
+  Context {A : Type} (x : A) (eq_em : forall y : A, x = y \/ x <> y).
 
-  Definition choice_eq : forall y : A, x = y -> x = y :=
+  Definition nu : forall y : A, x = y -> x = y :=
     fun y : A =>
     fun H_EQ : x = y =>
-    match eq_lem y return x = y with
+    match eq_em y return x = y with
     | or_introl Heq => Heq
     | or_intror Hne => False_ind (x = y) (Hne H_EQ)
     end
   .
 
+  Let nu_inv (y : A) : x = y -> x = y :=
+    eq_transitivity x x y (eq_symmetry x x (nu x (eq_reflexivity x)))
+  .
+
+  Let nu_left_inv_on :
+    forall y : A,
+    forall Heq : x = y,
+    nu_inv y (nu y Heq) = Heq.
+  Proof with reflexivity.
+    unfold nu_inv, nu.
+    intros y [].
+    destruct (eq_em x) as [Heq | Hne].
+    - destruct Heq...
+    - contradiction Hne... 
+  Qed.
+
   Variable y : A.
 
-  Lemma choice_eq_const :
+  Let nu_const :
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
-    choice_eq y H_EQ1 = choice_eq y H_EQ2.
+    nu y H_EQ1 = nu y H_EQ2.
   Proof.
-    unfold choice_eq.
+    unfold nu.
     intros H_EQ1 H_EQ2.
-    destruct (eq_lem y) as [Heq | Hne].
+    destruct (eq_em y) as [Heq | Hne].
     - exact (eq_reflexivity Heq).
     - contradiction (Hne H_EQ1).
   Qed.
 
-  Hypothesis choice_eq_spec : forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
-
-  Theorem choice_eq_spec_implies_eq_pirrel :
+  Theorem eq_em_implies_eq_pirrel :
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
     H_EQ1 = H_EQ2.
-  Proof.
+  Proof with eauto.
     intros H_EQ1 H_EQ2.
-    rewrite <- (choice_eq_spec H_EQ1).
-    rewrite <- (choice_eq_spec H_EQ2).
-    exact (choice_eq_const H_EQ1 H_EQ2).
+    rewrite <- (nu_left_inv_on y H_EQ1).
+    rewrite <- (nu_left_inv_on y H_EQ2).
+    replace (nu y H_EQ2) with (nu y H_EQ1)...
   Qed.
 
-  End DecidableEqProofIrrelevance.
+  End EQ_EM_implies_EQ_PIRREL.
 
   Section ArithProofIrrelevance.
 
-  Let eq_lem_nat : forall n1 : nat, forall n2 : nat, n1 = n2 \/ n1 <> n2 :=
+  Let eqnat_em : forall n1 : nat, forall n2 : nat, n1 = n2 \/ n1 <> n2 :=
     fun n1 : nat =>
     fun n2 : nat =>
     match eq_dec_nat n1 n2 return n1 = n2 \/ n1 <> n2 with
@@ -388,29 +402,6 @@ Module MyUtilities.
     end
   .
 
-  Let choice_eqnat : forall n1 : nat, forall n2 : nat, n1 = n2 -> n1 = n2 :=
-    fun n1 : nat =>
-    fun n2 : nat =>
-    choice_eq n1 (eq_lem_nat n1) n2
-  .
-
-  Let choice_eqnat_spec :
-    forall n1 : nat,
-    forall n2 : nat,
-    forall H_EQ : n1 = n2,
-    choice_eqnat n1 n2 H_EQ = H_EQ.
-  Proof.
-    induction n1 as [| n IH]; intros n2 H_EQ; subst n2.
-    - exact (eq_reflexivity (eq_reflexivity O)).
-    - assert (claim1 : choice_eqnat n n (eq_reflexivity n) = eq_reflexivity n) by exact (IH n (eq_reflexivity n)).
-      unfold choice_eqnat, choice_eq, eq_lem_nat in *.
-      simpl.
-      destruct (eq_dec_nat n n) as [Heq | Hne].
-      + rewrite claim1.
-        exact (eq_reflexivity (eq_reflexivity (S n))).
-      + contradiction (Hne (eq_reflexivity n)).
-  Qed.
-
   Theorem eqnat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
@@ -418,8 +409,8 @@ Module MyUtilities.
     forall H_EQ2 : n1 = n2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros n1 n2.
-    exact (choice_eq_spec_implies_eq_pirrel n1 (eq_lem_nat n1) n2 (choice_eqnat_spec n1 n2)).
+    intros n.
+    exact (eq_em_implies_eq_pirrel n (eqnat_em n)).
   Qed.
 
   Theorem lenat_proof_irrelevance :
@@ -759,7 +750,7 @@ Module MyUtilities.
       reflexivity.
   Qed.
 
-  Let eq_lem_FinSet : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 \/ i1 <> i2 :=
+  Let eqFinSet_em : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 \/ i1 <> i2 :=
     fun n : nat =>
     fun i1 : FinSet n =>
     fun i2 : FinSet n =>
@@ -769,30 +760,6 @@ Module MyUtilities.
     end
   .
 
-  Let choice_eqFinSet : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 -> i1 = i2 :=
-    fun n : nat =>
-    fun i1 : FinSet n =>
-    fun i2 : FinSet n =>
-    choice_eq i1 (eq_lem_FinSet n i1) i2
-  .
-
-  Let choice_eqFinSet_spec (n : nat) :
-    forall i1 : FinSet n,
-    forall i2 : FinSet n,
-    forall H_EQ : i1 = i2,
-    choice_eqFinSet n i1 i2 H_EQ = H_EQ.
-  Proof.
-    induction i1 as [n' | n' i' IH]; intros i2 H_EQ; subst i2.
-    - exact (eq_reflexivity (eq_reflexivity (FZ n'))).
-    - assert (claim1 : choice_eqFinSet n' i' i' (eq_reflexivity i') = eq_reflexivity i') by exact (IH i' (eq_reflexivity i')). 
-      unfold choice_eqFinSet, choice_eq, eq_lem_FinSet in *.
-      simpl.
-      destruct (FinSet_eq_dec n' i' i') as [Heq | Hne].
-      + rewrite claim1.
-        exact (eq_reflexivity (eq_reflexivity (FS n' i'))).
-      + contradiction (Hne (eq_reflexivity i')).
-  Qed.
-
   Theorem eqFinSet_proof_irrelevance {n : nat} :
     forall i1 : FinSet n,
     forall i2 : FinSet n,
@@ -800,8 +767,8 @@ Module MyUtilities.
     forall H_EQ2 : i1 = i2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros i1 i2.
-    exact (choice_eq_spec_implies_eq_pirrel i1 (eq_lem_FinSet n i1) i2 (choice_eqFinSet_spec n i1 i2)).
+    intros i.
+    exact (eq_em_implies_eq_pirrel i (eqFinSet_em n i)).
   Qed.
 
   End MyFin.
