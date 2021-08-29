@@ -247,11 +247,31 @@ Module MyUtilities.
     end
   .
 
+  Definition le_intro_plus1 : forall n : nat, forall m : nat, n <= n + m :=
+    fix le_intro_plus1_fix (n : nat) {struct n} : forall m : nat, n <= n + m :=
+    match n as n0 return forall m : nat, n0 <= n0 + m with
+    | O => le_intro_0_le_n
+    | S n' =>
+      fun m : nat =>
+      le_intro_S_n_le_S_m n' (n' + m) (le_intro_plus1_fix n' m)
+    end
+  .
+
+  Definition le_intro_plus2 : forall n : nat, forall m : nat, m <= n + m :=
+    fix le_intro_plus2_fix (n : nat) {struct n} : forall m : nat, m <= n + m :=
+    match n as n0 return forall m : nat, m <= n0 + m with
+    | O => le_n
+    | S n' =>
+      fun m : nat =>
+      le_S m (n' + m) (le_intro_plus2_fix n' m)
+    end
+  .
+
   Definition strong_induction {P : nat -> Prop} : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) -> (forall l : nat, P l) :=
     fun ACC : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) =>
-    fun n : nat =>
     let case0 : forall m : nat, forall H : m < O, P m := fun m : nat => fun H : m < O => lt_elim_n_lt_0 m H in
     let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> (forall m : nat, m < S n -> P m) := fun n : nat => fun IH : forall m : nat, m < n -> P m => fun m : nat => fun Hlt : m < S n => le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq))) in
+    fun n : nat =>
     ACC n (nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n)
   .
 
@@ -310,26 +330,6 @@ Module MyUtilities.
       | right Hlt =>
         right (le_S (S m) n' Hlt)
       end
-    end
-  .
-
-  Definition le_intro_plus1 : forall n : nat, forall m : nat, n <= n + m :=
-    fix le_intro_plus1_fix (n : nat) {struct n} : forall m : nat, n <= n + m :=
-    match n as n0 return forall m : nat, n0 <= n0 + m with
-    | O => le_intro_0_le_n
-    | S n' =>
-      fun m : nat =>
-      le_intro_S_n_le_S_m n' (n' + m) (le_intro_plus1_fix n' m)
-    end
-  .
-
-  Definition le_intro_plus2 : forall n : nat, forall m : nat, m <= n + m :=
-    fix le_intro_plus2_fix (n : nat) {struct n} : forall m : nat, m <= n + m :=
-    match n as n0 return forall m : nat, m <= n0 + m with
-    | O => le_n
-    | S n' =>
-      fun m : nat =>
-      le_S m (n' + m) (le_intro_plus2_fix n' m)
     end
   .
 
