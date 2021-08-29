@@ -702,8 +702,7 @@ Module MyUtilities.
     evalFinSet (castFinSet i Heq) = evalFinSet i.
   Proof.
     intros m i Heq.
-    destruct Heq as [].
-    reflexivity.
+    now destruct Heq.
   Qed.
 
   Definition liftFinSet : forall m : nat, forall n : nat, FinSet n -> FinSet (n + m) :=
