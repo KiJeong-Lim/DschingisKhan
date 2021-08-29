@@ -341,7 +341,7 @@ Module MyUtilities.
     - contradiction (Hne H_EQ1).
   Qed.
 
-  Hypothesis choice_eq_is : forall y : A, forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
+  Hypothesis choice_eq_spec : forall y : A, forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
 
   Theorem choice_eq_proof_irrelevance_prototype :
     forall y : A,
@@ -350,8 +350,8 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     intros y H_EQ1 H_EQ2.
-    rewrite <- (choice_eq_is y H_EQ1).
-    rewrite <- (choice_eq_is y H_EQ2).
+    rewrite <- (choice_eq_spec y H_EQ1).
+    rewrite <- (choice_eq_spec y H_EQ2).
     exact (choice_eq_const y H_EQ1 H_EQ2).
   Qed.
 
@@ -378,7 +378,7 @@ Module MyUtilities.
     choice_eq n1 (eq_lem_nat n1) n2
   .
 
-  Lemma choice_eqnat_is :
+  Lemma choice_eqnat_spec :
     forall n1 : nat,
     forall n2 : nat,
     forall H_EQ : eqnat n1 n2,
@@ -403,7 +403,7 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     intros n.
-    exact (choice_eq_proof_irrelevance_prototype n (eq_lem_nat n) (choice_eqnat_is n)).
+    exact (choice_eq_proof_irrelevance_prototype n (eq_lem_nat n) (choice_eqnat_spec n)).
   Qed.
 
   Let lenat : nat -> nat -> Prop :=
@@ -658,6 +658,45 @@ Module MyUtilities.
 
   End MyFin.
 
+  Section ACKERMANN.
+
+  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
+    { AckermannFuncSpec1 : forall n, ack(0, n) = n + 1
+    ; AckermannFuncSpec2 : forall m, ack(m + 1, 0) = ack(m, 1)
+    ; AckermannFuncSpec3 : forall m n, ack(m + 1, n + 1) = ack(m, ack(m + 1, n))
+    }
+  .
+
+  Let AckermannFunc_aux1 : (nat -> nat) -> nat -> nat :=
+    fun kont : nat -> nat =>
+    fix AckermannFunc_aux1_fix (n : nat) {struct n} : nat :=
+    match n return nat with
+    | O => kont 1
+    | S n' => kont (AckermannFunc_aux1_fix n')
+    end
+  .
+
+  Definition AckermannFunc : nat -> nat -> nat :=
+    fix AckermannFunc_fix (m : nat) {struct m} : nat -> nat :=
+    match m return nat -> nat with
+    | O => S
+    | S m' => AckermannFunc_aux1 (AckermannFunc_fix m')
+    end
+  .
+
+  Theorem AckermannFunc_satisfies_AckermannFuncSpec :
+    AckermannFuncSpec (fun p : nat * nat => AckermannFunc (fst p) (snd p)).
+  Proof with (lia || eauto).
+    split.
+    - induction n as [| n IHn]; simpl...
+    - intros m.
+      replace (m + 1) with (S m)...
+    - induction m as [| m IHm]; induction n as [| n IHn]; simpl in *...
+      all: replace (m + 1) with (S m) in *...
+  Qed.
+
+  End ACKERMANN.
+
   Section SIMPLE_LOGIC.
 
   Lemma not_imply_elim2 :
@@ -755,52 +794,6 @@ Module MyUtilities.
   Qed.
 
   End SIMPLE_LOGIC.
-
-  Section ACKERMANN.
-
-  Variant AckermannFuncSpec (f : nat -> nat -> nat) : Prop :=
-  | AckermannFuncCharacterization :
-    (forall n : nat, f 0 n = n + 1) ->
-    (forall m : nat, f (m + 1) 0 = f m 1) ->
-    (forall m : nat, forall n : nat, f (m + 1) (n + 1) = f m (f (m + 1) n)) ->
-    AckermannFuncSpec f
-  .
-
-  Let AckermannFunc_aux1 : nat -> (nat -> nat) -> nat :=
-    fix AckermannFunc_aux1_fix (n : nat) {struct n} : (nat -> nat) -> nat :=
-    match n return (nat -> nat) -> nat with
-    | O =>
-      fun kont : nat -> nat =>
-      kont 1
-    | S n' =>
-      fun kont : nat -> nat =>
-      kont (AckermannFunc_aux1_fix n' kont)
-    end
-  .
-
-  Fixpoint AckermannFunc (m : nat) {struct m} : nat -> nat :=
-    match m return nat -> nat with
-    | O => S
-    | S m' =>
-      fun n : nat =>
-      AckermannFunc_aux1 n (AckermannFunc m')
-    end
-  .
-
-  Theorem AckermannFunc_satisfies_its_specification :
-    AckermannFuncSpec AckermannFunc.
-  Proof with (lia || eauto).
-    split.
-    - induction n as [| n' IHn]; simpl...
-    - intros m.
-      replace (m + 1) with (S m)...
-    - induction m as [| m' IHm]; induction n as [| n' IHn]; simpl in *...
-      + replace (m' + 1) with (S m')...
-      + replace (m' + 1) with (S m') in *...
-        rewrite IHn...
-  Qed.
-
-  End ACKERMANN.
 
   Lemma greater_than_iff :
     forall x : nat,
