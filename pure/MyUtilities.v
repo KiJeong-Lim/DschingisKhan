@@ -328,8 +328,6 @@ Module MyUtilities.
     end
   .
 
-  Hypothesis choice_eq_is : forall y : A, forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
-
   Lemma choice_eq_const :
     forall y : A,
     forall H_EQ1 : x = y,
@@ -342,6 +340,8 @@ Module MyUtilities.
     - exact (eq_reflexivity Heq).
     - contradiction (Hne H_EQ1).
   Qed.
+
+  Hypothesis choice_eq_is : forall y : A, forall H_EQ : x = y, choice_eq y H_EQ = H_EQ.
 
   Theorem choice_eq_proof_irrelevance_prototype :
     forall y : A,
