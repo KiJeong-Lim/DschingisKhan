@@ -101,7 +101,7 @@ Module SyntaxOfPL.
     getRankOfFormula p <= rank ->
     {seed : nat | enum_formulae_of_rank rank seed = p}.
   Proof with enum_formulae_of_rank_is_good_tac.
-    assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_is x y z)).
+    assert (claim1 := fun x : nat => fun y : nat => fun z : nat => proj2 (cantor_pairing_spec x y z)).
     induction p as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2]; simpl.
     { intros [ | r'] H.
       - exists (i)...

@@ -624,36 +624,60 @@ Module MyUtilities.
     mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)) = i.
   Proof.
     induction i as [n' | n' i' IH].
-    - exact (eq_reflexivity (FZ n')). 
-    - apply (eq_transitivity (mkFinSet (S n') (proj1_sig (runFinSet (S n') (FS n' i'))) (proj2_sig (runFinSet (S n') (FS n' i')))) (FS n' (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i')))) (FS n' i')).
+    - reflexivity.
+    - transitivity (FS n' (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i')))).
       + simpl.
         destruct (runFinSet n' i') as [m Hlt].
         simpl in *.
-        assert (claim1 := mkFinSet_ext n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt)) Hlt).
-        exact (eq_congruence (FS n') (mkFinSet n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt))) (mkFinSet n' m Hlt) claim1).
-      + exact (eq_congruence (FS n') (mkFinSet n' (proj1_sig (runFinSet n' i')) (proj2_sig (runFinSet n' i'))) i' IH).
+        apply (eq_congruence (FS n')).
+        exact (mkFinSet_ext n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt)) Hlt).
+      + apply (eq_congruence (FS n')).
+        exact IH.
   Defined.
 
-  Lemma runFinSet_mkFinSet_identity :
+  Definition runFinSet_mkFinSet_identity :
     forall m : nat,
     forall n : nat,
     forall Hlt : m < n,
-    runFinSet n (mkFinSet n m Hlt) = exist (fun m_ : nat => m_ < n) m Hlt.
+    runFinSet n (mkFinSet n m Hlt) = exist (fun x : nat => x < n) m Hlt.
   Proof.
-    induction m; simpl.
-    - induction n; simpl.
-      + intros Hlt.
-        apply (lt_elim_n_lt_0 0 Hlt).
-      + intros Hlt.
-        rewrite (lenat_proof_irrelevance 1 (S n) (lt_intro_0_lt_S_n n) Hlt).
-        reflexivity.
-    - induction n; simpl in *.
-      + intros Hlt.
-        apply (lt_elim_n_lt_0 (S m) Hlt).
-      + intros Hlt.
-        rewrite (IHm n (lt_elim_S_n_lt_S_m m n Hlt)).
-        rewrite (lenat_proof_irrelevance (S (S m)) (S n) (lt_intro_S_m_lt_S_n m n (lt_elim_S_n_lt_S_m m n Hlt)) Hlt).
-        reflexivity.
+    induction m as [| m IH]; intros [| n'] Hlt; simpl in *.
+    - exact (lt_elim_n_lt_0 0 Hlt).
+    - rewrite (lenat_proof_irrelevance 1 (S n') (lt_intro_0_lt_S_n n') Hlt).
+      reflexivity.
+    - exact (lt_elim_n_lt_0 (S m) Hlt).
+    - rewrite (IH n' (lt_elim_S_n_lt_S_m m n' Hlt)).
+      rewrite (lenat_proof_irrelevance (S (S m)) (S n') (lt_intro_S_m_lt_S_n m n' (lt_elim_S_n_lt_S_m m n' Hlt)) Hlt).
+      reflexivity.
+  Defined.
+
+  Let runFinSet_same_if_proj1_runFinSet_same :
+    forall n : nat,
+    forall i1 : FinSet n,
+    forall i2 : FinSet n,
+    proj1_sig (runFinSet n i1) = proj1_sig (runFinSet n i2) ->
+    runFinSet n i1 = runFinSet n i2.
+  Proof.
+    intros n i1 i2 Heq.
+    destruct (runFinSet n i2) as [m Hlt].
+    simpl in Heq.
+    subst m.
+    assert (H_EQ : proj2_sig (runFinSet n i1) = Hlt) by exact (lenat_proof_irrelevance (S (proj1_sig (runFinSet n i1))) n (proj2_sig (runFinSet n i1)) Hlt).
+    subst Hlt.
+    now destruct (runFinSet n i1).
+  Qed.
+
+  Theorem FinSet_ext_eq :
+    forall n : nat,
+    forall i1 : FinSet n,
+    forall i2 : FinSet n,
+    proj1_sig (runFinSet n i1) = proj1_sig (runFinSet n i2) ->
+    i1 = i2.
+  Proof with eauto.
+    intros n i1 i2 Heq.
+    rewrite <- (mkFinSet_runFinSet_identity n i1).
+    rewrite <- (mkFinSet_runFinSet_identity n i2).
+    replace (runFinSet n i2) with (runFinSet n i1)...
   Qed.
 
   End MyFin.
@@ -805,15 +829,19 @@ Module MyUtilities.
         rewrite (IHn (S x) y' eq_refl), (H1 x)...
   Qed.
 
-  Corollary cantor_pairing_is :
+  Theorem cantor_pairing_spec :
     forall n : nat,
     forall x : nat,
     forall y : nat,
     cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
-  Proof with eauto using cantor_pairing_is_injective, cantor_pairing_is_surjective.
-    split...
-    intros Heq.
-    subst...
+  Proof.
+    intros n x y.
+    split.
+    - exact (cantor_pairing_is_injective n x y).
+    - intros Heq.
+      subst n.
+      symmetry.
+      exact (cantor_pairing_is_surjective x y).
   Qed.
 
   Lemma forallb_true_iff {A : Type} (p : A -> bool) :
@@ -1133,11 +1161,11 @@ Module MyScratch.
   Proof.
     induction n as [| n IH].
     - intros m Hle.
-      apply leq_intro_leq_0_n.
-    - intros [| m] Hle.
+      exact (leq_intro_leq_0_n m).
+    - intros [| m'] Hle.
       + exact (lt_elim_n_lt_0 n Hle).
       + apply leq_intro_leq_S_n_S_m, IH.
-        exact (le_elim_S_n_le_m n (S m) Hle).
+        exact (le_elim_S_n_le_m n (S m') Hle).
   Qed.
 
   Theorem leq_unique :
@@ -1223,7 +1251,7 @@ Module MyScratch.
     split.
     - intros n; replace (n + 1) with (S n)...
     - intros m; replace (m + 1) with (S m)...
-    - destruct m as [| m']; induction n as [| n IHn]; cbn in *...
+    - intros [| m']; induction n as [| n IHn]; cbn in *...
       all: replace (m' + 1) with (S m') in *...
   Qed.
 
