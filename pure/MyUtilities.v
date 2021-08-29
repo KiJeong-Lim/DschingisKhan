@@ -658,45 +658,6 @@ Module MyUtilities.
 
   End MyFin.
 
-  Section ACKERMANN.
-
-  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
-    { AckermannFunc_spec1 : forall n, ack(0, n) = n + 1
-    ; AckermannFunc_spec2 : forall m, ack(m + 1, 0) = ack(m, 1)
-    ; AckermannFunc_spec3 : forall m n, ack(m + 1, n + 1) = ack(m, ack(m + 1, n))
-    }
-  .
-
-  Let AckermannFunc1_aux1 : (nat -> nat) -> nat -> nat :=
-    fun kont : nat -> nat =>
-    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
-    match n return nat with
-    | O => kont 1
-    | S n' => kont (AckermannFunc1_aux1_fix n')
-    end
-  .
-
-  Definition AckermannFunc1 : nat -> nat -> nat :=
-    fix AckermannFunc1_fix (m : nat) {struct m} : nat -> nat :=
-    match m return nat -> nat with
-    | O => S
-    | S m' => AckermannFunc1_aux1 (AckermannFunc1_fix m')
-    end
-  .
-
-  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
-    AckermannFuncSpec (fun p : nat * nat => AckermannFunc1 (fst p) (snd p)).
-  Proof with (lia || eauto).
-    split.
-    - induction n as [| n IHn]; simpl...
-    - intros m.
-      replace (m + 1) with (S m)...
-    - induction m as [| m IHm]; induction n as [| n IHn]; simpl in *...
-      all: replace (m + 1) with (S m) in *...
-  Qed.
-
-  End ACKERMANN.
-
   Section SIMPLE_LOGIC.
 
   Lemma not_imply_elim2 :
@@ -1322,5 +1283,48 @@ Module MyScratch.
   Qed.
 
   End SET_LEVEL_LE.
+
+  Section ACKERMANN.
+
+  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
+    { AckermannFunc_spec1 : forall n, ack (0, n) = n + 1
+    ; AckermannFunc_spec2 : forall m, ack (m + 1, 0) = ack (m, 1)
+    ; AckermannFunc_spec3 : forall m n, ack (m + 1, n + 1) = ack (m, ack (m + 1, n))
+    }
+  .
+
+  Let AckermannFunc1_aux1 : (nat -> nat) -> nat -> nat :=
+    fun kont : nat -> nat =>
+    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
+    match n return nat with
+    | O => kont 1
+    | S n' => kont (AckermannFunc1_aux1_fix n')
+    end
+  .
+
+  Let AckermannFunc1_aux2 : nat -> nat -> nat :=
+    fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
+    match m return nat -> nat with
+    | O => S
+    | S m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
+    end
+  .
+
+  Definition AckermannFunc1 : (nat * nat) -> nat :=
+    fun p : nat * nat =>
+    AckermannFunc1_aux2 (fst p) (snd p)
+  .
+
+  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
+    AckermannFuncSpec AckermannFunc1.
+  Proof with (lia || eauto).
+    split.
+    - intros n; replace (n + 1) with (S n)...
+    - intros m; replace (m + 1) with (S m)...
+    - induction m as [| m IHm]; induction n as [| n IHn]; cbn in *...
+      all: replace (m + 1) with (S m) in *...
+  Qed.
+
+  End ACKERMANN.
 
 End MyScratch.
