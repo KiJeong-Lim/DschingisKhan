@@ -339,7 +339,7 @@ Module MyUtilities.
 
   Context {A : Type} (x : A) (eq_em : forall y : A, x = y \/ x <> y).
 
-  Definition nu : forall y : A, x = y -> x = y :=
+  Let nu : forall y : A, x = y -> x = y :=
     fun y : A =>
     fun H_EQ : x = y =>
     match eq_em y return x = y with
@@ -348,7 +348,8 @@ Module MyUtilities.
     end
   .
 
-  Let nu_inv (y : A) : x = y -> x = y :=
+  Let nu_inv : forall y : A, x = y -> x = y :=
+    fun y : A =>
     eq_transitivity x x y (eq_symmetry x x (nu x (eq_reflexivity x)))
   .
 
@@ -364,7 +365,7 @@ Module MyUtilities.
     - contradiction Hne... 
   Qed.
 
-  Variable y : A.
+  Context (y : A).
 
   Let nu_const :
     forall H_EQ1 : x = y,
@@ -391,7 +392,7 @@ Module MyUtilities.
 
   End EQ_EM_implies_EQ_PIRREL.
 
-  Section ArithProofIrrelevance.
+  Section ARITHMETIC_PIRREL.
 
   Let eqnat_em : forall n1 : nat, forall n2 : nat, n1 = n2 \/ n1 <> n2 :=
     fun n1 : nat =>
@@ -455,7 +456,7 @@ Module MyUtilities.
       exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
   Qed.
 
-  End ArithProofIrrelevance.
+  End ARITHMETIC_PIRREL.
 
   Section MyFin.
 
