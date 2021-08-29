@@ -355,8 +355,8 @@ Module MyUtilities.
 
   Let nu_left_inv_on :
     forall y : A,
-    forall Heq : x = y,
-    nu_inv y (nu y Heq) = Heq.
+    forall H_EQ : x = y,
+    nu_inv y (nu y H_EQ) = H_EQ.
   Proof with reflexivity.
     unfold nu_inv, nu.
     intros y [].
@@ -668,7 +668,7 @@ Module MyUtilities.
       reflexivity.
   Qed.
 
-  Theorem evalFinSet_inj :
+  Definition evalFinSet_inj :
     forall n : nat,
     forall i1 : FinSet n,
     forall i2 : FinSet n,
@@ -680,7 +680,7 @@ Module MyUtilities.
     subst i1.
     apply (proj1 (evalFinSet_spec n i2 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
     reflexivity.
-  Qed.
+  Defined.
 
   Definition castFinSet {m : nat} {n : nat} : FinSet m -> m = n -> FinSet n :=
     fun i : FinSet m =>
