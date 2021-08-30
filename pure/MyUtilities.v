@@ -49,7 +49,7 @@ Module EqFacts.
 
   Context {A : Type} (x : A).
 
-  Let elim_eq (phi : forall y : A, x = y -> Type) : phi x (eq_reflexivity x) -> forall y : A, forall H_EQ : x = y, phi y H_EQ :=
+  Let elim_eq (phi : forall y : A, x = y -> Prop) : phi x (eq_reflexivity x) -> forall y : A, forall H_EQ : x = y, phi y H_EQ :=
     fun phi_x_refl : phi x (@eq_refl A x) =>
     fun y : A =>
     fun H_EQ : x = y =>
