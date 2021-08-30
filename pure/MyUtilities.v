@@ -45,6 +45,87 @@ Module EqFacts.
     eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
   .
 
+  Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
+
+  Context {A : Type} (x : A).
+
+  Let elim_eq (phi : forall y : A, x = y -> Type) : phi x (eq_reflexivity x) -> forall y : A, forall H_EQ : x = y, phi y H_EQ :=
+    fun phi_x_refl : phi x (@eq_refl A x) =>
+    fun y : A =>
+    fun H_EQ : x = y =>
+    match H_EQ as H_EQ0 in eq _ x0 return phi x0 H_EQ0 with
+    | eq_refl => phi_x_refl
+    end
+  .
+
+  Local Ltac apply_elim_eq :=
+    let y := fresh "y" in
+    let H_EQ := fresh "H_EQ" in
+    intros y H_EQ;
+    pattern y, H_EQ;
+    revert y H_EQ;
+    apply elim_eq
+  .
+
+  Hypothesis eq_em : forall y : A, x = y \/ x <> y.
+
+  Definition encode_eq : forall y : A, x = y -> x = y :=
+    fun y : A =>
+    fun H_EQ : x = y =>
+    match eq_em y return x = y with
+    | or_introl Heq => Heq
+    | or_intror Hne => False_ind (x = y) (Hne H_EQ)
+    end
+  .
+
+  Definition encode_eq_const :
+    forall y : A,
+    forall H_EQ1 : x = y,
+    forall H_EQ2 : x = y,
+    encode_eq y H_EQ1 = encode_eq y H_EQ2.
+  Proof.
+    apply_elim_eq.
+    unfold encode_eq.
+    intros H_EQ.
+    destruct (eq_em x) as [Heq | Hne].
+    - exact (eq_reflexivity Heq).
+    - contradiction (Hne H_EQ).
+  Defined.
+
+  Definition decode_eq : forall y : A, x = y -> x = y :=
+    fun y : A =>
+    eq_transitivity x x y (eq_symmetry x x (encode_eq x (eq_reflexivity x)))
+  .
+
+  Definition decode_eq_encode_eq_identity :
+    forall y : A,
+    forall H_EQ : x = y,
+    decode_eq y (encode_eq y H_EQ) = H_EQ.
+  Proof.
+    apply_elim_eq.
+    unfold decode_eq, encode_eq.
+    destruct (eq_em x) as [Heq | Hne].
+    - destruct Heq.
+      reflexivity.
+    - contradiction Hne.
+      reflexivity.
+  Defined.
+
+  Definition eq_em_implies_eq_pirrel :
+    forall y : A,
+    forall H_EQ1 : x = y,
+    forall H_EQ2 : x = y,
+    H_EQ1 = H_EQ2.
+  Proof.
+    intros y H_EQ1 H_EQ2.
+    rewrite <- (decode_eq_encode_eq_identity y H_EQ1).
+    rewrite <- (decode_eq_encode_eq_identity y H_EQ2).
+    apply (eq_congruence (decode_eq y)).
+    exact (encode_eq_const y H_EQ1 H_EQ2).
+  Defined.
+
+  End EQ_EM_implies_EQ_PIRREL.
+
 End EqFacts.
 
 Module MyUtilities.
@@ -267,14 +348,6 @@ Module MyUtilities.
     end
   .
 
-  Definition strong_induction {P : nat -> Prop} : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) -> (forall l : nat, P l) :=
-    fun ACC : (forall n : nat, (forall m : nat, m < n -> P m) -> P n) =>
-    let case0 : forall m : nat, forall H : m < O, P m := fun m : nat => fun H : m < O => lt_elim_n_lt_0 m H in
-    let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> (forall m : nat, m < S n -> P m) := fun n : nat => fun IH : forall m : nat, m < n -> P m => fun m : nat => fun Hlt : m < S n => le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq))) in
-    fun n : nat =>
-    ACC n (nat_ind (fun n0 : nat => forall m : nat, m < n0 -> P m) case0 caseS n)
-  .
-
   Definition eq_dec_nat : forall n1 : nat, forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
     fix eq_dec_nat_fix (n1 : nat) {struct n1} : forall n2 : nat, {n1 = n2} + {n1 <> n2} :=
     match n1 as n return forall n2 : nat, {n = n2} + {n <> n2} with
@@ -335,86 +408,29 @@ Module MyUtilities.
 
   End ARITH_WITHOUT_SOLVER.
 
-  Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
+  Section STRONG_INDUCTION_ON_nat.
 
-  Context {A : Type} (x : A).
+  Context {P : nat -> Prop} (ACC : forall n : nat, (forall m : nat, m < n -> P m) -> P n).
 
-  Let elim_eq (phi : forall y : A, x = y -> Type) : phi x (eq_reflexivity x) -> forall y : A, forall H_EQ : x = y, phi y H_EQ :=
-    fun phi_x_refl : phi x (eq_reflexivity x) =>
-    fun y : A =>
-    fun H_EQ : x = y =>
-    match H_EQ as H_EQ0 in eq _ x0 return phi x0 H_EQ0 with
-    | eq_refl => phi_x_refl
-    end
+  Let case0 : forall m : nat, forall H : m < O, P m :=
+    fun m : nat =>
+    fun Hlt : m < O => lt_elim_n_lt_0 m Hlt
   .
 
-  Local Ltac apply_elim_eq :=
-    let y := fresh "y" in
-    let H_EQ := fresh "H_EQ" in
-    intros y H_EQ;
-    pattern y, H_EQ;
-    revert y H_EQ;
-    apply elim_eq
+  Let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> forall m : nat, m < S n -> P m :=
+    fun n : nat =>
+    fun IH : forall m : nat, m < n -> P m =>
+    fun m : nat =>
+    fun Hlt : m < S n =>
+    le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq)))
   .
 
-  Hypothesis eq_em : forall y : A, x = y \/ x <> y.
-
-  Definition encode_eq : forall y : A, x = y -> x = y :=
-    fun y : A =>
-    fun H_EQ : x = y =>
-    match eq_em y return x = y with
-    | or_introl Heq => Heq
-    | or_intror Hne => False_ind (x = y) (Hne H_EQ)
-    end
+  Definition strong_induction : forall l : nat, P l :=
+    fun l : nat =>
+    ACC l (nat_ind (fun n : nat => forall m : nat, m < n -> P m) case0 caseS l)
   .
 
-  Definition decode_eq : forall y : A, x = y -> x = y :=
-    fun y : A =>
-    eq_transitivity x x y (eq_symmetry x x (encode_eq x (eq_reflexivity x)))
-  .
-
-  Definition decode_eq_encode_eq_identity :
-    forall y : A,
-    forall H_EQ : x = y,
-    decode_eq y (encode_eq y H_EQ) = H_EQ.
-  Proof.
-    apply_elim_eq.
-    unfold decode_eq, encode_eq.
-    destruct (eq_em x) as [Heq | Hne].
-    - destruct Heq.
-      reflexivity.
-    - contradiction Hne.
-      reflexivity.
-  Defined.
-
-  Definition encode_eq_const :
-    forall y : A,
-    forall H_EQ1 : x = y,
-    forall H_EQ2 : x = y,
-    encode_eq y H_EQ1 = encode_eq y H_EQ2.
-  Proof.
-    apply_elim_eq.
-    unfold encode_eq.
-    intros H_EQ2.
-    destruct (eq_em x) as [Heq | Hne].
-    - exact (eq_reflexivity Heq).
-    - contradiction (Hne H_EQ2).
-  Defined.
-
-  Definition eq_em_implies_eq_pirrel :
-    forall y : A,
-    forall H_EQ1 : x = y,
-    forall H_EQ2 : x = y,
-    H_EQ1 = H_EQ2.
-  Proof.
-    intros y H_EQ1 H_EQ2.
-    rewrite <- (decode_eq_encode_eq_identity y H_EQ1).
-    rewrite <- (decode_eq_encode_eq_identity y H_EQ2).
-    rewrite <- (encode_eq_const y H_EQ1 H_EQ2).
-    reflexivity.
-  Defined.
-
-  End EQ_EM_implies_EQ_PIRREL.
+  End STRONG_INDUCTION_ON_nat.
 
   Section ARITHMETIC_PIRREL.
 
@@ -427,7 +443,7 @@ Module MyUtilities.
     end
   .
 
-  Definition eqnat_proof_irrelevance :
+  Theorem eqnat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall H_EQ1 : n1 = n2,
@@ -435,9 +451,9 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     exact (fun n : nat => eq_em_implies_eq_pirrel n (eqnat_em n)).
-  Defined.
+  Qed.
 
-  Definition lenat_proof_irrelevance :
+  Theorem lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall H_LE1 : n1 <= n2,
@@ -477,7 +493,7 @@ Module MyUtilities.
       rewrite (eqnat_proof_irrelevance (S m2') (S m2') H_EQ (eq_reflexivity (S m2'))).
       apply (eq_congruence (le_S n1 m2')).
       exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
-  Defined.
+  Qed.
 
   End ARITHMETIC_PIRREL.
 
@@ -627,7 +643,7 @@ Module MyUtilities.
     end
   .
 
-  Definition mkFinSet_runFinSet_identity (n : nat) :
+  Lemma mkFinSet_runFinSet_identity (n : nat) :
     forall i : FinSet n,
     mkFinSet n (proj1_sig (runFinSet n i)) (proj2_sig (runFinSet n i)) = i.
   Proof.
@@ -641,9 +657,9 @@ Module MyUtilities.
         exact (mkFinSet_ext n' m (lt_elim_S_n_lt_S_m m n' (lt_intro_S_m_lt_S_n m n' Hlt)) Hlt).
       + apply (eq_congruence (FS n')).
         exact IH.
-  Defined.
+  Qed.
 
-  Definition runFinSet_mkFinSet_identity :
+  Lemma runFinSet_mkFinSet_identity :
     forall m : nat,
     forall n : nat,
     forall Hlt : m < n,
@@ -657,7 +673,7 @@ Module MyUtilities.
     - rewrite (IH n' (lt_elim_S_n_lt_S_m m n' Hlt)).
       rewrite (lenat_proof_irrelevance (S (S m)) (S n') (lt_intro_S_m_lt_S_n m n' (lt_elim_S_n_lt_S_m m n' Hlt)) Hlt).
       reflexivity.
-  Defined.
+  Qed.
 
   Definition evalFinSet {n : nat} : FinSet n -> nat :=
     fun i : FinSet n =>
@@ -691,7 +707,7 @@ Module MyUtilities.
       reflexivity.
   Qed.
 
-  Definition evalFinSet_inj :
+  Lemma evalFinSet_inj :
     forall n : nat,
     forall i1 : FinSet n,
     forall i2 : FinSet n,
@@ -703,7 +719,7 @@ Module MyUtilities.
     subst i1.
     apply (proj1 (evalFinSet_spec n i2 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
     reflexivity.
-  Defined.
+  Qed.
 
   Definition castFinSet {m : nat} {n : nat} : FinSet m -> m = n -> FinSet n :=
     fun i : FinSet m =>
@@ -784,7 +800,7 @@ Module MyUtilities.
     end
   .
 
-  Definition eqFinSet_proof_irrelevance {n : nat} :
+  Theorem eqFinSet_proof_irrelevance {n : nat} :
     forall i1 : FinSet n,
     forall i2 : FinSet n,
     forall H_EQ1 : i1 = i2,
@@ -792,7 +808,7 @@ Module MyUtilities.
     H_EQ1 = H_EQ2.
   Proof.
     exact (fun i : FinSet n => eq_em_implies_eq_pirrel i (eqFinSet_em n i)).
-  Defined.
+  Qed.
 
   End MyFin.
 
@@ -838,7 +854,7 @@ Module MyUtilities.
     fix first_nat_fix (n : nat) {struct n} : nat :=
     match n with
     | O => 0
-    | S n' => if p (first_nat_fix n') then first_nat_fix n' else n
+    | S n' => if p (first_nat_fix n') then first_nat_fix n' else 1 + n'
     end
   .
 
@@ -1282,7 +1298,7 @@ Module MyScratch.
         exact (le_elim_S_n_le_m n (S m') Hle).
   Qed.
 
-  Theorem leq_unique :
+  Lemma leq_unique :
     forall n1 : nat,
     forall n2 : nat,
     forall Hleq1 : leq n1 n2,
