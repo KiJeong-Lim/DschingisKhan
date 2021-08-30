@@ -337,7 +337,27 @@ Module MyUtilities.
 
   Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
 
-  Context {A : Type} (x : A) (eq_em : forall y : A, x = y \/ x <> y).
+  Context {A : Type} (x : A).
+
+  Let elim_eq (phi : forall y : A, x = y -> Type) : phi x (eq_reflexivity x) -> forall y : A, forall H_EQ : x = y, phi y H_EQ :=
+    fun phi_x_refl : phi x (eq_reflexivity x) =>
+    fun y : A =>
+    fun H_EQ : x = y =>
+    match H_EQ as H_EQ0 in eq _ x0 return phi x0 H_EQ0 with
+    | eq_refl => phi_x_refl
+    end
+  .
+
+  Local Ltac apply_elim_eq :=
+    let y := fresh "y" in
+    let H_EQ := fresh "H_EQ" in
+    intros y H_EQ;
+    pattern y, H_EQ;
+    revert y H_EQ;
+    apply elim_eq
+  .
+
+  Hypothesis eq_em : forall y : A, x = y \/ x <> y.
 
   Definition encode_eq : forall y : A, x = y -> x = y :=
     fun y : A =>
@@ -358,8 +378,8 @@ Module MyUtilities.
     forall H_EQ : x = y,
     decode_eq y (encode_eq y H_EQ) = H_EQ.
   Proof.
+    apply_elim_eq.
     unfold decode_eq, encode_eq.
-    intros y [].
     destruct (eq_em x) as [Heq | Hne].
     - destruct Heq.
       reflexivity.
@@ -367,29 +387,30 @@ Module MyUtilities.
       reflexivity.
   Defined.
 
-  Context (y : A).
-
   Definition encode_eq_const :
+    forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
     encode_eq y H_EQ1 = encode_eq y H_EQ2.
   Proof.
+    apply_elim_eq.
     unfold encode_eq.
-    intros H_EQ1 H_EQ2.
-    destruct (eq_em y) as [Heq | Hne].
+    intros H_EQ2.
+    destruct (eq_em x) as [Heq | Hne].
     - exact (eq_reflexivity Heq).
-    - contradiction (Hne H_EQ1).
+    - contradiction (Hne H_EQ2).
   Defined.
 
   Definition eq_em_implies_eq_pirrel :
+    forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
     H_EQ1 = H_EQ2.
   Proof.
-    intros H_EQ1 H_EQ2.
+    intros y H_EQ1 H_EQ2.
     rewrite <- (decode_eq_encode_eq_identity y H_EQ1).
     rewrite <- (decode_eq_encode_eq_identity y H_EQ2).
-    rewrite <- (encode_eq_const H_EQ1 H_EQ2).
+    rewrite <- (encode_eq_const y H_EQ1 H_EQ2).
     reflexivity.
   Defined.
 
