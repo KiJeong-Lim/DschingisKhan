@@ -18,8 +18,6 @@ Module FunFacts.
     }
   .
 
-  Local Hint Constructors RETRACT RETRACT_CONDITIONAL : core.
-
   Definition get_i {A : Prop} {B : Prop} : RETRACT A B -> A -> B :=
     _i A B
   .

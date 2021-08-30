@@ -68,7 +68,7 @@ Module EqFacts.
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
     fun H_EQ : lhs = rhs =>
-    match H_EQ as Heq in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Prop, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs Heq with
+    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Prop, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Prop =>
       fun phi0_rhs : phi0 lhs (eq_reflexivity lhs) =>
@@ -89,7 +89,7 @@ Module EqFacts.
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
     fun H_EQ : lhs = rhs =>
-    match H_EQ as Heq in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Set, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs Heq with
+    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Set, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Set =>
       fun phi0_rhs : phi0 lhs (eq_reflexivity lhs) =>
@@ -110,7 +110,7 @@ Module EqFacts.
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
     fun H_EQ : lhs = rhs =>
-    match H_EQ as Heq in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Type, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs Heq with
+    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Type, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Type =>
       fun phi0_rhs : phi0 lhs (eq_reflexivity lhs) =>
