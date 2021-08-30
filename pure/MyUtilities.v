@@ -39,15 +39,6 @@ Module EqFacts.
 
   End EQ_CONSTRUCTORS.
 
-  Definition eq_round_trip {A : Type} : forall x1 : A, forall x2 : A, forall H : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H) H = eq_reflexivity x2 :=
-    fun x1 : A =>
-    fun x2 : A =>
-    fun H : x1 = x2 =>
-    match H as H0 in eq _ x0 return eq_transitivity x0 x1 x0 (eq_symmetry x1 x0 H0) H0 = eq_reflexivity x0 with
-    | eq_refl => eq_reflexivity (eq_reflexivity x1)
-    end
-  .
-
   Section EQ_ELIMINATORS.
 
   Context {A : Type}.
@@ -131,6 +122,15 @@ Module EqFacts.
 
   Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
 
+  Definition eq_round_trip {A : Type} : forall x1 : A, forall x2 : A, forall H : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H) H = eq_reflexivity x2 :=
+    fun x1 : A =>
+    fun x2 : A =>
+    fun H : x1 = x2 =>
+    match H as H0 in eq _ x0 return eq_transitivity x0 x1 x0 (eq_symmetry x1 x0 H0) H0 = eq_reflexivity x0 with
+    | eq_refl => eq_reflexivity (eq_reflexivity x1)
+    end
+  .
+
   Context {A : Type} (x : A).
 
   Local Ltac elim_eq :=
@@ -141,6 +141,26 @@ Module EqFacts.
     revert y H_EQ;
     apply (@ind_eq_l A x)
   .
+
+  Section PARAMETERIZED_DECODER.
+
+  Variable eq_encoder : forall y : A, x = y -> x = y.
+
+  Definition eq_decoder : forall y : A, x = y -> x = y :=
+    fun y : A =>
+    eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
+  .
+
+  Definition eq_decoder_decodes_for_any_given_eq_encoder :
+    forall y : A,
+    forall H : x = y,
+    eq_decoder y (eq_encoder y H) = H.
+  Proof.
+    elim_eq.
+    exact (eq_round_trip x x (eq_encoder x (eq_reflexivity x))).
+  Defined.
+
+  End PARAMETERIZED_DECODER.
 
   Hypothesis eq_em : forall y : A, x = y \/ x <> y.
 
@@ -166,19 +186,6 @@ Module EqFacts.
     - contradiction (Hne H_EQ).
   Defined.
 
-  Definition eq_decoder (y : A) : x = y -> x = y :=
-    eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
-  .
-
-  Definition eq_decoder_decodes_fine :
-    forall y : A,
-    forall H_EQ : x = y,
-    eq_decoder y (eq_encoder y H_EQ) = H_EQ.
-  Proof.
-    elim_eq.
-    exact (eq_round_trip x x (eq_encoder x (eq_reflexivity x))).
-  Defined.
-
   Definition eq_em_implies_eq_pirrel :
     forall y : A,
     forall H_EQ1 : x = y,
@@ -186,9 +193,9 @@ Module EqFacts.
     H_EQ1 = H_EQ2.
   Proof.
     intros y H_EQ1 H_EQ2.
-    rewrite <- (eq_decoder_decodes_fine y H_EQ1).
-    rewrite <- (eq_decoder_decodes_fine y H_EQ2).
-    apply (eq_congruence (eq_decoder y)).
+    rewrite <- (eq_decoder_decodes_for_any_given_eq_encoder eq_encoder y H_EQ1).
+    rewrite <- (eq_decoder_decodes_for_any_given_eq_encoder eq_encoder y H_EQ2).
+    apply (eq_congruence (eq_decoder eq_encoder y)).
     exact (eq_encoder_returns_the_same_result y H_EQ1 H_EQ2).
   Defined.
 
