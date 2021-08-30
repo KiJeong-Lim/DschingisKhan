@@ -339,7 +339,7 @@ Module MyUtilities.
 
   Context {A : Type} (x : A) (eq_em : forall y : A, x = y \/ x <> y).
 
-  Let nu : forall y : A, x = y -> x = y :=
+  Definition encode_eq : forall y : A, x = y -> x = y :=
     fun y : A =>
     fun H_EQ : x = y =>
     match eq_em y return x = y with
@@ -348,47 +348,50 @@ Module MyUtilities.
     end
   .
 
-  Let nu_inv : forall y : A, x = y -> x = y :=
+  Definition decode_eq : forall y : A, x = y -> x = y :=
     fun y : A =>
-    eq_transitivity x x y (eq_symmetry x x (nu x (eq_reflexivity x)))
+    eq_transitivity x x y (eq_symmetry x x (encode_eq x (eq_reflexivity x)))
   .
 
-  Let nu_left_inv_on :
+  Definition decode_eq_encode_eq_identity :
     forall y : A,
     forall H_EQ : x = y,
-    nu_inv y (nu y H_EQ) = H_EQ.
-  Proof with reflexivity.
-    unfold nu_inv, nu.
+    decode_eq y (encode_eq y H_EQ) = H_EQ.
+  Proof.
+    unfold decode_eq, encode_eq.
     intros y [].
     destruct (eq_em x) as [Heq | Hne].
-    - destruct Heq...
-    - contradiction Hne... 
-  Qed.
+    - destruct Heq.
+      reflexivity.
+    - contradiction Hne.
+      reflexivity.
+  Defined.
 
   Context (y : A).
 
-  Let nu_const :
+  Definition encode_eq_const :
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
-    nu y H_EQ1 = nu y H_EQ2.
+    encode_eq y H_EQ1 = encode_eq y H_EQ2.
   Proof.
-    unfold nu.
+    unfold encode_eq.
     intros H_EQ1 H_EQ2.
     destruct (eq_em y) as [Heq | Hne].
     - exact (eq_reflexivity Heq).
     - contradiction (Hne H_EQ1).
-  Qed.
+  Defined.
 
-  Theorem eq_em_implies_eq_pirrel :
+  Definition eq_em_implies_eq_pirrel :
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
     H_EQ1 = H_EQ2.
-  Proof with eauto.
+  Proof.
     intros H_EQ1 H_EQ2.
-    rewrite <- (nu_left_inv_on y H_EQ1).
-    rewrite <- (nu_left_inv_on y H_EQ2).
-    replace (nu y H_EQ2) with (nu y H_EQ1)...
-  Qed.
+    rewrite <- (decode_eq_encode_eq_identity y H_EQ1).
+    rewrite <- (decode_eq_encode_eq_identity y H_EQ2).
+    rewrite <- (encode_eq_const H_EQ1 H_EQ2).
+    reflexivity.
+  Defined.
 
   End EQ_EM_implies_EQ_PIRREL.
 
@@ -403,18 +406,17 @@ Module MyUtilities.
     end
   .
 
-  Theorem eqnat_proof_irrelevance :
+  Definition eqnat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall H_EQ1 : n1 = n2,
     forall H_EQ2 : n1 = n2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros n.
-    exact (eq_em_implies_eq_pirrel n (eqnat_em n)).
-  Qed.
+    exact (fun n : nat => eq_em_implies_eq_pirrel n (eqnat_em n)).
+  Defined.
 
-  Theorem lenat_proof_irrelevance :
+  Definition lenat_proof_irrelevance :
     forall n1 : nat,
     forall n2 : nat,
     forall H_LE1 : n1 <= n2,
@@ -450,11 +452,11 @@ Module MyUtilities.
       contradiction (le_lt_False n1 m1' H_LE1' Hlt).
     - intros H_EQ.
       assert (Heq : m2' = m1') by exact (S_eq_S_elim m2' m1' H_EQ).
-      subst m1'.
+      destruct Heq as [].
       rewrite (eqnat_proof_irrelevance (S m2') (S m2') H_EQ (eq_reflexivity (S m2'))).
       apply (eq_congruence (le_S n1 m2')).
       exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
-  Qed.
+  Defined.
 
   End ARITHMETIC_PIRREL.
 
@@ -761,16 +763,15 @@ Module MyUtilities.
     end
   .
 
-  Theorem eqFinSet_proof_irrelevance {n : nat} :
+  Definition eqFinSet_proof_irrelevance {n : nat} :
     forall i1 : FinSet n,
     forall i2 : FinSet n,
     forall H_EQ1 : i1 = i2,
     forall H_EQ2 : i1 = i2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros i.
-    exact (eq_em_implies_eq_pirrel i (eqFinSet_em n i)).
-  Qed.
+    exact (fun i : FinSet n => eq_em_implies_eq_pirrel i (eqFinSet_em n i)).
+  Defined.
 
   End MyFin.
 
