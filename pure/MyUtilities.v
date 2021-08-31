@@ -151,7 +151,7 @@ Module EqFacts.
     eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Definition eq_decoder_decodes_for_any_given_eq_encoder :
+  Definition universal_decoding :
     forall y : A,
     forall H : x = y,
     eq_decoder y (eq_encoder y H) = H.
@@ -173,7 +173,7 @@ Module EqFacts.
     end
   .
 
-  Definition eq_encoder_returns_the_same_result :
+  Definition eq_code_same :
     forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
@@ -194,10 +194,10 @@ Module EqFacts.
     H_EQ1 = H_EQ2.
   Proof.
     intros y H_EQ1 H_EQ2.
-    rewrite <- (eq_decoder_decodes_for_any_given_eq_encoder eq_encoder y H_EQ1).
-    rewrite <- (eq_decoder_decodes_for_any_given_eq_encoder eq_encoder y H_EQ2).
+    rewrite <- (universal_decoding eq_encoder y H_EQ1).
+    rewrite <- (universal_decoding eq_encoder y H_EQ2).
     apply (eq_congruence (eq_decoder eq_encoder y)).
-    exact (eq_encoder_returns_the_same_result y H_EQ1 H_EQ2).
+    exact (eq_code_same y H_EQ1 H_EQ2).
   Defined.
 
   End EQ_EM_implies_EQ_PIRREL.
