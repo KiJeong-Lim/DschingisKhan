@@ -217,12 +217,12 @@ Module FunFacts.
   Qed.
 
   Let russell : UNIV -> BB :=
-    fun x : UNIV =>
-    ¬ (x ∈ x)
+    fun r : UNIV =>
+    ¬ (r ∈ r)
   .
 
   Let R : UNIV :=
-    ⦃ x | russell x ⦄
+    ⦃ r | russell r ⦄
   .
 
   Let RUSSELL : BB :=
@@ -233,7 +233,7 @@ Module FunFacts.
     RUSSELL = ¬ RUSSELL.
   Proof with eauto.
     enough (it_is_sufficient_to_show : RUSSELL = russell R) by exact it_is_sufficient_to_show.
-    replace (russell) with (fun x : UNIV => x ∈ R)...
+    replace (russell) with (fun r : UNIV => r ∈ R)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance :

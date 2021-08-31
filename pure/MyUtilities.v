@@ -139,18 +139,18 @@ Module EqFacts.
 
   Variable eq_encoder : forall y : A, x = y -> x = y.
 
-  Definition eq_decoder : forall y : A, x = y -> x = y :=
+  Let eq_decoder : forall y : A, x = y -> x = y :=
     fun y : A =>
     eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Definition eq_decoder_decodes_properly : forall y : A, forall H : x = y, eq_decoder y (eq_encoder y H) = H :=
+  Let eq_decoder_decodes_properly : forall y : A, forall H : x = y, eq_decoder y (eq_encoder y H) = H :=
     ind_eq_l x (fun y : A => fun H : x = y => eq_decoder y (eq_encoder y H) = H) (eq_round_trip x x (eq_encoder x (eq_reflexivity x)))
   .
 
   Hypothesis eq_encoder_always_returns_the_same_code : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
 
-  Definition eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_code :
+  Definition eq_pirrel_HoldsIfThereIsAn_eq_encoder_WhichAlwaysReturnsTheSameCode :
     forall y : A,
     forall H1 : x = y,
     forall H2 : x = y,
@@ -195,7 +195,7 @@ Module EqFacts.
   Defined.
 
   Definition eq_em_implies_eq_pirrel : forall y : A, forall H_EQ1 : x = y, forall H_EQ2 : x = y, H_EQ1 = H_EQ2 :=
-    eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_code eq_encoder eq_encoder_always_returns_the_same_code
+    eq_pirrel_HoldsIfThereIsAn_eq_encoder_WhichAlwaysReturnsTheSameCode eq_encoder eq_encoder_always_returns_the_same_code
   .
 
   End EQ_EM_implies_EQ_PIRREL.
