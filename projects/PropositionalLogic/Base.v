@@ -173,10 +173,10 @@ Module SyntaxOfPL.
   Proof.
     unfold enum_formula.
     intros p.
-    set (seed := proj1_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity)).
+    destruct (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity) as [seed Heq].
     exists (sum_from_0_to (getRankOfFormula p + seed) + seed).
     rewrite <- (cantor_pairing_is_surjective (getRankOfFormula p) seed).
-    exact (proj2_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity)).
+    exact Heq.
   Qed.
 
   End WE_CAN_ENUMERATE_ALL_FORMULAE.
