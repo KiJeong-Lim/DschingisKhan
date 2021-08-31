@@ -653,8 +653,8 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   Class isPreLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
-    { runApp : D -> (D -> D)
-    ; runLam : (D -> D) -> D
+    { runApp : D -> arrow D D
+    ; runLam : arrow D D -> D
     ; runApp_ext :
       forall v1 : D,
       forall v1' : D,
@@ -664,9 +664,9 @@ Module UntypedLamdbdaCalculus.
       v2 == v2' ->
       runApp v1 v2 == runApp v1' v2'
     ; runLam_ext :
-      forall vv : D -> D,
-      forall vv' : D -> D,
-      (forall v : D, vv v == vv' v) ->
+      forall vv : arrow D D,
+      forall vv' : arrow D D,
+      vv == vv' ->
       runLam vv == runLam vv'
     }
   .
@@ -751,7 +751,7 @@ Module UntypedLamdbdaCalculus.
 
   Class isLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
     { LambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
-    ; satisfiesBetaAxiom : forall vv : D -> D, forall v : D, runApp (runLam vv) v == vv v
+    ; satisfiesBetaAxiom : forall vv : arrow D D, runApp (runLam vv) == vv
     }
   .
 
