@@ -11,7 +11,7 @@ Module FunFacts.
     }
   .
 
-  Record RETRACT_CONDITIONAL (A : Prop) (B : Prop) : Prop :=
+  Record RETRACT2 (A : Prop) (B : Prop) : Prop :=
     { _i2 : A -> B
     ; _j2 : B -> A
     ; _inv2 : RETRACT A B -> forall x : A, _j2 (_i2 x) = x
@@ -30,28 +30,25 @@ Module FunFacts.
     _inv A B
   .
 
-  Definition get_i2 {A : Prop} {B : Prop} : RETRACT_CONDITIONAL A B -> A -> B :=
+  Definition get_i2 {A : Prop} {B : Prop} : RETRACT2 A B -> A -> B :=
     _i2 A B
   .
 
-  Definition get_j2 {A : Prop} {B : Prop} : RETRACT_CONDITIONAL A B -> B -> A :=
+  Definition get_j2 {A : Prop} {B : Prop} : RETRACT2 A B -> B -> A :=
     _j2 A B
   .
 
-  Definition get_inv2 {A : Prop} {B : Prop} : forall r : RETRACT_CONDITIONAL A B, RETRACT A B -> forall x : A, get_j2 r (get_i2 r x) = x :=
+  Definition get_inv2 {A : Prop} {B : Prop} : forall r : RETRACT2 A B, RETRACT A B -> forall x : A, get_j2 r (get_i2 r x) = x :=
     _inv2 A B
   .
 
-  Lemma RETRACT_A_A (A : Prop) :
-    RETRACT A A.
-  Proof.
-    exists (fun x : A => x) (fun x : A => x).
-    exact (@eq_refl A).
-  Qed.
+  Definition RETRACT_A_A (A : Prop) : RETRACT A A :=
+    {| _i := fun x : A => x; _j := fun x : A => x; _inv := @eq_refl A |}
+  .
 
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
-  Lemma find_fixedpoint_combinator (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
+  Lemma derive_fixedpoint_combinator (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
     destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
@@ -153,12 +150,12 @@ Module FunFacts.
     BB
   .
 
-  Let RETRACT_CONDITIONAL_POW_A_POW_B (A : Prop) (B : Prop) :
-    RETRACT_CONDITIONAL (POW A) (POW B).
-  Proof with tauto.
+  Let RETRACT2_POW_A_POW_B (A : Prop) (B : Prop) :
+    RETRACT2 (POW A) (POW B).
+  Proof.
     destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [H_yes | H_no].
     - exact ({| _i2 := get_i H_yes; _j2 := get_j H_yes; _inv2 := fun _ : RETRACT (POW A) (POW B) => get_inv H_yes |}).
-    - exists (fun pa : POW A => fun b : B => FALSE_BB) (fun pb : POW B => fun a : A => FALSE_BB)...
+    - exact ({| _i2 := fun pa : POW A => fun b : B => FALSE_BB; _j2 := fun pb : POW B => fun a : A => FALSE_BB; _inv2 := fun r : RETRACT (POW A) (POW B) => False_ind (forall pa : POW A, (fun a : A => FALSE_BB) = pa) (H_no r) |}).
   Qed.
 
   Let UNIV : Prop :=
@@ -169,8 +166,8 @@ Module FunFacts.
   Let SET_BUILDER_NOTATION : (UNIV -> BB) -> UNIV :=
     fun phi : UNIV -> BB =>
     fun P : Prop =>
-    let LEFT : POW UNIV -> POW P := get_j2 (RETRACT_CONDITIONAL_POW_A_POW_B P UNIV) in
-    let RIGHT : POW UNIV -> POW UNIV := get_i2 (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV) in
+    let LEFT : POW UNIV -> POW P := get_j2 (RETRACT2_POW_A_POW_B P UNIV) in
+    let RIGHT : POW UNIV -> POW UNIV := get_i2 (RETRACT2_POW_A_POW_B UNIV UNIV) in
     LEFT (RIGHT phi)
   .
 
@@ -188,10 +185,10 @@ Module FunFacts.
     (fun z : UNIV => z ∈ ⦃ x | phi x ⦄) = phi.
   Proof with eauto.
     unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT.
-    destruct (RETRACT_CONDITIONAL_POW_A_POW_B UNIV UNIV); simpl in *...
+    destruct (RETRACT2_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
-  Let RETRACT_POW_UNIV_UNIV : RETRACT (POW UNIV) UNIV :=
+  Let RETRACT_POW_UNIV_UNIV : RETRACT (UNIV -> BB) UNIV :=
     {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}
   .
 
@@ -305,7 +302,7 @@ Module FunFacts.
   Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell :
     TRUE_BB = FALSE_BB.
   Proof.
-    destruct (find_fixedpoint_combinator BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
+    destruct (derive_fixedpoint_combinator BB untyped_lambda_calculus_for_BB) as [Y Y_spec].
     set (RUSSELL := Y NOT_BB).
     assert (PARADOX_OF_RUSSELL : RUSSELL = NOT_BB RUSSELL) by exact (Y_spec NOT_BB).
     unfold NOT_BB in PARADOX_OF_RUSSELL.
