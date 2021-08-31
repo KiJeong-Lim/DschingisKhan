@@ -492,7 +492,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
 
-  Global Notation " D1 '>=>' D2 " := (@sig (D1 -> D2) isMonotonicMap) (at level 100, right associativity) : type_scope.
+  Global Notation " D1 '>=>' D2 " := (@sig (arrow D1 D2) isMonotonicMap) (at level 100, right associativity) : type_scope.
 
   Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (f_monotonic : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
