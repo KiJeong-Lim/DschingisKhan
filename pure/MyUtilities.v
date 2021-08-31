@@ -142,7 +142,7 @@ Module EqFacts.
     apply (@ind_eq_l A x)
   .
 
-  Section PARAMETERIZED_DECODER.
+  Section UNIVERSAL_DECODER.
 
   Variable eq_encoder : forall y : A, x = y -> x = y.
 
@@ -160,11 +160,12 @@ Module EqFacts.
     exact (eq_round_trip x x (eq_encoder x (eq_reflexivity x))).
   Defined.
 
-  End PARAMETERIZED_DECODER.
+  End UNIVERSAL_DECODER.
 
   Hypothesis eq_em : forall y : A, x = y \/ x <> y.
 
-  Definition eq_encoder (y : A) : x = y -> x = y :=
+  Definition eq_encoder : forall y : A, x = y -> x = y :=
+    fun y : A =>
     fun H_EQ : x = y =>
     match eq_em y return x = y with
     | or_introl Heq => Heq
