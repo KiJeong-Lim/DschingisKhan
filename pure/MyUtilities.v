@@ -55,20 +55,20 @@ Module EqFacts.
     end phi'
   .
 
-  Definition ind_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Prop) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H_EQ : lhs = rhs, phi rhs H_EQ :=
+  Definition ind_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Prop) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H : lhs = rhs, phi rhs H :=
     fun phi_lhs : phi lhs (eq_reflexivity lhs) =>
     fun rhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ lhs0 return phi lhs0 H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ lhs0 return phi lhs0 H0 with
     | eq_refl => phi_lhs
     end
   .
 
-  Definition ind_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Prop) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H_EQ : lhs = rhs, phi lhs H_EQ :=
+  Definition ind_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Prop) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H : lhs = rhs, phi lhs H :=
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Prop, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Prop, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Prop =>
       fun phi0_lhs : phi0 lhs (eq_reflexivity lhs) =>
@@ -76,20 +76,20 @@ Module EqFacts.
     end phi phi_rhs
   .
 
-  Definition rec_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Set) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H_EQ : lhs = rhs, phi rhs H_EQ :=
+  Definition rec_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Set) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H : lhs = rhs, phi rhs H :=
     fun phi_lhs : phi lhs (eq_reflexivity lhs) =>
     fun rhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ lhs0 return phi lhs0 H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ lhs0 return phi lhs0 H0 with
     | eq_refl => phi_lhs
     end
   .
 
-  Definition rec_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Set) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H_EQ : lhs = rhs, phi lhs H_EQ :=
+  Definition rec_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Set) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H : lhs = rhs, phi lhs H :=
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Set, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Set, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Set =>
       fun phi0_lhs : phi0 lhs (eq_reflexivity lhs) =>
@@ -97,20 +97,20 @@ Module EqFacts.
     end phi phi_rhs
   .
 
-  Definition rect_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Type) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H_EQ : lhs = rhs, phi rhs H_EQ :=
+  Definition rect_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Type) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H : lhs = rhs, phi rhs H :=
     fun phi_lhs : phi lhs (eq_reflexivity lhs) =>
     fun rhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ lhs0 return phi lhs0 H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ lhs0 return phi lhs0 H0 with
     | eq_refl => phi_lhs
     end
   .
 
-  Definition rect_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Type) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H_EQ : lhs = rhs, phi lhs H_EQ :=
+  Definition rect_eq_r (rhs : A) (phi : forall lhs : A, lhs = rhs -> Type) : phi rhs (eq_reflexivity rhs) -> forall lhs : A, forall H : lhs = rhs, phi lhs H :=
     fun phi_rhs : phi rhs (eq_reflexivity rhs) =>
     fun lhs : A =>
-    fun H_EQ : lhs = rhs =>
-    match H_EQ as H_EQ0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Type, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H_EQ0 with
+    fun H : lhs = rhs =>
+    match H as H0 in eq _ rhs0 return forall phi0 : forall lhs0 : A, lhs0 = rhs0 -> Type, phi0 rhs0 (eq_reflexivity rhs0) -> phi0 lhs H0 with
     | eq_refl =>
       fun phi0 : forall lhs0 : A, lhs0 = lhs -> Type =>
       fun phi0_lhs : phi0 lhs (eq_reflexivity lhs) =>
@@ -122,7 +122,9 @@ Module EqFacts.
 
   Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
 
-  Definition eq_round_trip {A : Type} : forall x1 : A, forall x2 : A, forall H : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H) H = eq_reflexivity x2 :=
+  Context {A : Type}.
+
+  Definition eq_round_trip : forall x1 : A, forall x2 : A, forall H : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H) H = eq_reflexivity x2 :=
     fun x1 : A =>
     fun x2 : A =>
     fun H : x1 = x2 =>
@@ -131,16 +133,7 @@ Module EqFacts.
     end
   .
 
-  Context {A : Type} (x : A).
-
-  Local Ltac elim_eq :=
-    let y := fresh "y" in
-    let H_EQ := fresh "H_EQ" in
-    intros y H_EQ;
-    pattern y, H_EQ;
-    revert y H_EQ;
-    apply (@ind_eq_l A x)
-  .
+  Variable x : A.
 
   Section ABSTRACT_FORM.
 
@@ -151,14 +144,9 @@ Module EqFacts.
     eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Definition eq_decoder_decodes_properly :
-    forall y : A,
-    forall H : x = y,
-    eq_decoder y (eq_encoder y H) = H.
-  Proof.
-    elim_eq.
-    exact (eq_round_trip x x (eq_encoder x (eq_reflexivity x))).
-  Defined.
+  Definition eq_decoder_decodes_properly : forall y : A, forall H : x = y, eq_decoder y (eq_encoder y H) = H :=
+    ind_eq_l x (fun y : A => fun H : x = y => eq_decoder y (eq_encoder y H) = H) (eq_round_trip x x (eq_encoder x (eq_reflexivity x)))
+  .
 
   Hypothesis eq_encoder_always_returns_the_same_result : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
 
@@ -194,12 +182,16 @@ Module EqFacts.
     forall H_EQ2 : x = y,
     eq_encoder y H_EQ1 = eq_encoder y H_EQ2.
   Proof.
-    elim_eq.
+    intros y H_EQ1.
+    pattern y, H_EQ1.
+    revert y H_EQ1.
+    apply ind_eq_l.
+    intros H_EQ2.
     unfold eq_encoder.
-    intros H_EQ.
-    destruct (eq_em x) as [Heq | Hne].
+    set (eq_em_x := eq_em x).
+    destruct eq_em_x as [Heq | Hne].
     - exact (eq_reflexivity Heq).
-    - contradiction (Hne H_EQ).
+    - contradiction (Hne H_EQ2).
   Defined.
 
   Definition eq_em_implies_eq_pirrel : forall y : A, forall H_EQ1 : x = y, forall H_EQ2 : x = y, H_EQ1 = H_EQ2 :=
