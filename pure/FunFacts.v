@@ -335,7 +335,7 @@ Module FunFacts.
     p1 = p2.
   Proof.
     apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
-    assert (BB_inhabited : inhabited BB) by repeat constructor.
+    assert (BB_inhabited : inhabited BB) by now constructor; exact FALSE_BB.
     exact (untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
   Qed.
 

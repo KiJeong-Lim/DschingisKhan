@@ -652,21 +652,21 @@ Module UntypedLamdbdaCalculus.
     reflexivity.
   Qed.
 
-  Class isPreLambdaStructure (Dom : Type) `{Dom_isSetoid : isSetoid Dom} : Type :=
-    { runApp : Dom -> (Dom -> Dom)
-    ; runLam : (Dom -> Dom) -> Dom
+  Class isPreLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
+    { runApp : D -> (D -> D)
+    ; runLam : (D -> D) -> D
     ; runApp_ext :
-      forall v1 : Dom,
-      forall v1' : Dom,
-      forall v2 : Dom,
-      forall v2' : Dom,
+      forall v1 : D,
+      forall v1' : D,
+      forall v2 : D,
+      forall v2' : D,
       v1 == v1' ->
       v2 == v2' ->
       runApp v1 v2 == runApp v1' v2'
     ; runLam_ext :
-      forall vv : Dom -> Dom,
-      forall vv' : Dom -> Dom,
-      (forall v : Dom, vv v == vv' v) ->
+      forall vv : D -> D,
+      forall vv' : D -> D,
+      (forall v : D, vv v == vv' v) ->
       runLam vv == runLam vv'
     }
   .
@@ -748,6 +748,12 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   End PreliminariesOfSemantics.
+
+  Class isLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
+    { LambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
+    ; satisfiesBetaAxiom : forall vv : D -> D, forall v : D, runApp (runLam vv) v == vv v
+    }
+  .
 
   Section ALPHA_EQUIV_DEFN.
 
