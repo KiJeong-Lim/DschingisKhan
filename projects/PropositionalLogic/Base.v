@@ -34,7 +34,7 @@ Module SyntaxOfPL.
     - destruct (IHp1_1 p2_1); destruct (IHp1_2 p2_2)...
   Qed.
 
-  Section ENUMERATE_EVERY_FORMULAE.
+  Section WE_CAN_ENUMERATE_ALL_FORMULAE.
 
   Fixpoint getRankOfFormula (p : formula) {struct p} : nat :=
     match p with
@@ -179,7 +179,7 @@ Module SyntaxOfPL.
     exact (proj2_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity)).
   Qed.
 
-  End ENUMERATE_EVERY_FORMULAE.
+  End WE_CAN_ENUMERATE_ALL_FORMULAE.
 
 End SyntaxOfPL.
 
