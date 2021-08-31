@@ -142,7 +142,7 @@ Module EqFacts.
     apply (@ind_eq_l A x)
   .
 
-  Section UNIVERSAL_DECODER.
+  Section ABSTRACT_FORM.
 
   Variable eq_encoder : forall y : A, x = y -> x = y.
 
@@ -151,7 +151,7 @@ Module EqFacts.
     eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Definition universal_decoding :
+  Definition eq_decoder_decodes_properly :
     forall y : A,
     forall H : x = y,
     eq_decoder y (eq_encoder y H) = H.
@@ -160,7 +160,22 @@ Module EqFacts.
     exact (eq_round_trip x x (eq_encoder x (eq_reflexivity x))).
   Defined.
 
-  End UNIVERSAL_DECODER.
+  Hypothesis eq_encoder_always_returns_the_same_result : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
+
+  Definition eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_result :
+    forall y : A,
+    forall H1 : x = y,
+    forall H2 : x = y,
+    H1 = H2.
+  Proof.
+    intros y H1 H2.
+    rewrite <- (eq_decoder_decodes_properly y H1).
+    rewrite <- (eq_decoder_decodes_properly y H2).
+    apply (eq_congruence (eq_decoder y)).
+    exact (eq_encoder_always_returns_the_same_result y H1 H2).
+  Defined.
+
+  End ABSTRACT_FORM.
 
   Hypothesis eq_em : forall y : A, x = y \/ x <> y.
 
@@ -173,7 +188,7 @@ Module EqFacts.
     end
   .
 
-  Definition eq_code_same :
+  Definition eq_encoder_always_returns_the_same_result :
     forall y : A,
     forall H_EQ1 : x = y,
     forall H_EQ2 : x = y,
@@ -187,18 +202,9 @@ Module EqFacts.
     - contradiction (Hne H_EQ).
   Defined.
 
-  Definition eq_em_implies_eq_pirrel :
-    forall y : A,
-    forall H_EQ1 : x = y,
-    forall H_EQ2 : x = y,
-    H_EQ1 = H_EQ2.
-  Proof.
-    intros y H_EQ1 H_EQ2.
-    rewrite <- (universal_decoding eq_encoder y H_EQ1).
-    rewrite <- (universal_decoding eq_encoder y H_EQ2).
-    apply (eq_congruence (eq_decoder eq_encoder y)).
-    exact (eq_code_same y H_EQ1 H_EQ2).
-  Defined.
+  Definition eq_em_implies_eq_pirrel : forall y : A, forall H_EQ1 : x = y, forall H_EQ2 : x = y, H_EQ1 = H_EQ2 :=
+    eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_result eq_encoder eq_encoder_always_returns_the_same_result
+  .
 
   End EQ_EM_implies_EQ_PIRREL.
 
