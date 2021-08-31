@@ -247,8 +247,8 @@ Module MyUtilities.
     end
   .
 
-  Definition le_reflexivity : forall n1 : nat, n1 <= n1 :=
-    le_n
+  Definition le_reflexivity {n1 : nat} : n1 <= n1 :=
+    le_n n1
   .
 
   Let le_transitivity_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
@@ -390,9 +390,7 @@ Module MyUtilities.
     end
   .
 
-  Definition le_asymmetry : forall n1 : nat, forall n2 : nat, n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
-    fun n1 : nat =>
-    fun n2 : nat =>
+  Definition le_asymmetry {n1 : nat} {n2 : nat} : n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
     fun Hle1 : n1 <= n2 =>
     match Hle1 in le _ m return m <= n1 -> n1 = m with
     | le_n _ =>

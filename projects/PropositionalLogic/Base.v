@@ -171,10 +171,12 @@ Module SyntaxOfPL.
     forall p : formula,
     {n : nat | enum_formula n = p}.
   Proof.
+    unfold enum_formula.
     intros p.
-    set (seed := proj1_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) (le_reflexivity (getRankOfFormula p)))).
+    set (seed := proj1_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity)).
     exists (sum_from_0_to (getRankOfFormula p + seed) + seed).
-    exact (eq_ind (getRankOfFormula p, seed) (fun pr : nat * nat => enum_formulae_of_rank (fst pr) (snd pr) = p) (proj2_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) (le_reflexivity (getRankOfFormula p)))) (cantor_pairing (sum_from_0_to (getRankOfFormula p + seed) + seed)) (cantor_pairing_is_surjective (getRankOfFormula p) seed)).
+    rewrite <- (cantor_pairing_is_surjective (getRankOfFormula p) seed).
+    exact (proj2_sig (enum_formulae_of_rank_is_good p (getRankOfFormula p) le_reflexivity)).
   Qed.
 
   End ENUMERATE_EVERY_FORMULAE.
