@@ -52,7 +52,7 @@ Module FunFacts.
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
     destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
-    set (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
+    pose (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
     exists Y_combinator_of_Curry.
     intros f.
     enough (it_is_sufficient_to_show : app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x))) = f (Y_combinator_of_Curry f)) by exact it_is_sufficient_to_show.

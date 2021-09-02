@@ -8,6 +8,7 @@ pure/UntypedLambdaCalculus.v #
 pure/AczelSet.v #
 pure/CBA.v #
 pure/MyCoin.v #
+pure/BasicAlgebra.v #
 #
 classical/ExclusiveMiddle.v #
 classical/DomainTheory.v #
