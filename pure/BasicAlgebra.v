@@ -8,46 +8,75 @@ Module BasicGroupTheory.
 
   Import BasicSetoidTheory.
 
+  Section BASIC_DEFINITIONS_RELATED_TO_GROUP.
+
+  Definition isAssociative {A : Type} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
+    fun binop : A -> A -> A =>
+    forall x : A,
+    forall y : A,
+    forall z : A,
+    @eqProp A A_isSetoid (binop x (binop y z)) (binop (binop x y) z)
+  .
+
+  Definition isCommutative {A : Type} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
+    fun binop : A -> A -> A =>
+    forall x : A,
+    forall y : A,
+    @eqProp A A_isSetoid (binop x y) (binop y x)
+  .
+
+  Definition isLeftIdOf {A : Type} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
+    fun e : A =>
+    fun binop : A -> A -> A =>
+    forall x : A,
+    @eqProp A A_isSetoid (binop e x) x
+  .
+
+  Definition isRightIdOf {A : Type} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
+    fun e : A =>
+    fun binop : A -> A -> A =>
+    forall x : A,
+    @eqProp A A_isSetoid (binop x e) x
+  .
+
   Class isMonoid (M : Type) `{M_isSetoid : isSetoid M} : Type :=
     { pl : M -> M -> M
     ; ze : M
-    ; pl_assoc :
-      forall m1 : M,
-      forall m2 : M,
-      forall m3 : M,
-      pl m1 (pl m2 m3) == pl (pl m1 m2) m3
-    ; ze_left_id_pl :
-      forall m1 : M,
-      pl ze m1 == m1
-    ; ze_right_id_pl :
-      forall m1 : M,
-      pl m1 ze == m1
+    ; pl_assoc : @isAssociative M M_isSetoid pl
+    ; ze_left_id_pl : @isLeftIdOf M M_isSetoid ze pl
+    ; ze_right_id_pl : @isRightIdOf M M_isSetoid ze pl
     }
   .
 
-  Class isCommutativeMonoid (M : Type) `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : Prop :=
-    { pl_comm :
-      forall m1 : M,
-      forall m2 : M,
-      pl m1 m2 == pl m2 m1
-    }
+  Definition isLeftInverseOf {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
+    fun inv_x : M =>
+    fun x : M =>
+    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid inv_x x) ze
+  .
+
+  Definition isRightInverseOf {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
+    fun inv_x : M =>
+    fun x : M =>
+    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid x inv_x) ze
   .
 
   Class isGroup (G : Type) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} : Type :=
     { ne : G -> G
     ; ne_left_inv_pl :
-      forall g1 : G,
-      pl (ne g1) g1 == ze
+      forall x : G,
+      @isLeftInverseOf G G_isSetoid G_isMonoid (ne x) x
     ; ne_right_inv_pl :
-      forall g1 : G,
-      pl g1 (ne g1) == ze
+      forall x : G,
+      @isRightInverseOf G G_isSetoid G_isMonoid (ne x) x
     }
   .
 
-  Class isAbelianGroup (G : Type) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid} : Prop :=
-    { AbelianGroup_requiresCommutative :> @isCommutativeMonoid G G_isSetoid G_isMonoid
+  Class isAbelianGroup {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : Prop :=
+    { AbelianGroup_requiresCommutative : @isCommutative G G_isSetoid (@pl G G_isSetoid G_isMonoid)
     }
   .
+
+  End BASIC_DEFINITIONS_RELATED_TO_GROUP.
 
   Global Instance nat_isMonoid : @isMonoid nat nat_isSetoid :=
     { pl := plus
@@ -55,11 +84,6 @@ Module BasicGroupTheory.
     ; pl_assoc := plus_assoc
     ; ze_left_id_pl := plus_0_l
     ; ze_right_id_pl := plus_0_r
-    }
-  .
-
-  Global Instance nat_isCommutativeMonoid : @isCommutativeMonoid nat nat_isSetoid nat_isMonoid :=
-    { pl_comm := plus_comm
     }
   .
 
@@ -95,11 +119,6 @@ Module BasicGroupTheory.
     }
   .
 
-  Global Instance bool_isCommutativeMonoid : @isCommutativeMonoid bool bool_isSetoid bool_isMonoid :=
-    { pl_comm := xorb_comm
-    }
-  .
-
   Lemma xorb_b_b_eq_false :
     forall b1 : bool,
     xorb b1 b1 = false.
@@ -115,7 +134,7 @@ Module BasicGroupTheory.
   .
 
   Global Instance bool_isAbelianGroup : @isAbelianGroup bool bool_isSetoid bool_isMonoid bool_isGroup :=
-    { AbelianGroup_requiresCommutative := bool_isCommutativeMonoid
+    { AbelianGroup_requiresCommutative := xorb_comm
     }
   .
 
@@ -145,15 +164,6 @@ Module BasicGroupTheory.
     }
   .
 
-  Global Instance arrow_isCommutativeMonoid {S : Type} {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} (M_requiresCommutativeMonoid : @isCommutativeMonoid M M_isSetoid M_isMonoid) : @isCommutativeMonoid (arrow S M) (arrow_isSetoid M_isSetoid) (arrow_isMonoid M_isMonoid) :=
-    { pl_comm :=
-      fun f1 : S -> M =>
-      fun f2 : S -> M =>
-      fun s : S =>
-      @pl_comm M M_isSetoid M_isMonoid M_requiresCommutativeMonoid (f1 s) (f2 s)
-    }
-  .
-
   Global Instance arrow_isGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : @isGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) :=
     { ne :=
       fun f1 : S -> G =>
@@ -171,7 +181,11 @@ Module BasicGroupTheory.
   .
 
   Global Instance arrow_isAbelianGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid} (G_requiresAbelianGroup : @isAbelianGroup G G_isSetoid G_isMonoid G_isGroup) : @isAbelianGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) (arrow_isGroup G_isGroup) :=
-    { AbelianGroup_requiresCommutative := @arrow_isCommutativeMonoid S G G_isSetoid G_isMonoid (@AbelianGroup_requiresCommutative G G_isSetoid G_isMonoid G_isGroup G_requiresAbelianGroup)
+    { AbelianGroup_requiresCommutative :=
+      fun f1 : S -> G =>
+      fun f2 : S -> G =>
+      fun s : S =>
+      @AbelianGroup_requiresCommutative G G_isSetoid G_isMonoid G_isGroup G_requiresAbelianGroup (f1 s) (f2 s)
     }
   .
 
