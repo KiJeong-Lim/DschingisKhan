@@ -133,7 +133,7 @@ Module UntypedLamdbdaCalculus.
     all: inversion H; subst...
   Qed.
 
-  Definition induction_principle_of_subtm (L : tm) :
+  Definition rect_subtm (L : tm) :
     forall XP : (forall M : tm, subtm L M -> Type),
     (XP L (subtmRefl L)) ->
     (forall P1 : tm, forall P2 : tm, forall X : subtm L P1, XP P1 X -> XP (tmApp P1 P2) (subtmAppL L P1 P2 X)) ->
@@ -149,12 +149,12 @@ Module UntypedLamdbdaCalculus.
     assert (XP_LAbs := fun M0 : tm => fun y : ivar => fun Q : tm => fun H : M0 = L => my_eq_elim M0 H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 Q, (forall H' : M1 = L, XP Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' L H')) -> XP (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') L H0)) (fun X' : subtm L Q => fun IHX' : forall H' : L = L, XP Q (eq_rect L (fun N1 : tm => subtm N1 Q) X' L H') => case_LAbs y Q X' (IHX' (eq_reflexivity L)))).
     enough (XXX : forall N : tm, forall M : tm, forall X : subtm N M, forall H : N = L, XP M (eq_rect N (fun N0 : tm => subtm N0 M) X L H)) by exact (fun M : tm => fun X : subtm L M => XXX L M X (eq_reflexivity L)).
     exact (
-      fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
+      fix rect_subtm_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
       match X as X0 in subtm N0 M0 return forall H : N0 = L, XP M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 L H) with
       | subtmRefl M0 => fun H : M0 = L => XP_Refl M0 H 
-      | subtmAppL M0 P1 P2 X' => fun H : M0 = L => XP_AppL M0 P1 P2 H X' (occurence_rect_fix M0 P1 X')
-      | subtmAppR M0 P1 P2 X' => fun H : M0 = L => XP_AppR M0 P1 P2 H X' (occurence_rect_fix M0 P2 X')
-      | subtmLAbs M0 y Q X' => fun H : M0 = L => XP_LAbs M0 y Q H X' (occurence_rect_fix M0 Q X')
+      | subtmAppL M0 P1 P2 X' => fun H : M0 = L => XP_AppL M0 P1 P2 H X' (rect_subtm_fix M0 P1 X')
+      | subtmAppR M0 P1 P2 X' => fun H : M0 = L => XP_AppR M0 P1 P2 H X' (rect_subtm_fix M0 P2 X')
+      | subtmLAbs M0 y Q X' => fun H : M0 = L => XP_LAbs M0 y Q H X' (rect_subtm_fix M0 Q X')
       end
     ).
   Defined.
