@@ -137,13 +137,9 @@ Module EqFacts.
 
   Context {A : Type}.
 
-  Definition eq_round_trip : forall x1 : A, forall x2 : A, forall H : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H) H = eq_reflexivity x2 :=
-    fun x1 : A =>
-    fun x2 : A =>
-    fun H : x1 = x2 =>
-    match H as H0 in eq _ x0 return eq_transitivity x0 x1 x0 (eq_symmetry x1 x0 H0) H0 = eq_reflexivity x0 with
-    | eq_refl => eq_reflexivity (eq_reflexivity x1)
-    end
+  Definition eq_round_trip : forall x1 : A, forall x2 : A, forall H_EQ : x1 = x2, eq_transitivity x2 x1 x2 (eq_symmetry x1 x2 H_EQ) H_EQ = eq_reflexivity x2 :=
+    fun x : A =>
+    ind_eq_l x (fun y : A => fun H : x = y => eq_transitivity y x y (eq_symmetry x y H) H = eq_reflexivity y) (eq_reflexivity (eq_reflexivity x))
   .
 
   Variable x : A.
@@ -161,26 +157,21 @@ Module EqFacts.
     ind_eq_l x (fun y : A => fun H : x = y => eq_decoder y (eq_encoder y H) = H) (eq_round_trip x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Hypothesis eq_encoder_always_returns_the_same_code : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
+  Hypothesis eq_encoder_AlwaysReturnsTheSameCode : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
 
-  Definition eq_pirrel_HoldsIfThereIsAn_eq_encoder_WhichAlwaysReturnsTheSameCode :
-    forall y : A,
-    forall H1 : x = y,
-    forall H2 : x = y,
-    H1 = H2.
-  Proof.
-    intros y H1 H2.
-    rewrite <- (eq_decoder_decodes_properly y H1).
-    rewrite <- (eq_decoder_decodes_properly y H2).
-    apply (eq_congruence (eq_decoder y)).
-    exact (eq_encoder_always_returns_the_same_code y H1 H2).
-  Defined.
+  Definition eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_code : forall y : A, forall H1 : x = y, forall H2 : x = y, H1 = H2 :=
+    fun y : A =>
+    fun H1 : x = y =>
+    fun H2 : x = y =>
+    let claim1 : eq_decoder y (eq_encoder y H1) = eq_decoder y (eq_encoder y H2) := eq_congruence (eq_decoder y) (eq_encoder y H1) (eq_encoder y H2) (eq_encoder_AlwaysReturnsTheSameCode y H1 H2) in
+    eq_ind (eq_decoder y (eq_encoder y H2)) (fun H : x = y => H1 = H) (eq_ind (eq_decoder y (eq_encoder y H1)) (fun H : x = y => H = eq_decoder y (eq_encoder y H2)) claim1 H1 (eq_decoder_decodes_properly y H1)) H2 (eq_decoder_decodes_properly y H2)
+  .
 
   End ABSTRACT_FORM.
 
   Hypothesis eq_em : forall y : A, x = y \/ x <> y.
 
-  Definition eq_encoder : forall y : A, x = y -> x = y :=
+  Let my_eq_encoder : forall y : A, x = y -> x = y :=
     fun y : A =>
     fun H_EQ : x = y =>
     match eq_em y return x = y with
@@ -189,26 +180,16 @@ Module EqFacts.
     end
   .
 
-  Definition eq_encoder_always_returns_the_same_code :
-    forall y : A,
-    forall H_EQ1 : x = y,
-    forall H_EQ2 : x = y,
-    eq_encoder y H_EQ1 = eq_encoder y H_EQ2.
-  Proof.
-    intros y H_EQ1.
-    pattern y, H_EQ1.
-    revert y H_EQ1.
-    apply ind_eq_l.
-    intros H_EQ2.
-    unfold eq_encoder.
-    set (eq_em_x := eq_em x).
-    destruct eq_em_x as [Heq | Hne].
-    - exact (eq_reflexivity Heq).
-    - contradiction (Hne H_EQ2).
-  Defined.
+  Let my_eq_encoder_x_eq_reflexivity_x_is : forall H_EQ : x = x, my_eq_encoder x (eq_reflexivity x) = my_eq_encoder x H_EQ :=
+    fun H_EQ : x = x =>
+    match eq_em x as eq_em_x return (match eq_em_x return x = x with | or_introl Heq => Heq | or_intror Hne => False_ind (x = x) (Hne (eq_reflexivity x)) end) = (match eq_em_x return x = x with | or_introl Heq => Heq | or_intror Hne => False_ind (x = x) (Hne H_EQ) end) with
+    | or_introl Heq => eq_reflexivity Heq
+    | or_intror Hne => False_ind (False_ind (x = x) (Hne (eq_reflexivity x)) = False_ind (x = x) (Hne H_EQ)) (Hne H_EQ)
+    end
+  .
 
   Definition eq_em_implies_eq_pirrel : forall y : A, forall H_EQ1 : x = y, forall H_EQ2 : x = y, H_EQ1 = H_EQ2 :=
-    eq_pirrel_HoldsIfThereIsAn_eq_encoder_WhichAlwaysReturnsTheSameCode eq_encoder eq_encoder_always_returns_the_same_code
+    eq_pirrel_holds_if_there_is_an_eq_encoder_which_always_returns_the_same_code my_eq_encoder (ind_eq_l x (fun y : A => fun H_EQ1 : x = y => forall H_EQ2 : x = y, my_eq_encoder y H_EQ1 = my_eq_encoder y H_EQ2) my_eq_encoder_x_eq_reflexivity_x_is)
   .
 
   End EQ_EM_implies_EQ_PIRREL.
