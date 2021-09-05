@@ -119,4 +119,60 @@ Module BasicGroupTheory.
     }
   .
 
+  Global Instance arrow_isMonoid {S : Type} {M : Type} `{M_isSetoid : isSetoid M} (M_requiresMonoid : @isMonoid M M_isSetoid) : @isMonoid (arrow S M) (@arrow_isSetoid S M M_isSetoid) :=
+    { pl :=
+      fun f1 : S -> M =>
+      fun f2 : S -> M =>
+      fun s : S =>
+      pl (f1 s) (f2 s)
+    ; ze :=
+      fun s : S =>
+      ze
+    ; pl_assoc :=
+      fun f1 : S -> M =>
+      fun f2 : S -> M =>
+      fun f3 : S -> M =>
+      fun s : S =>
+      @pl_assoc M M_isSetoid M_requiresMonoid (f1 s) (f2 s) (f3 s)
+    ; ze_left_id_pl :=
+      fun f1 : S -> M =>
+      fun s : S =>
+      @ze_left_id_pl M M_isSetoid M_requiresMonoid (f1 s)
+    ; ze_right_id_pl :=
+      fun f1 : S -> M =>
+      fun s : S =>
+      @ze_right_id_pl M M_isSetoid M_requiresMonoid (f1 s)
+    }
+  .
+
+  Global Instance arrow_isCommutativeMonoid {S : Type} {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} (M_requiresCommutativeMonoid : @isCommutativeMonoid M M_isSetoid M_isMonoid) : @isCommutativeMonoid (arrow S M) (arrow_isSetoid M_isSetoid) (arrow_isMonoid M_isMonoid) :=
+    { pl_comm :=
+      fun f1 : S -> M =>
+      fun f2 : S -> M =>
+      fun s : S =>
+      @pl_comm M M_isSetoid M_isMonoid M_requiresCommutativeMonoid (f1 s) (f2 s)
+    }
+  .
+
+  Global Instance arrow_isGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : @isGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) :=
+    { ne :=
+      fun f1 : S -> G =>
+      fun s : S =>
+      ne (f1 s)
+    ; ne_left_inv_pl :=
+      fun f1 : S -> G =>
+      fun s : S =>
+      @ne_left_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 s)
+    ; ne_right_inv_pl :=
+      fun f1 : S -> G =>
+      fun s : S =>
+      @ne_right_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 s)
+    }
+  .
+
+  Global Instance arrow_isAbelianGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid} (G_requiresAbelianGroup : @isAbelianGroup G G_isSetoid G_isMonoid G_isGroup) : @isAbelianGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) (arrow_isGroup G_isGroup) :=
+    { AbelianGroup_requiresCommutative := @arrow_isCommutativeMonoid S G G_isSetoid G_isMonoid (@AbelianGroup_requiresCommutative G G_isSetoid G_isMonoid G_isGroup G_requiresAbelianGroup)
+    }
+  .
+
 End BasicGroupTheory.
