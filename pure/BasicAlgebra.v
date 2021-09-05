@@ -22,7 +22,13 @@ Module BasicGroupTheory.
     }
   .
 
-  Class isGroup (G : Type) `{G_isMonoid : isMonoid G} : Type :=
+  Section BasicTheoriesOnMonoid.
+
+  Context (M : Type) `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid}.
+
+  End BasicTheoriesOnMonoid.
+
+  Class isGroup (G : Type) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} : Type :=
     { ne : G -> G
     ; ne_left_inv_pl :
       forall g1 : G,
@@ -32,5 +38,11 @@ Module BasicGroupTheory.
       pl g1 (ne g1) == ze
     }
   .
+
+  Section BasicTheoriesOnGroup.
+
+  Context (G : Type) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid}.
+
+  End BasicTheoriesOnGroup.
 
 End BasicGroupTheory.

@@ -56,6 +56,18 @@ Module BasicSetoidTheory.
     transitivity proved by Setoid_trans
   as Setoid_rel.
 
+  Global Instance bool_isSetoid : isSetoid bool :=
+    { eqProp := @eq bool
+    ; Setoid_requiresEquivalence := @eq_equivalence bool
+    }
+  .
+
+  Global Instance nat_isSetoid : isSetoid nat :=
+    { eqProp := @eq nat
+    ; Setoid_requiresEquivalence := @eq_equivalence nat
+    }
+  .
+
   Global Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp := iff
     ; Setoid_requiresEquivalence := iff_equivalence
@@ -500,6 +512,24 @@ Module BasicPosetTheory.
   Proof.
     exact (MonotonicMap_preservesSetoid f f_monotonic).
   Defined.
+
+  Definition le_PreOrder : @PreOrder nat le :=
+    {| PreOrder_Reflexive := @le_reflexivity; PreOrder_Transitive := @le_transitivity |}
+  .
+
+  Definition le_PartialOrder : @PartialOrder nat (@eq nat) (@eq_equivalence nat) le le_PreOrder :=
+    fun n1 : nat =>
+    fun n2 : nat =>
+    conj (eq_ind n1 (relation_conjunction le (flip le) n1) (conj (@le_reflexivity n1) (@le_reflexivity n1)) n2) (fun H : relation_conjunction le (flip le) n1 n2 => @le_asymmetry n1 n2 (proj1 H) (proj2 H))
+  .
+
+  Global Instance nat_isPoset : isPoset nat :=
+    { leProp := le
+    ; Poset_requiresSetoid := nat_isSetoid
+    ; Poset_requiresPreOrder := le_PreOrder
+    ; Poset_requiresPartialOrder := le_PartialOrder
+    }
+  .
 
   Global Instance impl_PreOrder :
     PreOrder impl.
