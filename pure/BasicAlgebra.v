@@ -51,13 +51,13 @@ Module BasicGroupTheory.
   Definition isLeftInverseOf {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
     fun inv_x : M =>
     fun x : M =>
-    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid inv_x x) ze
+    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid inv_x x) (@ze M M_isSetoid M_isMonoid)
   .
 
   Definition isRightInverseOf {M : Type} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
     fun inv_x : M =>
     fun x : M =>
-    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid x inv_x) ze
+    @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid x inv_x) (@ze M M_isSetoid M_isMonoid)
   .
 
   Class isGroup (G : Type) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} : Type :=
@@ -142,50 +142,50 @@ Module BasicGroupTheory.
     { pl :=
       fun f1 : S -> M =>
       fun f2 : S -> M =>
-      fun s : S =>
-      pl (f1 s) (f2 s)
+      fun x : S =>
+      pl (f1 x) (f2 x)
     ; ze :=
-      fun s : S =>
+      fun x : S =>
       ze
     ; pl_assoc :=
       fun f1 : S -> M =>
       fun f2 : S -> M =>
       fun f3 : S -> M =>
-      fun s : S =>
-      @pl_assoc M M_isSetoid M_requiresMonoid (f1 s) (f2 s) (f3 s)
+      fun x : S =>
+      @pl_assoc M M_isSetoid M_requiresMonoid (f1 x) (f2 x) (f3 x)
     ; ze_left_id_pl :=
       fun f1 : S -> M =>
-      fun s : S =>
-      @ze_left_id_pl M M_isSetoid M_requiresMonoid (f1 s)
+      fun x : S =>
+      @ze_left_id_pl M M_isSetoid M_requiresMonoid (f1 x)
     ; ze_right_id_pl :=
       fun f1 : S -> M =>
-      fun s : S =>
-      @ze_right_id_pl M M_isSetoid M_requiresMonoid (f1 s)
+      fun x : S =>
+      @ze_right_id_pl M M_isSetoid M_requiresMonoid (f1 x)
     }
   .
 
-  Global Instance arrow_isGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : @isGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) :=
+  Global Instance arrow_isGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : @isGroup (arrow S G) (@arrow_isSetoid S G G_isSetoid) (@arrow_isMonoid S G G_isSetoid G_isMonoid) :=
     { ne :=
       fun f1 : S -> G =>
-      fun s : S =>
-      ne (f1 s)
+      fun x : S =>
+      ne (f1 x)
     ; ne_left_inv_pl :=
       fun f1 : S -> G =>
-      fun s : S =>
-      @ne_left_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 s)
+      fun x : S =>
+      @ne_left_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 x)
     ; ne_right_inv_pl :=
       fun f1 : S -> G =>
-      fun s : S =>
-      @ne_right_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 s)
+      fun x : S =>
+      @ne_right_inv_pl G G_isSetoid G_isMonoid G_requiresGroup (f1 x)
     }
   .
 
-  Global Instance arrow_isAbelianGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid} (G_requiresAbelianGroup : @isAbelianGroup G G_isSetoid G_isMonoid G_isGroup) : @isAbelianGroup (arrow S G) (arrow_isSetoid G_isSetoid) (arrow_isMonoid G_isMonoid) (arrow_isGroup G_isGroup) :=
+  Global Instance arrow_isAbelianGroup {S : Type} {G : Type} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} `{G_isGroup : @isGroup G G_isSetoid G_isMonoid} (G_requiresAbelianGroup : @isAbelianGroup G G_isSetoid G_isMonoid G_isGroup) : @isAbelianGroup (arrow S G) (@arrow_isSetoid S G G_isSetoid) (@arrow_isMonoid S G G_isSetoid G_isMonoid) (@arrow_isGroup S G G_isSetoid G_isMonoid G_isGroup) :=
     { AbelianGroup_requiresCommutative :=
       fun f1 : S -> G =>
       fun f2 : S -> G =>
-      fun s : S =>
-      @AbelianGroup_requiresCommutative G G_isSetoid G_isMonoid G_isGroup G_requiresAbelianGroup (f1 s) (f2 s)
+      fun x : S =>
+      @AbelianGroup_requiresCommutative G G_isSetoid G_isMonoid G_isGroup G_requiresAbelianGroup (f1 x) (f2 x)
     }
   .
 
