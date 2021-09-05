@@ -13,7 +13,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module UntypedLamdbdaCalculus.
 
-  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology.
+  Import ListNotations EqFacts MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology.
 
   Definition ivar : Set :=
     nat
@@ -141,29 +141,22 @@ Module UntypedLamdbdaCalculus.
     (forall y : ivar, forall Q : tm, forall X : subtm L Q, XP Q X -> XP (tmLam y Q) (subtmLAbs L y Q X)) ->
     (forall M : tm, forall X : subtm L M, XP M X).
   Proof.
+    assert (my_eq_elim := fun L0 : tm => fun H : L0 = L => fun phi : forall L1 : tm, L1 = L -> Type => fun phi_pf : phi L (eq_reflexivity L) => @rect_eq_r tm L phi phi_pf L0 H).
     intros XP case_Refl case_AppL case_AppR case_LAbs.
-    assert ( XXX :
-      forall N : tm,
-      forall M : tm,
-      forall X : subtm N M,
-      forall H : N = L,
-      XP M (eq_rect N (fun N0 : tm => subtm N0 M) X L H)
+    assert (XP_Refl := fun M0 : tm => fun H : M0 = L => my_eq_elim M0 H (fun M1 : tm => fun H0 : M1 = L => XP M1 (eq_rect M1 (fun N1 : tm => subtm N1 M1) (subtmRefl M1) L H0)) case_Refl).
+    assert (XP_AppL := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => my_eq_elim M0 H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P1, (forall H' : M1 = L, XP P1 (eq_rect M1 (fun N1 : tm => subtm N1 P1) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M1 P1 P2 X') L H0)) (fun X' : subtm L P1 => fun IHX' : forall H' : L = L, XP P1 (eq_rect L (fun N1 : tm => subtm N1 P1) X' L H') => case_AppL P1 P2 X' (IHX' eq_refl))).
+    assert (XP_AppR := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => my_eq_elim M0 H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P2, (forall H' : M1 = L, XP P2 (eq_rect M1 (fun N1 : tm => subtm N1 P2) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M1 P1 P2 X') L H0)) (fun X' : subtm L P2 => fun IHX' : forall H' : L = L, XP P2 (eq_rect L (fun N1 : tm => subtm N1 P2) X' L H') => case_AppR P1 P2 X' (IHX' eq_refl))).
+    assert (XP_LAbs := fun M0 : tm => fun y : ivar => fun Q : tm => fun H : M0 = L => my_eq_elim M0 H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 Q, (forall H' : M1 = L, XP Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' L H')) -> XP (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') L H0)) (fun X' : subtm L Q => fun IHX' : forall H' : L = L, XP Q (eq_rect L (fun N1 : tm => subtm N1 Q) X' L H') => case_LAbs y Q X' (IHX' eq_refl))).
+    enough (XXX : forall N : tm, forall M : tm, forall X : subtm N M, forall H : N = L, XP M (eq_rect N (fun N0 : tm => subtm N0 M) X L H)) by exact (fun M : tm => fun X : subtm L M => XXX L M X (eq_reflexivity L)).
+    exact (
+      fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
+      match X as X0 in subtm N0 M0 return forall H : N0 = L, XP M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 L H) with
+      | subtmRefl M0 => fun H : M0 = L => XP_Refl M0 H 
+      | subtmAppL M0 P1 P2 X' => fun H : M0 = L => XP_AppL M0 P1 P2 H X' (occurence_rect_fix M0 P1 X')
+      | subtmAppR M0 P1 P2 X' => fun H : M0 = L => XP_AppR M0 P1 P2 H X' (occurence_rect_fix M0 P2 X')
+      | subtmLAbs M0 y Q X' => fun H : M0 = L => XP_LAbs M0 y Q H X' (occurence_rect_fix M0 Q X')
+      end
     ).
-    { assert (XP_Refl := fun M0 : tm => fun H : M0 = L => case_eqrefl M0 L H (fun M1 : tm => fun H0 : M1 = L => XP M1 (eq_rect M1 (fun N1 : tm => subtm N1 M1) (subtmRefl M1) L H0)) case_Refl).
-      assert (XP_AppL := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eqrefl M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P1, (forall H' : M1 = L, XP P1 (eq_rect M1 (fun N1 : tm => subtm N1 P1) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppL M1 P1 P2 X') L H0)) (fun X' : subtm L P1 => fun IHX' : forall H' : L = L, XP P1 (eq_rect L (fun N1 : tm => subtm N1 P1) X' L H') => case_AppL P1 P2 X' (IHX' eq_refl))).
-      assert (XP_AppR := fun M0 : tm => fun P1 : tm => fun P2 : tm => fun H : M0 = L => case_eqrefl M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 P2, (forall H' : M1 = L, XP P2 (eq_rect M1 (fun N1 : tm => subtm N1 P2) X' L H')) -> XP (tmApp P1 P2) (eq_rect M1 (fun N1 : tm => subtm N1 (tmApp P1 P2)) (subtmAppR M1 P1 P2 X') L H0)) (fun X' : subtm L P2 => fun IHX' : forall H' : L = L, XP P2 (eq_rect L (fun N1 : tm => subtm N1 P2) X' L H') => case_AppR P1 P2 X' (IHX' eq_refl))).
-      assert (XP_LAbs := fun M0 : tm => fun y : ivar => fun Q : tm => fun H : M0 = L => case_eqrefl M0 L H (fun M1 : tm => fun H0 : M1 = L => forall X' : subtm M1 Q, (forall H' : M1 = L, XP Q (eq_rect M1 (fun N1 : tm => subtm N1 Q) X' L H')) -> XP (tmLam y Q) (eq_rect M1 (fun N1 : tm => subtm N1 (tmLam y Q)) (subtmLAbs M1 y Q X') L H0)) (fun X' : subtm L Q => fun IHX' : forall H' : L = L, XP Q (eq_rect L (fun N1 : tm => subtm N1 Q) X' L H') => case_LAbs y Q X' (IHX' eq_refl))).
-      exact (
-        fix occurence_rect_fix (N : tm) (M : tm) (X : subtm N M) {struct X} : forall H : N = L, XP M (eq_rect N (fun N1 : tm => subtm N1 M) X L H) :=
-        match X as X0 in subtm N0 M0 return forall H : N0 = L, XP M0 (eq_rect N0 (fun N1 : tm => subtm N1 M0) X0 L H) with
-        | subtmRefl M0 => fun H : M0 = L => XP_Refl M0 H 
-        | subtmAppL M0 P1 P2 X' => fun H : M0 = L => XP_AppL M0 P1 P2 H X' (occurence_rect_fix M0 P1 X')
-        | subtmAppR M0 P1 P2 X' => fun H : M0 = L => XP_AppR M0 P1 P2 H X' (occurence_rect_fix M0 P2 X')
-        | subtmLAbs M0 y Q X' => fun H : M0 = L => XP_LAbs M0 y Q H X' (occurence_rect_fix M0 Q X')
-        end
-      ).
-    }
-    exact (fun M : tm => fun X : subtm L M => XXX L M X eq_refl).
   Defined.
 
   End SUBTERM.
