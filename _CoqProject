@@ -3,12 +3,12 @@
 pure/MyUtilities.v #
 pure/FunFacts.v #
 pure/MyStructures.v #
+pure/BasicAlgebra.v #
 pure/DomainTheory.v #
 pure/UntypedLambdaCalculus.v #
 pure/AczelSet.v #
 pure/CBA.v #
 pure/MyCoin.v #
-pure/BasicAlgebra.v #
 #
 classical/ExclusiveMiddle.v #
 classical/DomainTheory.v #

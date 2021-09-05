@@ -37,6 +37,19 @@ Module EqFacts.
     eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
   .
 
+  Context {C : Type}.
+
+  Definition eq_congruence2 : forall f : A -> B -> C, forall x1 : A, forall x2 : A, x1 = x2 -> forall y1 : B, forall y2 : B, y1 = y2 -> f x1 y1 = f x2 y2 :=
+    fun f : A -> B -> C =>
+    fun x1 : A =>
+    fun x2 : A =>
+    fun Heq1 : x1 = x2 =>
+    fun y1 : B =>
+    fun y2 : B =>
+    fun Heq2 : y1 = y2 =>
+    eq_ind y1 (fun y : B => f x1 y1 = f x2 y) (eq_ind x1 (fun x : A => f x1 y1 = f x y1) eq_refl x2 Heq1) y2 Heq2
+  .
+
   End EQ_CONSTRUCTORS.
 
   Section EQ_ELIMINATORS.

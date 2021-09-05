@@ -32,13 +32,13 @@ make
 ```
 coqc -Q . DschingisKhan pure/MyUtilities.v
 coqc -Q . DschingisKhan pure/FunFacts.v
-coqc -Q . DschingisKhan pure/MyStructures.v
+coqc -Q . DschingisKhan pure/MyStructures.
+coqc -Q . DschingisKhan pure/BasicAlgebra.v
 coqc -Q . DschingisKhan pure/DomainTheory.v
 coqc -Q . DschingisKhan pure/UntypedLambdaCalculus.v
 coqc -Q . DschingisKhan pure/AczelSet.v
 coqc -Q . DschingisKhan pure/CBA.v
 coqc -Q . DschingisKhan pure/MyCoin.v
-coqc -Q . DschingisKhan pure/BasicAlgebra.v
 coqc -Q . DschingisKhan classical/ExclusiveMiddle.v
 coqc -Q . DschingisKhan classical/DomainTheory.v
 coqc -Q . DschingisKhan projects/PropositionalLogic/Base.v
