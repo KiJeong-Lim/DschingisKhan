@@ -957,7 +957,7 @@ Module PowerSetCoLa.
     exist isMonotonicMap (PaCo (proj1_sig F)) (PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F))
   .
 
-  Theorem paco_is :
+  Theorem paco_spec :
     forall F : ensemble A >=> ensemble A,
     paco F == ParameterizedGreatestFixedpoint F.
   Proof with eauto with *.
@@ -1027,27 +1027,36 @@ Module PowerSetCoLa.
     proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
   .
 
+  Definition bisimilar : Src -> Tgt -> Prop :=
+    fun s : Src =>
+    fun t : Tgt =>
+    exists R : ensemble (Src * Tgt), isSubsetOf R (bisimF R) /\ member (s, t) R
+  .
+
+  Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
+
   Lemma bisim_spec :
     forall s : Src,
     forall t : Tgt,
-    member (s, t) bisim <-> (exists R : ensemble (Src * Tgt), R =< bisimF R /\ member (s, t) R).
+    member (s, t) bisim <-> s `isBisimilarTo` t.
   Proof with eauto with *.
+    unfold bisimilar.
     set (bisim' := proj1_sig (nu (exist isMonotonicMap bisimF bisimF_isMonotonicMap))).
     assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
     assert (claim2 : isGreatestFixedPoint bisim' bisimF).
     { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
       exact (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap)).
     }
+    assert (claim3 := proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1)).
     intros s t.
     split.
-    - intros H0.
+    - intros H_in.
       exists bisim'.
       split.
-      + apply Poset_refl1.
-        exact (proj1 claim2).
-      + exact (proj2 (claim1 (s, t)) H0).
+      + exact (Poset_refl1 bisim' (bisimF bisim') (proj1 claim2)).
+      + exact (proj2 (claim1 (s, t)) H_in).
     - intros [R [R_le_bisimF_R H_in]].
-      exact (proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1) R R_le_bisimF_R (s, t) H_in).
+      exact (claim3 R R_le_bisimF_R (s, t) H_in).
   Qed.
 
   End Bisimulation.
