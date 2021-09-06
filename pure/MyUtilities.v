@@ -17,7 +17,7 @@ Module EqFacts.
   Definition eq_symmetry : forall x1 : A, forall x2 : A, x1 = x2 -> x2 = x1 :=
     fun x1 : A =>
     fun x2 : A =>
-    eq_ind x1 (fun x : A => x = x1) eq_refl x2
+    @eq_ind A x1 (fun x : A => x = x1) (@eq_refl A x1) x2
   .
 
   Definition eq_transitivity : forall x1 : A, forall x2 : A, forall x3 : A, x1 = x2 -> x2 = x3 -> x1 = x3 :=
@@ -25,7 +25,7 @@ Module EqFacts.
     fun x2 : A =>
     fun x3 : A =>
     fun H : x1 = x2 =>
-    eq_ind x2 (fun x : A => x1 = x) H x3
+    @eq_ind A x2 (fun x : A => x1 = x) H x3
   .
 
   Context {B : Type}.
@@ -34,7 +34,7 @@ Module EqFacts.
     fun f : A -> B =>
     fun x1 : A =>
     fun x2 : A =>
-    eq_ind x1 (fun x : A => f x1 = f x) eq_refl x2
+    @eq_ind A x1 (fun x : A => f x1 = f x) (@eq_refl B (f x1)) x2
   .
 
   Context {C : Type}.
@@ -47,7 +47,7 @@ Module EqFacts.
     fun y1 : B =>
     fun y2 : B =>
     fun Heq2 : y1 = y2 =>
-    eq_ind y1 (fun y : B => f x1 y1 = f x2 y) (eq_ind x1 (fun x : A => f x1 y1 = f x y1) eq_refl x2 Heq1) y2 Heq2
+    @eq_ind B y1 (fun y : B => f x1 y1 = f x2 y) (@eq_ind A x1 (fun x : A => f x1 y1 = f x y1) (@eq_refl C (f x1 y1)) x2 Heq1) y2 Heq2
   .
 
   End EQ_CONSTRUCTORS.
@@ -56,14 +56,14 @@ Module EqFacts.
 
   Context {A : Type}.
 
-  Definition RuleJ (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y eq_refl -> phi' x y H :=
+  Definition RuleJ (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y (eq_reflexivity y) -> phi' x y H :=
     fun x : A =>
     fun y : A =>
     fun H : eq x y =>
-    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 eq_refl -> phi x y0 H0 with
+    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 (eq_reflexivity y0) -> phi x y0 H0 with
     | eq_refl =>
       fun phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type =>
-      fun phi_y : phi x x eq_refl =>
+      fun phi_y : phi x x (eq_reflexivity x) =>
       phi_y
     end phi'
   .
@@ -728,13 +728,13 @@ Module MyUtilities.
     proj1_sig (runFinSet n i)
   .
 
-  Definition evalFinSet_FZ {n : nat} :
+  Definition evalFinSet_caseFZ {n : nat} :
     @evalFinSet (S n) (FZ n) = 0.
   Proof.
     exact (eq_reflexivity 0).
   Defined.
 
-  Definition evalFinSet_FS {n : nat} :
+  Definition evalFinSet_caseFS {n : nat} :
     forall i : FinSet n,
     @evalFinSet (S n) (FS n i) = 1 + @evalFinSet n i.
   Proof.
@@ -773,6 +773,20 @@ Module MyUtilities.
       reflexivity.
   Qed.
 
+  Lemma evalFinSet_inj :
+    forall n : nat,
+    forall i1 : FinSet n,
+    forall i2 : FinSet n,
+    @evalFinSet n i1 = @evalFinSet n i2 ->
+    i1 = i2.
+  Proof.
+    intros n.
+    assert (claim1 := fun i1 : FinSet n => fun i2 : FinSet n => proj1 (evalFinSet_spec n i1 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
+    intros i1 i2 Heq.
+    rewrite <- (claim1 i1 i2 Heq).
+    exact (claim1 i2 i2 (eq_reflexivity (evalFinSet i2))).
+  Qed.
+
   Definition safe_nth {A : Type} : forall xs : list A, FinSet (length xs) -> A :=
     fix safe_nth_fix (xs : list A) {struct xs} : FinSet (length xs) -> A :=
     match xs as xs0 return FinSet (length xs0) -> A with
@@ -789,27 +803,11 @@ Module MyUtilities.
     induction xs as [| x xs IH].
     - exact FinSet_case0.
     - simpl.
-      apply FinSet_caseS.
+      apply FinSet_caseS; simpl.
       + exact (eq_reflexivity (Some x)).
-      + simpl.
-        intros i.
-        rewrite (IH i).
-        rewrite (@evalFinSet_FS (length xs) i).
-        exact (eq_reflexivity (nth_error xs (evalFinSet i))).
-  Qed.
-
-  Lemma evalFinSet_inj :
-    forall n : nat,
-    forall i1 : FinSet n,
-    forall i2 : FinSet n,
-    @evalFinSet n i1 = @evalFinSet n i2 ->
-    i1 = i2.
-  Proof.
-    intros n i1 i2 Heq.
-    apply (proj1 (evalFinSet_spec n i1 (@evalFinSet n i2) (@evalFinSet_lt n i2))) in Heq.
-    subst i1.
-    apply (proj1 (evalFinSet_spec n i2 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
-    reflexivity.
+      + intros i.
+        rewrite (@evalFinSet_caseFS (length xs) i).
+        exact (IH i).
   Qed.
 
   Definition castFinSet {m : nat} {n : nat} : FinSet m -> m = n -> FinSet n :=
@@ -819,12 +817,12 @@ Module MyUtilities.
 
   Lemma castFinSet_evalFinSet {n : nat} :
     forall m : nat,
-    forall i : FinSet n,
     forall Heq : n = m,
+    forall i : FinSet n,
     evalFinSet (castFinSet i Heq) = evalFinSet i.
   Proof.
-    intros m i Heq.
-    now destruct Heq.
+    apply (ind_eq_l n (fun m : nat => fun Heq : n = m => forall i : FinSet n, evalFinSet (castFinSet i Heq) = evalFinSet i)).
+    exact (fun i : FinSet n => eq_reflexivity (@evalFinSet n i)).
   Qed.
 
   Definition liftFinSet : forall m : nat, forall n : nat, FinSet n -> FinSet (n + m) :=
@@ -845,16 +843,15 @@ Module MyUtilities.
     intros m n i.
     apply (proj2 (evalFinSet_spec (n + m) (liftFinSet m n i) (evalFinSet i) (le_transitivity (@evalFinSet_lt n i) (le_intro_plus1 n m)))).
     induction i as [n' | n' i' IH].
-    - reflexivity.
+    - exact (eq_reflexivity (liftFinSet m (S n') (FZ n'))).
     - apply (proj1 (evalFinSet_spec (S n' + m) (liftFinSet m (S n') (FS n' i')) (evalFinSet (FS n' i')) (le_transitivity (evalFinSet_lt (FS n' i')) (le_intro_plus1 (S n') m)))).
-      apply (proj2 (evalFinSet_spec (n' + m) (liftFinSet m n' i') (evalFinSet i') (le_transitivity (evalFinSet_lt i') (le_intro_plus1 n' m)))) in IH.
-      unfold evalFinSet in *.
       simpl.
-      destruct (runFinSet (n' + m) (liftFinSet m n' i')) as [m2 Hlt2].
-      simpl in *.
-      subst m2.
-      destruct (runFinSet n' i') as [m1 Hlt1].
-      reflexivity.
+      rewrite (evalFinSet_caseFS (liftFinSet m n' i')).
+      rewrite (evalFinSet_caseFS i').
+      simpl.
+      apply (eq_congruence S).
+      apply (proj2 (evalFinSet_spec (n' + m) (liftFinSet m n' i') (evalFinSet i') (le_transitivity (evalFinSet_lt i') (le_intro_plus1 n' m)))).
+      exact IH.
   Qed.
 
   Definition incrFinSet {m : nat} : forall n : nat, FinSet m -> FinSet (n + m) :=
@@ -873,12 +870,9 @@ Module MyUtilities.
     evalFinSet (incrFinSet n i) = n + evalFinSet i.
   Proof.
     induction n as [| n IH]; intros m i; simpl.
-    - reflexivity.
+    - exact (eq_reflexivity (evalFinSet i)).
     - rewrite <- (IH m i).
-      unfold evalFinSet.
-      simpl.
-      destruct (runFinSet (n + m) (incrFinSet n i)) as [m2 Hlt2].
-      reflexivity.
+      exact (evalFinSet_caseFS (incrFinSet n i)).
   Qed.
 
   Let eqFinSet_em : forall n : nat, forall i1 : FinSet n, forall i2 : FinSet n, i1 = i2 \/ i1 <> i2 :=
