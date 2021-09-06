@@ -366,14 +366,14 @@ Module MyUtilities.
     end
   .
 
-  Definition le_lt_False : forall m : nat, forall n : nat, m <= n -> n < m -> False :=
-    fun m : nat =>
-    fix le_lt_False_fix (n : nat) (Hle : m <= n) {struct Hle} : n < m -> False :=
-    match Hle in le _ n0 return n0 < m -> False with
-    | le_n _ => not_n_lt_n m
-    | le_S _ n' Hle' =>
-      fun Hlt : S n' < m =>
-      le_lt_False_fix n' Hle' (le_transitivity (le_S (S n') (S n') (le_n (S n'))) Hlt)
+  Definition le_gt_False : forall n : nat, forall m : nat, n <= m -> n > m -> False :=
+    fun n : nat =>
+    fix le_lt_False_fix (m : nat) (Hle : n <= m) {struct Hle} : m < n -> False :=
+    match Hle in le _ m0 return m0 < n -> False with
+    | le_n _ => not_n_lt_n n
+    | le_S _ m' Hle' =>
+      fun Hlt : S m' < n =>
+      le_lt_False_fix m' Hle' (le_transitivity (le_S (S m') (S m') (le_n (S m'))) Hlt)
     end
   .
 
@@ -385,7 +385,7 @@ Module MyUtilities.
       eq_reflexivity n1
     | le_S _ m' Hle1' =>
       fun Hle2 : m' < n1 =>
-      False_ind (n1 = S m') (le_lt_False n1 m' Hle1' Hle2)
+      False_ind (n1 = S m') (le_gt_False n1 m' Hle1' Hle2)
     end
   .
 
@@ -539,10 +539,10 @@ Module MyUtilities.
       exact (eq_reflexivity (le_n n1)).
     - intros H_EQ.
       assert (Hlt : m2' < n1) by now rewrite H_EQ; constructor.
-      contradiction (le_lt_False n1 m2' H_LE2' Hlt).
+      contradiction (le_gt_False n1 m2' H_LE2' Hlt).
     - intros H_EQ.
       assert (Hlt : m1' < n1) by now rewrite H_EQ; constructor.
-      contradiction (le_lt_False n1 m1' H_LE1' Hlt).
+      contradiction (le_gt_False n1 m1' H_LE1' Hlt).
     - intros H_EQ.
       assert (Heq : m2' = m1') by exact (S_eq_S_elim m2' m1' H_EQ).
       subst m1'.
@@ -1393,11 +1393,11 @@ Module MyScratch.
     - intros Heq.
       assert (Hlt : m2' < n1) by now rewrite Heq; constructor.
       assert (Hle : n1 <= m2') by now apply leq_implies_le.
-      contradiction (le_lt_False n1 m2' Hle Hlt).
+      contradiction (le_gt_False n1 m2' Hle Hlt).
     - intros Heq.
       assert (Hlt : m1' < n1) by now rewrite Heq; constructor.
       assert (Hle : n1 <= m1') by now apply leq_implies_le.
-      contradiction (le_lt_False n1 m1' Hle Hlt).
+      contradiction (le_gt_False n1 m1' Hle Hlt).
     - intros Heq.
       assert (Heq' : m2' = m1') by exact (S_eq_S_elim m2' m1' Heq).
       destruct Heq' as [].
