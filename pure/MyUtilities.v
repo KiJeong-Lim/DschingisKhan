@@ -359,12 +359,7 @@ Module MyUtilities.
   Definition not_n_lt_n : forall n : nat, ~ n < n :=
     fix not_n_lt_n_fix (n : nat) {struct n} : S n <= n -> False :=
     match n as n0 return S n0 <= n0 -> False with
-    | O =>
-      fun Hle : S O <= O =>
-      match Hle in le _ m return m = O -> False with
-      | le_n _ => S_eq_0_elim O
-      | le_S _ m' Hle' => S_eq_0_elim m'
-      end (eq_reflexivity O)
+    | O => lt_elim_n_lt_0 O
     | S n' =>
       fun Hle : S (S n') <= S n' =>
       not_n_lt_n_fix n' (le_elim_S_n_le_m (S n') (S n') Hle)
@@ -624,14 +619,6 @@ Module MyUtilities.
     end
   .
 
-  Definition safe_nth {A : Type} : forall xs : list A, FinSet (length xs) -> A :=
-    fix safe_nth_fix (xs : list A) {struct xs} : FinSet (length xs) -> A :=
-    match xs as xs0 return FinSet (length xs0) -> A with
-    | [] => FinSet_case0
-    | x :: xs' => FinSet_caseS x (safe_nth_fix xs')
-    end
-  .
-
   Definition runFinSet : forall n : nat, FinSet n -> {m : nat | m < n} :=
     fix runFinSet_fix (n : nat) (i : FinSet n) {struct i} : sig (fun m_ : nat => S m_ <= n) :=
     match i in FinSet Sn' return sig (fun m_ : nat => S m_ <= Sn') with
@@ -741,6 +728,24 @@ Module MyUtilities.
     proj1_sig (runFinSet n i)
   .
 
+  Definition evalFinSet_FZ {n : nat} :
+    @evalFinSet (S n) (FZ n) = 0.
+  Proof.
+    exact (eq_reflexivity 0).
+  Defined.
+
+  Definition evalFinSet_FS {n : nat} :
+    forall i : FinSet n,
+    @evalFinSet (S n) (FS n i) = 1 + @evalFinSet n i.
+  Proof.
+    unfold evalFinSet.
+    induction i as [n | n i IH].
+    - exact (eq_reflexivity 1).
+    - simpl.
+      destruct (runFinSet n i) as [m Hlt].
+      exact (eq_reflexivity (2 + m)).
+  Defined.
+
   Definition evalFinSet_lt {n : nat} :
     forall i : FinSet n,
     @evalFinSet n i < n.
@@ -766,6 +771,31 @@ Module MyUtilities.
       subst i.
       rewrite (runFinSet_mkFinSet_identity m n Hlt).
       reflexivity.
+  Qed.
+
+  Definition safe_nth {A : Type} : forall xs : list A, FinSet (length xs) -> A :=
+    fix safe_nth_fix (xs : list A) {struct xs} : FinSet (length xs) -> A :=
+    match xs as xs0 return FinSet (length xs0) -> A with
+    | [] => FinSet_case0
+    | x' :: xs' => FinSet_caseS x' (safe_nth_fix xs')
+    end
+  .
+
+  Lemma safe_nth_spec {A : Type} :
+    forall xs : list A,
+    forall i : FinSet (length xs),
+    Some (safe_nth xs i) = nth_error xs (evalFinSet i).
+  Proof.
+    induction xs as [| x xs IH].
+    - exact FinSet_case0.
+    - simpl.
+      apply FinSet_caseS.
+      + exact (eq_reflexivity (Some x)).
+      + simpl.
+        intros i.
+        rewrite (IH i).
+        rewrite (@evalFinSet_FS (length xs) i).
+        exact (eq_reflexivity (nth_error xs (evalFinSet i))).
   Qed.
 
   Lemma evalFinSet_inj :
