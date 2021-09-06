@@ -469,26 +469,26 @@ Module MyUtilities.
 
   Section STRONG_INDUCTION_ON_nat.
 
-  Context {P : nat -> Prop}.
+  Variable P : nat -> Prop.
 
-  Let case0 : forall m : nat, forall H : m < O, P m :=
-    fun m : nat =>
-    lt_elim_n_lt_0 m
-  .
-
-  Hypothesis ACC : forall n : nat, (forall m : nat, m < n -> P m) -> P n.
-
-  Let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> forall m : nat, m < S n -> P m :=
+  Let case0 : forall n : nat, forall H : n < O, P n :=
     fun n : nat =>
-    fun IH : forall m : nat, m < n -> P m =>
-    fun m : nat =>
-    fun Hle : S m <= S n =>
-    ACC m (fun i : nat => fun Hlt : i < m => IH i (le_transitivity Hlt (le_elim_S_n_le_m m (S n) Hle)))
+    @lt_elim_n_lt_0 (P n) n
   .
 
-  Definition strong_induction : forall l : nat, P l :=
-    fun l : nat =>
-    ACC l (nat_ind (fun n : nat => forall m : nat, m < n -> P m) case0 caseS l)
+  Hypothesis ACC_HYP : forall m : nat, (forall n : nat, n < m -> P n) -> P m.
+
+  Let caseS : forall m : nat, (forall n : nat, n < m -> P n) -> forall n : nat, n < S m -> P n :=
+    fun m : nat =>
+    fun IH : forall n : nat, n < m -> P n =>
+    fun n : nat =>
+    fun Hle : S n <= S m =>
+    ACC_HYP n (fun i : nat => fun Hlt : i < n => IH i (le_transitivity Hlt (le_elim_S_n_le_m n (S m) Hle)))
+  .
+
+  Definition strong_induction : forall i : nat, P i :=
+    fun i : nat =>
+    ACC_HYP i (nat_ind (fun m : nat => forall n : nat, n < m -> P n) case0 caseS i)
   .
 
   End STRONG_INDUCTION_ON_nat.

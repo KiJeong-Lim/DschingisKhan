@@ -838,7 +838,7 @@ Module PowerSetCoLa.
   Qed.
 
   Lemma PaCo_init :
-    proj1_sig (nu (exist _ F F_mon)) == PaCo bot.
+    proj1_sig (nu (exist isMonotonicMap F F_mon)) == PaCo bot.
   Proof with eauto with *.
     assert (claim1 := PaCo_fold bot).
     assert (claim2 := PaCo_unfold bot).
@@ -982,6 +982,75 @@ Module PowerSetCoLa.
   Qed.
 
   End PACO.
+
+  Class LabelledTransition (State : Type) (Label : Type) : Type :=
+    { state_trans : State -> Label -> State -> Prop
+    }
+  .
+
+  Global Notation " st1 '~~[' label ']~>' st2 " := (state_trans st1 label st2) (at level 70, no associativity) : type_scope.
+
+  Section Bisimulation.
+
+  Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
+
+  Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
+  | PreservesBiSimilarity :
+    forall s1 : Src,
+    forall t1 : Tgt,
+    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s1, t1) R) ->
+    (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s1, t1) R) ->
+    member (s1, t1) (bisimF R)
+  .
+
+  Lemma bisimF_isMonotonicMap :
+    isMonotonicMap bisimF.
+  Proof.
+    intros R1 R2 H_incl [s1 t1] H_in1.
+    inversion H_in1; subst.
+    constructor.
+    - intros e s2 H_trans1.
+      destruct (H1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
+      exists t2.
+      split.
+      + exact H_trans2.
+      + exact (H_incl (s1, t1) H_in2).
+    - intros e t2 H_trans1.
+      destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
+      exists s2.
+      split.
+      + exact H_trans2.
+      + exact (H_incl (s1, t1) H_in2).
+  Qed.
+
+  Definition bisim : ensemble (Src * Tgt) :=
+    proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
+  .
+
+  Lemma bisim_spec :
+    forall s : Src,
+    forall t : Tgt,
+    member (s, t) bisim <-> (exists R : ensemble (Src * Tgt), R =< bisimF R /\ member (s, t) R).
+  Proof with eauto with *.
+    set (bisim' := proj1_sig (nu (exist isMonotonicMap bisimF bisimF_isMonotonicMap))).
+    assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
+    assert (claim2 : isGreatestFixedPoint bisim' bisimF).
+    { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
+      exact (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap)).
+    }
+    intros s t.
+    split.
+    - intros H0.
+      exists bisim'.
+      split.
+      + apply Poset_refl1.
+        exact (proj1 claim2).
+      + exact (proj2 (claim1 (s, t)) H0).
+    - intros [R [R_le_bisimF_R H_in]].
+      exact (proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1) R R_le_bisimF_R (s, t) H_in).
+  Qed.
+
+  End Bisimulation.
 
 End PowerSetCoLa.
 
