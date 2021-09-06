@@ -739,10 +739,9 @@ Module MyUtilities.
     @evalFinSet (S n) (FS n i) = 1 + @evalFinSet n i.
   Proof.
     unfold evalFinSet.
-    induction i as [n | n i IH].
+    induction i as [n | n i IH]; simpl.
     - exact (eq_reflexivity 1).
-    - simpl.
-      destruct (runFinSet n i) as [m Hlt].
+    - destruct (runFinSet n i) as [m Hlt].
       exact (eq_reflexivity (2 + m)).
   Defined.
 
@@ -773,14 +772,12 @@ Module MyUtilities.
       reflexivity.
   Qed.
 
-  Lemma evalFinSet_inj :
-    forall n : nat,
+  Lemma evalFinSet_inj {n : nat} :
     forall i1 : FinSet n,
     forall i2 : FinSet n,
     @evalFinSet n i1 = @evalFinSet n i2 ->
     i1 = i2.
   Proof.
-    intros n.
     assert (claim1 := fun i1 : FinSet n => fun i2 : FinSet n => proj1 (evalFinSet_spec n i1 (@evalFinSet n i2) (@evalFinSet_lt n i2))).
     intros i1 i2 Heq.
     rewrite <- (claim1 i1 i2 Heq).
@@ -815,7 +812,7 @@ Module MyUtilities.
     eq_rec m FinSet i n
   .
 
-  Lemma castFinSet_evalFinSet {n : nat} :
+  Lemma castFinSet_spec {n : nat} :
     forall m : nat,
     forall Heq : n = m,
     forall i : FinSet n,
@@ -834,7 +831,7 @@ Module MyUtilities.
     end
   .
 
-  Lemma liftFinSet_evalFinSet :
+  Lemma liftFinSet_spec :
     forall m : nat,
     forall n : nat,
     forall i : FinSet n,
@@ -850,8 +847,7 @@ Module MyUtilities.
       rewrite (evalFinSet_caseFS i').
       simpl.
       apply (eq_congruence S).
-      apply (proj2 (evalFinSet_spec (n' + m) (liftFinSet m n' i') (evalFinSet i') (le_transitivity (evalFinSet_lt i') (le_intro_plus1 n' m)))).
-      exact IH.
+      exact (proj2 (evalFinSet_spec (n' + m) (liftFinSet m n' i') (evalFinSet i') (le_transitivity (evalFinSet_lt i') (le_intro_plus1 n' m))) IH).
   Qed.
 
   Definition incrFinSet {m : nat} : forall n : nat, FinSet m -> FinSet (n + m) :=
@@ -863,7 +859,7 @@ Module MyUtilities.
     end
   .
 
-  Lemma incrFinSet_evalFinSet :
+  Lemma incrFinSet_spec :
     forall n : nat,
     forall m : nat,
     forall i : FinSet m,
@@ -915,7 +911,7 @@ Module MyUtilities.
   Proof with try (lia || now (firstorder; eauto)).
     intros a b q r H H0.
     assert (H1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
-    assert (H2 : 0 <= a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
+    assert (H2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
     assert (claim1 : ~ q > a / b).
     { intros H3.
       destruct (proj1 (greater_than_iff q (a / b)) H3) as [z H4].
