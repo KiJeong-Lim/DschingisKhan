@@ -509,15 +509,10 @@ Module MyUtilities.
     end
   .
 
-  Theorem eqnat_proof_irrelevance :
-    forall n1 : nat,
-    forall n2 : nat,
-    forall H_EQ1 : n1 = n2,
-    forall H_EQ2 : n1 = n2,
-    H_EQ1 = H_EQ2.
-  Proof.
-    exact (fun n : nat => eq_em_implies_eq_pirrel n (eqnat_em n)).
-  Qed.
+  Definition eqnat_proof_irrelevance : forall n1 : nat, forall n2 : nat, forall H_EQ1 : n1 = n2, forall H_EQ2 : n1 = n2, H_EQ1 = H_EQ2 :=
+    fun n : nat =>
+    eq_em_implies_eq_pirrel n (eqnat_em n)
+  .
 
   Theorem lenat_proof_irrelevance :
     forall n1 : nat,
@@ -546,7 +541,7 @@ Module MyUtilities.
     ).
     - intros H_EQ.
       rewrite (eqnat_proof_irrelevance n1 n1 H_EQ (eq_reflexivity n1)).
-      reflexivity.
+      exact (eq_reflexivity (le_n n1)).
     - intros H_EQ.
       assert (Hlt : m2' < n1) by now rewrite H_EQ; constructor.
       contradiction (le_lt_False n1 m2' H_LE2' Hlt).
@@ -555,7 +550,7 @@ Module MyUtilities.
       contradiction (le_lt_False n1 m1' H_LE1' Hlt).
     - intros H_EQ.
       assert (Heq : m2' = m1') by exact (S_eq_S_elim m2' m1' H_EQ).
-      destruct Heq as [].
+      subst m1'.
       rewrite (eqnat_proof_irrelevance (S m2') (S m2') H_EQ (eq_reflexivity (S m2'))).
       apply (eq_congruence (le_S n1 m2')).
       exact (lenat_proof_irrelevance_fix m2' H_LE1' H_LE2').
@@ -563,7 +558,7 @@ Module MyUtilities.
 
   End ARITHMETIC_PIRREL.
 
-  Section MyFin.
+  Section MyFinSet.
 
   Inductive FinSet : nat -> Set :=
   | FZ : forall n : nat, FinSet (S n) 
@@ -789,7 +784,7 @@ Module MyUtilities.
 
   Definition castFinSet {m : nat} {n : nat} : FinSet m -> m = n -> FinSet n :=
     fun i : FinSet m =>
-    eq_rect m FinSet i n
+    eq_rec m FinSet i n
   .
 
   Lemma castFinSet_evalFinSet {n : nat} :
@@ -866,17 +861,12 @@ Module MyUtilities.
     end
   .
 
-  Theorem eqFinSet_proof_irrelevance {n : nat} :
-    forall i1 : FinSet n,
-    forall i2 : FinSet n,
-    forall H_EQ1 : i1 = i2,
-    forall H_EQ2 : i1 = i2,
-    H_EQ1 = H_EQ2.
-  Proof.
-    exact (fun i : FinSet n => eq_em_implies_eq_pirrel i (eqFinSet_em n i)).
-  Qed.
+  Definition eqFinSet_proof_irrelevance {n : nat} : forall i1 : FinSet n, forall i2 : FinSet n, forall H_EQ1 : i1 = i2, forall H_EQ2 : i1 = i2, H_EQ1 = H_EQ2 :=
+    fun i : FinSet n =>
+    eq_em_implies_eq_pirrel i (eqFinSet_em n i)
+  .
 
-  End MyFin.
+  End MyFinSet.
 
   Lemma greater_than_iff :
     forall x : nat,
