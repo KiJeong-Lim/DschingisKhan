@@ -244,7 +244,8 @@ Module MyUtilities.
   .
 
   Let le_transitivity_aux1 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
-    fix le_transitivity_aux1_fix (n1 : nat) (n2 : nat) (Hle1 : le n1 n2) {struct Hle1} : forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
+    fun n1 : nat =>
+    fix le_transitivity_aux1_fix (n2 : nat) (Hle1 : le n1 n2) {struct Hle1} : forall n3 : nat, n2 <= n3 -> n1 <= n3 :=
     match Hle1 in le _ m return forall n3 : nat, m <= n3 -> n1 <= n3 with
     | le_n _ =>
       fun n3 : nat =>
@@ -257,7 +258,7 @@ Module MyUtilities.
       let claim2 : S (pred n3) = n3 := guarantee1_S_pred_n_eq_n Hle2 in
       let claim3 : n2' <= S (pred n3) := le_S n2' (pred n3) claim1 in
       let claim4 : n2' <= n3 := eq_ind (S (pred n3)) (fun m : nat => n2' <= m) claim3 n3 claim2 in
-      le_transitivity_aux1_fix n1 n2' Hle1' n3 claim4
+      le_transitivity_aux1_fix n2' Hle1' n3 claim4
     end
   .
 
@@ -368,12 +369,12 @@ Module MyUtilities.
 
   Definition le_gt_False : forall n : nat, forall m : nat, n <= m -> n > m -> False :=
     fun n : nat =>
-    fix le_lt_False_fix (m : nat) (Hle : n <= m) {struct Hle} : m < n -> False :=
+    fix le_gt_False_fix (m : nat) (Hle : n <= m) {struct Hle} : m < n -> False :=
     match Hle in le _ m0 return m0 < n -> False with
     | le_n _ => not_n_lt_n n
     | le_S _ m' Hle' =>
       fun Hlt : S m' < n =>
-      le_lt_False_fix m' Hle' (le_transitivity (le_S (S m') (S m') (le_n (S m'))) Hlt)
+      le_gt_False_fix m' Hle' (le_transitivity (le_S (S m') (S m') (le_n (S m'))) Hlt)
     end
   .
 
@@ -456,13 +457,10 @@ Module MyUtilities.
       match n_le_m_or_m_lt_n_holds_for_any_n_and_any_m_fix n' m return {S n' <= m} + {m < S n'} with
       | left Hle =>
         match eq_dec_nat n' m return {S n' <= m} + {m < S n'} with
-        | left Heq =>
-          right (eq_ind m (fun x : nat => le (S m) (S x)) (le_n (S m)) n' (eq_symmetry n' m Heq))
-        | right Hne =>
-          left (n_le_m_and_n_ne_m_implies_n_lt_m n' m Hle Hne)
+        | left Heq => right (eq_ind m (fun x : nat => le (S m) (S x)) (le_n (S m)) n' (eq_symmetry n' m Heq))
+        | right Hne => left (n_le_m_and_n_ne_m_implies_n_lt_m n' m Hle Hne)
         end
-      | right Hlt =>
-        right (le_S (S m) n' Hlt)
+      | right Hlt => right (le_S (S m) n' Hlt)
       end
     end
   .
@@ -471,19 +469,21 @@ Module MyUtilities.
 
   Section STRONG_INDUCTION_ON_nat.
 
-  Context {P : nat -> Prop} (ACC : forall n : nat, (forall m : nat, m < n -> P m) -> P n).
+  Context {P : nat -> Prop}.
 
   Let case0 : forall m : nat, forall H : m < O, P m :=
     fun m : nat =>
-    fun Hlt : m < O => lt_elim_n_lt_0 m Hlt
+    lt_elim_n_lt_0 m
   .
+
+  Hypothesis ACC : forall n : nat, (forall m : nat, m < n -> P m) -> P n.
 
   Let caseS : forall n : nat, (forall m : nat, m < n -> P m) -> forall m : nat, m < S n -> P m :=
     fun n : nat =>
     fun IH : forall m : nat, m < n -> P m =>
     fun m : nat =>
-    fun Hlt : m < S n =>
-    le_inversion (fun n1 : nat => fun n2 : nat => P (pred n1)) (S m) (S n) Hlt (fun Heq : S m = S n => ACC n IH) (fun m' : nat => fun H' : S m <= m' => fun Heq : S m' = S n => IH m (eq_ind m' (le (S m)) H' n (S_eq_S_elim m' n Heq)))
+    fun Hle : S m <= S n =>
+    ACC m (fun i : nat => fun Hlt : i < m => IH i (le_transitivity Hlt (le_elim_S_n_le_m m (S n) Hle)))
   .
 
   Definition strong_induction : forall l : nat, P l :=
