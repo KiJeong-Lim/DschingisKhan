@@ -1009,7 +1009,7 @@ Module PowerSetCoLa.
 
   Section SIMULATION.
 
-  (** [Note: a category theoretical approach to the definition of simulation]
+  (** [A category theoretical approach to the definition of simulation]
     * ```coq
     * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
