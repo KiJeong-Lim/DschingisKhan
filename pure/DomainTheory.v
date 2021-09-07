@@ -1010,6 +1010,7 @@ Module PowerSetCoLa.
   Section SIMULATION.
 
   (** [A category theoretical approach to the definition of simulation]
+    * #1
     * ```coq
     * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
@@ -1028,12 +1029,12 @@ Module PowerSetCoLa.
     *     $fmap (f : A -> B) : F A -> F B := map_trans f$ for each $A : Type$ and $B : Type$.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$ and vice versa.
     * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
-    *
+    * #2
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
-    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if 
-    *   $$fmap f . Src_trans = Tgt_trans . f$$
-    * holds, i.e., $f$ is a coalgebra homomorphism.
-    * But $fmap f . Src_trans = Tgt_trans . f$ holds if and only if:
+    * We said a map $s : Src -> Tgt$ is a simulation of Src in Tgt if 
+    *   $$fmap s . Src_trans = Tgt_trans . s$$
+    * holds, i.e., $s$ is a coalgebra homomorphism.
+    * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
     * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ for all $s_1 : Src$ and; (1)
     * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ for all $s_1 : Src$ hold. (2)
     * Note that:
