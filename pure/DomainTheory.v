@@ -989,10 +989,9 @@ Module PowerSetCoLa.
     * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
-    * Notation " x '∈' X " := (member x X) (at level 70, no associativity) : type_scope.
     * Variable Eff : Type.
     * Variant my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
-    * | in_my_map (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ my_map f X
+    * | in_my_map (a : A) (e : Eff) : member (a, e) X -> member (f a, e) (my_map f X)
     * .
     * End CategoryTheoreticApproach.
     * ```
@@ -1001,9 +1000,9 @@ Module PowerSetCoLa.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
     * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
-    * we will write $st1 ~~[ e ]~> st2$ whenever $(st1, e) ∈ State_trans st2$ holds.
+    * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
-    * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
+    * Assume that $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of the endofunctor $F$.
     * We say a map $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $sim$ is a coalgebra homomorphism,
     * i.e., $fmap sim ∘ Src_trans = Tgt_trans ∘ sim$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
