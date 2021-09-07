@@ -1006,7 +1006,7 @@ Module PowerSetCoLa.
     * we will write $st1 ~~[ e ]~> st2$ if $member (st1, e) (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
-    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s ∘ Src_trans = Tgt_trans ∘ s$ holds.
+    * We say a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s ∘ Src_trans = Tgt_trans ∘ s$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
     * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
