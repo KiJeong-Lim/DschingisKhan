@@ -1033,8 +1033,8 @@ Module PowerSetCoLa.
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
     * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, that is, $fmap s . Src_trans = Tgt_trans . s$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
-    * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ for all $s_1 : Src$ and; (1)
-    * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ for all $s_1 : Src$ hold. (2)
+    * (1) $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ holds for every $s_1 : Src$ and;
+    * (2) $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ holds for every $s_1 : Src$.
     * Noting that:
     * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
     * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$,
