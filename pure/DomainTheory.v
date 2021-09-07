@@ -992,7 +992,7 @@ Module PowerSetCoLa.
     * Notation " x '∈' X " := (member x X) (at level 70, no associativity) : type_scope.
     * Variable Eff : Type.
     * Variant mymap {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
-    * | in_mymap (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ (map_trans f X)
+    * | in_mymap (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ (mymap f X)
     * .
     * End CategoryTheoreticApproach.
     * ```
