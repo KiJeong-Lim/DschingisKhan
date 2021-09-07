@@ -983,7 +983,7 @@ Module PowerSetCoLa.
 
   End PACO.
 
-  (** "A category theoretical approach to the definition of simulation"
+  (** "A category-theoretical approach to the definition of simulation"
     * [#1]
     * ```coq
     * Section CategoryTheoreticApproach.
@@ -1007,13 +1007,13 @@ Module PowerSetCoLa.
     * We say a map $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $sim$ is a coalgebra homomorphism,
     * i.e., $fmap sim ∘ Src_trans = Tgt_trans ∘ sim$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
-    * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
+    * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$; and
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
     * Therefore, we can conclude a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
     * (2') $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$,
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
-    *)
+  ***)
 
   Class LabelledTransition (State : Type) (Label : Type) : Type :=
     { state_trans : State -> ensemble (State * Label)
@@ -1062,7 +1062,7 @@ Module PowerSetCoLa.
     *   forall t2 : Tgt,
     *   t1 ~~[ e ]~> t2 ->
     *   exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R.
-    *)
+  ***)
 
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
   | PreservesBisimilarity (s1 : Src) (t1 : Tgt) (bisimF_comm1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) (bisimF_comm2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (bisimF R)
