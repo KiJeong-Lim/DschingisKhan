@@ -1048,11 +1048,11 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Lemma bisimilar_diagram :
+  Lemma the_diagram_of_bisimilarity :
     forall s1 : Src,
     forall t1 : Tgt,
     s1 `isBisimilarTo` t1 ->
-    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2) /\ (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2).
+    ((forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2) /\ (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2)).
   Proof.
     intros s1 t1 [R [R_le_bisimF_R H_in1]].
     split.
@@ -1070,10 +1070,28 @@ Module PowerSetCoLa.
       now firstorder. 
   Qed.
 
-  Theorem the_main_reasoning_for_introducing_bisimilarity :
+  Let bisimilar_cond1 : Src -> Tgt -> Prop :=
+    fun s1 : Src =>
+    fun t1 : Tgt =>
+    forall es : list Eff,
+    forall s2 : Src,
+    s1 ~~~[ es ]~>* s2 ->
+    exists t2 : Tgt, t1 ~~~[ es ]~>* t2 /\ s2 `isBisimilarTo` t2
+  .
+
+  Let bisimilar_cond2 : Src -> Tgt -> Prop :=
+    fun s1 : Src =>
+    fun t1 : Tgt =>
+    forall es : list Eff,
+    forall t2 : Tgt,
+    t1 ~~~[ es ]~>* t2 ->
+    exists s2 : Src, s1 ~~~[ es ]~>* s2 /\ s2 `isBisimilarTo` t2
+  .
+
+  Lemma bisimilar_iff :
     forall s1 : Src,
     forall t1 : Tgt,
-    s1 `isBisimilarTo` t1 <-> ((forall es : list Eff, forall s2 : Src, s1 ~~~[ es ]~>* s2 -> exists t2 : Tgt, t1 ~~~[ es ]~>* t2 /\ s2 `isBisimilarTo` t2) /\ (forall es : list Eff, forall t2 : Tgt, t1 ~~~[ es ]~>* t2 -> exists s2 : Src, s1 ~~~[ es ]~>* s2 /\ s2 `isBisimilarTo` t2)).
+    s1 `isBisimilarTo` t1 <-> bisimilar_cond1 s1 t1 /\ bisimilar_cond2 s1 t1.
   Proof with eauto.
     intros s1 t1.
     split.
@@ -1083,14 +1101,14 @@ Module PowerSetCoLa.
         induction s1_es_s2 as [| s2 s3 e es s2_e_s3 s1_es_s2 IH].
         - exists t1...
         - destruct IH as [t2 [t1_es_t2 s2_bisimilar_t2]].
-          destruct (proj1 (bisimilar_diagram s2 t2 s2_bisimilar_t2) e s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
+          destruct (proj1 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2) e s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
           exists t3...
       }
       { intros es t2 t1_es_t2.
         induction t1_es_t2 as [| t2 t3 e es t2_e_t3 t1_es_t2 IH].
         - exists s1...
         - destruct IH as [s2 [s1_es_s2 s2_bisimilar_t2]].
-          destruct (proj2 (bisimilar_diagram s2 t2 s2_bisimilar_t2) e t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
+          destruct (proj2 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2) e t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
           exists s3...
       }
     - intros [H_loop1 H_loop2].
@@ -1107,13 +1125,14 @@ Module PowerSetCoLa.
     forall t : Tgt,
     member (s, t) bisim <-> s `isBisimilarTo` t.
   Proof with eauto with *.
-    set (bisim' := proj1_sig (nu (exist isMonotonicMap bisimF bisimF_isMonotonicMap))).
+    set (b := exist isMonotonicMap bisimF bisimF_isMonotonicMap).
+    set (bisim' := proj1_sig (nu b)).
     assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
     assert (claim2 : isGreatestFixedPoint bisim' bisimF).
     { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
       exact (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap)).
     }
-    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisim) by exact (proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1)).
+    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisim) by exact (proj1 (nu_isSupremum b bisim) (Poset_refl1 bisim' bisim claim1)).
     intros s t.
     split.
     - intros H_in.
