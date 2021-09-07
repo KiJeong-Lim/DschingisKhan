@@ -1010,8 +1010,8 @@ Module PowerSetCoLa.
     * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$, and
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
     * Therefore, we can conclude a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if:
-    * (1') $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$, and
-    * (2') $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$;
+    * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
+    * (2') $t ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f s_1$;
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
   ***)
 
