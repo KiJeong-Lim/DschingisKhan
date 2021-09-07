@@ -1010,8 +1010,37 @@ Module PowerSetCoLa.
     * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ holds for every $s_2 : Src$.
     * Therefore, we can conclude a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
-    * (2') $t ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f s_1$;
+    * (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
+    * [#3]
+    * If $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$
+    * then the left-lower path implies upper-right path on each following squares:
+    * ===================== * ===================== *
+    * The square for (1')   * The square for (2')   *
+    * ===================== * ===================== *
+    *  s_1 ---- R ---> t_1  *  t_1 --- R^t --> s_1  *
+    *   |               |   *   |               |   *
+    *   |               |   *   |               |   *
+    * F_S e           F_T e * F_T e           F_S e *
+    *   |               |   *   |               |   *
+    *  \|/             \|/  *  \|/             \|/  *
+    *  s_2 ---- R ---> t_2  *  t_2 --- R^t --> s_2  *
+    * ===================== * ===================== *
+    * where { R : Src -> Tgt -> Prop :=
+    *         fun s : Src =>
+    *         fun t : Tgt =>
+    *         sim s = t
+    *       ; F_S : Eff -> Src -> Src -> Prop :=
+    *         fun e : Eff =>
+    *         fun s_1 : Src =>
+    *         fun s_2 : Src =>
+    *         s_1 ~~[ e ]~> s_2
+    *       ; F_T : Eff -> Tgt -> Tgt -> Prop :=
+    *         fun e : Eff =>
+    *         fun t_1 : Tgt =>
+    *         fun t_2 : Tgt =>
+    *         t_1 ~~[ e ]~> t_2
+    *       }
   ***)
 
   Class LabelledTransition (State : Type) (Label : Type) : Type :=
@@ -1042,27 +1071,6 @@ Module PowerSetCoLa.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
-  (** [The diagram of "bisimF"]
-    * Lemma bisimF_dia1 :
-    *   forall R : ensemble (Src * Tgt),
-    *   forall s1 : Src,
-    *   forall t1 : Tgt,
-    *   member (s1, t1) (bisimF R) ->
-    *   forall e : Eff,
-    *   forall s2 : Src,
-    *   s1 ~~[ e ]~> s2 ->
-    *   exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R.
-    * Lemma bisimF_dia2 :
-    *   forall R : ensemble (Src * Tgt),
-    *   forall s1 : Src,
-    *   forall t1 : Tgt,
-    *   member (s1, t1) (bisimF R) ->
-    *   forall e : Eff,
-    *   forall t2 : Tgt,
-    *   t1 ~~[ e ]~> t2 ->
-    *   exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R.
-  ***)
-
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
   | PreservesBisimilarity (s1 : Src) (t1 : Tgt) (bisimF_comm1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) (bisimF_comm2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (bisimF R)
   .
@@ -1070,21 +1078,21 @@ Module PowerSetCoLa.
   Lemma bisimF_isMonotonicMap :
     isMonotonicMap bisimF.
   Proof.
-    intros R1 R2 H_incl [s1 t1] H_in1.
+    intros R1 R2 H_incl [s2 t2] H_in1.
     inversion H_in1; subst.
     constructor.
-    - intros e s2 H_trans1.
-      destruct (bisimF_comm1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
-      exists t2.
+    - intros e s3 s2_e_s3.
+      destruct (bisimF_comm1 e s3 s2_e_s3) as [t3 [t2_e_t3 H_in2]].
+      exists t3.
       split.
-      + exact H_trans2.
-      + exact (H_incl (s2, t2) H_in2).
-    - intros e t2 H_trans1.
-      destruct (bisimF_comm2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
-      exists s2.
+      + exact t2_e_t3.
+      + exact (H_incl (s3, t3) H_in2).
+    - intros e t3 t2_e_t3.
+      destruct (bisimF_comm2 e t3 t2_e_t3) as [s3 [s2_e_s3 H_in2]].
+      exists s3.
       split.
-      + exact H_trans2.
-      + exact (H_incl (s2, t2) H_in2).
+      + exact s2_e_s3.
+      + exact (H_incl (s3, t3) H_in2).
   Qed.
 
   Definition bisimilar : Src -> Tgt -> Prop :=
