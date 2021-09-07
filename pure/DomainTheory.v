@@ -989,24 +989,23 @@ Module PowerSetCoLa.
     * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
+    * Notation " x '∈' X " := (member x X) (at level 70, no associativity) : type_scope.
     * Variable Eff : Type.
-    * Variant map_trans {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
-    * | in_map_trans :
-    *   forall a : A,
-    *   forall e : Eff,
-    *   member (a, e) X ->
-    *   member (f a, e) (map_trans f X)
+    * Variant mymap {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
+    * | in_mymap (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ (map_trans f X)
     * .
     * End CategoryTheoreticApproach.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor
-    * with $fmap (f : A -> B) : F A -> F B := map_trans f$ for $A : Type$ and $B : Type$.
-    * Then, every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ and vice versa.
+    * with $fmap (f : A -> B) : F A -> F B := mymap f$ for $A : Type$ and $B : Type$.
+    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
+    * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
-    * we will write $st1 ~~[ e ]~> st2$ if $member (st1, e) (State_trans st2)$ holds.
+    * we will write $st1 ~~[ e ]~> st2$ if $(st1, e) ∈ (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
-    * We say a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s ∘ Src_trans = Tgt_trans ∘ s$ holds.
+    * We say a map $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $sim$ is a coalgebra homomorphism,
+    * i.e., $fmap sim ∘ Src_trans = Tgt_trans ∘ sim$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
     * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
