@@ -1001,7 +1001,7 @@ Module PowerSetCoLa.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
     * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
-    * we will write $st1 ~~[ e ]~> st2$ if $(st1, e) ∈ State_trans st2$ holds.
+    * we will write $st1 ~~[ e ]~> st2$ whenever $(st1, e) ∈ State_trans st2$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
     * We say a map $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $sim$ is a coalgebra homomorphism,
