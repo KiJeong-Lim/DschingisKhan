@@ -560,7 +560,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
         apply q_is_lub_of_W...
   Qed.
 
-  Lemma ConinductionPrinciple {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D) :
+  Lemma CoinductionPrinciple {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D) :
     forall x : D,
     x =< proj1_sig (nu b) <-> (exists y : D, x =< y /\ y =< proj1_sig b y).
   Proof with eauto with *.
@@ -943,7 +943,7 @@ Module PowerSetCoLa.
     - intros acc_hyp.
       apply (proj2 (PaCo_acc Y X)), acc_hyp; intros a H; [left | right]...
     - intros acc_con Z H H0.
-      enough (it_is_sufficient_to_show : X =< PaCo Z) by apply it_is_sufficient_to_show.
+      enough (it_is_sufficient_to_show : X =< PaCo Z) by exact it_is_sufficient_to_show.
       transitivity (PaCo (MyUnion Y X)).
       + apply (proj1 (PaCo_acc Y X) acc_con).
       + apply PaCo_preserves_monotonicity.
@@ -990,6 +990,23 @@ Module PowerSetCoLa.
 
   Global Notation " st1 '~~[' label ']~>' st2 " := (state_trans st1 label st2) (at level 70, no associativity) : type_scope.
 
+  Inductive state_star {State : Type} {Label : Type} `{HasLabelledTransition : LabelledTransition State Label} (st1 : State) : list Label -> State -> Prop :=
+  | star_init :
+    state_star st1 nil st1
+  | star_step :
+    forall st2 : State,
+    forall st3 : State,
+    forall label : Label,
+    forall labels : list Label,
+    state_trans st2 label st3 ->
+    state_star st1 labels st2 ->
+    state_star st1 (cons label labels) st3
+  .
+
+  Local Hint Constructors state_star : core.
+
+  Global Notation " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) (at level 70, no associativity) : type_scope.
+
   Section Bisimulation.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
@@ -998,8 +1015,8 @@ Module PowerSetCoLa.
   | PreservesBiSimilarity :
     forall s1 : Src,
     forall t1 : Tgt,
-    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s1, t1) R) ->
-    (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s1, t1) R) ->
+    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) ->
+    (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) ->
     member (s1, t1) (bisimF R)
   .
 
@@ -1014,18 +1031,14 @@ Module PowerSetCoLa.
       exists t2.
       split.
       + exact H_trans2.
-      + exact (H_incl (s1, t1) H_in2).
+      + exact (H_incl (s2, t2) H_in2).
     - intros e t2 H_trans1.
       destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
       exists s2.
       split.
       + exact H_trans2.
-      + exact (H_incl (s1, t1) H_in2).
+      + exact (H_incl (s2, t2) H_in2).
   Qed.
-
-  Definition bisim : ensemble (Src * Tgt) :=
-    proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
-  .
 
   Definition bisimilar : Src -> Tgt -> Prop :=
     fun s : Src =>
@@ -1035,19 +1048,72 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Lemma bisim_spec :
+  Lemma bisimilar_diagram :
+    forall s1 : Src,
+    forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 ->
+    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2) /\ (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2).
+  Proof.
+    intros s1 t1 [R [R_le_bisimF_R H_in1]].
+    split.
+    - intros e s2 H_trans1.
+      assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+      inversion H_in2; subst.
+      destruct (H1 e s2 H_trans1) as [t2 [H_trans2 H_in]].
+      exists t2.
+      now firstorder.
+    - intros e t2 H_trans1.
+      assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+      inversion H_in2; subst.
+      destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in]].
+      exists s2.
+      now firstorder. 
+  Qed.
+
+  Theorem the_main_reasoning_for_introducing_bisimilarity :
+    forall s1 : Src,
+    forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 <-> ((forall es : list Eff, forall s2 : Src, s1 ~~~[ es ]~>* s2 -> exists t2 : Tgt, t1 ~~~[ es ]~>* t2 /\ s2 `isBisimilarTo` t2) /\ (forall es : list Eff, forall t2 : Tgt, t1 ~~~[ es ]~>* t2 -> exists s2 : Src, s1 ~~~[ es ]~>* s2 /\ s2 `isBisimilarTo` t2)).
+  Proof with eauto.
+    intros s1 t1.
+    split.
+    - intros s1_bisimilar_t1.
+      split.
+      { intros es s2 s1_es_s2.
+        induction s1_es_s2 as [| s2 s3 e es s2_e_s3 s1_es_s2 IH].
+        - exists t1...
+        - destruct IH as [t2 [t1_es_t2 s2_bisimilar_t2]].
+          destruct (proj1 (bisimilar_diagram s2 t2 s2_bisimilar_t2) e s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
+          exists t3...
+      }
+      { intros es t2 t1_es_t2.
+        induction t1_es_t2 as [| t2 t3 e es t2_e_t3 t1_es_t2 IH].
+        - exists s1...
+        - destruct IH as [s2 [s1_es_s2 s2_bisimilar_t2]].
+          destruct (proj2 (bisimilar_diagram s2 t2 s2_bisimilar_t2) e t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
+          exists s3...
+      }
+    - intros [H_loop1 H_loop2].
+      destruct (H_loop1 nil s1 (star_init s1)) as [t [t1_es_t s1_bisimilar_t]].
+      inversion t1_es_t; subst t...
+  Qed.
+
+  Definition bisim : ensemble (Src * Tgt) :=
+    proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
+  .
+
+  Theorem bisim_spec :
     forall s : Src,
     forall t : Tgt,
     member (s, t) bisim <-> s `isBisimilarTo` t.
   Proof with eauto with *.
-    unfold bisimilar.
     set (bisim' := proj1_sig (nu (exist isMonotonicMap bisimF bisimF_isMonotonicMap))).
     assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
     assert (claim2 : isGreatestFixedPoint bisim' bisimF).
     { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
       exact (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap)).
     }
-    assert (claim3 := proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1)).
+    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisim) by exact (proj1 (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap) bisim) (Poset_refl1 bisim' bisim claim1)).
     intros s t.
     split.
     - intros H_in.
