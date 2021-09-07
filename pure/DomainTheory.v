@@ -984,40 +984,76 @@ Module PowerSetCoLa.
   End PACO.
 
   Class LabelledTransition (State : Type) (Label : Type) : Type :=
-    { state_trans : State -> Label -> State -> Prop
+    { state_trans : State -> (Label * State) -> Prop
     }
   .
 
-  Global Notation " st1 '~~[' label ']~>' st2 " := (state_trans st1 label st2) (at level 70, no associativity) : type_scope.
+  Global Notation " st1 '~~[' label ']~>' st2 " := (state_trans st1 (label, st2)) (at level 70, no associativity) : type_scope.
+
+  Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
 
   Inductive state_star {State : Type} {Label : Type} `{HasLabelledTransition : LabelledTransition State Label} (st1 : State) : list Label -> State -> Prop :=
   | star_init :
-    state_star st1 nil st1
+    st1 ~~~[ nil ]~>* st1
   | star_step :
     forall st2 : State,
     forall st3 : State,
     forall label : Label,
     forall labels : list Label,
-    state_trans st2 label st3 ->
-    state_star st1 labels st2 ->
-    state_star st1 (cons label labels) st3
-  .
+    st2 ~~[ label ]~> st3 ->
+    st1 ~~~[ labels ]~>* st2 ->
+    st1 ~~~[ cons label labels ]~>* st3
+  where " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) : type_scope.
 
   Local Hint Constructors state_star : core.
-
-  Global Notation " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) (at level 70, no associativity) : type_scope.
 
   Section Bisimulation.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
+  (** #1 [Note on "Simulation"]
+    * ```coq
+    * Section CategoryTheoricExplain.
+    * Definition ensemble (A : Type) : Type := A -> Prop.
+    * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
+    * Variable Eff : Type.
+    * Variant map_trans {A : Type} {B : Type} (f : A -> B) (X : ensemble (Eff * A)) : ensemble (Eff * B) :=
+    * | in_map_trans :
+    *   forall a : A,
+    *   forall e : Eff,
+    *   member (a, e) X ->
+    *   member (f a, e) (map_trans f X)
+    * . 
+    * End CategoryTheoricExplain.
+    * ```
+    * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor with
+    *     $fmap (f : A -> B) : F A -> F B := map_trans f$ for each $A : Type$ and $B : Type$.
+    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$.
+    * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
+    * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
+    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if $fmap f . Src_trans = Tgt_trans . f$ holds, which is equivalent to
+    * But $fmap f . Src_trans = Tgt_trans . f$ holds if and only if:
+    * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ and; (1)
+    * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ hold. (2)
+    * Note that:
+    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and;
+    * - (2) is equivalent to $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$.
+    * #2 [Note on "Bisimulation"]
+    * [The diagram of "bisimF"]
+    * "bisimF_comm1"       * "bisimF_comm2"       *
+    * ==================== * ==================== *
+    * s_1 ~~[ e ]~> s_2    * t_1 ~~[ e ]~> t_2    *
+    *  |             |     *  |             |     *
+    *  |             |     *  |             |     *
+    *  R         bisimF(R) *  R         bisimF(R) *
+    *  |             |     *  |             |     *
+    * \|/           \|/    * \|/           \|/    *
+    * t_1 ~~[ e ]~> t_2    * s_1 ~~[ e ]~> s_2    *
+    * ==================== * ==================== *
+    *)
+
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
-  | PreservesBisimilarity :
-    forall s1 : Src,
-    forall t1 : Tgt,
-    forall H_bisimF_cond1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R,
-    forall H_bisimF_cond2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R,
-    member (s1, t1) (bisimF R)
+  | PreservesBisimilarity (s1 : Src) (t1 : Tgt) (bisimF_comm1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) (bisimF_comm2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (bisimF R)
   .
 
   Lemma bisimF_isMonotonicMap :
@@ -1027,13 +1063,13 @@ Module PowerSetCoLa.
     inversion H_in1; subst.
     constructor.
     - intros e s2 H_trans1.
-      destruct (H_bisimF_cond1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
+      destruct (bisimF_comm1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
       exists t2.
       split.
       + exact H_trans2.
       + exact (H_incl (s2, t2) H_in2).
     - intros e t2 H_trans1.
-      destruct (H_bisimF_cond2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
+      destruct (bisimF_comm2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
       exists s2.
       split.
       + exact H_trans2.
@@ -1105,13 +1141,13 @@ Module PowerSetCoLa.
     - intros [R [R_le_bisimF_R H_in1]] s3 s2_e_s3.
       assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
-      destruct (H_bisimF_cond1 e s3 s2_e_s3) as [t3 [t2_e_t3 H_in]].
+      destruct (bisimF_comm1 e s3 s2_e_s3) as [t3 [t2_e_t3 H_in]].
       exists t3.
       now firstorder.
     - intros [R [R_le_bisimF_R H_in1]] t3 t2_e_t3.
       assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
-      destruct (H_bisimF_cond2 e t3 t2_e_t3) as [s3 [s2_e_s3 H_in]].
+      destruct (bisimF_comm2 e t3 t2_e_t3) as [s3 [s2_e_s3 H_in]].
       exists s3.
       now firstorder. 
   Qed.
