@@ -1027,8 +1027,8 @@ Module PowerSetCoLa.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor
     * with $fmap (f : A -> B) : F A -> F B := map_trans f$ for $A : Type$ and $B : Type$.
-    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$ and vice versa.
-    * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
+    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (Eff * State))$ and vice versa.
+    * And, for a given coalgebra $(State, State_trans)$ of $F$, we will write $st1 ~~[ e ]~> st2$ if $member (e, st2) (State_trans st1)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
     * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, that is, $fmap s . Src_trans = Tgt_trans . s$ holds.
