@@ -1014,7 +1014,7 @@ Module PowerSetCoLa.
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
     * [#3]
     * If $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$
-    * then the left-lower path implies upper-right path on each following squares:
+    * then the left-lower path implies the right-upper path on each following squares:
     * ===================== * ===================== *
     * The square for (1')   * The square for (2')   *
     * ===================== * ===================== *
