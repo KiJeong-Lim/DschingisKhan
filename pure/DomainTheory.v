@@ -1049,16 +1049,24 @@ Module PowerSetCoLa.
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
   (** [The diagram of "bisimF"]
-    * "bisimF_comm1"       * "bisimF_comm2"       *
-    * ==================== * ==================== *
-    * s_1 ~~[ e ]~> s_2    * t_1 ~~[ e ]~> t_2    *
-    *  |             |     *  |             |     *
-    *  |             |     *  |             |     *
-    *  R         bisimF(R) *  R         bisimF(R) *
-    *  |             |     *  |             |     *
-    * \|/           \|/    * \|/           \|/    *
-    * t_1 ~~[ e ]~> t_2    * s_1 ~~[ e ]~> s_2    *
-    * ==================== * ==================== *
+    * Lemma bisimF_dia1 :
+    *   forall R : ensemble (Src * Tgt),
+    *   forall s1 : Src,
+    *   forall t1 : Tgt,
+    *   member (s1, t1) (bisimF R) ->
+    *   forall e : Eff,
+    *   forall s2 : Src,
+    *   s1 ~~[ e ]~> s2 ->
+    *   exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R.
+    * Lemma bisimF_dia2 :
+    *   forall R : ensemble (Src * Tgt),
+    *   forall s1 : Src,
+    *   forall t1 : Tgt,
+    *   member (s1, t1) (bisimF R) ->
+    *   forall e : Eff,
+    *   forall t2 : Tgt,
+    *   t1 ~~[ e ]~> t2 ->
+    *   exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R.
     *)
 
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
@@ -1093,19 +1101,6 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  (** [commutation1]
-    *
-    * s_1 ~~[ e ]~> s_1
-    *  |             |
-    *  |             |
-    *  P             P
-    *  |             |
-    * \|/           \|/
-    * t_1 ~~[ e ]~> t_2
-    *
-    * P := fun s : Src => fun t : Tgt => s `isBisimilarTo` t
-    *)
-
   Let commutation1 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
     fun s1 : Src =>
@@ -1115,19 +1110,6 @@ Module PowerSetCoLa.
     s1 ~~[ e ]~> s2 ->
     exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
   .
-
-  (** [commutation2]
-    *
-    * t_1 ~~[ e ]~> t_2
-    *  |             |
-    *  |             |
-    *  P             P
-    *  |             |
-    * \|/           \|/
-    * s_1 ~~[ e ]~> s_2
-    *
-    * P := fun t : Tgt => fun s : Src => s `isBisimilarTo` t
-    *)
 
   Let commutation2 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
