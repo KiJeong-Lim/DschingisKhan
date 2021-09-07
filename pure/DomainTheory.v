@@ -1048,21 +1048,40 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
+  Let commutation1 : Eff -> Src -> Tgt -> Prop :=
+    fun e : Eff =>
+    fun s1 : Src =>
+    fun t1 : Tgt =>
+    forall s2 : Src,
+    s1 ~~[ e ]~> s2 ->
+    exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
+  .
+
+  Let commutation2 : Eff -> Src -> Tgt -> Prop :=
+    fun e : Eff =>
+    fun s1 : Src =>
+    fun t1 : Tgt =>
+    forall t2 : Tgt,
+    t1 ~~[ e ]~> t2 ->
+    exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2
+  .
+
   Lemma the_diagram_of_bisimilarity :
-    forall s1 : Src,
-    forall t1 : Tgt,
-    s1 `isBisimilarTo` t1 ->
-    ((forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2) /\ (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2)).
+    forall s : Src,
+    forall t : Tgt,
+    s `isBisimilarTo` t ->
+    forall e : Eff,
+    commutation1 e s t /\ commutation2 e s t.
   Proof.
-    intros s1 t1 [R [R_le_bisimF_R H_in1]].
+    intros s1 t1 [R [R_le_bisimF_R H_in1]] e.
     split.
-    - intros e s2 H_trans1.
+    - intros s2 H_trans1.
       assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
       inversion H_in2; subst.
       destruct (H1 e s2 H_trans1) as [t2 [H_trans2 H_in]].
       exists t2.
       now firstorder.
-    - intros e t2 H_trans1.
+    - intros t2 H_trans1.
       assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
       inversion H_in2; subst.
       destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in]].
@@ -1091,7 +1110,7 @@ Module PowerSetCoLa.
   Lemma bisimilar_iff :
     forall s1 : Src,
     forall t1 : Tgt,
-    s1 `isBisimilarTo` t1 <-> bisimilar_cond1 s1 t1 /\ bisimilar_cond2 s1 t1.
+    s1 `isBisimilarTo` t1 <-> (bisimilar_cond1 s1 t1 /\ bisimilar_cond2 s1 t1).
   Proof with eauto.
     intros s1 t1.
     split.
@@ -1101,14 +1120,14 @@ Module PowerSetCoLa.
         induction s1_es_s2 as [| s2 s3 e es s2_e_s3 s1_es_s2 IH].
         - exists t1...
         - destruct IH as [t2 [t1_es_t2 s2_bisimilar_t2]].
-          destruct (proj1 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2) e s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
+          destruct (proj1 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2 e) s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
           exists t3...
       }
       { intros es t2 t1_es_t2.
         induction t1_es_t2 as [| t2 t3 e es t2_e_t3 t1_es_t2 IH].
         - exists s1...
         - destruct IH as [s2 [s1_es_s2 s2_bisimilar_t2]].
-          destruct (proj2 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2) e t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
+          destruct (proj2 (the_diagram_of_bisimilarity s2 t2 s2_bisimilar_t2 e) t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
           exists s3...
       }
     - intros [H_loop1 H_loop2].
