@@ -984,11 +984,11 @@ Module PowerSetCoLa.
   End PACO.
 
   Class LabelledTransition (State : Type) (Label : Type) : Type :=
-    { state_trans : State -> (Label * State) -> Prop
+    { state_trans : State -> ensemble (Label * State)
     }
   .
 
-  Global Notation " st1 '~~[' label ']~>' st2 " := (state_trans st1 (label, st2)) (at level 70, no associativity) : type_scope.
+  Global Notation " st1 '~~[' label ']~>' st2 " := (member (label, st1) (state_trans st2)) (at level 70, no associativity) : type_scope.
 
   Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
 
@@ -1022,24 +1022,24 @@ Module PowerSetCoLa.
     *   forall e : Eff,
     *   member (e, a) X ->
     *   member (e, f a) (map_trans f X)
-    * . 
+    * .
     * End CategoryTheoreticApproach.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor
     * with $fmap (f : A -> B) : F A -> F B := map_trans f$ for $A : Type$ and $B : Type$.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (Eff * State))$ and vice versa.
-    * And, for a given coalgebra $(State, State_trans)$ of $F$, we will write $st1 ~~[ e ]~> st2$ if $member (e, st2) (State_trans st1)$ holds.
+    * And, for a given coalgebra $(State, State_trans)$ of $F$, we will write $st1 ~~[ e ]~> st2$ if $member (e, st1) (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
     * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, that is, $fmap s . Src_trans = Tgt_trans . s$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
-    * (1) $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ holds for every $s_1 : Src$ and;
-    * (2) $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ holds for every $s_1 : Src$.
+    * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
+    * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
     * Noting that:
     * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
-    * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$,
+    * - (2) is equivalent to $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$,
     * we can conclude that a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if
-    * both $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$ hold.
+    * both $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$ hold.
     *)
 
   End SIMULATION.
