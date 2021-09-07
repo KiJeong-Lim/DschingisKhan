@@ -1067,7 +1067,7 @@ Module PowerSetCoLa.
 
   Local Hint Constructors state_star : core.
 
-  Section BISIMULATION.
+  Section BISIMULATION_RELATION.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
@@ -1219,7 +1219,7 @@ Module PowerSetCoLa.
       exact (claim3 R R_le_bisimF_R (s, t) H_in).
   Qed.
 
-  End BISIMULATION.
+  End BISIMULATION_RELATION.
 
 End PowerSetCoLa.
 
