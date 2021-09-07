@@ -1011,7 +1011,7 @@ Module PowerSetCoLa.
 
   (** #1 [Note on "Simulation"]
     * ```coq
-    * Section CategoryTheoricApproach.
+    * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Variable Eff : Type.
@@ -1022,7 +1022,7 @@ Module PowerSetCoLa.
     *   member (e, a) X ->
     *   member (e, f a) (map_trans f X)
     * . 
-    * End CategoryTheoricApproach.
+    * End CategoryTheoreticApproach.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor with
     *     $fmap (f : A -> B) : F A -> F B := map_trans f$ for each $A : Type$ and $B : Type$.
