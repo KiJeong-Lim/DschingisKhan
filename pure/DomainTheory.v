@@ -1007,13 +1007,11 @@ Module PowerSetCoLa.
 
   Local Hint Constructors state_star : core.
 
-  Section Bisimulation.
-
-  Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
+  Section SIMULATION.
 
   (** #1 [Note on "Simulation"]
     * ```coq
-    * Section CategoryTheoricExplain.
+    * Section CategoryTheoricApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Variable Eff : Type.
@@ -1024,21 +1022,31 @@ Module PowerSetCoLa.
     *   member (e, a) X ->
     *   member (e, f a) (map_trans f X)
     * . 
-    * End CategoryTheoricExplain.
+    * End CategoryTheoricApproach.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor with
     *     $fmap (f : A -> B) : F A -> F B := map_trans f$ for each $A : Type$ and $B : Type$.
-    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$.
+    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$ and vice versa.
     * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
-    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if $fmap f . Src_trans = Tgt_trans . f$ holds, i.e., $f$ is a coalgebra homomorphism.
+    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if 
+    * $$fmap f . Src_trans = Tgt_trans . f$$
+    * holds, i.e., $f$ is a coalgebra homomorphism.
     * But $fmap f . Src_trans = Tgt_trans . f$ holds if and only if:
     * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ for all $s_1 : Src$ and; (1)
     * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ for all $s_1 : Src$ hold. (2)
     * Note that:
     * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$.
     * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$.
-    * #2 [Note on "Bisimulation"]
+    *)
+
+  End SIMULATION.
+
+  Section BISIMULATION.
+
+  Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
+
+  (** #2 [Note on "Bisimulation"]
     * [The diagram of "bisimF"]
     * "bisimF_comm1"       * "bisimF_comm2"       *
     * ==================== * ==================== *
@@ -1226,7 +1234,7 @@ Module PowerSetCoLa.
       exact (claim3 R R_le_bisimF_R (s, t) H_in).
   Qed.
 
-  End Bisimulation.
+  End BISIMULATION.
 
 End PowerSetCoLa.
 
