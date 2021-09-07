@@ -1012,11 +1012,11 @@ Module PowerSetCoLa.
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
-  | PreservesBiSimilarity :
+  | PreservesBisimilarity :
     forall s1 : Src,
     forall t1 : Tgt,
-    (forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) ->
-    (forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) ->
+    forall H_bisimF_cond1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R,
+    forall H_bisimF_cond2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R,
     member (s1, t1) (bisimF R)
   .
 
@@ -1027,13 +1027,13 @@ Module PowerSetCoLa.
     inversion H_in1; subst.
     constructor.
     - intros e s2 H_trans1.
-      destruct (H1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
+      destruct (H_bisimF_cond1 e s2 H_trans1) as [t2 [H_trans2 H_in2]].
       exists t2.
       split.
       + exact H_trans2.
       + exact (H_incl (s2, t2) H_in2).
     - intros e t2 H_trans1.
-      destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
+      destruct (H_bisimF_cond2 e t2 H_trans1) as [s2 [H_trans2 H_in2]].
       exists s2.
       split.
       + exact H_trans2.
@@ -1048,23 +1048,49 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
+  (** [commutation1]
+    *
+    * s_1 ~~[ e ]~> s_1
+    *  |             |
+    *  |             |
+    *  P             P
+    *  |             |
+    * \|/           \|/
+    * t_1 ~~[ e ]~> t_2
+    *
+    * P := fun s : Src => fun t : Tgt => s `isBisimilarTo` t
+    *)
+
   Let commutation1 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
     fun s1 : Src =>
     fun t1 : Tgt =>
+    s1 `isBisimilarTo` t1 ->
     forall s2 : Src,
     s1 ~~[ e ]~> s2 ->
-    s1 `isBisimilarTo` t1 ->
     exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
   .
+
+  (** [commutation2]
+    *
+    * t_1 ~~[ e ]~> t_2
+    *  |             |
+    *  |             |
+    *  P             P
+    *  |             |
+    * \|/           \|/
+    * s_1 ~~[ e ]~> s_2
+    *
+    * P := fun t : Tgt => fun s : Src => s `isBisimilarTo` t
+    *)
 
   Let commutation2 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
     fun s1 : Src =>
     fun t1 : Tgt =>
+    s1 `isBisimilarTo` t1 ->
     forall t2 : Tgt,
     t1 ~~[ e ]~> t2 ->
-    s1 `isBisimilarTo` t1 ->
     exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2
   .
 
@@ -1074,19 +1100,19 @@ Module PowerSetCoLa.
     forall t : Tgt,
     commutation1 e s t /\ commutation2 e s t.
   Proof.
-    intros e s1 t1.
+    intros e s2 t2.
     split.
-    - intros s2 H_trans1 [R [R_le_bisimF_R H_in1]].
-      assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+    - intros [R [R_le_bisimF_R H_in1]] s3 s2_e_s3.
+      assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
-      destruct (H1 e s2 H_trans1) as [t2 [H_trans2 H_in]].
-      exists t2.
+      destruct (H_bisimF_cond1 e s3 s2_e_s3) as [t3 [t2_e_t3 H_in]].
+      exists t3.
       now firstorder.
-    - intros t2 H_trans1 [R [R_le_bisimF_R H_in1]].
-      assert (H_in2 : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+    - intros [R [R_le_bisimF_R H_in1]] t3 t2_e_t3.
+      assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
-      destruct (H2 e t2 H_trans1) as [s2 [H_trans2 H_in]].
-      exists s2.
+      destruct (H_bisimF_cond2 e t3 t2_e_t3) as [s3 [s2_e_s3 H_in]].
+      exists s3.
       now firstorder. 
   Qed.
 
@@ -1121,14 +1147,14 @@ Module PowerSetCoLa.
         induction s1_es_s2 as [| s2 s3 e es s2_e_s3 s1_es_s2 IH].
         - exists t1...
         - destruct IH as [t2 [t1_es_t2 s2_bisimilar_t2]].
-          destruct (proj1 (the_diagram_of_bisimilarity e s2 t2) s3 s2_e_s3 s2_bisimilar_t2) as [t3 [t2_e_t3 s3_bisimilar_t3]].
+          destruct (proj1 (the_diagram_of_bisimilarity e s2 t2) s2_bisimilar_t2 s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
           exists t3...
       }
       { intros es t2 t1_es_t2.
         induction t1_es_t2 as [| t2 t3 e es t2_e_t3 t1_es_t2 IH].
         - exists s1...
         - destruct IH as [s2 [s1_es_s2 s2_bisimilar_t2]].
-          destruct (proj2 (the_diagram_of_bisimilarity e s2 t2) t3 t2_e_t3 s2_bisimilar_t2) as [s3 [s2_e_s3 s3_bisimilar_t3]].
+          destruct (proj2 (the_diagram_of_bisimilarity e s2 t2) s2_bisimilar_t2 t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
           exists s3...
       }
     - intros [H_cond1 H_cond2].
@@ -1150,7 +1176,7 @@ Module PowerSetCoLa.
     assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
     assert (claim2 : isGreatestFixedPoint bisim' bisimF).
     { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
-      exact (nu_isSupremum (exist isMonotonicMap bisimF bisimF_isMonotonicMap)).
+      exact (nu_isSupremum b).
     }
     assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisim) by exact (proj1 (nu_isSupremum b bisim) (Poset_refl1 bisim' bisim claim1)).
     intros s t.
