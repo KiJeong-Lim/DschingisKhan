@@ -1009,8 +1009,8 @@ Module PowerSetCoLa.
 
   Section SIMULATION.
 
-  (** [A category theoretical approach to the definition of simulation]
-    * #1
+  (** "A category theoretical approach to the definition of simulation"
+    * [#1]
     * ```coq
     * Section CategoryTheoreticApproach.
     * Definition ensemble (A : Type) : Type := A -> Prop.
@@ -1025,21 +1025,21 @@ Module PowerSetCoLa.
     * . 
     * End CategoryTheoreticApproach.
     * ```
-    * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor with
-    *     $fmap (f : A -> B) : F A -> F B := map_trans f$ for each $A : Type$ and $B : Type$.
+    * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor
+    * with $fmap (f : A -> B) : F A -> F B := map_trans f$ for $A : Type$ and $B : Type$.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$ and vice versa.
     * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
-    * #2
+    * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
-    * We said a map $s : Src -> Tgt$ is a simulation of Src in Tgt if 
-    *   $$fmap s . Src_trans = Tgt_trans . s$$
-    * holds, i.e., $s$ is a coalgebra homomorphism.
+    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, that is, $fmap s . Src_trans = Tgt_trans . s$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
     * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ for all $s_1 : Src$ and; (1)
     * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ for all $s_1 : Src$ hold. (2)
-    * Note that:
-    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$.
-    * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$.
+    * Noting that:
+    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
+    * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$,
+    * we can conclude that a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if
+    * both $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$ hold.
     *)
 
   End SIMULATION.
