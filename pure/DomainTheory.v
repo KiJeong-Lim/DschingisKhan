@@ -983,30 +983,6 @@ Module PowerSetCoLa.
 
   End PACO.
 
-  Class LabelledTransition (State : Type) (Label : Type) : Type :=
-    { state_trans : State -> ensemble (State * Label)
-    }
-  .
-
-  Global Notation " st1 '~~[' label ']~>' st2 " := (member (st1, label) (state_trans st2)) (at level 70, no associativity) : type_scope.
-
-  Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
-
-  Inductive state_star {State : Type} {Label : Type} `{HasLabelledTransition : LabelledTransition State Label} (st1 : State) : list Label -> State -> Prop :=
-  | star_init :
-    st1 ~~~[ nil ]~>* st1
-  | star_step :
-    forall st2 : State,
-    forall st3 : State,
-    forall label : Label,
-    forall labels : list Label,
-    st2 ~~[ label ]~> st3 ->
-    st1 ~~~[ labels ]~>* st2 ->
-    st1 ~~~[ cons label labels ]~>* st3
-  where " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) : type_scope.
-
-  Local Hint Constructors state_star : core.
-
   (** "A category theoretical approach to the definition of simulation"
     * [#1]
     * ```coq
@@ -1030,16 +1006,39 @@ Module PowerSetCoLa.
     * we will write $st1 ~~[ e ]~> st2$ if $member (st1, e) (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
-    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s . Src_trans = Tgt_trans . s$ holds.
-    * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
+    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s ￮ Src_trans = Tgt_trans ￮ s$ holds.
+    * But every map $f : Src -> Tgt$ satisfies $fmap f ￮ Src_trans = Tgt_trans ￮ f$ if and only if:
     * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
-    * Noting that:
-    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
-    * - (2) is equivalent to $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$,
-    * we can conclude that a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if
-    * both $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$ hold.
+    * Therefore, we can conclude a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if:
+    * (1') $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$; and
+    * (2') $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$,
+    * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
     *)
+
+  Class LabelledTransition (State : Type) (Label : Type) : Type :=
+    { state_trans : State -> ensemble (State * Label)
+    }
+  .
+
+  Global Notation " st1 '~~[' label ']~>' st2 " := (member (st1, label) (state_trans st2)) (at level 70, no associativity) : type_scope.
+
+  Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
+
+  Inductive state_star {State : Type} {Label : Type} `{HasLabelledTransition : LabelledTransition State Label} (st1 : State) : list Label -> State -> Prop :=
+  | star_init :
+    st1 ~~~[ nil ]~>* st1
+  | star_step :
+    forall st2 : State,
+    forall st3 : State,
+    forall label : Label,
+    forall labels : list Label,
+    st2 ~~[ label ]~> st3 ->
+    st1 ~~~[ labels ]~>* st2 ->
+    st1 ~~~[ cons label labels ]~>* st3
+  where " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) : type_scope.
+
+  Local Hint Constructors state_star : core.
 
   Section BISIMULATION.
 
