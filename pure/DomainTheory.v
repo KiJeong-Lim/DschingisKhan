@@ -984,11 +984,11 @@ Module PowerSetCoLa.
   End PACO.
 
   Class LabelledTransition (State : Type) (Label : Type) : Type :=
-    { state_trans : State -> ensemble (Label * State)
+    { state_trans : State -> ensemble (State * Label)
     }
   .
 
-  Global Notation " st1 '~~[' label ']~>' st2 " := (member (label, st1) (state_trans st2)) (at level 70, no associativity) : type_scope.
+  Global Notation " st1 '~~[' label ']~>' st2 " := (member (st1, label) (state_trans st2)) (at level 70, no associativity) : type_scope.
 
   Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
 
@@ -1007,8 +1007,6 @@ Module PowerSetCoLa.
 
   Local Hint Constructors state_star : core.
 
-  Section SIMULATION.
-
   (** "A category theoretical approach to the definition of simulation"
     * [#1]
     * ```coq
@@ -1016,22 +1014,23 @@ Module PowerSetCoLa.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Variable Eff : Type.
-    * Variant map_trans {A : Type} {B : Type} (f : A -> B) (X : ensemble (Eff * A)) : ensemble (Eff * B) :=
+    * Variant map_trans {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
     * | in_map_trans :
     *   forall a : A,
     *   forall e : Eff,
-    *   member (e, a) X ->
-    *   member (e, f a) (map_trans f X)
+    *   member (a, e) X ->
+    *   member (f a, e) (map_trans f X)
     * .
     * End CategoryTheoreticApproach.
     * ```
-    * Let $F : Type -> Type := fun A : Type => ensemble (Eff * A)$ be an endofunctor
+    * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor
     * with $fmap (f : A -> B) : F A -> F B := map_trans f$ for $A : Type$ and $B : Type$.
-    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (Eff * State))$ and vice versa.
-    * And, for a given coalgebra $(State, State_trans)$ of $F$, we will write $st1 ~~[ e ]~> st2$ if $member (e, st1) (State_trans st2)$ holds.
+    * Then, every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ and vice versa.
+    * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
+    * we will write $st1 ~~[ e ]~> st2$ if $member (st1, e) (State_trans st2)$ holds.
     * [#2]
-    * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
-    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, that is, $fmap s . Src_trans = Tgt_trans . s$ holds.
+    * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras of $F$.
+    * We said a map $s : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $s$ is a coalgebra homomorphism, i.e., $fmap s . Src_trans = Tgt_trans . s$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f . Src_trans = Tgt_trans . f$ if and only if:
     * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$ and;
     * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
@@ -1041,8 +1040,6 @@ Module PowerSetCoLa.
     * we can conclude that a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if
     * both $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$ hold.
     *)
-
-  End SIMULATION.
 
   Section BISIMULATION.
 
