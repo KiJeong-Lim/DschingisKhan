@@ -991,13 +991,13 @@ Module PowerSetCoLa.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Notation " x '∈' X " := (member x X) (at level 70, no associativity) : type_scope.
     * Variable Eff : Type.
-    * Variant mymap {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
-    * | in_mymap (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ mymap f X
+    * Variant my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
+    * | in_my_map (a : A) (e : Eff) : (a, e) ∈ X -> (f a, e) ∈ my_map f X
     * .
     * End CategoryTheoreticApproach.
     * ```
-    * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor
-    * with $fmap (f : A -> B) : F A -> F B := mymap f$ for $A : Type$ and $B : Type$.
+    * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor,
+    * where $fmap (f : A -> B) : F A -> F B := my_map f$ for $A : Type$ and $B : Type$.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
     * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
@@ -1007,8 +1007,8 @@ Module PowerSetCoLa.
     * We say a map $sim : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if $sim$ is a coalgebra homomorphism,
     * i.e., $fmap sim ∘ Src_trans = Tgt_trans ∘ sim$ holds.
     * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
-    * (1) $map_trans f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$, and
-    * (2) $Tgt_trans (f s_2) \subseteq map_trans f (Src_trans s_2)$ holds for every $s_2 : Src$.
+    * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$, and
+    * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ holds for every $s_2 : Src$.
     * Therefore, we can conclude a map $f : Src -> Tgt$ is a simulation of $Src$ in $Tgt$ if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
     * (2') $t ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f s_1$;
