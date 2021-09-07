@@ -1021,8 +1021,8 @@ Module PowerSetCoLa.
     * | in_map_trans :
     *   forall a : A,
     *   forall e : Eff,
-    *   member (a, e) X ->
-    *   member (f a, e) (map_trans f X)
+    *   member (e, a) X ->
+    *   member (e, f a) (map_trans f X)
     * . 
     * End CategoryTheoricExplain.
     * ```
@@ -1031,13 +1031,13 @@ Module PowerSetCoLa.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> (Eff * State) -> Prop)$.
     * And we will write $st1 ~~[ e ]~> st2$ if $State_trans st1 (e, st2)$ holds for each coalgebra $(State, State_trans)$ of $F$.
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of $F$.
-    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if $fmap f . Src_trans = Tgt_trans . f$ holds, which is equivalent to
+    * We said a map $f : Src -> Tgt$ is a simulation of Src in Tgt if $fmap f . Src_trans = Tgt_trans . f$ holds, i.e., $f$ is a coalgebra homomorphism.
     * But $fmap f . Src_trans = Tgt_trans . f$ holds if and only if:
-    * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ and; (1)
-    * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ hold. (2)
+    * $map_trans f (Src_trans s_1) \subseteq Tgt_trans (f s_1)$ for all $s_1 : Src$ and; (1)
+    * $Tgt_trans (f s_1) \subseteq map_trans f (Src_trans s_1)$ for all $s_1 : Src$ hold. (2)
     * Note that:
-    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$ and;
-    * - (2) is equivalent to $t ~~[ e ]~> f(s_2) \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t = f(s_1)$.
+    * - (1) is equivalent to $s_1 ~~[ e ]~> s_2 \implies f(s_1) ~~[ e ]~> f(s_2)$.
+    * - (2) is equivalent to $f(s_1) ~~[ e ]~> t \implies \exists s_2, s_1 ~~[ e ]~> s_2 \land t = f(s_2)$.
     * #2 [Note on "Bisimulation"]
     * [The diagram of "bisimF"]
     * "bisimF_comm1"       * "bisimF_comm2"       *
