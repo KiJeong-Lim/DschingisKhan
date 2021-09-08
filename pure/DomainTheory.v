@@ -1016,14 +1016,14 @@ Module PowerSetCoLa.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Variable Eff : Type.
-    * Variant my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
+    * Inductive my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
     * | in_my_map (a : A) (e : Eff) : member (a, e) X -> member (f a, e) (my_map f X)
     * .
     * End TMP_SECT_1.
     * ```
-    * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor,
-    * with $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
-    * Then every coalgebra of the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
+    * Take $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ and $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
+    * Then we know that $(F, fmap)$ is an endofunctor of the category of types from the identity $my_map f X = { (f a, e) | (a, e) \in X }$.
+    * Also every coalgebra of the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
     * Furthermore, conversely, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
@@ -1044,22 +1044,20 @@ Module PowerSetCoLa.
     * ===================== * ===================== *
     * The square for (1)    * The square for (2)    *
     * ===================== * ===================== *
-    *  s_1 ---- R ---> t_1  *  t_1 --- R^t --> s_1  *
+    *  s_1 ---- R ---> t_1  *  t_1 --- R^T --> s_1  *
     *   |               |   *   |               |   *
     *   |               |   *   |               |   *
     * F_S e           F_T e * F_T e           F_S e *
     *   |               |   *   |               |   *
     *  \|/             \|/  *  \|/             \|/  *
-    *  s_2 ---- R ---> t_2  *  t_2 --- R^t --> s_2  *
+    *  s_2 ---- R ---> t_2  *  t_2 --- R^T --> s_2  *
     * ===================== * ===================== *
-    * where { R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bs s = t
-    *       ; F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => s_1 ~~[ e ]~> s_2
-    *       ; F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2
-    *       }
-    * and $R^t$ denotes $flip R$, that is, $R s t \iff R^t t s$ for any $s : Src$ and $t : Tgt$.
+    * where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bs s = t$,
+    *       $F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => s_1 ~~[ e ]~> s_2$, and
+    *       $F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2$;
+    * and $R^T$ denotes $flip R$, that is, $R s t \iff R^T t s$ for any $s : Src$ and $t : Tgt$.
     * This is the reason why a homomorphism between two coalgebras for an endofunctor is called a bisimulation map:
-    * - the relation $R$ is a simulation of $Src$ in $Tgt$, and
-    * - the relation $R^t$ is a simulation of $Tgt$ in $Src$.
+    * the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^t$ is a simulation of $Tgt$ in $Src$.
   ***)
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
