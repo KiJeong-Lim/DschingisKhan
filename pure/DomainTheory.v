@@ -1097,41 +1097,40 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Let square1 : Eff -> Src -> Tgt -> Prop :=
-    fun e : Eff =>
+  Let the_square_for_1 : Src -> Tgt -> Prop :=
     fun s1 : Src =>
     fun t1 : Tgt =>
-    s1 `isBisimilarTo` t1 ->
+    forall e : Eff,
     forall s2 : Src,
+    s1 `isBisimilarTo` t1 ->
     s1 ~~[ e ]~> s2 ->
     exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
   .
 
-  Let square2 : Eff -> Src -> Tgt -> Prop :=
-    fun e : Eff =>
+  Let the_square_for_2 : Src -> Tgt -> Prop :=
     fun s1 : Src =>
     fun t1 : Tgt =>
-    s1 `isBisimilarTo` t1 ->
+    forall e : Eff,
     forall t2 : Tgt,
+    s1 `isBisimilarTo` t1 ->
     t1 ~~[ e ]~> t2 ->
     exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2
   .
 
   Lemma the_diagram_of_bisimilarity :
-    forall e : Eff,
     forall s : Src,
     forall t : Tgt,
-    square1 e s t /\ square2 e s t.
+    the_square_for_1 s t /\ the_square_for_2 s t.
   Proof.
-    intros e s2 t2.
+    intros s2 t2.
     split.
-    - intros [R [R_le_bisimF_R H_in1]] s3 s2_e_s3.
+    - intros e s3 [R [R_le_bisimF_R H_in1]] s2_e_s3.
       assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
       destruct (bisimF_comm1 e s3 s2_e_s3) as [t3 [t2_e_t3 H_in]].
       exists t3.
       now firstorder.
-    - intros [R [R_le_bisimF_R H_in1]] t3 t2_e_t3.
+    - intros e t3 [R [R_le_bisimF_R H_in1]] t2_e_t3.
       assert (H_in2 : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in1).
       inversion H_in2; subst.
       destruct (bisimF_comm2 e t3 t2_e_t3) as [s3 [s2_e_s3 H_in]].
@@ -1170,14 +1169,14 @@ Module PowerSetCoLa.
         induction s1_es_s2 as [| s2 s3 e es s2_e_s3 s1_es_s2 IH].
         - exists t1...
         - destruct IH as [t2 [t1_es_t2 s2_bisimilar_t2]].
-          destruct (proj1 (the_diagram_of_bisimilarity e s2 t2) s2_bisimilar_t2 s3 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
+          destruct (proj1 (the_diagram_of_bisimilarity s2 t2) e s3 s2_bisimilar_t2 s2_e_s3) as [t3 [t2_e_t3 s3_bisimilar_t3]].
           exists t3...
       }
       { intros es t2 t1_es_t2.
         induction t1_es_t2 as [| t2 t3 e es t2_e_t3 t1_es_t2 IH].
         - exists s1...
         - destruct IH as [s2 [s1_es_s2 s2_bisimilar_t2]].
-          destruct (proj2 (the_diagram_of_bisimilarity e s2 t2) s2_bisimilar_t2 t3 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
+          destruct (proj2 (the_diagram_of_bisimilarity s2 t2) e t3 s2_bisimilar_t2 t2_e_t3) as [s3 [s2_e_s3 s3_bisimilar_t3]].
           exists s3...
       }
     - intros [H_cond1 H_cond2].
