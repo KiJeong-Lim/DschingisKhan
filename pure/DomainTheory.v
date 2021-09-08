@@ -1044,12 +1044,12 @@ Module PowerSetCoLa.
     * Then $bsm$ is a bisimulation map iff
       the left-lower path guarantees the existence of right-upper path
       on each following squares:
-    % ===================== % ===================== % The left one means that:
-    % The square for (1)    % The square for (2)    % $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$
-    % ===================== % ===================== % if the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
-    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % The right one means that:
-    %   |               |   %   |               |   % $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$
-    %   |               |   %   |               |   % if the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
+    % ===================== % ===================== % The left one means:
+    % The square for (1)    % The square for (2)    % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$
+    % ===================== % ===================== % > if the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
+    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % The right one means:
+    %   |               |   %   |               |   % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$
+    %   |               |   %   |               |   % > if the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
     % F_S e           F_T e % F_T e           F_S e %
     %   |               |   %   |               |   %
     %  \|/             \|/  %  \|/             \|/  %
