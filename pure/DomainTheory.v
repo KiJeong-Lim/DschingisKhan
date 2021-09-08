@@ -1041,7 +1041,7 @@ Module PowerSetCoLa.
       by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
     % [#3]
     * Let a function $bsm : Src -> Tgt$ be given.
-    * Theveryen $bsm$ is a bisimulation map iff
+    * Then $bsm$ is a bisimulation map iff
       the left-lower path guarantees the existence of right-upper path
       on each following squares:
     % ===================== % ===================== %
