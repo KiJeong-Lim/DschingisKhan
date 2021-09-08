@@ -1025,7 +1025,7 @@ Module PowerSetCoLa.
     * Then, exploiting the fact $my_map f X$ exactly represents to the set ${ (f a, e) | (a, e) \in X }$,
     * we can prove that $(F, my_map)$ is an endofunctor of the category of types.
     * Thus each pair of coalgebra for the endofunctor $F$ one-to-one corresponds to a pair,
-    * which is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$, and vice versa.
+    * which is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$, by reflexivity.
     * If a coalgebra $(State, State_trans)$ for $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
