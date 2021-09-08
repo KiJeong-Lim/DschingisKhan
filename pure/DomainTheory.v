@@ -1097,7 +1097,7 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Let commutation1 : Eff -> Src -> Tgt -> Prop :=
+  Let square1 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
     fun s1 : Src =>
     fun t1 : Tgt =>
@@ -1107,7 +1107,7 @@ Module PowerSetCoLa.
     exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
   .
 
-  Let commutation2 : Eff -> Src -> Tgt -> Prop :=
+  Let square2 : Eff -> Src -> Tgt -> Prop :=
     fun e : Eff =>
     fun s1 : Src =>
     fun t1 : Tgt =>
@@ -1121,7 +1121,7 @@ Module PowerSetCoLa.
     forall e : Eff,
     forall s : Src,
     forall t : Tgt,
-    commutation1 e s t /\ commutation2 e s t.
+    square1 e s t /\ square2 e s t.
   Proof.
     intros e s2 t2.
     split.
