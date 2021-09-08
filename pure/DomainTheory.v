@@ -1024,7 +1024,7 @@ Module PowerSetCoLa.
     * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor,
     * with $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
     * Then every coalgebra of the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
-    * Furthermore, converserly, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
+    * Furthermore, conversely, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
@@ -1032,8 +1032,8 @@ Module PowerSetCoLa.
     * We say $bs : Src -> Tgt$ is a bisimulation map if it is a coalgebra homomorphism,
     * i.e., $fmap bs ∘ Src_trans = Tgt_trans ∘ bs$ is true.
     * But every function $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
-    * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for every $s_2 : Src$, and
-    * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for every $s_2 : Src$.
+    * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
+    * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for all $s_2 : Src$.
     * Therefore, we can conclude a function $f : Src -> Tgt$ is a bisimulation map if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
     * (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
