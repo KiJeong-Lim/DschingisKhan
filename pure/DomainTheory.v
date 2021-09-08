@@ -1044,12 +1044,12 @@ Module PowerSetCoLa.
     * Then $bsm$ is a bisimulation map iff
       the left-lower path guarantees the existence of right-upper path
       on each following squares:
-    % ===================== % ===================== %
-    % The square for (1)    % The square for (2)    %
-    % ===================== % ===================== %
-    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  %
-    %   |               |   %   |               |   %
-    %   |               |   %   |               |   %
+    % ===================== % ===================== % The left one means that:
+    % The square for (1)    % The square for (2)    % if the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$ and $R s_2 t_2$ holds
+    % ===================== % ===================== % then $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$.
+    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % The right one means that:
+    %   |               |   %   |               |   % if the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$ and $R s_2 t_2$ holds
+    %   |               |   %   |               |   % then $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$.
     % F_S e           F_T e % F_T e           F_S e %
     %   |               |   %   |               |   %
     %  \|/             \|/  %  \|/             \|/  %
