@@ -1024,7 +1024,7 @@ Module PowerSetCoLa.
     * Define $F : Type -> Type := fun A : Type => ensemble (A * Eff)$.
     * Then, noting the fact that $my_map f X$ exactly represents to the set ${ (f a, e) | (a, e) \in X }$,
     * we find that $my_map$ is a covariant map and so $(F, my_map)$ is an endofunctor of the category of types.
-    * If a coalgebra $(State : Type, State_trans : F State)$ for the endofunctor $F$ is given,
+    * If a coalgebra $(State : Type, State_trans : State -> F State)$ for the endofunctor $F$ is given,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two coalgebras for the endofunctor $F$.
