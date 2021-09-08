@@ -1040,16 +1040,16 @@ Module PowerSetCoLa.
   [#3]
   Let a function $bsm : Src -> Tgt$ be given.
   Then $bsm$ is a bisimulation map iff
-  every left-lower path guarantees the existence of some right-upper path on each following squares:
+  every right-upper path guarantees the existence of some left-lower path on each following squares:
   % ===================== % ===================== %
   % The square for (1)    % The square for (2)    % The left one asserts:
-  % ===================== % ===================== % > $R s_2 t_2$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
-  %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_1 t_1$ holds.
+  % ===================== % ===================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
+  %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
   %   |               |   %   |               |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
   %   |               |   %   |               |   %
   % F_S e           F_T e % F_T e           F_S e % The right one asserts:
-  %   |               |   %   |               |   % > $R s_2 t_2$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
-  %  \|/             \|/  %  \|/             \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_1 t_1$ holds.
+  %   |               |   %   |               |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
+  %  \|/             \|/  %  \|/             \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
   %  s_2 ---- R ---> t_2  %  t_2 --- R^T --> s_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
   % ===================== % ===================== %
   % where $F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => member (s_1, e) (Src_trans s_2)$,
@@ -1063,27 +1063,27 @@ Module PowerSetCoLa.
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
-  | PreservesBisimilarity (s2 : Src) (t2 : Tgt) (bisimF_comm1 : forall e : Eff, forall s1 : Src, s1 ~~[ e ]~> s2 -> exists t1 : Tgt, t1 ~~[ e ]~> t2 /\ member (s1, t1) R) (bisimF_comm2 : forall e : Eff, forall t1 : Tgt, t1 ~~[ e ]~> t2 -> exists s1 : Src, s1 ~~[ e ]~> s2 /\ member (s1, t1) R) : member (s2, t2) (bisimF R)
+  | PreservesBisimilarity (s1 : Src) (t1 : Tgt) (bisimF_comm1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) (bisimF_comm2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (bisimF R)
   .
 
   Lemma bisimF_isMonotonicMap :
     isMonotonicMap bisimF.
   Proof.
-    intros R1 R2 H_incl [s2 t2] H_in2.
-    inversion H_in2; subst.
+    intros R1 R2 H_incl [s1 t1] H_in1.
+    inversion H_in1; subst.
     constructor.
-    - intros e s1 s1_e_s2.
-      destruct (bisimF_comm1 e s1 s1_e_s2) as [t1 [t1_e_t2 H_in1]].
-      exists t1.
+    - intros e s2 s1_e_s2.
+      destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
+      exists t2.
       split.
       + exact t1_e_t2.
-      + exact (H_incl (s1, t1) H_in1).
-    - intros e t1 t1_e_t2.
-      destruct (bisimF_comm2 e t1 t1_e_t2) as [s1 [s1_e_s2 H_in1]].
-      exists s1.
+      + exact (H_incl (s2, t2) H_in2).
+    - intros e t2 t1_e_t2.
+      destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
+      exists s2.
       split.
       + exact s1_e_s2.
-      + exact (H_incl (s1, t1) H_in1).
+      + exact (H_incl (s2, t2) H_in2).
   Qed.
 
   Definition bisimilar : Src -> Tgt -> Prop :=
@@ -1095,37 +1095,83 @@ Module PowerSetCoLa.
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
   Lemma the_square_for_1 :
-    forall s2 : Src,
-    forall t2 : Tgt,
-    s2 `isBisimilarTo` t2 ->
-    forall e : Eff,
     forall s1 : Src,
+    forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 ->
+    forall e : Eff,
+    forall s2 : Src,
     s1 ~~[ e ]~> s2 ->
-    exists t1 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2.
+    exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2.
   Proof.
-    intros s2 t2 [R [R_le_bisimF_R H_in2]] e s1 s1_e_s2.
-    assert (H_in : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in2).
+    intros s1 t1 [R [R_le_bisimF_R H_in1]] e s2 s1_e_s2.
+    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
     inversion H_in; subst.
-    destruct (bisimF_comm1 e s1 s1_e_s2) as [t1 [t1_e_t2 H_in1]].
-    exists t1.
+    destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
+    exists t2.
     now firstorder.
   Qed.
 
   Lemma the_square_for_2 :
-    forall s2 : Src,
-    forall t2 : Tgt,
-    s2 `isBisimilarTo` t2 ->
-    forall e : Eff,
+    forall s1 : Src,
     forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 ->
+    forall e : Eff,
+    forall t2 : Tgt,
     t1 ~~[ e ]~> t2 ->
-    exists s1 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2.
+    exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2.
   Proof.
-    intros s2 t2 [R [R_le_bisimF_R H_in2]] e t1 t1_e_t2.
-    assert (H_in : member (s2, t2) (bisimF R)) by exact (R_le_bisimF_R (s2, t2) H_in2).
+    intros s1 t1 [R [R_le_bisimF_R H_in1]] e t2 t1_e_t2.
+    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
     inversion H_in; subst.
-    destruct (bisimF_comm2 e t1 t1_e_t2) as [s1 [s1_e_s2 H_in1]].
-    exists s1.
+    destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
+    exists s2.
     now firstorder. 
+  Qed.
+
+  Let bisimilar_cond1 : Src -> Tgt -> Prop :=
+    fun s0 : Src =>
+    fun t0 : Tgt =>
+    forall es : list Eff,
+    forall s : Src,
+    s0 ~~~[ es ]~>* s ->
+    exists t : Tgt, t0 ~~~[ es ]~>* t /\ s `isBisimilarTo` t
+  .
+
+  Let bisimilar_cond2 : Src -> Tgt -> Prop :=
+    fun s0 : Src =>
+    fun t0 : Tgt =>
+    forall es : list Eff,
+    forall t : Tgt,
+    t0 ~~~[ es ]~>* t ->
+    exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
+  .
+
+  Theorem bisimilar_iff :
+    forall s : Src,
+    forall t : Tgt,
+    s `isBisimilarTo` t <-> (bisimilar_cond1 s t /\ bisimilar_cond2 s t).
+  Proof with eauto.
+    intros s0 t0.
+    split.
+    - intros s0_bisimilar_t0.
+      split.
+      { intros es s s0_es_s.
+        induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
+        - exists t0...
+        - destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
+          destruct (the_square_for_1 s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
+          exists t2...
+      }
+      { intros es t t0_es_t.
+        induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
+        - exists s0...
+        - destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
+          destruct (the_square_for_2 s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
+          exists s2...
+      }
+    - intros [H_cond1 H_cond2].
+      destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_es_t s0_bisimilar_t]].
+      inversion t0_es_t; subst...
   Qed.
 
   Definition bisim : ensemble (Src * Tgt) :=
