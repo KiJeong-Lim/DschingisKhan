@@ -1044,7 +1044,7 @@ Module PowerSetCoLa.
   % =================== % =================== %
   % The square for (1)  % The square for (2)  % The left one asserts:
   % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
-  %  t_1 ~~[ e ]~> s_1  %  s_1 ~~[ e ]~> t_1  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
   %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
   %   |             |   %   |             |   %
   %  R^T           R^T  %   R             R   % The right one asserts:
