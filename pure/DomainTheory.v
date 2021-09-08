@@ -1097,45 +1097,38 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Let the_square_for_1 : Src -> Tgt -> Prop :=
-    fun s1 : Src =>
-    fun t1 : Tgt =>
+  Lemma the_square_for_1 :
+    forall s1 : Src,
+    forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 ->
     forall e : Eff,
     forall s2 : Src,
-    s1 `isBisimilarTo` t1 ->
     s1 ~~[ e ]~> s2 ->
-    exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2
-  .
+    exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2.
+  Proof.
+    intros s1 t1 [R [R_le_bisimF_R H_in1]] e s2 s1_e_s2.
+    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+    inversion H_in; subst.
+    destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
+    exists t2.
+    now firstorder.
+  Qed.
 
-  Let the_square_for_2 : Src -> Tgt -> Prop :=
-    fun s1 : Src =>
-    fun t1 : Tgt =>
+  Lemma the_square_for_2 :
+    forall s1 : Src,
+    forall t1 : Tgt,
+    s1 `isBisimilarTo` t1 ->
     forall e : Eff,
     forall t2 : Tgt,
-    s1 `isBisimilarTo` t1 ->
     t1 ~~[ e ]~> t2 ->
-    exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2
-  .
-
-  Lemma the_diagram_of_bisimilarity :
-    forall s : Src,
-    forall t : Tgt,
-    the_square_for_1 s t /\ the_square_for_2 s t.
+    exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2.
   Proof.
-    intros s1 t1.
-    split.
-    - intros e s2 [R [R_le_bisimF_R H_in1]] s1_e_s2.
-      assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
-      inversion H_in; subst.
-      destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
-      exists t2.
-      now firstorder.
-    - intros e t2 [R [R_le_bisimF_R H_in1]] t1_e_t2.
-      assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
-      inversion H_in; subst.
-      destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
-      exists s2.
-      now firstorder. 
+    intros s1 t1 [R [R_le_bisimF_R H_in1]] e t2 t1_e_t2.
+    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
+    inversion H_in; subst.
+    destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
+    exists s2.
+    now firstorder. 
   Qed.
 
   Let bisimilar_cond1 : Src -> Tgt -> Prop :=
@@ -1156,7 +1149,7 @@ Module PowerSetCoLa.
     exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
   .
 
-  Lemma bisimilar_iff :
+  Theorem bisimilar_iff :
     forall s : Src,
     forall t : Tgt,
     s `isBisimilarTo` t <-> (bisimilar_cond1 s t /\ bisimilar_cond2 s t).
@@ -1169,14 +1162,14 @@ Module PowerSetCoLa.
         induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
         - exists t0...
         - destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
-          destruct (proj1 (the_diagram_of_bisimilarity s1 t1) e s2 s1_bisimilar_t1 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
+          destruct (the_square_for_1 s1 t1 s1_bisimilar_t1 e s2  s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
           exists t2...
       }
       { intros es t t0_es_t.
         induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
         - exists s0...
         - destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
-          destruct (proj2 (the_diagram_of_bisimilarity s1 t1) e t2 s1_bisimilar_t1 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
+          destruct (the_square_for_2 s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
           exists s2...
       }
     - intros [H_cond1 H_cond2].
