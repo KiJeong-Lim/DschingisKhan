@@ -1023,12 +1023,12 @@ Module PowerSetCoLa.
     * ```
     * Take $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ and $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
     * Then we know that $(F, fmap)$ is an endofunctor of the category of types from the identity $my_map f X = { (f a, e) | (a, e) \in X }$.
-    * Also every coalgebra of the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
-    * Furthermore, conversely, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
-    * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
+    * Hence, every coalgebra for the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
+    * Further, conversely, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra for $F$.
+    * If a coalgebra $(State, State_trans)$ for $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
-    * Assume that $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of the endofunctor $F$.
+    * Assume that $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras for the endofunctor $F$.
     * We say $bs : Src -> Tgt$ is a bisimulation map if it is a coalgebra homomorphism,
     * i.e., $fmap bs ∘ Src_trans = Tgt_trans ∘ bs$ is true.
     * But every function $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
