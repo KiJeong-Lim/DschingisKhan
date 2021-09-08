@@ -1055,7 +1055,7 @@ Module PowerSetCoLa.
     * where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bs s = t$,
     *       $F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => s_1 ~~[ e ]~> s_2$, and
     *       $F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2$;
-    * and $R^T$ denotes $flip R$, that is, $R s t \iff R^T t s$ for any $s : Src$ and $t : Tgt$.
+    * and $R^T$ denotes $flip R$, that is, $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
     * This is the reason why a homomorphism between two coalgebras for an endofunctor is called a bisimulation map:
     * the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^T$ is a simulation of $Tgt$ in $Src$.
   ***)
