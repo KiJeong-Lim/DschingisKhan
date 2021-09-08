@@ -1023,8 +1023,8 @@ Module PowerSetCoLa.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor,
     * with $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
-    * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
-    * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
+    * Then every coalgebra of the endofunctor $F$ is a pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
+    * Furthermore, converserly, every pair of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
@@ -1042,7 +1042,7 @@ Module PowerSetCoLa.
     * If $bs : Src -> Tgt$ is a bisimulation map
     * then the left-lower path implies the right-upper path on each following squares:
     * ===================== * ===================== *
-    * The square for (1')   * The square for (2')   *
+    * The square for (1)    * The square for (2)    *
     * ===================== * ===================== *
     *  s_1 ---- R ---> t_1  *  t_1 --- R^t --> s_1  *
     *   |               |   *   |               |   *
@@ -1056,6 +1056,7 @@ Module PowerSetCoLa.
     *       ; F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => s_1 ~~[ e ]~> s_2
     *       ; F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2
     *       }
+    * and $R^t$ denotes the transpose of the relation $R$.
     * This is why a homomorphism between coalgebras for an endofunctor is called a bisimulation map;
     * the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^t$ is a simulation of $Tgt$ in $Src$.
   ***)
