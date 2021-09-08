@@ -1009,55 +1009,6 @@ Module PowerSetCoLa.
 
   Section BISIMULATION.
 
-(* "A category-theoretical approach to the definition of bisimulation map between labelled-transition systems"
-  [#1]
-  ```coq
-  Section TMP_SECT_1.
-  Definition ensemble (A : Type) : Type := A -> Prop.
-  Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
-  Variable Eff : Type.
-  Inductive my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
-  | in_my_map : forall a : A, forall e : Eff, member (a, e) X -> member (f a, e) (my_map f X)
-  .
-  End TMP_SECT_1.
-  ```
-  Define $F : Type -> Type := fun A : Type => ensemble (A * Eff)$.
-  Then, noting the fact that $my_map f X$ exactly represents to the set ${ (f a, e) | (a, e) \in X }$,
-  we find that $my_map$ is a covariant map thus $(F, my_map)$ is an endofunctor of the category of types.
-  If a coalgebra $(State : Type, State_trans : State -> F State)$ for the endofunctor $F$ is given,
-  we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
-  [#2]
-  Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two $F$-coalgebras.
-  We say $bsm : Src -> Tgt$ is a bisimulation map if and only if it is an $F$-coalgebra homomorphism,
-  i.e., it satisfies $my_map bsm ∘ Src_trans = Tgt_trans ∘ bsm$.
-  But every function $f : Src -> Tgt$ satisfies $my_map f ∘ Src_trans = Tgt_trans ∘ f$ iff:
-  (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
-  (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for all $s_2 : Src$.
-  Therefore we can conclude a function $f : Src -> Tgt$ is a bisimulation map iff:
-  (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
-  (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
-  by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
-  [#3]
-  Let a function $bsm : Src -> Tgt$ be given.
-  Then $bsm$ is a bisimulation map iff
-  every left-lower path guarantees the existence of some right-upper path on each following squares:
-  % =================== % =================== %
-  % The square for (1)  % The square for (2)  % The left one asserts:
-  % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
-  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
-  %   |             |   %   |             |   %
-  %  R^T           R^T  %   R             R   % The right one asserts:
-  %   |             |   %   |             |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
-  %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
-  % =================== % =================== %
-  % where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bsm s = t$;
-  % and $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
-  This is the reason why a homomorphism between two coalgebras for an endofunctor is called a bisimulation map:
-  the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^T$ is a simulation of $Tgt$ in $Src$.
-*)
-
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
 
   Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
