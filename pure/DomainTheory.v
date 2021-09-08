@@ -1009,37 +1009,37 @@ Module PowerSetCoLa.
 
   Section BISIMULATION_RELATION.
 
-  (** "A category-theoretical approach to the definition of bisimulation for labelled-transition systems"
+  (** "A category-theoretical approach to the definition of bisimulation map between labelled-transition systems"
     * [#1]
     * ```coq
-    * Section LabelledTransitionSystem.
+    * Section TMP_SECT_1.
     * Definition ensemble (A : Type) : Type := A -> Prop.
     * Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
     * Variable Eff : Type.
     * Variant my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
     * | in_my_map (a : A) (e : Eff) : member (a, e) X -> member (f a, e) (my_map f X)
     * .
-    * End LabelledTransitionSystem.
+    * End TMP_SECT_1.
     * ```
     * Let $F : Type -> Type := fun A : Type => ensemble (A * Eff)$ be an endofunctor,
-    * where $fmap (f : A -> B) : F A -> F B := my_map f$.
+    * with $fmap {A : Type} {B : Type} (f : A -> B) : F A -> F B := my_map f$.
     * Then every coalgebra of the endofunctor $F$ is of the form $(State : Type, State_trans : State -> ensemble (State * Eff))$.
     * Conversely, every pair $(State : Type, State_trans : State -> ensemble (State * Eff))$ is a coalgebra of $F$.
     * If a coalgebra $(State, State_trans)$ of $F$ is given, for any $e : Eff$, $st1 : State$ and $st2 : State$,
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
     * Assume that $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of the endofunctor $F$.
-    * We say a map $bs : Src -> Tgt$ is a bisimulation of $Src$ in $Tgt$ if $bs$ is a coalgebra homomorphism,
+    * We say $bs : Src -> Tgt$ is a bisimulation map if it is a coalgebra homomorphism,
     * i.e., $fmap bs ∘ Src_trans = Tgt_trans ∘ bs$ holds.
-    * But every map $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
+    * But every function $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
     * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$, and
     * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ holds for every $s_2 : Src$.
-    * Therefore, we can conclude a map $f : Src -> Tgt$ is a bisimulation of $Src$ in $Tgt$ if and only if:
+    * Therefore, we can conclude a function $f : Src -> Tgt$ is a bisimulation map if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
     * (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
     * [#3]
-    * If $bs : Src -> Tgt$ is a bisimulation of $Src$ in $Tgt$
+    * If $bs : Src -> Tgt$ is a bisimulation map
     * then the left-lower path implies the right-upper path on each following squares:
     * ===================== * ===================== *
     * The square for (1')   * The square for (2')   *
@@ -1052,21 +1052,12 @@ Module PowerSetCoLa.
     *  \|/             \|/  *  \|/             \|/  *
     *  s_2 ---- R ---> t_2  *  t_2 --- R^t --> s_2  *
     * ===================== * ===================== *
-    * where { R : Src -> Tgt -> Prop :=
-    *         fun s : Src =>
-    *         fun t : Tgt =>
-    *         bs s = t
-    *       ; F_S : Eff -> Src -> Src -> Prop :=
-    *         fun e : Eff =>
-    *         fun s_1 : Src =>
-    *         fun s_2 : Src =>
-    *         s_1 ~~[ e ]~> s_2
-    *       ; F_T : Eff -> Tgt -> Tgt -> Prop :=
-    *         fun e : Eff =>
-    *         fun t_1 : Tgt =>
-    *         fun t_2 : Tgt =>
-    *         t_1 ~~[ e ]~> t_2
+    * where { R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bs s = t
+    *       ; F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => s_1 ~~[ e ]~> s_2
+    *       ; F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2
     *       }
+    * This is why a homomorphism between coalgebras for an endofunctor is called a bisimulation map;
+    * the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^t$ is a simulation of $Tgt$ in $Src$.
   ***)
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
