@@ -1161,7 +1161,7 @@ Module PowerSetCoLa.
         induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
         - exists t0...
         - destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
-          destruct (the_square_for_1 s1 t1 s1_bisimilar_t1 e s2  s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
+          destruct (the_square_for_1 s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
           exists t2...
       }
       { intros es t t0_es_t.
@@ -1173,7 +1173,7 @@ Module PowerSetCoLa.
       }
     - intros [H_cond1 H_cond2].
       destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_es_t s0_bisimilar_t]].
-      inversion t0_es_t; subst t...
+      inversion t0_es_t; subst...
   Qed.
 
   Definition bisim : ensemble (Src * Tgt) :=
@@ -1184,7 +1184,7 @@ Module PowerSetCoLa.
     forall s : Src,
     forall t : Tgt,
     member (s, t) bisim <-> s `isBisimilarTo` t.
-  Proof with eauto with *.
+  Proof.
     set (b := exist isMonotonicMap bisimF bisimF_isMonotonicMap).
     set (bisim' := proj1_sig (nu b)).
     assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
