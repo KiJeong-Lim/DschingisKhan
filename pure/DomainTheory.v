@@ -1044,16 +1044,16 @@ Module PowerSetCoLa.
     * Then $bsm$ is a bisimulation map iff
       the left-lower path guarantees the existence of right-upper path
       on each following squares:
-    % ===================== % ===================== % The left one means:
-    % The square for (1)    % The square for (2)    % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$
-    % ===================== % ===================== % > if the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
-    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % The right one means:
-    %   |               |   %   |               |   % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$
-    %   |               |   %   |               |   % > if the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
-    % F_S e           F_T e % F_T e           F_S e %
+    % ===================== % ===================== %
+    % The square for (1)    % The square for (2)    % The left one means:
+    % ===================== % ===================== % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$
+    %  s_1 ---- R ---> t_1  %  t_1 --- R^T --> s_1  % > if the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
+    %   |               |   %   |               |   % In other words, it asserts that $R$ is a simulation of $Src$ in $Tgt$.
     %   |               |   %   |               |   %
-    %  \|/             \|/  %  \|/             \|/  %
-    %  s_2 ---- R ---> t_2  %  t_2 --- R^T --> s_2  %
+    % F_S e           F_T e % F_T e           F_S e % The right one means:
+    %   |               |   %   |               |   % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along the road labelled $e$
+    %  \|/             \|/  %  \|/             \|/  % > if the state of $Tgt$ moves from $t_1$ to $t_2$ along the road labelled $e$ and $R s_2 t_2$ holds.
+    %  s_2 ---- R ---> t_2  %  t_2 --- R^T --> s_2  % In other words, it asserts that $R^T$ is a simulation of $Tgt$ in $Src$.
     % ===================== % ===================== %
     % where $F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => member (s_1, e) (Src_trans s_2)$,
     %       $F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => member (t_1, e) (Tgt_trans t_2)$, and
