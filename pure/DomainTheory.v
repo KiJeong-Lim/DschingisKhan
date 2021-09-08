@@ -1029,8 +1029,7 @@ Module PowerSetCoLa.
       we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     % [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two $F$-coalgebras.
-    * We say $bsm : Src -> Tgt$ is a bisimulation map if and only if
-      it is an $F$-coalgebra homomorphism,
+    * We say $bsm : Src -> Tgt$ is a bisimulation map if and only if it is an $F$-coalgebra homomorphism,
       i.e., $my_map bsm ∘ Src_trans = Tgt_trans ∘ bsm$ is true.
     * But every function $f : Src -> Tgt$ satisfies $my_map f ∘ Src_trans = Tgt_trans ∘ f$ iff:
       (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
