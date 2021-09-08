@@ -1030,17 +1030,17 @@ Module PowerSetCoLa.
     * [#2]
     * Assume that $(Src, Src_trans) and $(Tgt, Tgt_trans)$ are two coalgebras of the endofunctor $F$.
     * We say $bs : Src -> Tgt$ is a bisimulation map if it is a coalgebra homomorphism,
-    * i.e., $fmap bs ∘ Src_trans = Tgt_trans ∘ bs$ holds.
+    * i.e., $fmap bs ∘ Src_trans = Tgt_trans ∘ bs$ is true.
     * But every function $f : Src -> Tgt$ satisfies $fmap f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
-    * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ holds for every $s_2 : Src$, and
-    * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ holds for every $s_2 : Src$.
+    * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for every $s_2 : Src$, and
+    * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for every $s_2 : Src$.
     * Therefore, we can conclude a function $f : Src -> Tgt$ is a bisimulation map if and only if:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
     * (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
     * [#3]
-    * If $bs : Src -> Tgt$ is a bisimulation map
-    * then the left-lower path implies the right-upper path on each following squares:
+    * Let $bs : Src -> Tgt$ be a bisimulation map.
+    * Then the left-lower path implies the right-upper path on each following squares:
     * ===================== * ===================== *
     * The square for (1)    * The square for (2)    *
     * ===================== * ===================== *
@@ -1057,8 +1057,9 @@ Module PowerSetCoLa.
     *       ; F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => t_1 ~~[ e ]~> t_2
     *       }
     * and $R^t$ denotes $flip R$, that is, $R s t \iff R^t t s$ for any $s : Src$ and $t : Tgt$.
-    * This is why a homomorphism between coalgebras for an endofunctor is called a bisimulation map;
-    * the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^t$ is a simulation of $Tgt$ in $Src$.
+    * This is the reason why a homomorphism between two coalgebras for an endofunctor is called a bisimulation map:
+    * - the relation $R$ is a simulation of $Src$ in $Tgt$, and
+    * - the relation $R^t$ is a simulation of $Tgt$ in $Src$.
   ***)
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
