@@ -1028,12 +1028,12 @@ Module PowerSetCoLa.
     * we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
     * [#2]
     * Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two $F$-coalgebras.
-    * We say $bsm : Src -> Tgt$ is a bisimulation map if and only if it is a $F$-coalgebra homomorphism,
+    * We say $bsm : Src -> Tgt$ is a bisimulation map if and only if it is an $F$-coalgebra homomorphism,
     * i.e., $my_map bsm ∘ Src_trans = Tgt_trans ∘ bsm$ is true.
-    * But every function $f : Src -> Tgt$ satisfies $my_map f ∘ Src_trans = Tgt_trans ∘ f$ if and only if:
+    * But every function $f : Src -> Tgt$ satisfies $my_map f ∘ Src_trans = Tgt_trans ∘ f$ iff:
     * (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
     * (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for all $s_2 : Src$.
-    * Therefore we can conclude a function $f : Src -> Tgt$ is a bisimulation map if and only if:
+    * Therefore we can conclude a function $f : Src -> Tgt$ is a bisimulation map iff:
     * (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
     * (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$;
     * by exploiting the facts that (1) is equivalent to (1') and that (2) is equivalent to (2').
