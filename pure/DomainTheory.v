@@ -1045,19 +1045,19 @@ Module PowerSetCoLa.
   % The square for (1)    % The square for (2)    % The left one asserts:
   % ===================== % ===================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
   %  t_1 --- R^t --> s_1  %  s_1 ---- R ---> t_1  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %   |               |   %   |               |   % It means that $R^T$ is a simulation of $Src$ in $Tgt$.
+  %   |               |   %   |               |   % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
   %   |               |   %   |               |   %
-  % F_S e           F_T e % F_T e           F_S e % The right one asserts:
+  % F_T e           F_S e % F_S e           F_T e % The right one asserts:
   %   |               |   %   |               |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
   %  \|/             \|/  %  \|/             \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %  t_2 --- R^t --> s_2  %  s_2 ---- R ---> t_2  % It means that $R$ is a simulation of $Tgt$ in $Src$.
+  %  t_2 --- R^t --> s_2  %  s_2 ---- R ---> t_2  % It means that $R$ is a simulation of $Src$ in $Tgt$.
   % ===================== % ===================== %
   % where $F_S : Eff -> Src -> Src -> Prop := fun e : Eff => fun s_1 : Src => fun s_2 : Src => member (s_1, e) (Src_trans s_2)$,
   %       $F_T : Eff -> Tgt -> Tgt -> Prop := fun e : Eff => fun t_1 : Tgt => fun t_2 : Tgt => member (t_1, e) (Tgt_trans t_2)$, and
   %       $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bsm s = t$;
   % and $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
   This is the reason why a homomorphism between two coalgebras for an endofunctor is called a bisimulation map:
-  the relation $R^T$ is a simulation of $Src$ in $Tgt$, and the relation $R$ is a simulation of $Tgt$ in $Src$.
+  the relation $R$ is a simulation of $Src$ in $Tgt$, and the relation $R^T$ is a simulation of $Tgt$ in $Src$.
 *)
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
