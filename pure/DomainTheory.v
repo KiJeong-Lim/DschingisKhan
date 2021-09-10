@@ -1207,8 +1207,8 @@ Module PowerSetCoLa.
   % ========================== %
   % where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#2]
-  Let a function $bsm : Src -> Tgt$ be given.
-  Then $bsm$ is a bisimulation map iff every left-lower path guarantees the existence of some right-upper path on each following squares:
+  Let $R$ be a bisimulation.
+  Then every left-lower path guarantees the existence of some right-upper path on each following squares:
   % =================== % =================== %
   % Forward Simulation  % Backward Simulation % The left one asserts:
   % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
@@ -1220,8 +1220,7 @@ Module PowerSetCoLa.
   %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
   %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
   % =================== % =================== %
-  % where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bsm s = t$;
-  % and $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+  % where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
 *)
 
   End BISIMULATION.
