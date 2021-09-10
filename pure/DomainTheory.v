@@ -1169,6 +1169,61 @@ Module PowerSetCoLa.
       exact (claim3 R R_le_bisimF_R (s, t) H_in).
   Qed.
 
+(* "Notes"
+  [#1]
+  ```coq
+  Section TMP_SECT_1.
+  Definition ensemble (A : Type) : Type := A -> Prop.
+  Definition member {A : Type} : A -> ensemble A -> Prop := fun x : A => fun X : ensemble A => X x.
+  Variable Eff : Type.
+  Inductive my_map {A : Type} {B : Type} (f : A -> B) (X : ensemble (A * Eff)) : ensemble (B * Eff) :=
+  | in_my_map : forall a : A, forall e : Eff, member (a, e) X -> member (f a, e) (my_map f X)
+  .
+  End TMP_SECT_1.
+  ```
+  Define $F : Type -> Type := fun A : Type => ensemble (A * Eff)$.
+  Then, noting the fact that $my_map f X$ exactly represents to the set ${ (f a, e) | (a, e) \in X }$,
+  we find that $my_map$ is a covariant map thus $(F, my_map)$ is an endofunctor of the category of types.
+  If a coalgebra $(State : Type, State_trans : State -> F State)$ for the endofunctor $F$ is given,
+  we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
+  Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two $F$-coalgebras.
+  Then every function $f : Src -> Tgt$ is $F$-coalgebra homomorphism iff:
+  (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
+  (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for all $s_2 : Src$.
+  Note that (1) is equivalent to (1') and that (2) is equivalent to (2'):
+  (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
+  (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$.
+  Therefore both the left-lower path and the right-upper path imply the existence of each other on the following square:
+  % ========================== %
+  % $F$-coalgebra homomorphism %
+  % ========================== %
+  %     t_1 ~~[ e ]~> t_2      %
+  %      |             |       %
+  %      |             |       %
+  %     psi           psi      %
+  %      |             |       %
+  %     \|/           \|/      %
+  %     s_1 ~~[ e ]~> s_2      %
+  % ========================== %
+  % where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
+  [#2]
+  Let a function $bsm : Src -> Tgt$ be given.
+  Then $bsm$ is a bisimulation map iff every left-lower path guarantees the existence of some right-upper path on each following squares:
+  % =================== % =================== %
+  % Forward Simulation  % Backward Simulation % The left one asserts:
+  % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
+  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
+  %   |             |   %   |             |   %
+  %  R^T           R^T  %   R             R   % The right one asserts:
+  %   |             |   %   |             |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
+  %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
+  % =================== % =================== %
+  % where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => bsm s = t$;
+  % and $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+*)
+
   End BISIMULATION.
 
 End PowerSetCoLa.
