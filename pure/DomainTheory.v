@@ -1043,7 +1043,7 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Lemma the_square_for_1 :
+  Lemma bisimilar_elim1 :
     forall s1 : Src,
     forall t1 : Tgt,
     s1 `isBisimilarTo` t1 ->
@@ -1060,7 +1060,7 @@ Module PowerSetCoLa.
     now firstorder.
   Qed.
 
-  Lemma the_square_for_2 :
+  Lemma bisimilar_elim2 :
     forall s1 : Src,
     forall t1 : Tgt,
     s1 `isBisimilarTo` t1 ->
@@ -1095,32 +1095,50 @@ Module PowerSetCoLa.
     exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
   .
 
-  Theorem bisimilar_iff :
+  Lemma bisimilar_intro1 :
     forall s : Src,
     forall t : Tgt,
-    s `isBisimilarTo` t <-> (bisimilar_cond1 s t /\ bisimilar_cond2 s t).
+    bisimilar_cond1 s t ->
+    bisimilar s t.
+  Proof.
+    intros s0 t0 H_cond1.
+    destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_steps_t s0_bisimilar_t]].
+    inversion t0_steps_t; subst t.
+    exact s0_bisimilar_t.
+  Qed.
+
+  Lemma bisimilar_intro2 :
+    forall s : Src,
+    forall t : Tgt,
+    bisimilar_cond2 s t ->
+    bisimilar s t.
+  Proof.
+    intros s0 t0 H_cond2.
+    destruct (H_cond2 nil t0 (star_init t0)) as [s [s0_steps_s s_bisimilar_t0]].
+    inversion s0_steps_s; subst s.
+    exact s_bisimilar_t0.
+  Qed.
+
+  Lemma bisimilar_elim :
+    forall s : Src,
+    forall t : Tgt,
+    s `isBisimilarTo` t -> 
+    (bisimilar_cond1 s t /\ bisimilar_cond2 s t).
   Proof with eauto.
-    intros s0 t0.
+    intros s0 t0 s0_bisimilar_t0.
     split.
-    - intros s0_bisimilar_t0.
-      split.
-      { intros es s s0_es_s.
-        induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
-        - exists t0...
-        - destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
-          destruct (the_square_for_1 s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
-          exists t2...
-      }
-      { intros es t t0_es_t.
-        induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
-        - exists s0...
-        - destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
-          destruct (the_square_for_2 s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
-          exists s2...
-      }
-    - intros [H_cond1 H_cond2].
-      destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_es_t s0_bisimilar_t]].
-      inversion t0_es_t; subst...
+    - intros es s s0_es_s.
+      induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
+      + exists t0...
+      + destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
+        destruct (bisimilar_elim1 s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
+        exists t2...
+    - intros es t t0_es_t.
+      induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
+      + exists s0...
+      + destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
+        destruct (bisimilar_elim2 s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
+        exists s2...
   Qed.
 
   Definition bisim : ensemble (Src * Tgt) :=
