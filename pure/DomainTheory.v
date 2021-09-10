@@ -1173,7 +1173,7 @@ Module PowerSetCoLa.
   [#1]
   The definition of homomorphism between two coalgebras for an endofunctor is given by:
   > Let $(X \in Ob(C), alpha : X -> F X)$ and $(Y \in Ob(C), beta : Y -> F Y)$ be two coalgebras for an endofunctor $F$ of a category $C$.
-  > Then a map $f : X -> Y$ is $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
+  > Then a map $f : X -> Y$ is an $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
   [#2]
   ```coq
   Section TMP_SECT_1.
@@ -1191,7 +1191,7 @@ Module PowerSetCoLa.
   If a coalgebra $(State : Type, State_trans : State -> F State)$ for the endofunctor $F$ is given,
   we will write $st1 ~~[ e ]~> st2$ whenever $member (st1, e) (State_trans st2)$ holds.
   Let $(Src, Src_trans) and $(Tgt, Tgt_trans)$ be two $F$-coalgebras.
-  Then every function $f : Src -> Tgt$ is $F$-coalgebra homomorphism iff:
+  Then every function $f : Src -> Tgt$ is an $F$-coalgebra homomorphism iff:
   (1) $my_map f (Src_trans s_2) \subseteq Tgt_trans (f s_2)$ for all $s_2 : Src$, and
   (2) $Tgt_trans (f s_2) \subseteq my_map f (Src_trans s_2)$ for all $s_2 : Src$.
   Note that (1) is equivalent to (1') and that (2) is equivalent to (2'):
