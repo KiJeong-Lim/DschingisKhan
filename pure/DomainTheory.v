@@ -1193,7 +1193,7 @@ Module PowerSetCoLa.
   Note that (1) is equivalent to (1') and that (2) is equivalent to (2'):
   (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
   (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$.
-  Therefore the existence of the left-lower path and that of the right-upper path are equivalent on the following square:
+  Therefore the left-lower path guarantees the existence of the right-upper path and vice versa on the following square:
   % ========================== %
   % $F$-coalgebra homomorphism %
   % ========================== %
