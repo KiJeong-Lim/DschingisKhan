@@ -1173,7 +1173,7 @@ Module PowerSetCoLa.
   [#1]
   The definition of homomorphism between two coalgebras for an endofunctor is given by:
   > Let $(X \in Ob(C), alpha : X -> F X)$ and $(Y \in Ob(C), beta : Y -> F Y)$ be two coalgebras for an endofunctor $F$ of a category $C$.
-  > Then a map $f : X -> Y$ is $F$-coalgebra homomorphism if and only if it satisfies $F(f) . alpha = beta . f$.
+  > Then a map $f : X -> Y$ is $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
   [#2]
   ```coq
   Section TMP_SECT_1.
@@ -1212,7 +1212,7 @@ Module PowerSetCoLa.
   % where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#3]
   Let $R$ be a bisimulation.
-  Then every left-lower path guarantees the existence of some right-upper path on each following squares:
+  Then the left-lower path guarantees the existence of the right-upper path on each following squares:
   % =================== % =================== %
   % Forward Simulation  % Backward Simulation % The left one asserts:
   % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
