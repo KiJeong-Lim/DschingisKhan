@@ -1178,17 +1178,25 @@ Module PowerSetCoLa.
   Let $R : Src -> Tgt -> Prop$ be given.
   Then $R$ is a bisimulation iff the left-lower path guarantees the existence of the right-upper path on each following squares:
   % =================== % =================== %
-  % Forward Simulation  % Backward Simulation % The left one asserts:
-  % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
-  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
+  % Forward Simulation  % Backward Simulation %
+  % =================== % =================== %
+  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  %
   %   |             |   %   |             |   %
-  %  R^T           R^T  %   R             R   % The right one asserts:
-  %   |             |   %   |             |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
-  %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
+  %   |             |   %   |             |   %
+  %  R^T           R^T  %   R             R   %
+  %   |             |   %   |             |   %
+  %  \|/           \|/  %  \|/           \|/  %
+  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  %
   % =================== % =================== %
   where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+  The left one asserts:
+  > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
+  > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  It means that $R$ is a simulation of $Src$ in $Tgt$.
+  The right one asserts:
+  > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
+  > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  It means that $R^T$ is a simulation of $Tgt$ in $Src$.
   [#3]
   ```coq
   Section TMP_SECT_1.
