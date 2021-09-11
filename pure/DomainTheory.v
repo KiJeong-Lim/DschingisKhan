@@ -1173,7 +1173,7 @@ Module PowerSetCoLa.
   [#1]
   The definition of homomorphism between two coalgebras for an endofunctor is given by:
   > Let $(X \in Ob(C), alpha : X -> F X)$ and $(Y \in Ob(C), beta : Y -> F Y)$ be two coalgebras for an endofunctor $F$ of a category $C$.
-  > Then a map $f : X -> Y$ is an $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
+  > Then an arrow $f : X -> Y$ is an $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
   [#2]
   ```coq
   Section TMP_SECT_1.
@@ -1209,7 +1209,7 @@ Module PowerSetCoLa.
   %     \|/           \|/      %
   %     s_1 ~~[ e ]~> s_2      %
   % ========================== %
-  % where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
+  where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#3]
   Let $R$ be a bisimulation.
   Then the left-lower path guarantees the existence of the right-upper path on each following squares:
@@ -1224,7 +1224,7 @@ Module PowerSetCoLa.
   %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
   %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
   % =================== % =================== %
-  % where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+  where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
 *)
 
   End BISIMULATION.
