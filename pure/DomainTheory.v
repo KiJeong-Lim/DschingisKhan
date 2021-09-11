@@ -1229,7 +1229,8 @@ Module PowerSetCoLa.
   Therefore we can conclude:
   > From any given $F$-coalgebra homomorphism,
   > we can derive a simulation,
-  > which is generally not a bisimulation.
+  > which is generally not a bisimulation,
+  > where $F : Type -> Type$ is the endofunctor given in [#3].
 *)
 
   End BISIMULATION.
