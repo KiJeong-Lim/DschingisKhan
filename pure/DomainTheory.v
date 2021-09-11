@@ -1056,8 +1056,7 @@ Module PowerSetCoLa.
     assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
     inversion H_in; subst.
     destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
-    exists t2.
-    now firstorder.
+    now exists t2; firstorder.
   Qed.
 
   Lemma bisimilar_elim2 :
@@ -1073,11 +1072,10 @@ Module PowerSetCoLa.
     assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
     inversion H_in; subst.
     destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
-    exists s2.
-    now firstorder. 
+    now exists s2; firstorder.
   Qed.
 
-  Let bisimilar_cond1 : Src -> Tgt -> Prop :=
+  Let forward_samsara : Src -> Tgt -> Prop :=
     fun s0 : Src =>
     fun t0 : Tgt =>
     forall es : list Eff,
@@ -1086,7 +1084,7 @@ Module PowerSetCoLa.
     exists t : Tgt, t0 ~~~[ es ]~>* t /\ s `isBisimilarTo` t
   .
 
-  Let bisimilar_cond2 : Src -> Tgt -> Prop :=
+  Let backward_samsara : Src -> Tgt -> Prop :=
     fun s0 : Src =>
     fun t0 : Tgt =>
     forall es : list Eff,
@@ -1095,35 +1093,33 @@ Module PowerSetCoLa.
     exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
   .
 
-  Lemma bisimilar_intro1 :
+  Lemma forward_samsara_implies_bisimilar :
     forall s : Src,
     forall t : Tgt,
-    bisimilar_cond1 s t ->
+    forward_samsara s t ->
     bisimilar s t.
   Proof.
     intros s0 t0 H_cond1.
     destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_steps_t s0_bisimilar_t]].
-    inversion t0_steps_t; subst t.
-    exact s0_bisimilar_t.
+    now inversion t0_steps_t; subst.
   Qed.
 
-  Lemma bisimilar_intro2 :
+  Lemma backward_samsara_implies_bisimilar :
     forall s : Src,
     forall t : Tgt,
-    bisimilar_cond2 s t ->
+    backward_samsara s t ->
     bisimilar s t.
   Proof.
     intros s0 t0 H_cond2.
     destruct (H_cond2 nil t0 (star_init t0)) as [s [s0_steps_s s_bisimilar_t0]].
-    inversion s0_steps_s; subst s.
-    exact s_bisimilar_t0.
+    now inversion s0_steps_s; subst.
   Qed.
 
-  Lemma bisimilar_elim :
+  Lemma bisimilar_implies_samsara :
     forall s : Src,
     forall t : Tgt,
     s `isBisimilarTo` t -> 
-    (bisimilar_cond1 s t /\ bisimilar_cond2 s t).
+    (forward_samsara s t /\ backward_samsara s t).
   Proof with eauto.
     intros s0 t0 s0_bisimilar_t0.
     split.
@@ -1141,29 +1137,29 @@ Module PowerSetCoLa.
         exists s2...
   Qed.
 
-  Definition bisim : ensemble (Src * Tgt) :=
+  Definition bisimulation : ensemble (Src * Tgt) :=
     proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
   .
 
-  Theorem bisim_spec :
+  Theorem bisimulation_iff :
     forall s : Src,
     forall t : Tgt,
-    member (s, t) bisim <-> s `isBisimilarTo` t.
+    member (s, t) bisimulation <-> s `isBisimilarTo` t.
   Proof.
     set (b := exist isMonotonicMap bisimF bisimF_isMonotonicMap).
-    set (bisim' := proj1_sig (nu b)).
-    assert (claim1 : bisim' == bisim) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
-    assert (claim2 : isGreatestFixedPoint bisim' bisimF).
+    set (nu_b := proj1_sig (nu b)).
+    assert (claim1 : nu_b == bisimulation) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
+    assert (claim2 : isGreatestFixedPoint nu_b bisimF).
     { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
       exact (nu_isSupremum b).
     }
-    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisim) by exact (proj1 (nu_isSupremum b bisim) (Poset_refl1 bisim' bisim claim1)).
+    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisimulation) by exact (proj1 (nu_isSupremum b bisimulation) (Poset_refl1 nu_b bisimulation claim1)).
     intros s t.
     split.
     - intros H_in.
-      exists bisim'.
+      exists nu_b.
       split.
-      + exact (Poset_refl1 bisim' (bisimF bisim') (proj1 claim2)).
+      + exact (Poset_refl1 nu_b (bisimF nu_b) (proj1 claim2)).
       + exact (proj2 (claim1 (s, t)) H_in).
     - intros [R [R_le_bisimF_R H_in]].
       exact (claim3 R R_le_bisimF_R (s, t) H_in).
