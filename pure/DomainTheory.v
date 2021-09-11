@@ -1226,8 +1226,9 @@ Module PowerSetCoLa.
   % =========================== %
   where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#4]
-  The conclusion:
-  > We can derive a simulation relation, which is generally not a bisimulation,
+  The conclusion is:
+  > We can derive a simulation relation,
+  > which is generally not a bisimulation,
   > from any given $F$-coalgebra homomorphism.
 *)
 
