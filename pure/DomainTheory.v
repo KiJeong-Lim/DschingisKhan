@@ -1175,6 +1175,21 @@ Module PowerSetCoLa.
   > Let $(X \in Ob(C), alpha : X -> F X)$ and $(Y \in Ob(C), beta : Y -> F Y)$ be two coalgebras for an endofunctor $F$ of a category $C$.
   > Then an arrow $f : X -> Y$ is an $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
   [#2]
+  Let $R : Src -> Tgt -> Prop$.
+  Then $R$ is a bisimulation iff the left-lower path guarantees the existence of the right-upper path on each following squares:
+  % =================== % =================== %
+  % Forward Simulation  % Backward Simulation % The left one asserts:
+  % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
+  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
+  %   |             |   %   |             |   %
+  %  R^T           R^T  %   R             R   % The right one asserts:
+  %   |             |   %   |             |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
+  %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
+  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
+  % =================== % =================== %
+  where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+  [#3]
   ```coq
   Section TMP_SECT_1.
   Definition ensemble (A : Type) : Type := A -> Prop.
@@ -1210,21 +1225,9 @@ Module PowerSetCoLa.
   %      s_1 ~~[ e ]~> s_2      %
   % =========================== %
   where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
-  [#3]
-  Let $R$ be a bisimulation.
-  Then the left-lower path guarantees the existence of the right-upper path on each following squares:
-  % =================== % =================== %
-  % Forward Simulation  % Backward Simulation % The left one asserts:
-  % =================== % =================== % > $R s_1 t_1$ holds and the state of $Src$ moves from $s_1$ to $s_2$ along an edge labelled $e$
-  %  t_1 ~~[ e ]~> t_2  %  s_1 ~~[ e ]~> s_2  % > only if the state of $Tgt$ moves from $t_1$ to $t_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %   |             |   %   |             |   % It means that $R$ is a simulation of $Src$ in $Tgt$.
-  %   |             |   %   |             |   %
-  %  R^T           R^T  %   R             R   % The right one asserts:
-  %   |             |   %   |             |   % > $R s_1 t_1$ holds and the state of $Tgt$ moves from $t_1$ to $t_2$ along an edge labelled $e$
-  %  \|/           \|/  %  \|/           \|/  % > only if the state of $Src$ moves from $s_1$ to $s_2$ along the edge labelled $e$ and $R s_2 t_2$ holds.
-  %  s_1 ~~[ e ]~> s_2  %  t_1 ~~[ e ]~> t_2  % It means that $R^T$ is a simulation of $Tgt$ in $Src$.
-  % =================== % =================== %
-  where $R^T$ denotes $flip R$ -- that is, the equivalence $R s t <-> R^T t s$ holds for any $s : Src$ and $t : Tgt$.
+  [#4]
+  The conclusion:
+  > We can derive a relation from a given $F$-coalgebra homomorphism which is a simulation but not a bisimulation.
 *)
 
   End BISIMULATION.
