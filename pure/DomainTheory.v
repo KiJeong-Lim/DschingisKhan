@@ -1175,7 +1175,7 @@ Module PowerSetCoLa.
   > Let $(X \in Ob(C), alpha : X -> F X)$ and $(Y \in Ob(C), beta : Y -> F Y)$ be two coalgebras for an endofunctor $F$ of a category $C$.
   > Then an arrow $f : X -> Y$ is an $F$-coalgebra homomorphism if and only if it satisfies $F(f) ∘ alpha = beta ∘ f$.
   [#2]
-  Let $R : Src -> Tgt -> Prop$.
+  Let $R : Src -> Tgt -> Prop$ be given.
   Then $R$ is a bisimulation iff the left-lower path guarantees the existence of the right-upper path on each following squares:
   % =================== % =================== %
   % Forward Simulation  % Backward Simulation % The left one asserts:
@@ -1226,10 +1226,10 @@ Module PowerSetCoLa.
   % =========================== %
   where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#4]
-  The conclusion is:
-  > We can derive a simulation relation,
-  > which is generally not a bisimulation,
-  > from any given $F$-coalgebra homomorphism.
+  Therefore we can conclude:
+  > From any given $F$-coalgebra homomorphism,
+  > we can derive a simulation,
+  > which is generally not a bisimulation.
 *)
 
   End BISIMULATION.
