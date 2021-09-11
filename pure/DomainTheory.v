@@ -82,7 +82,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     exist isMonotonicMap (fun x : D1 => x) id_isMonotonic
   .
 
-  Lemma compose_isMonotonic {D1 : Type} {D2 : Type} {D3 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D3_isPoset : isPoset D3} :
+  Lemma compose_isMonotonic {D1 : Type} {D2 : Type} {D3 : Type} `{D1_isPoset : isPoset D1} `{D2_isPoset : isPoset D2} `{D3_isPoset : isPoset D3} :
     forall f : D1 -> D2,
     isMonotonicMap f ->
     forall g : D2 -> D3,
