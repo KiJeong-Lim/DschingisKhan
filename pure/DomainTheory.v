@@ -1043,7 +1043,7 @@ Module PowerSetCoLa.
 
   Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
 
-  Lemma bisimilar_elim1 :
+  Lemma bisimilar_forwardStep :
     forall s1 : Src,
     forall t1 : Tgt,
     s1 `isBisimilarTo` t1 ->
@@ -1059,7 +1059,7 @@ Module PowerSetCoLa.
     now exists t2; firstorder.
   Qed.
 
-  Lemma bisimilar_elim2 :
+  Lemma bisimilar_backwardStep :
     forall s1 : Src,
     forall t1 : Tgt,
     s1 `isBisimilarTo` t1 ->
@@ -1075,7 +1075,7 @@ Module PowerSetCoLa.
     now exists s2; firstorder.
   Qed.
 
-  Let forward_samsara : Src -> Tgt -> Prop :=
+  Let forwardSamsara : Src -> Tgt -> Prop :=
     fun s0 : Src =>
     fun t0 : Tgt =>
     forall es : list Eff,
@@ -1084,7 +1084,7 @@ Module PowerSetCoLa.
     exists t : Tgt, t0 ~~~[ es ]~>* t /\ s `isBisimilarTo` t
   .
 
-  Let backward_samsara : Src -> Tgt -> Prop :=
+  Let backwardSamsara : Src -> Tgt -> Prop :=
     fun s0 : Src =>
     fun t0 : Tgt =>
     forall es : list Eff,
@@ -1093,10 +1093,10 @@ Module PowerSetCoLa.
     exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
   .
 
-  Lemma forward_samsara_implies_bisimilar :
+  Lemma forwardSamsara_implies_bisimilarity :
     forall s : Src,
     forall t : Tgt,
-    forward_samsara s t ->
+    forwardSamsara s t ->
     bisimilar s t.
   Proof.
     intros s0 t0 H_cond1.
@@ -1104,10 +1104,10 @@ Module PowerSetCoLa.
     now inversion t0_steps_t; subst.
   Qed.
 
-  Lemma backward_samsara_implies_bisimilar :
+  Lemma backwardSamsara_implies_bisimilarity :
     forall s : Src,
     forall t : Tgt,
-    backward_samsara s t ->
+    backwardSamsara s t ->
     bisimilar s t.
   Proof.
     intros s0 t0 H_cond2.
@@ -1115,11 +1115,11 @@ Module PowerSetCoLa.
     now inversion s0_steps_s; subst.
   Qed.
 
-  Lemma bisimilar_implies_samsara :
+  Lemma bisimilarity_implies_both_samsara :
     forall s : Src,
     forall t : Tgt,
     s `isBisimilarTo` t -> 
-    (forward_samsara s t /\ backward_samsara s t).
+    (forwardSamsara s t /\ backwardSamsara s t).
   Proof with eauto.
     intros s0 t0 s0_bisimilar_t0.
     split.
@@ -1127,13 +1127,13 @@ Module PowerSetCoLa.
       induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
       + exists t0...
       + destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
-        destruct (bisimilar_elim1 s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
+        destruct (bisimilar_forwardStep s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
         exists t2...
     - intros es t t0_es_t.
       induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
       + exists s0...
       + destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
-        destruct (bisimilar_elim2 s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
+        destruct (bisimilar_backwardStep s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
         exists s2...
   Qed.
 
@@ -1141,7 +1141,7 @@ Module PowerSetCoLa.
     proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
   .
 
-  Theorem bisimulation_iff :
+  Theorem bisimulation_spec :
     forall s : Src,
     forall t : Tgt,
     member (s, t) bisimulation <-> s `isBisimilarTo` t.
