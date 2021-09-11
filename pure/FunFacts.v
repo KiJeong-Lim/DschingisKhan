@@ -101,7 +101,7 @@ Module FunFacts.
     intros x.
     set (eq_val := eq_reflexivity x). 
     intros phi phi_eq_val eq_val0.
-    replace eq_val0 with eq_val.
+    replace (eq_val0) with (eq_val).
     - exact phi_eq_val.
     - rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
       now destruct eq_val0.
@@ -155,7 +155,7 @@ Module FunFacts.
   Proof.
     destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [H_yes | H_no].
     - exact ({| _i2 := get_i H_yes; _j2 := get_j H_yes; _inv2 := fun _ : RETRACT (POW A) (POW B) => get_inv H_yes |}).
-    - exact ({| _i2 := fun pa : POW A => fun b : B => FALSE_BB; _j2 := fun pb : POW B => fun a : A => FALSE_BB; _inv2 := fun r : RETRACT (POW A) (POW B) => False_ind (forall pa : POW A, (fun a : A => FALSE_BB) = pa) (H_no r) |}).
+    - exact ({| _i2 := fun _ : POW A => fun _ : B => FALSE_BB; _j2 := fun _ : POW B => fun _ : A => FALSE_BB; _inv2 := fun r : RETRACT (POW A) (POW B) => False_ind (forall pa : POW A, (fun _ : A => FALSE_BB) = pa) (H_no r) |}).
   Qed.
 
   Let UNIV : Prop :=
@@ -264,9 +264,7 @@ Module FunFacts.
     phi n /\ (forall m : nat, phi m -> n <= m)
   .
 
-  Variable phi : nat -> Prop.
-
-  Theorem exclusive_middle_implies_unrestricted_minimization :
+  Theorem exclusive_middle_implies_unrestricted_minimization (phi : nat -> Prop) :
     (~ forall n : nat, ~ phi n) ->
     exists n_min : nat, isMinimal n_min phi.
   Proof.
@@ -281,8 +279,8 @@ Module FunFacts.
       split.
       + exact phi_i.
       + intros m phi_m.
-        destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m i m); now firstorder.
-    - destruct (exclusive_middle (exists m : nat, isMinimal m phi)); now firstorder.
+        now destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m i m); firstorder.
+    - now destruct (exclusive_middle (exists m : nat, isMinimal m phi)); firstorder.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
