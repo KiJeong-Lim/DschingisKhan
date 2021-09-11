@@ -152,7 +152,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs)))...
   Qed.
 
-  Local Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : @isCompleteLattice (D >=> D') (fish_isPoset D_requiresCompleteLattice D'_requiresCompleteLattice) :=
+  Global Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : @isCompleteLattice (D >=> D') (fish_isPoset D_requiresCompleteLattice D'_requiresCompleteLattice) :=
     { supremum_always_exists_in_CompleteLattice :=
       fun fs : ensemble (D >=> D') =>
       exist (fun sup_fs : D >=> D' => isSupremum sup_fs fs) (supremum_m fs) (supOfMonotonicMaps_isSupremum fs)
@@ -336,10 +336,10 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     isMonotonicMap (G_f f).
   Proof with eauto with *.
     intros f.
+    assert (claim1 := nu_isSupremum f).
     set (G_f_aux := fun x : D => fun y : D => proj1_sig f (or_plus x y)).
     intros x1 x2 H.
     apply StrongCoinduction.
-    assert (claim1 := nu_isSupremum f).
     simpl in *.
     assert (claim2 : G_f f x1 == proj1_sig f (or_plus x1 (G_f f x1))) by apply (proj2_sig (nu (exist _ (G_f_aux x1) (G_f_aux_isMonotonic f x1)))).
     transitivity (proj1_sig f (or_plus x1 (G_f f x1))).
@@ -371,11 +371,11 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
   Lemma bot_isBottom {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x : D,
     bot =< x.
-  Proof with easy.
+  Proof.
     intros x.
     apply (proj2_sig (supremum_always_exists_in_CompleteLattice (finite []))).
     intros x' H.
-    inversion H; subst...
+    now inversion H; subst.
   Qed.
 
   Global Hint Resolve bot_isBottom : my_hints.
@@ -396,7 +396,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       apply H0...
       unfold member, postfixed_points in *.
       transitivity (proj1_sig f (or_plus bot x)).
-      + apply H1.
+      + exact H1.
       + apply (proj2_sig f), or_plus_le_iff...
     - apply H0.
       intros x H1.
@@ -592,7 +592,7 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
 
   Global Hint Unfold isCompatibleFor : my_hints.
 
-  Global Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
+  Local Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
 
   Lemma const_isCompatibleFor_iff {D : Type} `{D_isPoset : isPoset D} :
     forall b : D >=> D,
