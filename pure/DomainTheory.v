@@ -1198,17 +1198,17 @@ Module PowerSetCoLa.
   (1') $s_1 ~~[ e ]~> s_2 \implies f s_1 ~~[ e ]~> f s_2$, and
   (2') $t_1 ~~[ e ]~> f s_2 \implies \exists s_1, s_1 ~~[ e ]~> s_2 \land t_1 = f s_1$.
   Therefore the left-lower path guarantees the existence of the right-upper path and vice versa on the following square:
-  % ========================== %
-  % $F$-coalgebra homomorphism %
-  % ========================== %
-  %     t_1 ~~[ e ]~> t_2      %
-  %      |             |       %
-  %      |             |       %
-  %     psi           psi      %
-  %      |             |       %
-  %     \|/           \|/      %
-  %     s_1 ~~[ e ]~> s_2      %
-  % ========================== %
+  % =========================== %
+  % $F$-coalgebra homomorphism  %
+  % =========================== %
+  %      t_1 ~~[ e ]~> t_2      %
+  %       |             |       %
+  %       |             |       %
+  %      psi           psi      %
+  %       |             |       %
+  %      \|/           \|/      %
+  %      s_1 ~~[ e ]~> s_2      %
+  % =========================== %
   where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
   [#3]
   Let $R$ be a bisimulation.
