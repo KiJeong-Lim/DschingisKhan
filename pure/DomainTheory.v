@@ -187,14 +187,14 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     isGreatestFixedPoint gfp f.
   Proof with eauto with *.
     intros f H gfp H0.
+    assert (claim1 : gfp =< f gfp).
+    { apply H0.
+      intros x H1.
+      transitivity (f x)...
+    }
     split.
-    - assert (H1 : gfp =< f gfp).
-      { apply H0.
-        intros x H1.
-        transitivity (f x)...
-      }
-      apply Poset_asym.
-      + apply H1.
+    - apply Poset_asym.
+      + exact claim1.
       + apply H0...
     - intros fix_f H1...
   Qed.
@@ -239,7 +239,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     x1 =< or_plus x1 x2 /\ x2 =< or_plus x1 x2.
   Proof with eauto with *.
     intros x1 x2.
-    assert (H : isSupremum (or_plus x1 x2) (finite [x1; x2])) by apply (proj2_sig (supremum_always_exists_in_CompleteLattice (finite [x1; x2]))).
+    assert (H : isSupremum (or_plus x1 x2) (finite [x1; x2])) by exact (proj2_sig (supremum_always_exists_in_CompleteLattice (finite [x1; x2]))).
     split...
   Qed.
 
