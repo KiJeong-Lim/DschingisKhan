@@ -94,7 +94,7 @@ Module CountableBooleanAlgebra. (* Reference: "Constructive Completeness Proofs 
   .
 
   Global Instance leCBA_PartialOrder {B : Type} `{B_isSetoid : isSetoid B} (B_requiresCBA : @isCBA B B_isSetoid) :
-    PartialOrder eqProp (@leCBA B B_isSetoid B_requiresCBA).
+    PartialOrder (@eqProp B B_isSetoid) (@leCBA B B_isSetoid B_requiresCBA).
   Proof with eauto with *.
     unfold leCBA.
     intros b1 b2.
