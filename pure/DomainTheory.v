@@ -42,21 +42,21 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros [x1 y1] [x2 y2]...
   Qed.
 
-  Class isCompleteLattice {D : Type} (D_isPoset : isPoset D) : Type :=
+  Class isCompleteLattice (D : Type) `{D_isPoset : isPoset D} : Type :=
     { supremum_always_exists_in_CompleteLattice :
       forall X : ensemble D,
       {sup_X : D | isSupremum sup_X X}
     }
   .
 
-  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
+  Definition infimum_always_exists_in_CompleteLattice {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : forall X : ensemble D, {inf_X : D | isInfimum inf_X X} :=
     fun X : ensemble D =>
     match supremum_always_exists_in_CompleteLattice (fun d : D => forall x : D, member x X -> d =< x) with
     | exist _ inf_X inf_X_isInfimum_X => exist _ inf_X (compute_Infimum X inf_X inf_X_isInfimum_X)
     end
   .
 
-  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : isCompleteLattice D_isPoset) (D'_requiresCompleteLattice : isCompleteLattice D'_isPoset) : isPoset (D >=> D') :=
+  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : isPoset (D >=> D') :=
     @SubPoset (D -> D') (@isMonotonicMap D D' D_isPoset D'_isPoset) (arrow_isPoset D'_isPoset)
   .
 
@@ -98,13 +98,13 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     exist isMonotonicMap (fun x : D1 => proj1_sig g (proj1_sig f x)) (compose_isMonotonic (proj1_sig f) (proj2_sig f) (proj1_sig g) (proj2_sig g))
   .
 
-  Definition supOfMonotonicMaps {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >=> D') -> D -> D' :=
+  Definition supOfMonotonicMaps {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} `{D'_isCompleteLattice : @isCompleteLattice D' D'_isPoset} : ensemble (D >=> D') -> D -> D' :=
     fun fs : ensemble (D >=> D') =>
     fun x : D =>
     proj1_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs))
   .
 
-  Lemma supOfMonotonicMaps_isMonotonic {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} :
+  Lemma supOfMonotonicMaps_isMonotonic {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} `{D'_isCompleteLattice : @isCompleteLattice D' D'_isPoset} :
     forall fs : ensemble (D >=> D'),
     isMonotonicMap (supOfMonotonicMaps fs).
   Proof with eauto with *.
@@ -122,12 +122,12 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     - apply H1...
   Qed.
 
-  Definition supremum_m {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} : ensemble (D >=> D') -> (D >=> D') :=
+  Definition supremum_m {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} `{D'_isCompleteLattice : @isCompleteLattice D' D'_isPoset} : ensemble (D >=> D') -> (D >=> D') :=
     fun F : ensemble (D >=> D') =>
     exist isMonotonicMap (supOfMonotonicMaps F) (supOfMonotonicMaps_isMonotonic F)
   .
 
-  Lemma supOfMonotonicMaps_isSupremum {D : Type} {D' : Type} `{D_isCompleteLattice : isCompleteLattice D} `{D'_isCompleteLattice : isCompleteLattice D'} :
+  Lemma supOfMonotonicMaps_isSupremum {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} `{D'_isCompleteLattice : @isCompleteLattice D' D'_isPoset} :
     forall fs : ensemble (D >=> D'),
     isSupremum (supremum_m fs) fs.
   Proof with eauto with *.
@@ -159,7 +159,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     }
   .
 
-  Lemma LeastFixedPointInCompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma LeastFixedPointInCompleteLattice {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D -> D,
     isMonotonicMap f ->
     exists lfp : D, isInfimum lfp (prefixed_points f) /\ isLeastFixedPoint lfp f.
@@ -199,7 +199,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     - intros fix_f H1...
   Qed.
 
-  Lemma GreatestFixedPointInCompleteLattice {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma GreatestFixedPointInCompleteLattice {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D -> D,
     isMonotonicMap f ->
     exists gfp : D, isSupremum gfp (postfixed_points f) /\ isGreatestFixedPoint gfp f.
@@ -211,14 +211,14 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     apply GreatestFixedPointOfMonotonicMaps...
   Qed.
 
-  Definition nu {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : forall f : D >=> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
+  Definition nu {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : forall f : D >=> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
     fun f : D >=> D =>
     match supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f)) with
     | exist _ gfp H => exist _ gfp (GreatestFixedPointOfMonotonicMaps (proj1_sig f) (proj2_sig f) gfp H)
     end
   .
 
-  Lemma nu_isSupremum {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma nu_isSupremum {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     isSupremum (proj1_sig (nu f)) (postfixed_points (proj1_sig f)).
   Proof with eauto with *.
@@ -227,13 +227,13 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     destruct (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f))) as [gfp H]...
   Qed.
 
-  Definition or_plus {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : D -> D -> D :=
+  Definition or_plus {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : D -> D -> D :=
     fun x1 : D =>
     fun x2 : D =>
     proj1_sig (supremum_always_exists_in_CompleteLattice (finite [x1; x2]))
   .
 
-  Lemma le_or_plus {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma le_or_plus {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x1 : D,
     forall x2 : D,
     x1 =< or_plus x1 x2 /\ x2 =< or_plus x1 x2.
@@ -243,7 +243,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     split...
   Qed.
 
-  Lemma le_or_plus_intro1 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma le_or_plus_intro1 {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x1 : D,
     forall x2 : D,
     x1 =< or_plus x1 x2.
@@ -253,7 +253,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Global Hint Resolve le_or_plus_intro1 : my_hints.
 
-  Lemma le_or_plus_intro2 {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma le_or_plus_intro2 {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x1 : D,
     forall x2 : D,
     x2 =< or_plus x1 x2.
@@ -263,7 +263,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Global Hint Resolve le_or_plus_intro2 : my_hints.
 
-  Lemma or_plus_le_iff {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma or_plus_le_iff {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x1 : D,
     forall x2 : D,
     forall d : D,
@@ -281,7 +281,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       destruct H3 as [H3 | [H3 | []]]; subst...
   Qed.
 
-  Lemma PrincipleOfTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma PrincipleOfTarski {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
     x =< proj1_sig f x ->
@@ -291,7 +291,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     assert (claim1 := nu_isSupremum f)...
   Qed.
 
-  Lemma StrongCoinduction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma StrongCoinduction {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
     x =< proj1_sig (nu f) <-> x =< proj1_sig f (or_plus x (proj1_sig (nu f))).
@@ -315,7 +315,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       apply or_plus_le_iff...
   Qed.
 
-  Example G_f_aux_isMonotonic {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Example G_f_aux_isMonotonic {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
     isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)).
@@ -324,14 +324,14 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     apply (proj2_sig f), or_plus_le_iff...
   Qed.
 
-  Definition G_f {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D -> D) :=
+  Definition G_f {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : (D >=> D) -> (D -> D) :=
     fun f : D >=> D =>
     let G_f_aux : D -> D -> D := fun x : D => fun y : D => proj1_sig f (or_plus x y) in
     fun x : D =>
     proj1_sig (nu (exist isMonotonicMap (G_f_aux x) (G_f_aux_isMonotonic f x)))
   .
 
-  Lemma G_f_isMonotoinc {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma G_f_isMonotoinc {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     isMonotonicMap (G_f f).
   Proof with eauto with *.
@@ -348,12 +348,12 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       transitivity (or_plus x2 (G_f f x1)); apply or_plus_le_iff...
   Qed.
 
-  Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
+  Definition ParameterizedGreatestFixedpoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : (D >=> D) -> (D >=> D) :=
     fun f : D >=> D =>
     exist isMonotonicMap (G_f f) (G_f_isMonotoinc f)
   .
 
-  Lemma ParameterizedGreatestFixedpoint_isMonotonic {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma ParameterizedGreatestFixedpoint_isMonotonic {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     isMonotonicMap ParameterizedGreatestFixedpoint.
   Proof with eauto with *.
     intros f1 f2 H x.
@@ -364,11 +364,11 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     apply claim1...
   Qed.
 
-  Definition bot {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : D :=
+  Definition bot {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : D :=
     proj1_sig (supremum_always_exists_in_CompleteLattice (finite []))
   .
 
-  Lemma bot_isBottom {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma bot_isBottom {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall x : D,
     bot =< x.
   Proof with easy.
@@ -380,7 +380,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Global Hint Resolve bot_isBottom : my_hints.
 
-  Lemma initialize_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma initialize_cofixpoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     proj1_sig (nu f) == proj1_sig (ParameterizedGreatestFixedpoint f) bot.
   Proof with eauto with *.
@@ -407,7 +407,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       + apply (proj2_sig f)...
   Qed.
 
-  Lemma unfold_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma unfold_cofixpoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
     proj1_sig (ParameterizedGreatestFixedpoint f) x == proj1_sig f (or_plus x (proj1_sig (ParameterizedGreatestFixedpoint f) x)).
@@ -421,7 +421,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     apply (GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))...
   Qed.
 
-  Lemma accumulate_cofixpoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma accumulate_cofixpoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
     forall y : D,
@@ -449,7 +449,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       transitivity (G_f f (or_plus x y))...
   Qed.
 
-  Theorem Compositionality_of_ParameterizedCoinduction {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Theorem Compositionality_of_ParameterizedCoinduction {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall r : D,
     forall r1 : D,
@@ -463,29 +463,29 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     or_plus g1 g2 =< G_f f r.
   Proof with eauto with *.
     intros f r r1 r2 g1 g2 H H0 H1 H2.
-    assert (H3 : g1 =< G_f f (or_plus r (or_plus g1 g2))).
+    assert (claim1 : g1 =< G_f f (or_plus r (or_plus g1 g2))).
     { transitivity (G_f f r1).
       - apply H.
       - apply G_f_isMonotoinc.
         transitivity (or_plus r g2); [apply H1 | apply or_plus_le_iff]...
     }
-    assert (H4 : g2 =< G_f f (or_plus r (or_plus g1 g2))).
+    assert (claim2 : g2 =< G_f f (or_plus r (or_plus g1 g2))).
     { transitivity (G_f f r2).
       - apply H0.
       - apply G_f_isMonotoinc.
         transitivity (or_plus r g1); [apply H2 | apply or_plus_le_iff]...
     }
-    assert (H5 : or_plus g1 g2 =< G_f f (or_plus r (or_plus g1 g2))) by now apply or_plus_le_iff.
+    assert (claim3 : or_plus g1 g2 =< G_f f (or_plus r (or_plus g1 g2))) by now apply or_plus_le_iff.
     apply accumulate_cofixpoint...
   Qed.
 
-  Lemma FullCharacterization_of_ParameterizedGreatestFixedPoint {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma FullCharacterization_of_ParameterizedGreatestFixedPoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall G_f' : D >=> D,
     (forall x : D, proj1_sig G_f' x == proj1_sig f (or_plus x (proj1_sig G_f' x))) ->
     (forall x : D, forall y : D, y =< proj1_sig G_f' (or_plus x y) -> y =< proj1_sig G_f' x) ->
     (G_f' == ParameterizedGreatestFixedpoint f).
-  Proof with eauto with *. (* Thanks to SoonWon *)
+  Proof with eauto with *. (* Thanks to SoonWon Moon *)
     intros f G_f' H H0.
     assert (claim1 : forall x : D, proj1_sig G_f' x =< proj1_sig (ParameterizedGreatestFixedpoint f) x).
     { intros x.
@@ -506,7 +506,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros x...
   Qed.
 
-  Theorem KnasterTarski {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Theorem KnasterTarski {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall fps : ensemble D,
     isSubsetOf fps (fixed_points (proj1_sig f)) ->
@@ -560,7 +560,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
         apply q_is_lub_of_W...
   Qed.
 
-  Lemma CoinductionPrinciple {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D) :
+  Lemma CoinductionPrinciple {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} (b : D >=> D) :
     forall x : D,
     x =< proj1_sig (nu b) <-> (exists y : D, x =< y /\ y =< proj1_sig b y).
   Proof with eauto with *.
@@ -627,7 +627,7 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
     transitivity (proj1_sig f1 (proj1_sig b (proj1_sig f2 x)))...
   Qed.
 
-  Lemma supremum_isCompatibleFor {D : Type} `{D_isCompleteLattice : isCompleteLattice D} :
+  Lemma supremum_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall b : D >=> D,
     forall F : ensemble (D >=> D),
     (forall f : D >=> D, member f F -> f is-compatible-for b) ->
@@ -681,14 +681,14 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
     intros x...
   Qed.
 
-  Definition companion {D : Type} `{D_isCompleteLattice : isCompleteLattice D} : (D >=> D) -> (D >=> D) :=
+  Definition companion {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : (D >=> D) -> (D >=> D) :=
     fun b : D >=> D =>
     exist isMonotonicMap (proj1_sig (supremum_m (fun f : D >=> D => compose_m f b =< compose_m b f))) (supOfMonotonicMaps_isMonotonic (fun f : D >=> D => compose_m f b =< compose_m b f))
   .
 
   Section companion_properties.
 
-  Context {D : Type} `{D_isCompleteLattice : isCompleteLattice D} (b : D >=> D).
+  Context {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} (b : D >=> D).
 
   Lemma companion_isCompatibleFor :
     companion b is-compatible-for b.
@@ -752,7 +752,7 @@ Module PowerSetCoLa.
       apply (H X_i H2)...
   Qed.
 
-  Global Instance ensemble_isCompleteLattice {A : Type} : isCompleteLattice ensemble_isPoset :=
+  Global Instance ensemble_isCompleteLattice {A : Type} : @isCompleteLattice (ensemble A) ensemble_isPoset :=
     { supremum_always_exists_in_CompleteLattice :=
       fun Xs : ensemble (ensemble A) =>
       exist _ (unions Xs) (unions_isSupremum Xs)
@@ -1285,7 +1285,7 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
 
   Section BuildScottTopology.
 
-  Context (D : Type) (D_isPoset : isPoset D).
+  Context {D : Type} `{D_isPoset : isPoset D}.
 
   Let ScottOpen_cond1 : ensemble D -> Prop :=
     fun O : ensemble D =>
@@ -1385,11 +1385,11 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
   End BuildScottTopology.
 
   Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
-    { isOpen := isOpen_ScottTopology D D_isPoset
-    ; open_full := open_full_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_unions := open_unions_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_intersection := open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_ext_eq := open_ext_eq_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    { isOpen := @isOpen_ScottTopology D D_isPoset
+    ; open_full := @open_full_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_unions := @open_unions_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_intersection := @open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_ext_eq := @open_ext_eq_ScottTopology D D_isPoset D_requiresCompletePartialOrder
     }
   .
 
