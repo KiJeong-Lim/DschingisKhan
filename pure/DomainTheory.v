@@ -983,187 +983,140 @@ Module PowerSetCoLa.
 
   End PACO.
 
-  Class LabelledTransition (State : Type) (Label : Type) : Type :=
-    { state_trans : State -> ensemble (State * Label)
+  Class isLabelledGraph (Vertex : Type) (Label : Type) : Type :=
+    { getEdgesIn : Vertex -> ensemble (Vertex * Label)
     }
   .
 
-  Global Notation " st1 '~~[' label ']~>' st2 " := (member (st1, label) (state_trans st2)) (at level 70, no associativity) : type_scope.
+  Global Notation " v1 '~~[' label ']~>' v2 " := (member (v1, label) (getEdgesIn v2)) (at level 70, no associativity) : type_scope.
 
-  Global Reserved Notation " st1 '~~~[' labels ']~>*' st2 " (at level 70, no associativity).
+  Global Reserved Notation " v1 '~~~[' labels ']~>*' v2 " (at level 70, no associativity).
 
-  Inductive state_star {State : Type} {Label : Type} `{HasLabelledTransition : LabelledTransition State Label} (st0 : State) : list Label -> State -> Prop :=
-  | star_init :
-    st0 ~~~[ nil ]~>* st0
-  | star_step :
-    forall st1 : State,
-    forall st2 : State,
-    forall label : Label,
-    forall labels : list Label,
-    st1 ~~[ label ]~> st2 ->
-    st0 ~~~[ labels ]~>* st1 ->
-    st0 ~~~[ cons label labels ]~>* st2
-  where " st1 '~~~[' labels ']~>*' st2 " := (state_star st1 labels st2) : type_scope.
+  Inductive walkLabelledGraph {V : Type} {L : Type} `{G : isLabelledGraph V L} (v0 : V) : list L -> V -> Prop :=
+  | walk_nil :
+    v0 ~~~[ nil ]~>* v0
+  | walk_cons :
+    forall v1 : V,
+    forall v2 : V,
+    forall l : L,
+    forall ls : list L,
+    v1 ~~[ l ]~> v2 ->
+    v0 ~~~[ ls ]~>* v1 ->
+    v0 ~~~[ cons l ls ]~>* v2
+  where " v1 ~~~[ ls ]~>* v2 " := (walkLabelledGraph v1 ls v2) : type_scope.
 
-  Local Hint Constructors state_star : core.
+  Local Hint Constructors walkLabelledGraph : core.
 
-  Section BISIMULATION.
+  Section IDEA_OF_SIMULATION.
 
-  Context {Src : Type} {Tgt : Type} {Eff : Type} `{SrcTrans : LabelledTransition Src Eff} `{TgtTrans : LabelledTransition Tgt Eff}.
+  Context {Src : Type} {Tgt : Type} {Eff : Type} `{src_system : isLabelledGraph Src Eff} `{tgt_system : isLabelledGraph Tgt Eff}.
 
-  Variant bisimF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
-  | PreservesBisimilarity (s1 : Src) (t1 : Tgt) (bisimF_comm1 : forall e : Eff, forall s2 : Src, s1 ~~[ e ]~> s2 -> exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ member (s2, t2) R) (bisimF_comm2 : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (bisimF R)
+  Variant similarityF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
+  | preservesSimilarity (s1 : Src) (t1 : Tgt) (H_comm : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (similarityF R)
   .
 
-  Lemma bisimF_isMonotonicMap :
-    isMonotonicMap bisimF.
+  Lemma similarityF_isMonotonicMap :
+    isMonotonicMap similarityF.
   Proof.
     intros R1 R2 H_incl [s1 t1] H_in1.
     inversion H_in1; subst.
     constructor.
-    - intros e s2 s1_e_s2.
-      destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
-      exists t2.
-      split.
-      + exact t1_e_t2.
-      + exact (H_incl (s2, t2) H_in2).
-    - intros e t2 t1_e_t2.
-      destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
-      exists s2.
-      split.
-      + exact s1_e_s2.
-      + exact (H_incl (s2, t2) H_in2).
+    intros e t2 t1_e_t2.
+    destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
+    exists s2.
+    split.
+    - exact s1_e_s2.
+    - exact (H_incl (s2, t2) H_in2).
   Qed.
 
-  Definition bisimilar : Src -> Tgt -> Prop :=
-    fun s : Src =>
-    fun t : Tgt =>
-    exists R : ensemble (Src * Tgt), isSubsetOf R (bisimF R) /\ member (s, t) R
-  .
-
-  Local Notation " s '`isBisimilarTo`' t " := (bisimilar s t) (at level 70, no associativity) : type_scope.
-
-  Lemma bisimilar_forwardStep :
-    forall s1 : Src,
-    forall t1 : Tgt,
-    s1 `isBisimilarTo` t1 ->
-    forall e : Eff,
-    forall s2 : Src,
-    s1 ~~[ e ]~> s2 ->
-    exists t2 : Tgt, t1 ~~[ e ]~> t2 /\ s2 `isBisimilarTo` t2.
-  Proof.
-    intros s1 t1 [R [R_le_bisimF_R H_in1]] e s2 s1_e_s2.
-    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
-    inversion H_in; subst.
-    destruct (bisimF_comm1 e s2 s1_e_s2) as [t2 [t1_e_t2 H_in2]].
-    now exists t2; firstorder.
-  Qed.
-
-  Lemma bisimilar_backwardStep :
-    forall s1 : Src,
-    forall t1 : Tgt,
-    s1 `isBisimilarTo` t1 ->
-    forall e : Eff,
-    forall t2 : Tgt,
-    t1 ~~[ e ]~> t2 ->
-    exists s2 : Src, s1 ~~[ e ]~> s2 /\ s2 `isBisimilarTo` t2.
-  Proof.
-    intros s1 t1 [R [R_le_bisimF_R H_in1]] e t2 t1_e_t2.
-    assert (H_in : member (s1, t1) (bisimF R)) by exact (R_le_bisimF_R (s1, t1) H_in1).
-    inversion H_in; subst.
-    destruct (bisimF_comm2 e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
-    now exists s2; firstorder.
-  Qed.
-
-  Let forwardSamsara : Src -> Tgt -> Prop :=
-    fun s0 : Src =>
-    fun t0 : Tgt =>
-    forall es : list Eff,
-    forall s : Src,
-    s0 ~~~[ es ]~>* s ->
-    exists t : Tgt, t0 ~~~[ es ]~>* t /\ s `isBisimilarTo` t
-  .
-
-  Let backwardSamsara : Src -> Tgt -> Prop :=
-    fun s0 : Src =>
-    fun t0 : Tgt =>
+  Theorem trace_forever :
+    forall R : ensemble (Src * Tgt),
+    R =< similarityF R ->
+    forall s0 : Src,
+    forall t0 : Tgt,
+    member (s0, t0) R ->
     forall es : list Eff,
     forall t : Tgt,
     t0 ~~~[ es ]~>* t ->
-    exists s : Src, s0 ~~~[ es ]~>* s /\ s `isBisimilarTo` t
-  .
-
-  Lemma forwardSamsara_implies_bisimilarity :
-    forall s : Src,
-    forall t : Tgt,
-    forwardSamsara s t ->
-    bisimilar s t.
-  Proof.
-    intros s0 t0 H_cond1.
-    destruct (H_cond1 nil s0 (star_init s0)) as [t [t0_steps_t s0_bisimilar_t]].
-    now inversion t0_steps_t; subst.
-  Qed.
-
-  Lemma backwardSamsara_implies_bisimilarity :
-    forall s : Src,
-    forall t : Tgt,
-    backwardSamsara s t ->
-    bisimilar s t.
-  Proof.
-    intros s0 t0 H_cond2.
-    destruct (H_cond2 nil t0 (star_init t0)) as [s [s0_steps_s s_bisimilar_t0]].
-    now inversion s0_steps_s; subst.
-  Qed.
-
-  Lemma bisimilarity_implies_both_samsara :
-    forall s : Src,
-    forall t : Tgt,
-    s `isBisimilarTo` t -> 
-    (forwardSamsara s t /\ backwardSamsara s t).
+    exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R.
   Proof with eauto.
-    intros s0 t0 s0_bisimilar_t0.
-    split.
-    - intros es s s0_es_s.
-      induction s0_es_s as [| s1 s2 e es s1_e_s2 s0_es_s1 IH].
-      + exists t0...
-      + destruct IH as [t1 [t0_es_t1 s1_bisimilar_t1]].
-        destruct (bisimilar_forwardStep s1 t1 s1_bisimilar_t1 e s2 s1_e_s2) as [t2 [t1_e_t2 s1_bisimilar_t2]].
-        exists t2...
-    - intros es t t0_es_t.
-      induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
-      + exists s0...
-      + destruct IH as [s1 [s0_es_s1 s1_bisimilar_t1]].
-        destruct (bisimilar_backwardStep s1 t1 s1_bisimilar_t1 e t2 t1_e_t2) as [s2 [s1_e_s2 s1_bisimilar_t2]].
-        exists s2...
+    intros R R_le_F_R s0 t0 R_s0_t0 es t t0_es_t.
+    induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
+    - exists s0...
+    - destruct IH as [s1 [s0_es_s1 R_s1_t1]].
+      assert (H_in1 : member (s1, t1) (similarityF R)) by exact (R_le_F_R (s1, t1) R_s1_t1).
+      inversion H_in1; subst.
+      destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
+      exists s2...
   Qed.
 
-  Definition bisimulation : ensemble (Src * Tgt) :=
-    proj1_sig (paco (exist isMonotonicMap bisimF bisimF_isMonotonicMap)) bot
+  Definition simulates : Tgt -> Src -> Prop :=
+    fun t : Tgt =>
+    fun s : Src =>
+    exists R : ensemble (Src * Tgt), isSubsetOf R (similarityF R) /\ member (s, t) R
   .
 
-  Theorem bisimulation_spec :
+  Lemma simulates_star :
+    forall s0 : Src,
+    forall t0 : Tgt,
+    simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
+  Proof.
+    intros s0 t0.
+    split.
+    - intros [R [R_le_F_R H_in0]] es t t0_es_t.
+      destruct (trace_forever R R_le_F_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
+      exists s.
+      split.
+      + exact s0_es_s.
+      + now exists R.
+    - intros H_cond.
+      destruct (H_cond nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
+      now inversion s0_nil_s; subst.
+  Qed.
+
+  Definition simulation : ensemble (Src * Tgt) :=
+    proj1_sig (paco (exist isMonotonicMap similarityF similarityF_isMonotonicMap)) bot
+  .
+
+  Lemma in_simulation_iff :
     forall s : Src,
     forall t : Tgt,
-    member (s, t) bisimulation <-> s `isBisimilarTo` t.
+    member (s, t) simulation <-> simulates t s.
   Proof.
-    set (b := exist isMonotonicMap bisimF bisimF_isMonotonicMap).
+    set (b := exist isMonotonicMap similarityF similarityF_isMonotonicMap).
     set (nu_b := proj1_sig (nu b)).
-    assert (claim1 : nu_b == bisimulation) by exact (PaCo_init bisimF bisimF_isMonotonicMap).
-    assert (claim2 : isGreatestFixedPoint nu_b bisimF).
-    { apply (GreatestFixedPointOfMonotonicMaps bisimF bisimF_isMonotonicMap).
+    assert (claim1 : nu_b == simulation) by exact (PaCo_init similarityF similarityF_isMonotonicMap).
+    assert (claim2 : isGreatestFixedPoint nu_b similarityF).
+    { apply (GreatestFixedPointOfMonotonicMaps similarityF similarityF_isMonotonicMap).
       exact (nu_isSupremum b).
     }
-    assert (claim3 : forall R : ensemble (Src * Tgt), R =< bisimF R -> R =< bisimulation) by exact (proj1 (nu_isSupremum b bisimulation) (Poset_refl1 nu_b bisimulation claim1)).
+    assert (claim3 : forall R : ensemble (Src * Tgt), R =< similarityF R -> R =< simulation) by exact (proj1 (nu_isSupremum b simulation) (Poset_refl1 nu_b simulation claim1)).
     intros s t.
     split.
     - intros H_in.
       exists nu_b.
       split.
-      + exact (Poset_refl1 nu_b (bisimF nu_b) (proj1 claim2)).
+      + exact (Poset_refl1 nu_b (similarityF nu_b) (proj1 claim2)).
       + exact (proj2 (claim1 (s, t)) H_in).
-    - intros [R [R_le_bisimF_R H_in]].
-      exact (claim3 R R_le_bisimF_R (s, t) H_in).
+    - intros [R [R_le_F_R H_in]].
+      exact (claim3 R R_le_F_R (s, t) H_in).
   Qed.
+
+  Theorem the_main_reason_for_introducing_simulation :
+    forall R : ensemble (Src * Tgt),
+    R =< simulation <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> simulates t0 s0).
+  Proof.
+    intros R.
+    split.
+    - intros R_le_simulation s0 t0 R_s0_t0.
+      apply (proj1 (in_simulation_iff s0 t0)).
+      exact (R_le_simulation (s0, t0) R_s0_t0).
+    - intros H_incl [s0 t0] H_in.
+      apply (proj2 (in_simulation_iff s0 t0)).
+      exact (H_incl s0 t0 H_in).
+  Qed.
+
+  End IDEA_OF_SIMULATION.
 
 (* "Notes"
   [#1]
