@@ -1266,6 +1266,25 @@ Module MyScratch.
 
   Import EqFacts MyUtilities.
 
+  Section MyStream.
+
+  CoInductive Stream (A : Set) : Set :=
+    Cons
+    { hd : A
+    ; tl : Stream A
+    }
+  .
+
+  Definition Stream_corec {A : Set} : forall X : Set, (X -> A * X) -> (X -> Stream A) :=
+    fun X : Set =>
+    fun acc : X -> A * X =>
+    cofix CIH : X -> Stream A :=
+    fun x : X =>
+    {| hd := fst (acc x); tl := CIH (snd (acc x)) |}
+  .
+
+  End MyStream.
+
   Section SET_LEVEL_LE.
 
   Inductive leq (n : nat) : nat -> Set :=

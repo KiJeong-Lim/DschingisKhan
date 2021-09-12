@@ -1000,8 +1000,8 @@ Module PowerSetCoLa.
     forall v2 : V,
     forall l : L,
     forall ls : list L,
-    v1 ~~[ l ]~> v2 ->
-    v0 ~~~[ ls ]~>* v1 ->
+    forall H_step : v1 ~~[ l ]~> v2,
+    forall H_walk : v0 ~~~[ ls ]~>* v1,
     v0 ~~~[ cons l ls ]~>* v2
   where " v1 ~~~[ ls ]~>* v2 " := (walkLabelledGraph v1 ls v2) : type_scope.
 
@@ -1029,25 +1029,24 @@ Module PowerSetCoLa.
     - exact (H_incl (s2, t2) H_in2).
   Qed.
 
-  Theorem trace_forever :
-    forall R : ensemble (Src * Tgt),
-    R =< similarityF R ->
-    forall s0 : Src,
-    forall t0 : Tgt,
-    member (s0, t0) R ->
-    forall es : list Eff,
-    forall t : Tgt,
-    t0 ~~~[ es ]~>* t ->
-    exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R.
+  Lemma R_le_similarityF_R_iff (R : ensemble (Src * Tgt)) :
+    R =< similarityF R <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
   Proof with eauto.
-    intros R R_le_F_R s0 t0 R_s0_t0 es t t0_es_t.
-    induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
-    - exists s0...
-    - destruct IH as [s1 [s0_es_s1 R_s1_t1]].
-      assert (H_in1 : member (s1, t1) (similarityF R)) by exact (R_le_F_R (s1, t1) R_s1_t1).
-      inversion H_in1; subst.
-      destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
-      exists s2...
+    split.
+    - intros R_le_F_R s0 t0 R_s0_t0 es t t0_es_t.
+      induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
+      + exists s0...
+      + destruct IH as [s1 [s0_es_s1 R_s1_t1]].
+        assert (H_in1 : member (s1, t1) (similarityF R)) by exact (R_le_F_R (s1, t1) R_s1_t1).
+        inversion H_in1; subst.
+        destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
+        exists s2...
+    - intros H_incl [s1 t1] H_in1.
+      constructor.
+      intros e t2 t1_e_t2.
+      destruct (H_incl s1 t1 H_in1 (cons e nil) t2 (walk_cons t1 t1 t2 e nil t1_e_t2 (walk_nil t1))) as [s2 [s1_e_s2 H_in2]].
+      inversion s1_e_s2; subst.
+      inversion H_walk; subst...
   Qed.
 
   Definition simulates : Tgt -> Src -> Prop :=
@@ -1064,7 +1063,7 @@ Module PowerSetCoLa.
     intros s0 t0.
     split.
     - intros [R [R_le_F_R H_in0]] es t t0_es_t.
-      destruct (trace_forever R R_le_F_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
+      destruct (proj1 (R_le_similarityF_R_iff R) R_le_F_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
       exists s.
       split.
       + exact s0_es_s.
@@ -1100,20 +1099,6 @@ Module PowerSetCoLa.
       + exact (proj2 (claim1 (s, t)) H_in).
     - intros [R [R_le_F_R H_in]].
       exact (claim3 R R_le_F_R (s, t) H_in).
-  Qed.
-
-  Theorem the_main_reason_for_introducing_simulation :
-    forall R : ensemble (Src * Tgt),
-    R =< simulation <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> simulates t0 s0).
-  Proof.
-    intros R.
-    split.
-    - intros R_le_simulation s0 t0 R_s0_t0.
-      apply (proj1 (in_simulation_iff s0 t0)).
-      exact (R_le_simulation (s0, t0) R_s0_t0).
-    - intros H_incl [s0 t0] H_in.
-      apply (proj2 (in_simulation_iff s0 t0)).
-      exact (H_incl s0 t0 H_in).
   Qed.
 
   End IDEA_OF_SIMULATION.
