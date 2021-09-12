@@ -1101,8 +1101,6 @@ Module PowerSetCoLa.
       exact (claim3 R R_le_F_R (s, t) H_in).
   Qed.
 
-  End IDEA_OF_SIMULATION.
-
 (* "Notes"
   [#1]
   The definition of homomorphism between two coalgebras for an endofunctor is given by:
@@ -1175,7 +1173,7 @@ Module PowerSetCoLa.
   > where $F : Type -> Type$ is the endofunctor given in [#3].
 *)
 
-  End BISIMULATION.
+  End IDEA_OF_SIMULATION.
 
 End PowerSetCoLa.
 
