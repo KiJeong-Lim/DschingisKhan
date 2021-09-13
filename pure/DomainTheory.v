@@ -1011,35 +1011,35 @@ Module PowerSetCoLa.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{src_system : isLabelledGraph Src Eff} `{tgt_system : isLabelledGraph Tgt Eff}.
 
-  Variant similarityF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
-  | preservesSimilarity (s1 : Src) (t1 : Tgt) (H_comm : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (similarityF R)
+  Variant simF (R : ensemble (Src * Tgt)) : ensemble (Src * Tgt) :=
+  | preservesSimilarity (s1 : Src) (t1 : Tgt) (H_sim : forall e : Eff, forall t2 : Tgt, t1 ~~[ e ]~> t2 -> exists s2 : Src, s1 ~~[ e ]~> s2 /\ member (s2, t2) R) : member (s1, t1) (simF R)
   .
 
-  Lemma similarityF_isMonotonicMap :
-    isMonotonicMap similarityF.
+  Lemma simF_isMonotonicMap :
+    isMonotonicMap simF.
   Proof.
     intros R1 R2 H_incl [s1 t1] H_in1.
     inversion H_in1; subst.
     constructor.
     intros e t2 t1_e_t2.
-    destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
+    destruct (H_sim e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
     exists s2.
     split.
     - exact s1_e_s2.
     - exact (H_incl (s2, t2) H_in2).
   Qed.
 
-  Lemma R_le_similarityF_R_iff (R : ensemble (Src * Tgt)) :
-    R =< similarityF R <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
+  Lemma R_le_simF_R_iff (R : ensemble (Src * Tgt)) :
+    R =< simF R <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
   Proof with eauto.
     split.
-    - intros R_le_F_R s0 t0 R_s0_t0 es t t0_es_t.
+    - intros R_le_simF_R s0 t0 R_s0_t0 es t t0_es_t.
       induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
       + exists s0...
       + destruct IH as [s1 [s0_es_s1 R_s1_t1]].
-        assert (H_in1 : member (s1, t1) (similarityF R)) by exact (R_le_F_R (s1, t1) R_s1_t1).
+        assert (H_in1 : member (s1, t1) (simF R)) by exact (R_le_simF_R (s1, t1) R_s1_t1).
         inversion H_in1; subst.
-        destruct (H_comm e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
+        destruct (H_sim e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
         exists s2...
     - intros H_incl [s1 t1] H_in1.
       constructor.
@@ -1052,18 +1052,18 @@ Module PowerSetCoLa.
   Definition simulates : Tgt -> Src -> Prop :=
     fun t : Tgt =>
     fun s : Src =>
-    exists R : ensemble (Src * Tgt), isSubsetOf R (similarityF R) /\ member (s, t) R
+    exists R : ensemble (Src * Tgt), isSubsetOf R (simF R) /\ member (s, t) R
   .
 
-  Lemma simulates_star :
+  Lemma simulates_walk :
     forall s0 : Src,
     forall t0 : Tgt,
     simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
   Proof.
     intros s0 t0.
     split.
-    - intros [R [R_le_F_R H_in0]] es t t0_es_t.
-      destruct (proj1 (R_le_similarityF_R_iff R) R_le_F_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
+    - intros [R [R_le_simF_R H_in0]] es t t0_es_t.
+      destruct (proj1 (R_le_simF_R_iff R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
       exists s.
       split.
       + exact s0_es_s.
@@ -1074,7 +1074,7 @@ Module PowerSetCoLa.
   Qed.
 
   Definition simulation : ensemble (Src * Tgt) :=
-    proj1_sig (paco (exist isMonotonicMap similarityF similarityF_isMonotonicMap)) bot
+    proj1_sig (paco (exist isMonotonicMap simF simF_isMonotonicMap)) bot
   .
 
   Lemma in_simulation_iff :
@@ -1082,23 +1082,23 @@ Module PowerSetCoLa.
     forall t : Tgt,
     member (s, t) simulation <-> simulates t s.
   Proof.
-    set (b := exist isMonotonicMap similarityF similarityF_isMonotonicMap).
+    set (b := exist isMonotonicMap simF simF_isMonotonicMap).
     set (nu_b := proj1_sig (nu b)).
-    assert (claim1 : nu_b == simulation) by exact (PaCo_init similarityF similarityF_isMonotonicMap).
-    assert (claim2 : isGreatestFixedPoint nu_b similarityF).
-    { apply (GreatestFixedPointOfMonotonicMaps similarityF similarityF_isMonotonicMap).
+    assert (claim1 : nu_b == simulation) by exact (PaCo_init simF simF_isMonotonicMap).
+    assert (claim2 : isGreatestFixedPoint nu_b simF).
+    { apply (GreatestFixedPointOfMonotonicMaps simF simF_isMonotonicMap).
       exact (nu_isSupremum b).
     }
-    assert (claim3 : forall R : ensemble (Src * Tgt), R =< similarityF R -> R =< simulation) by exact (proj1 (nu_isSupremum b simulation) (Poset_refl1 nu_b simulation claim1)).
+    assert (claim3 : forall R : ensemble (Src * Tgt), R =< simF R -> R =< simulation) by exact (proj1 (nu_isSupremum b simulation) (Poset_refl1 nu_b simulation claim1)).
     intros s t.
     split.
     - intros H_in.
       exists nu_b.
       split.
-      + exact (Poset_refl1 nu_b (similarityF nu_b) (proj1 claim2)).
+      + exact (Poset_refl1 nu_b (simF nu_b) (proj1 claim2)).
       + exact (proj2 (claim1 (s, t)) H_in).
-    - intros [R [R_le_F_R H_in]].
-      exact (claim3 R R_le_F_R (s, t) H_in).
+    - intros [R [R_le_simF_R H_in]].
+      exact (claim3 R R_le_simF_R (s, t) H_in).
   Qed.
 
 (* "Notes"
