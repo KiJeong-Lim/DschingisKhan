@@ -42,16 +42,18 @@ Module FunFacts.
     _inv2 A B
   .
 
-  Definition RETRACT_A_A (A : Prop) : RETRACT A A :=
+  Definition RETRACT_A_A : forall A : Prop, RETRACT A A :=
+    fun A : Prop =>
     {| _i := fun x : A => x; _j := fun x : A => x; _inv := @eq_refl A |}
   .
 
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
-  Lemma derive_fixedpoint_combinator (D : Prop) (untyped_lambda_calculus_for_D : RETRACT (D -> D) D) :
+  Lemma derive_fixedpoint_combinator (D : Prop) :
+    RETRACT (D -> D) D ->
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
-    destruct untyped_lambda_calculus_for_D as [lam_D app_D beta_D].
+    intros [lam_D app_D beta_D].
     pose (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
     exists Y_combinator_of_Curry.
     intros f.
@@ -71,8 +73,8 @@ Module FunFacts.
     forall FALSE : BOOL,
     TRUE = FALSE.
   Proof.
-    intros Heq BOOL TRUE FALSE.
-    exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB Heq).
+    intros TRUE_BB_eq_FALSE_BB BOOL TRUE FALSE.
+    exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB TRUE_BB_eq_FALSE_BB).
   Qed.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
@@ -89,21 +91,21 @@ Module FunFacts.
 
   Section EQ_RECT_EQ_implies_STREICHER_K.
 
-  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Context (A : Type) (x : A).
 
-  Theorem eq_rect_eq_implies_Streicher_K (A : Type) :
-    forall x : A,
+  Hypothesis eq_rect_eq : forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+
+  Theorem eq_rect_eq_implies_Streicher_K :
     forall phi : x = x -> Type,
     phi (eq_reflexivity x) ->
     forall eq_val0 : x = x,
     phi eq_val0.
   Proof.
-    intros x.
     set (eq_val := eq_reflexivity x). 
     intros phi phi_eq_val eq_val0.
     replace (eq_val0) with (eq_val).
     - exact phi_eq_val.
-    - rewrite (eq_rect_eq A x (eq x) eq_val eq_val0).
+    - rewrite (eq_rect_eq (eq x) eq_val eq_val0).
       now destruct eq_val0.
   Qed.
 
@@ -111,9 +113,9 @@ Module FunFacts.
 
   Section EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
 
-  Hypothesis eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Context (A : Type) (x : A) (B : A -> Type).
 
-  Context (A : Type) (B : A -> Type).
+  Hypothesis eq_rect_eq : forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
   Let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type :=
     fun p1 : sigT B =>
@@ -128,14 +130,13 @@ Module FunFacts.
   .
 
   Theorem eq_rect_eq_implies_existT_inj2_eq :
-    forall x : A,
     forall y1 : B x,
     forall y2 : B x,
     existT B x y1 = existT B x y2 ->
     y1 = y2.
   Proof.
-    intros x y1 y2 Heq.
-    exact (phi (existT B x y1) (existT B x y2) Heq (fun H : x = x => eq_symmetry y2 (eq_rect x B y2 x H) (eq_rect_eq A x B y2 H)) (eq_reflexivity (projT1 (existT B x y1)))).
+    intros y1 y2 Heq.
+    exact (phi (existT B x y1) (existT B x y2) Heq (fun H : x = x => eq_symmetry y2 (eq_rect x B y2 x H) (eq_rect_eq y2 H)) (eq_reflexivity (projT1 (existT B x y1)))).
   Qed.
 
   End EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
@@ -323,7 +324,7 @@ Module FunFacts.
   Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (D : Prop) (D_inhabited : inhabited D) :
     RETRACT (D -> D) D.
   Proof with eauto.
-    replace (D -> D) with D...
+    replace (D -> D) with (D)...
   Qed.
 
   Theorem propositional_extensionality_implies_proof_irrelevance :
@@ -332,9 +333,8 @@ Module FunFacts.
     forall p2 : P,
     p1 = p2.
   Proof.
-    apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
     assert (BB_inhabited : inhabited BB) by now constructor; exact FALSE_BB.
-    exact (untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited)).
+    exact (TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance (untyped_lambda_calculus_for_BB_implies_paradox_of_russell (UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop BB BB_inhabited))).
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.

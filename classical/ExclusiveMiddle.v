@@ -15,11 +15,16 @@ Module ExclusiveMiddle.
   .
 
   Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
-    eq_rect_eq_implies_Streicher_K eq_rect_eq
+    fun A : Type =>
+    fun x : A =>
+    eq_rect_eq_implies_Streicher_K A x (eq_rect_eq A x)
   .
 
   Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
-    eq_rect_eq_implies_existT_inj2_eq eq_rect_eq
+    fun A : Type =>
+    fun B : A -> Type =>
+    fun x : A =>
+    eq_rect_eq_implies_existT_inj2_eq A x B (eq_rect_eq A x B)
   .
 
   Definition unrestricted_minimization : forall phi : nat -> Prop, (~ forall n : nat, ~ phi n) -> (exists m : nat, phi m /\ (forall i : nat, phi i -> m <= i)) :=
