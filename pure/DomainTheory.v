@@ -992,22 +992,14 @@ Module PowerSetCoLa.
 
   Global Reserved Notation " v1 '~~~[' labels ']~>*' v2 " (at level 70, no associativity).
 
-  Inductive walkLabelledGraph {V : Type} {L : Type} `{G : isLabelledGraph V L} (v0 : V) : list L -> V -> Prop :=
-  | walk_nil :
-    v0 ~~~[ nil ]~>* v0
-  | walk_cons :
-    forall v1 : V,
-    forall v2 : V,
-    forall l : L,
-    forall ls : list L,
-    forall H_step : v1 ~~[ l ]~> v2,
-    forall H_walk : v0 ~~~[ ls ]~>* v1,
-    v0 ~~~[ cons l ls ]~>* v2
-  where " v1 ~~~[ ls ]~>* v2 " := (walkLabelledGraph v1 ls v2) : type_scope.
-
-  Local Hint Constructors walkLabelledGraph : core.
+  Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{G : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
+  | walk_nil : v0 ~~~[ nil ]~>* v0
+  | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
+  where " v1 '~~~[' ls ']~>*' v2 " := (walkLabelledGraph v1 ls v2) : type_scope.
 
   Section IDEA_OF_SIMULATION.
+
+  Local Hint Constructors walkLabelledGraph : core.
 
   Context {Src : Type} {Tgt : Type} {Eff : Type} `{src_system : isLabelledGraph Src Eff} `{tgt_system : isLabelledGraph Tgt Eff}.
 
@@ -1023,10 +1015,7 @@ Module PowerSetCoLa.
     constructor.
     intros e t2 t1_e_t2.
     destruct (H_sim e t2 t1_e_t2) as [s2 [s1_e_s2 H_in2]].
-    exists s2.
-    split.
-    - exact s1_e_s2.
-    - exact (H_incl (s2, t2) H_in2).
+    now exists s2; firstorder.
   Qed.
 
   Lemma R_le_simF_R_iff (R : ensemble (Src * Tgt)) :
@@ -1064,10 +1053,7 @@ Module PowerSetCoLa.
     split.
     - intros [R [R_le_simF_R H_in0]] es t t0_es_t.
       destruct (proj1 (R_le_simF_R_iff R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
-      exists s.
-      split.
-      + exact s0_es_s.
-      + now exists R.
+      now exists s; firstorder.
     - intros H_cond.
       destruct (H_cond nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
