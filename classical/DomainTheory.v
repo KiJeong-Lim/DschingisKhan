@@ -19,12 +19,12 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     forall x : D,
     isOpen (U x).
-  Proof with tauto. (* Thanks to Junyoung Jang *)
+  Proof. (* Thanks to Junyoung Jang *)
     intros x.
     split.
     - intros y z y_in_U_x y_le_z z_le_x.
       contradiction y_in_U_x.
-      transitivity z...
+      now transitivity z.
     - intros X X_isDirected sup_X sup_X_isSupremum_of_X sup_X_in_U_x.
       assert (JunyoungJang'sAdvice : ~ (forall x0 : D, member x0 X -> x0 =< x)).
       { intros x_is_an_upper_bound_of_X.
@@ -34,7 +34,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       destruct (not_all_ex_not D (fun x0 : D => member x0 X -> x0 =< x) JunyoungJang'sAdvice) as [x0 x0_is_a_member_of_X_which_is_less_than_or_equal_to_x].
       exists x0.
       apply in_intersection_iff.
-      destruct (classic (member x0 X /\ ~ x0 =< x))...
+      ctauto.
   Qed.
 
   Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :

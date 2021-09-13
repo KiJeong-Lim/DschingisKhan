@@ -14,7 +14,7 @@ Module ExclusiveMiddle.
     proof_irrelevance_implies_eq_rect_eq proof_irrelevance
   .
 
-  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi eq_refl -> forall eq_val0 : x = x, phi eq_val0 :=
+  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi (@eq_refl A x) -> forall eq_val0 : x = x, phi eq_val0 :=
     fun A : Type =>
     fun x : A =>
     eq_rect_eq_implies_Streicher_K A x (eq_rect_eq A x)
@@ -31,6 +31,12 @@ Module ExclusiveMiddle.
     exclusive_middle_implies_unrestricted_minimization classic
   .
 
+  Global Ltac ctauto :=
+    match goal with
+    | |- ?P => destruct (classic P); tauto
+    end
+  .
+
   Section Classical_Prop.
 
   Variable P : Prop.
@@ -38,8 +44,8 @@ Module ExclusiveMiddle.
   Lemma NNPP :
     (~ (~ P)) ->
     P.
-  Proof with tauto.
-    destruct (classic P)...
+  Proof.
+    ctauto.
   Qed.
 
   Variable Q : Prop.
@@ -47,43 +53,43 @@ Module ExclusiveMiddle.
   Lemma Peirce :
     ((P -> Q) -> P) ->
     P.
-  Proof with tauto.
-    destruct (classic P)...
+  Proof.
+    ctauto.
   Qed.
 
   Lemma not_imply_elim :
     (~ (P -> Q)) ->
     P.
-  Proof with tauto.
-    destruct (classic P)...
+  Proof.
+    ctauto.
   Qed.
 
   Lemma imply_to_or :
     (P -> Q) ->
     ((~ P) \/ Q).
-  Proof with tauto.
-    destruct (classic Q)...
+  Proof.
+    ctauto.
   Qed.
 
   Lemma imply_to_and :
     (~ (P -> Q)) ->
     (P /\ (~ Q)).
-  Proof with tauto.
-    destruct (classic P)...
+  Proof.
+    ctauto.
   Qed.
 
   Lemma not_and_or :
     (~ (P /\ Q)) ->
     ((~ P) \/ (~ Q)).
-  Proof with tauto.
-    destruct (classic P)...
+  Proof.
+    ctauto.
   Qed.
 
   Lemma law1_of_DeMorgan :
     ~ (~ P /\ ~ Q) ->
     P \/ Q.
-  Proof with tauto.
-    destruct (classic (P \/ Q))...
+  Proof.
+    ctauto.
   Qed.
 
   End Classical_Prop.
