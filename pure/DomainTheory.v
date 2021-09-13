@@ -315,20 +315,26 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       apply or_plus_le_iff...
   Qed.
 
-  Example G_f_aux_isMonotonic {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
+  Definition G_f_aux {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : (D >=> D) -> D -> D -> D :=
+    fun f : D >=> D =>
+    fun x : D =>
+    fun y : D =>
+    proj1_sig f (or_plus x y)
+  .
+
+  Lemma G_f_aux_x_isMonotonic {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     forall x : D,
-    isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)).
+    isMonotonicMap (G_f_aux f x).
   Proof with eauto with *.
-    intros f d x1 x2 H.
+    intros f x y1 y2 H.
     apply (proj2_sig f), or_plus_le_iff...
   Qed.
 
   Definition G_f {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : (D >=> D) -> (D -> D) :=
     fun f : D >=> D =>
-    let G_f_aux : D -> D -> D := fun x : D => fun y : D => proj1_sig f (or_plus x y) in
     fun x : D =>
-    proj1_sig (nu (exist isMonotonicMap (G_f_aux x) (G_f_aux_isMonotonic f x)))
+    proj1_sig (nu (exist isMonotonicMap (G_f_aux f x) (G_f_aux_x_isMonotonic f x)))
   .
 
   Lemma G_f_isMonotoinc {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
@@ -341,7 +347,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros x1 x2 H.
     apply StrongCoinduction.
     simpl in *.
-    assert (claim2 : G_f f x1 == proj1_sig f (or_plus x1 (G_f f x1))) by apply (proj2_sig (nu (exist _ (G_f_aux x1) (G_f_aux_isMonotonic f x1)))).
+    assert (claim2 : G_f f x1 == proj1_sig f (or_plus x1 (G_f f x1))) by apply (proj2_sig (nu (exist isMonotonicMap (G_f_aux x1) (G_f_aux_x_isMonotonic f x1)))).
     transitivity (proj1_sig f (or_plus x1 (G_f f x1))).
     - apply Poset_refl1...
     - apply (proj2_sig f).
@@ -359,8 +365,8 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros f1 f2 H x.
     simpl.
     unfold G_f.
-    assert (claim1 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f1 (or_plus x y)) (G_f_aux_isMonotonic f1 x))).
-    assert (claim2 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f2 (or_plus x y)) (G_f_aux_isMonotonic f2 x))).
+    assert (claim1 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f1 (or_plus x y)) (G_f_aux_x_isMonotonic f1 x))).
+    assert (claim2 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f2 (or_plus x y)) (G_f_aux_x_isMonotonic f2 x))).
     apply claim1...
   Qed.
 
@@ -387,7 +393,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros f.
     symmetry.
     unfold ParameterizedGreatestFixedpoint, G_f.
-    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus bot y)) (G_f_aux_isMonotonic f bot))).
+    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus bot y)) (G_f_aux_x_isMonotonic f bot))).
     assert (H0 := nu_isSupremum f).
     simpl in *.
     apply Poset_asym.
@@ -416,9 +422,9 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     unfold ParameterizedGreatestFixedpoint.
     simpl.
     unfold G_f.
-    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))).
+    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_x_isMonotonic f x))).
     simpl in *.
-    apply (GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_isMonotonic f x))...
+    apply (GreatestFixedPointOfMonotonicMaps (fun y : D => proj1_sig f (or_plus x y)) (G_f_aux_x_isMonotonic f x))...
   Qed.
 
   Lemma accumulate_cofixpoint {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
