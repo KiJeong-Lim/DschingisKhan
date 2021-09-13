@@ -998,7 +998,7 @@ Module PowerSetCoLa.
 
   Global Reserved Notation " v1 '~~~[' labels ']~>*' v2 " (at level 70, no associativity).
 
-  Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{G : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
+  Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{Graph : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
   | walk_nil : v0 ~~~[ nil ]~>* v0
   | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
   where " v1 '~~~[' labels ']~>*' v2 " := (walkLabelledGraph v1 labels v2) : type_scope.
@@ -1036,10 +1036,10 @@ Module PowerSetCoLa.
         inversion H_in1; subst.
         destruct (H_sim e t2 t1_e_t2) as [s2 [s1_e_s2 R_s2_t2]].
         exists s2...
-    - intros H_incl [s1 t1] H_in1.
+    - intros H_diag [s1 t1] H_in1.
       constructor.
       intros e t2 t1_e_t2.
-      destruct (H_incl s1 t1 H_in1 (cons e nil) t2 (walk_cons t1 t1 t2 e nil t1_e_t2 (walk_nil t1))) as [s2 [s1_e_s2 H_in2]].
+      destruct (H_diag s1 t1 H_in1 (cons e nil) t2 (walk_cons t1 t1 t2 e nil t1_e_t2 (walk_nil t1))) as [s2 [s1_e_s2 H_in2]].
       inversion s1_e_s2; subst.
       inversion H_walk; subst...
   Qed.
@@ -1050,7 +1050,7 @@ Module PowerSetCoLa.
     member (s, t) (unions (fun R : ensemble (Src * Tgt) => isSubsetOf R (simF R)))
   .
 
-  Lemma simulates_walk_diag :
+  Lemma simulates_once_iff_simulates_forever :
     forall s0 : Src,
     forall t0 : Tgt,
     simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
@@ -1062,8 +1062,8 @@ Module PowerSetCoLa.
       destruct (proj1 (claim1 s0 t0) t0_simulates_s0) as [R [H_in0 R_le_simF_R]].
       destruct (proj1 (R_le_simF_R_iff_R_walk_diag R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
       now exists s; firstorder.
-    - intros H_cond.
-      destruct (H_cond nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
+    - intros H_forever.
+      destruct (H_forever nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
   Qed.
 
