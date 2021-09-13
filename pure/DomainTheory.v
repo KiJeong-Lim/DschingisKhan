@@ -1055,16 +1055,13 @@ Module PowerSetCoLa.
     forall t0 : Tgt,
     simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
   Proof.
+    assert (claim1 : forall s : Src, forall t : Tgt, simulates t s <-> exists R : ensemble (Src * Tgt), member (s, t) R /\ isSubsetOf R (simF R)) by exact (fun s : Src => fun t : Tgt => in_unions_iff (s, t) (postfixed_points simF)).
     intros s0 t0.
     split.
     - intros t0_simulates_s0 es t t0_es_t.
-      apply in_unions_iff in t0_simulates_s0.
-      destruct t0_simulates_s0 as [R [H_in0 R_le_simF_R]].
+      destruct (proj1 (claim1 s0 t0) t0_simulates_s0) as [R [H_in0 R_le_simF_R]].
       destruct (proj1 (R_le_simF_R_iff_R_walk_diag R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
-      exists s.
-      split.
-      + exact s0_es_s.
-      + now exists R.
+      now exists s; firstorder.
     - intros H_cond.
       destruct (H_cond nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
@@ -1142,12 +1139,12 @@ Module PowerSetCoLa.
   %      t_1 ~~[ e ]~> t_2      %
   %       |             |       %
   %       |             |       %
-  %      psi           psi      %
+  %      R^T           R^T      %
   %       |             |       %
   %      \|/           \|/      %
   %      s_1 ~~[ e ]~> s_2      %
   % =========================== %
-  where $psi : Tgt -> Src -> Prop := fun t : Tgt => fun s : Src => f s = t$.
+  where $R : Src -> Tgt -> Prop := fun s : Src => fun t : Tgt => f s = t$.
   [#4]
   Therefore we can conclude:
   > From any given $F$-coalgebra homomorphism,
