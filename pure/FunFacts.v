@@ -129,13 +129,9 @@ Module FunFacts.
     RuleJ phi'
   .
 
-  Theorem eq_rect_eq_implies_existT_inj2_eq :
-    forall y1 : B x,
-    forall y2 : B x,
-    existT B x y1 = existT B x y2 ->
+  Theorem eq_rect_eq_implies_existT_inj2_eq (y1 : B x) (y2 : B x) (Heq : existT B x y1 = existT B x y2) :
     y1 = y2.
   Proof.
-    intros y1 y2 Heq.
     exact (phi (existT B x y1) (existT B x y2) Heq (fun H : x = x => eq_symmetry y2 (eq_rect x B y2 x H) (eq_rect_eq y2 H)) (eq_reflexivity (projT1 (existT B x y1)))).
   Qed.
 
@@ -233,7 +229,7 @@ Module FunFacts.
   Let PARADOX_OF_BERARDI :
     RUSSELL = ¬ RUSSELL.
   Proof with eauto.
-    enough (it_is_sufficient_to_show : RUSSELL = russell R) by exact it_is_sufficient_to_show.
+    enough (it_is_sufficient_to_show : RUSSELL = russell R)...
     replace (russell) with (fun r : UNIV => r ∈ R)...
   Qed.
 
@@ -243,7 +239,7 @@ Module FunFacts.
     forall p2 : P,
     p1 = p2.
   Proof.
-    apply TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance.
+    enough (it_is_sufficient_to_show : TRUE_BB = FALSE_BB) by exact (TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance it_is_sufficient_to_show).
     destruct (exclusive_middle (RUSSELL = TRUE_BB)) as [RUSSELL_eq_TRUE_BB | RUSSELL_ne_TRUE_BB].
     - rewrite <- RUSSELL_eq_TRUE_BB.
       rewrite PARADOX_OF_BERARDI.

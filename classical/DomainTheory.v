@@ -1432,8 +1432,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     assert (claim4 := ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f)).
     enough (it_is_sufficient_to_show : forall y : D, y == proj1_sig f y -> get_lfp_of f =< y) by now split.
     intros y y_is_fixpoint_of_f.
-    assert (claim5 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< y).
-    { induction n as [| n' IH]; simpl.
+    assert (y_is_an_upper_bound : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< y).
+    { induction n as [| n IH]; simpl.
       - apply (proj2_sig bottom_exists).
       - transitivity (proj1_sig f y)...
     }
