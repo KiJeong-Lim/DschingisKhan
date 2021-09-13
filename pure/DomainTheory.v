@@ -995,7 +995,7 @@ Module PowerSetCoLa.
   Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{G : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
   | walk_nil : v0 ~~~[ nil ]~>* v0
   | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
-  where " v1 '~~~[' ls ']~>*' v2 " := (walkLabelledGraph v1 ls v2) : type_scope.
+  where " v1 '~~~[' labels ']~>*' v2 " := (walkLabelledGraph v1 labels v2) : type_scope.
 
   Section IDEA_OF_SIMULATION.
 
@@ -1018,7 +1018,7 @@ Module PowerSetCoLa.
     now exists s2; firstorder.
   Qed.
 
-  Lemma R_le_simF_R_iff (R : ensemble (Src * Tgt)) :
+  Lemma R_le_simF_R_iff_R_walk_diag (R : ensemble (Src * Tgt)) :
     R =< simF R <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
   Proof with eauto.
     split.
@@ -1041,19 +1041,24 @@ Module PowerSetCoLa.
   Definition simulates : Tgt -> Src -> Prop :=
     fun t : Tgt =>
     fun s : Src =>
-    exists R : ensemble (Src * Tgt), isSubsetOf R (simF R) /\ member (s, t) R
+    member (s, t) (unions (fun R : ensemble (Src * Tgt) => isSubsetOf R (simF R)))
   .
 
-  Lemma simulates_walk :
+  Lemma simulates_walk_diag :
     forall s0 : Src,
     forall t0 : Tgt,
     simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
   Proof.
     intros s0 t0.
     split.
-    - intros [R [R_le_simF_R H_in0]] es t t0_es_t.
-      destruct (proj1 (R_le_simF_R_iff R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
-      now exists s; firstorder.
+    - intros t0_simulates_s0 es t t0_es_t.
+      apply in_unions_iff in t0_simulates_s0.
+      destruct t0_simulates_s0 as [R [H_in0 R_le_simF_R]].
+      destruct (proj1 (R_le_simF_R_iff_R_walk_diag R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
+      exists s.
+      split.
+      + exact s0_es_s.
+      + now exists R.
     - intros H_cond.
       destruct (H_cond nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
@@ -1068,23 +1073,9 @@ Module PowerSetCoLa.
     forall t : Tgt,
     member (s, t) simulation <-> simulates t s.
   Proof.
-    set (b := exist isMonotonicMap simF simF_isMonotonicMap).
-    set (nu_b := proj1_sig (nu b)).
-    assert (claim1 : nu_b == simulation) by exact (PaCo_init simF simF_isMonotonicMap).
-    assert (claim2 : isGreatestFixedPoint nu_b simF).
-    { apply (GreatestFixedPointOfMonotonicMaps simF simF_isMonotonicMap).
-      exact (nu_isSupremum b).
-    }
-    assert (claim3 : forall R : ensemble (Src * Tgt), R =< simF R -> R =< simulation) by exact (proj1 (nu_isSupremum b simulation) (Poset_refl1 nu_b simulation claim1)).
-    intros s t.
-    split.
-    - intros H_in.
-      exists nu_b.
-      split.
-      + exact (Poset_refl1 nu_b (simF nu_b) (proj1 claim2)).
-      + exact (proj2 (claim1 (s, t)) H_in).
-    - intros [R [R_le_simF_R H_in]].
-      exact (claim3 R R_le_simF_R (s, t) H_in).
+    set (nu_simF := proj1_sig (nu (exist isMonotonicMap simF simF_isMonotonicMap))).
+    assert (claim1 : nu_simF == simulation) by exact (PaCo_init simF simF_isMonotonicMap).
+    exact (fun s : Src => fun t : Tgt => Setoid_sym (simulates t s) (member (s, t) simulation) (claim1 (s, t))).
   Qed.
 
 (* "Notes"
