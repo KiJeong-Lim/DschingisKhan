@@ -1003,7 +1003,7 @@ Module PowerSetCoLa.
   | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
   where " v1 '~~~[' labels ']~>*' v2 " := (walkLabelledGraph v1 labels v2) : type_scope.
 
-  Section INTUITION_BEHIND_SIMULATION.
+  Section SIMULATION.
 
   Local Hint Constructors walkLabelledGraph : core.
 
@@ -1024,9 +1024,11 @@ Module PowerSetCoLa.
     now exists s2; firstorder.
   Qed.
 
-  Lemma R_le_simF_R_iff_R_walk_diag (R : ensemble (Src * Tgt)) :
-    R =< simF R <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
+  Lemma R_le_simF_R_iff_R_walk_diag :
+    forall R : ensemble (Src * Tgt),
+    isSubsetOf R (simF R) <-> (forall s0 : Src, forall t0 : Tgt, member (s0, t0) R -> forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ member (s, t) R).
   Proof with eauto.
+    intros R.
     split.
     - intros R_le_simF_R s0 t0 R_s0_t0 es t t0_es_t.
       induction t0_es_t as [| t1 t2 e es t1_e_t2 t0_es_t1 IH].
@@ -1062,8 +1064,8 @@ Module PowerSetCoLa.
       destruct (proj1 (claim1 s0 t0) t0_simulates_s0) as [R [H_in0 R_le_simF_R]].
       destruct (proj1 (R_le_simF_R_iff_R_walk_diag R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
       now exists s; firstorder.
-    - intros H_forever.
-      set (t := t0).
+    - set (t := t0).
+      intros H_forever.
       destruct (H_forever nil t (walk_nil t)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
   Qed.
@@ -1154,7 +1156,7 @@ Module PowerSetCoLa.
   > where $F : Type -> Type$ is the endofunctor given in [#3].
 *)
 
-  End INTUITION_BEHIND_SIMULATION.
+  End SIMULATION.
 
 End PowerSetCoLa.
 
