@@ -262,8 +262,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         subst y...
   Qed.
 
-  Global Instance set_of_ContinuousMap_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : isPoset (@sig (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder))) :=
-    @SubPoset (D -> D') (@isContinuousMap D D' (ScottTopology D_requiresCompletePartialOrder) (ScottTopology D'_requiresCompletePartialOrder)) (arrow_isPoset D'_isPoset)
+  Global Instance set_of_ContinuousMap_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : isPoset (@sig (D -> D') (@isContinuousMap D D' (@ScottTopology D D_isPoset) (@ScottTopology D' D'_isPoset))) :=
+    @SubPoset (D -> D') (@isContinuousMap D D' (@ScottTopology D D_isPoset) (@ScottTopology D' D'_isPoset)) (arrow_isPoset D'_isPoset)
   .
 
   Definition squig_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D ~> D') -> (D >=> D') :=

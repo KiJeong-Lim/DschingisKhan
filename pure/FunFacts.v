@@ -185,7 +185,7 @@ Module FunFacts.
     destruct (RETRACT2_POW_A_POW_B UNIV UNIV); simpl in *...
   Qed.
 
-  Let RETRACT_POW_UNIV_UNIV : RETRACT (UNIV -> BB) UNIV :=
+  Let RETRACT_POW_UNIV_UNIV : RETRACT (POW UNIV) UNIV :=
     {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}
   .
 
@@ -269,7 +269,7 @@ Module FunFacts.
     assert (claim1 : exists n : nat, phi n) by now destruct (exclusive_middle (exists n : nat, phi n)); firstorder.
     destruct claim1 as [n phi_n].
     destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
-    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction it_is_sufficient_to_show.
+    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction (it_is_sufficient_to_show phi_n).
       apply (@strong_induction (fun x : nat => ~ phi x)).
       intros i acc_hyp phi_i.
       contradiction (H_yes i).

@@ -1190,15 +1190,15 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
 
   Local Instance CompleteLattice_isCompletePartialOrder {D : Type} `{D_isPoset : isPoset D} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) : @isCompletePartialOrder D D_isPoset :=
     { bottom_exists :=
-      exist _ bot bot_isBottom
+      exist (fun min_D : D => forall x : D, min_D =< x) (@bot D D_isPoset D_requiresCompleteLattice) (@bot_isBottom D D_isPoset D_requiresCompleteLattice)
     ; square_up_exists :=
       fun X : ensemble D =>
       fun _ : isDirected X =>
-      supremum_always_exists_in_CompleteLattice X
+      @supremum_always_exists_in_CompleteLattice D D_isPoset D_requiresCompleteLattice X
     }
   .
 
-  Section BuildScottTopology.
+  Section ConstructScottTopology.
 
   Context {D : Type} `{D_isPoset : isPoset D}.
 
@@ -1227,8 +1227,6 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
   .
 
   Local Hint Unfold isOpen_ScottTopology : core.
-
-  Context (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset).
 
   Lemma open_full_ScottTopology :
     isOpen_ScottTopology full.
@@ -1297,14 +1295,14 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
     rewrite in_intersection_iff in *...
   Qed.
 
-  End BuildScottTopology.
+  End ConstructScottTopology.
 
-  Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) : isTopologicalSpace D :=
+  Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} : isTopologicalSpace D :=
     { isOpen := @isOpen_ScottTopology D D_isPoset
-    ; open_full := @open_full_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_unions := @open_unions_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_intersection := @open_intersection_ScottTopology D D_isPoset D_requiresCompletePartialOrder
-    ; open_ext_eq := @open_ext_eq_ScottTopology D D_isPoset D_requiresCompletePartialOrder
+    ; open_full := @open_full_ScottTopology D D_isPoset
+    ; open_unions := @open_unions_ScottTopology D D_isPoset
+    ; open_intersection := @open_intersection_ScottTopology D D_isPoset
+    ; open_ext_eq := @open_ext_eq_ScottTopology D D_isPoset
     }
   .
 
