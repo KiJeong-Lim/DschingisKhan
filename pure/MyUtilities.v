@@ -1478,28 +1478,31 @@ Module MyScratch.
     }
   .
 
-  Definition mkCircuit {In : Type} {Out : Type} : (In -> circuit In Out * Out) -> circuit In Out :=
-    circuit_intro In Out
+  Definition delayWithInit {A : Type} : A -> circuit A A :=
+    cofix delayWithInit_cofix : A -> circuit A A :=
+    fun x0 : A =>
+    circuit_intro A A (fun x : A => (delayWithInit_cofix x, x0))
   .
 
-  Definition unCircuit {In : Type} {Out : Type} : circuit In Out -> (In -> circuit In Out * Out) :=
-    circuit_elim In Out
+  Definition embedFunIntoCircuit {A : Type} {B : Type} : (A -> B) -> circuit A B :=
+    fun f : A -> B =>
+    cofix embedFunIntoCircuit_cofix : circuit A B :=
+    circuit_intro A B (fun x : A => (embedFunIntoCircuit_cofix, f x))
   .
 
-  CoFixpoint delayWithInit {A : Type} : A -> circuit A A :=
-    fun init : A =>
-    mkCircuit (fun next : A => (delayWithInit next, init))
-  .
-
-  CoFixpoint embedFunIntoCircuit {A : Type} {B : Type} (f : A -> B) : circuit A B :=
-    mkCircuit (fun x : A => (embedFunIntoCircuit f, f x))
-  .
-
-  CoFixpoint combineCircuit {A1 : Type} {A2 : Type} {B1 : Type} {B2 : Type} : circuit A1 B1 -> circuit A2 B2 -> circuit (A1 * A2) (B1 * B2) :=
-    fun circuit1 : circuit A1 B1 =>
-    fun circuit2 : circuit A2 B2 =>
-    mkCircuit (fun p : A1 * A2 => let p1 : circuit A1 B1 * B1 := unCircuit circuit1 (fst p) in let p2 : circuit A2 B2 * B2 := unCircuit circuit2 (snd p) in (combineCircuit (fst p1) (fst p2), (snd p1, snd p2)))
-  .
+  Definition combineCircuit {A1 : Type} {A2 : Type} {B1 : Type} {B2 : Type} :
+    circuit A1 B1 ->
+    circuit A2 B2 ->
+    circuit (A1 * A2) (B1 * B2).
+  Proof.
+    cofix combineCircuit_cofix.
+    intros circuit1 circuit2.
+    apply (circuit_intro (A1 * A2) (B1 * B2)).
+    intros p.
+    set (p1 := circuit_elim A1 B1 circuit1 (fst p)).
+    set (p2 := circuit_elim A2 B2 circuit2 (snd p)).
+    exact (combineCircuit_cofix (fst p1) (fst p2), (snd p1, snd p2)).
+  Defined.
 
   End CIRCUIT.
 
