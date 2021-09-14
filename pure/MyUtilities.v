@@ -1470,41 +1470,41 @@ Module MyScratch.
 
   End ACKERMANN.
 
-  Section CIRCUIT.
+  Section SYNCHRONOUS_CIRCUIT.
 
-  CoInductive circuit (In : Type) (Out : Type) : Type :=
+  CoInductive circuit (Input : Type) (Output : Type) : Type :=
     circuit_intro
-    { circuit_elim : In -> (circuit In Out) * Out
+    { circuit_elim : Input -> (circuit Input Output) * Output
     }
   .
 
-  Definition delayWithInit {A : Type} : A -> circuit A A :=
-    cofix delayWithInit_cofix : A -> circuit A A :=
-    fun x0 : A =>
-    circuit_intro A A (fun x : A => (delayWithInit_cofix x, x0))
+  Definition delayWithInit {I : Type} : I -> circuit I I :=
+    cofix delayWithInit_cofix : I -> circuit I I :=
+    fun x0 : I =>
+    circuit_intro I I (fun x : I => (delayWithInit_cofix x, x0))
   .
 
-  Definition embedFunIntoCircuit {A : Type} {B : Type} : (A -> B) -> circuit A B :=
-    fun f : A -> B =>
-    cofix embedFunIntoCircuit_cofix : circuit A B :=
-    circuit_intro A B (fun x : A => (embedFunIntoCircuit_cofix, f x))
+  Definition embedFunIntoCircuit {I : Type} {O : Type} : (I -> O) -> circuit I O :=
+    fun f : I -> O =>
+    cofix embedFunIntoCircuit_cofix : circuit I O :=
+    circuit_intro I O (fun x : I => (embedFunIntoCircuit_cofix, f x))
   .
 
-  Definition combineCircuit {A1 : Type} {A2 : Type} {B1 : Type} {B2 : Type} :
-    circuit A1 B1 ->
-    circuit A2 B2 ->
-    circuit (A1 * A2) (B1 * B2).
+  Definition combineCircuit {I1 : Type} {I2 : Type} {O1 : Type} {O2 : Type} :
+    circuit I1 O1 ->
+    circuit I2 O2 ->
+    circuit (I1 * I2) (O1 * O2).
   Proof.
     cofix combineCircuit_cofix.
     intros circuit1 circuit2.
-    apply (circuit_intro (A1 * A2) (B1 * B2)).
+    apply (circuit_intro (I1 * I2) (O1 * O2)).
     intros p.
-    set (p1 := circuit_elim A1 B1 circuit1 (fst p)).
-    set (p2 := circuit_elim A2 B2 circuit2 (snd p)).
+    set (p1 := circuit_elim I1 O1 circuit1 (fst p)).
+    set (p2 := circuit_elim I2 O2 circuit2 (snd p)).
     exact (combineCircuit_cofix (fst p1) (fst p2), (snd p1, snd p2)).
   Defined.
 
-  End CIRCUIT.
+  End SYNCHRONOUS_CIRCUIT.
 
   Section CONAT.
 
