@@ -56,7 +56,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     end
   .
 
-  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : isPoset (D >=> D') :=
+  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : isPoset (D >=> D') :=
     @SubPoset (D -> D') (@isMonotonicMap D D' D_isPoset D'_isPoset) (arrow_isPoset D'_isPoset)
   .
 
@@ -152,7 +152,7 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
       apply (proj2_sig (supremum_always_exists_in_CompleteLattice (image (fun f_i : D >=> D' => proj1_sig f_i x) fs)))...
   Qed.
 
-  Global Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : @isCompleteLattice (D >=> D') (fish_isPoset D_requiresCompleteLattice D'_requiresCompleteLattice) :=
+  Global Instance MonotonicMaps_on_CompleteLattice_constitute_CompleteLattice {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompleteLattice : @isCompleteLattice D D_isPoset) (D'_requiresCompleteLattice : @isCompleteLattice D' D'_isPoset) : @isCompleteLattice (D >=> D') (@fish_isPoset D D' D_isPoset D'_isPoset) :=
     { supremum_always_exists_in_CompleteLattice :=
       fun fs : ensemble (D >=> D') =>
       exist (fun sup_fs : D >=> D' => isSupremum sup_fs fs) (supremum_m fs) (supOfMonotonicMaps_isSupremum fs)

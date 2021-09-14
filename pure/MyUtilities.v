@@ -1268,17 +1268,18 @@ Module MyScratch.
 
   Section MyStream.
 
-  CoInductive Stream (A : Set) : Set :=
+  Variable A : Type.
+
+  CoInductive Stream : Type :=
     Cons
     { hd : A
-    ; tl : Stream A
+    ; tl : Stream
     }
   .
 
-  Definition Stream_corec {A : Set} : forall X : Set, (X -> A * X) -> (X -> Stream A) :=
-    fun X : Set =>
+  Definition Stream_corec (X : Type) : (X -> A * X) -> (X -> Stream) :=
     fun acc : X -> A * X =>
-    cofix CIH : X -> Stream A :=
+    cofix CIH : X -> Stream :=
     fun x : X =>
     {| hd := fst (acc x); tl := CIH (snd (acc x)) |}
   .
