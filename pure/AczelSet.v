@@ -372,7 +372,7 @@ Module ConstructiveTheoryOfAczelTree. (* Thanks to Hanul Jeon *)
 
   Definition unions : AczelSet -> AczelSet :=
     fun Xs : AczelSet =>
-    unions' (childrenOf Xs) (@childTreeOf Xs)
+    unions' (childrenOf Xs) (childTreeOf Xs)
   .
 
   Lemma in_unions_iff :

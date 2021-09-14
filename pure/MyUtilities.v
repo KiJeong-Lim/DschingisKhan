@@ -1470,6 +1470,39 @@ Module MyScratch.
 
   End ACKERMANN.
 
+  Section CIRCUIT.
+
+  CoInductive circuit (In : Type) (Out : Type) : Type :=
+    circuit_intro
+    { circuit_elim : In -> (circuit In Out) * Out
+    }
+  .
+
+  Definition mkCircuit {In : Type} {Out : Type} : (In -> circuit In Out * Out) -> circuit In Out :=
+    circuit_intro In Out
+  .
+
+  Definition unCircuit {In : Type} {Out : Type} : circuit In Out -> (In -> circuit In Out * Out) :=
+    circuit_elim In Out
+  .
+
+  CoFixpoint delayWithInit {A : Type} : A -> circuit A A :=
+    fun init : A =>
+    mkCircuit (fun next : A => (delayWithInit next, init))
+  .
+
+  CoFixpoint embedFunIntoCircuit {A : Type} {B : Type} (f : A -> B) : circuit A B :=
+    mkCircuit (fun x : A => (embedFunIntoCircuit f, f x))
+  .
+
+  CoFixpoint combineCircuit {A1 : Type} {A2 : Type} {B1 : Type} {B2 : Type} : circuit A1 B1 -> circuit A2 B2 -> circuit (A1 * A2) (B1 * B2) :=
+    fun circuit1 : circuit A1 B1 =>
+    fun circuit2 : circuit A2 B2 =>
+    mkCircuit (fun p : A1 * A2 => let p1 : circuit A1 B1 * B1 := unCircuit circuit1 (fst p) in let p2 : circuit A2 B2 * B2 := unCircuit circuit2 (snd p) in (combineCircuit (fst p1) (fst p2), (snd p1, snd p2)))
+  .
+
+  End CIRCUIT.
+
   Section CONAT.
 
   CoInductive conat : Set :=
