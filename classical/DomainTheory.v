@@ -262,8 +262,8 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
         subst y...
   Qed.
 
-  Global Instance set_of_ContinuousMap_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : isPoset (@sig (D -> D') (@isContinuousMap D D' (@ScottTopology D D_isPoset) (@ScottTopology D' D'_isPoset))) :=
-    @SubPoset (D -> D') (@isContinuousMap D D' (@ScottTopology D D_isPoset) (@ScottTopology D' D'_isPoset)) (arrow_isPoset D'_isPoset)
+  Global Instance squig_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (@sig (D -> D') (@isContinuousMap D D' (@ScottTopology D D_requiresPoset) (@ScottTopology D' D'_requiresPoset))) :=
+    @SubPoset (D -> D') (@isContinuousMap D D' (@ScottTopology D D_requiresPoset) (@ScottTopology D' D'_requiresPoset)) (@arrow_isPoset D D' D'_requiresPoset)
   .
 
   Definition squig_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} : (D ~> D') -> (D >=> D') :=
@@ -555,13 +555,13 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     exact (fun f : D ~> D' => fun x : D => proj2_sig bottom_exists (proj1_sig f x)).
   Qed.
 
-  Global Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@set_of_ContinuousMap_isPoset D D' D_isPoset D'_isPoset) :=
+  Global Instance squig_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D ~> D') (@squig_isPoset D D' D_isPoset D'_isPoset) :=
     { bottom_exists :=
-      exist _ bot_of_squigs bot_of_squigs_isBottom
+      exist (fun min_f : D ~> D' => forall f : D ~> D', min_f =< f) (@bot_of_squigs D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder) (@bot_of_squigs_isBottom D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder)
     ; square_up_exists :=
       fun F : ensemble (D ~> D') =>
       fun F_isDirected : isDirected F =>
-      exist _ (square_up_of_squigs F F_isDirected) (square_up_of_squigs_isSupremum F F_isDirected)
+      exist (fun sup_F : D ~> D' => isSupremum sup_F F) (@square_up_of_squigs D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder F F_isDirected) (@square_up_of_squigs_isSupremum D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder F F_isDirected)
     }
   .
 

@@ -71,7 +71,7 @@ Module BasicGroupTheory.
     @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid x inv_x) (@ze M M_isSetoid M_isMonoid)
   .
 
-  Class isGroup (G : MySet) `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} : MySet :=
+  Class isGroup {G : MySet} `{G_isSetoid : isSetoid G} (G_isMonoid : @isMonoid G G_isSetoid) : MySet :=
     { ne : G -> G
     ; ne_preseves_eq : Proper (@eqProp G G_isSetoid ==> @eqProp G G_isSetoid) ne
     ; ne_left_inv_pl :

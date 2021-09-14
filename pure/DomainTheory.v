@@ -56,8 +56,8 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     end
   .
 
-  Global Instance fish_isPoset {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} : isPoset (D >=> D') :=
-    @SubPoset (D -> D') (@isMonotonicMap D D' D_isPoset D'_isPoset) (arrow_isPoset D'_isPoset)
+  Global Instance fish_isPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D >=> D') :=
+    @SubPoset (D -> D') (@isMonotonicMap D D' D_requiresPoset D'_requiresPoset) (@arrow_isPoset D D' D'_requiresPoset)
   .
 
   Lemma const_isMonotonic {D : Type} `{D_isPoset : isPoset D} :
@@ -1297,12 +1297,12 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
 
   End ConstructScottTopology.
 
-  Global Instance ScottTopology {D : Type} `{D_isPoset : isPoset D} : isTopologicalSpace D :=
-    { isOpen := @isOpen_ScottTopology D D_isPoset
-    ; open_full := @open_full_ScottTopology D D_isPoset
-    ; open_unions := @open_unions_ScottTopology D D_isPoset
-    ; open_intersection := @open_intersection_ScottTopology D D_isPoset
-    ; open_ext_eq := @open_ext_eq_ScottTopology D D_isPoset
+  Global Instance ScottTopology {D : Type} (D_requiresPoset : isPoset D) : isTopologicalSpace D :=
+    { isOpen := @isOpen_ScottTopology D D_requiresPoset
+    ; open_full := @open_full_ScottTopology D D_requiresPoset
+    ; open_unions := @open_unions_ScottTopology D D_requiresPoset
+    ; open_intersection := @open_intersection_ScottTopology D D_requiresPoset
+    ; open_ext_eq := @open_ext_eq_ScottTopology D D_requiresPoset
     }
   .
 
@@ -1343,7 +1343,7 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
       split...
   Qed.
 
-  Lemma square_up_of_direct_product {D : Type} {D' : Type} `{D_isCompletePartialOrder : isCompletePartialOrder D} `{D'_isCompletePartialOrder : isCompletePartialOrder D'} :
+  Lemma square_up_of_direct_product {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
     forall X : ensemble (D * D'),
     forall X_isDirected : isDirected X,
     isSupremum (proj1_sig (square_up_exists (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))), proj1_sig (square_up_exists (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected)))) X.
@@ -1372,11 +1372,11 @@ Module ConstructiveCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and
 
   Global Instance direct_product_of_CompletePartialOrder_isCompletePartialOrder {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} (D_requiresCompletePartialOrder : @isCompletePartialOrder D D_isPoset) (D'_requiresCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset) : @isCompletePartialOrder (D * D') (DirectProductOfPoset D_isPoset D'_isPoset) :=
     { bottom_exists :=
-      exist _ (proj1_sig bottom_exists, proj1_sig bottom_exists) bot_of_direct_product
+      exist (fun min_p : D * D' => forall p : D * D', min_p =< p) (proj1_sig (@bottom_exists D D_isPoset D_requiresCompletePartialOrder), proj1_sig (@bottom_exists D' D'_isPoset D'_requiresCompletePartialOrder)) (@bot_of_direct_product D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder)
     ; square_up_exists :=
       fun X : ensemble (D * D') =>
       fun X_isDirected : isDirected X =>
-      exist _ (proj1_sig (square_up_exists (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))), proj1_sig (square_up_exists (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected)))) (square_up_of_direct_product X X_isDirected)
+      exist (fun sup_X : D * D' => isSupremum sup_X X) (proj1_sig (@square_up_exists D D_isPoset D_requiresCompletePartialOrder (image fst X) (proj1 (directed_subset_of_direct_product X X_isDirected))), proj1_sig (@square_up_exists D' D'_isPoset D'_requiresCompletePartialOrder (image snd X) (proj2 (directed_subset_of_direct_product X X_isDirected)))) (@square_up_of_direct_product D D' D_isPoset D'_isPoset D_requiresCompletePartialOrder D'_requiresCompletePartialOrder X X_isDirected)
     }
   .
 
