@@ -1003,7 +1003,7 @@ Module PowerSetCoLa.
   | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
   where " v1 '~~~[' labels ']~>*' v2 " := (walkLabelledGraph v1 labels v2) : type_scope.
 
-  Section IDEA_OF_SIMULATION.
+  Section INTUITION_BEHIND_SIMULATION.
 
   Local Hint Constructors walkLabelledGraph : core.
 
@@ -1063,7 +1063,8 @@ Module PowerSetCoLa.
       destruct (proj1 (R_le_simF_R_iff_R_walk_diag R) R_le_simF_R s0 t0 H_in0 es t t0_es_t) as [s [s0_es_s H_in]].
       now exists s; firstorder.
     - intros H_forever.
-      destruct (H_forever nil t0 (walk_nil t0)) as [s [s0_nil_s t_simulates_s]].
+      set (t := t0).
+      destruct (H_forever nil t (walk_nil t)) as [s [s0_nil_s t_simulates_s]].
       now inversion s0_nil_s; subst.
   Qed.
 
@@ -1153,7 +1154,7 @@ Module PowerSetCoLa.
   > where $F : Type -> Type$ is the endofunctor given in [#3].
 *)
 
-  End IDEA_OF_SIMULATION.
+  End INTUITION_BEHIND_SIMULATION.
 
 End PowerSetCoLa.
 
