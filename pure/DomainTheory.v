@@ -998,7 +998,7 @@ Module PowerSetCoLa.
 
   Global Reserved Notation " v1 '~~~[' labels ']~>*' v2 " (at level 70, no associativity).
 
-  Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{Graph : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
+  Inductive walkLabelledGraph {Vertex : Type} {Label : Type} `{LabelledGraph : isLabelledGraph Vertex Label} (v0 : Vertex) : list Label -> Vertex -> Prop :=
   | walk_nil : v0 ~~~[ nil ]~>* v0
   | walk_cons (v1 : Vertex) (v2 : Vertex) (l : Label) (ls : list Label) (H_step : v1 ~~[ l ]~> v2) (H_walk : v0 ~~~[ ls ]~>* v1) : v0 ~~~[ cons l ls ]~>* v2
   where " v1 '~~~[' labels ']~>*' v2 " := (walkLabelledGraph v1 labels v2) : type_scope.
@@ -1057,7 +1057,7 @@ Module PowerSetCoLa.
     forall t0 : Tgt,
     simulates t0 s0 <-> (forall es : list Eff, forall t : Tgt, t0 ~~~[ es ]~>* t -> exists s : Src, s0 ~~~[ es ]~>* s /\ simulates t s).
   Proof.
-    assert (claim1 : forall s : Src, forall t : Tgt, simulates t s <-> exists R : ensemble (Src * Tgt), member (s, t) R /\ isSubsetOf R (simF R)) by exact (fun s : Src => fun t : Tgt => in_unions_iff (s, t) (postfixed_points simF)).
+    assert (claim1 : forall s : Src, forall t : Tgt, simulates t s <-> (exists R : ensemble (Src * Tgt), member (s, t) R /\ isSubsetOf R (simF R))) by exact (fun s : Src => fun t : Tgt => in_unions_iff (s, t) (postfixed_points simF)).
     intros s0 t0.
     split.
     - intros t0_simulates_s0 es t t0_es_t.
