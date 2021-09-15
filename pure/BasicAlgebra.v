@@ -8,19 +8,21 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module BasicGroupTheory.
+Module BasicAlgebra.
 
   Import ListNotations ProperNotations EqFacts BasicSetoidTheory.
 
-  Section BASIC_DEFINITIONS_RELATED_TO_GROUP.
-
   Local Open Scope signature_scope.
 
-  Let MySet : Type :=
+  Global Create HintDb algebra_hints.
+
+  Section BASIC_DEFINITIONS_RELATED_TO_GROUP.
+
+  Let SET : Type :=
     Type
   .
 
-  Definition isAssociative {A : MySet} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
+  Definition isAssociative {A : SET} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
     fun binop : A -> A -> A =>
     forall x : A,
     forall y : A,
@@ -28,52 +30,52 @@ Module BasicGroupTheory.
     @eqProp A A_isSetoid (binop x (binop y z)) (binop (binop x y) z)
   .
 
-  Definition isCommutative {A : MySet} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
+  Definition isCommutative {A : SET} `{A_isSetoid : isSetoid A} : (A -> A -> A) -> Prop :=
     fun binop : A -> A -> A =>
     forall x : A,
     forall y : A,
     @eqProp A A_isSetoid (binop x y) (binop y x)
   .
 
-  Definition isLeftIdOf {A : MySet} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
+  Definition isLeftIdOf {A : SET} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
     fun e : A =>
     fun binop : A -> A -> A =>
     forall x : A,
     @eqProp A A_isSetoid (binop e x) x
   .
 
-  Definition isRightIdOf {A : MySet} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
+  Definition isRightIdOf {A : SET} `{A_isSetoid : isSetoid A} : A -> (A -> A -> A) -> Prop :=
     fun e : A =>
     fun binop : A -> A -> A =>
     forall x : A,
     @eqProp A A_isSetoid (binop x e) x
   .
 
-  Class isMonoid (M : MySet) `{M_isSetoid : isSetoid M} : MySet :=
+  Class isMonoid (M : SET) `{M_isSetoid : isSetoid M} : SET :=
     { pl : M -> M -> M
     ; ze : M
-    ; pl_preserves_eq :> Proper (@eqProp M M_isSetoid ==> @eqProp M M_isSetoid ==> @eqProp M M_isSetoid) pl
+    ; pl_preserves_eq :> @Proper (M -> M -> M) (@eqProp M M_isSetoid ==> @eqProp M M_isSetoid ==> @eqProp M M_isSetoid) pl
     ; pl_assoc : @isAssociative M M_isSetoid pl
     ; ze_left_id_pl : @isLeftIdOf M M_isSetoid ze pl
     ; ze_right_id_pl : @isRightIdOf M M_isSetoid ze pl
     }
   .
 
-  Definition isLeftInverseOf {M : MySet} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
+  Definition isLeftInverseOf {M : SET} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
     fun inv_x : M =>
     fun x : M =>
     @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid inv_x x) (@ze M M_isSetoid M_isMonoid)
   .
 
-  Definition isRightInverseOf {M : MySet} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
+  Definition isRightInverseOf {M : SET} `{M_isSetoid : isSetoid M} `{M_isMonoid : @isMonoid M M_isSetoid} : M -> M -> Prop :=
     fun inv_x : M =>
     fun x : M =>
     @eqProp M M_isSetoid (@pl M M_isSetoid M_isMonoid x inv_x) (@ze M M_isSetoid M_isMonoid)
   .
 
-  Class isGroup {G : MySet} `{G_isSetoid : isSetoid G} (G_isMonoid : @isMonoid G G_isSetoid) : MySet :=
+  Class isGroup {G : SET} `{G_isSetoid : isSetoid G} (G_isMonoid : @isMonoid G G_isSetoid) : SET :=
     { ne : G -> G
-    ; ne_preseves_eq :> Proper (@eqProp G G_isSetoid ==> @eqProp G G_isSetoid) ne
+    ; ne_preseves_eq :> @Proper (G -> G) (@eqProp G G_isSetoid ==> @eqProp G G_isSetoid) ne
     ; ne_left_inv_pl :
       forall x : G,
       @isLeftInverseOf G G_isSetoid G_isMonoid (ne x) x
@@ -83,12 +85,14 @@ Module BasicGroupTheory.
     }
   .
 
-  Class isAbelianGroup {G : MySet} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : Prop :=
+  Class isAbelianGroup {G : SET} `{G_isSetoid : isSetoid G} `{G_isMonoid : @isMonoid G G_isSetoid} (G_requiresGroup : @isGroup G G_isSetoid G_isMonoid) : Prop :=
     { AbelianGroup_requiresCommutative : @isCommutative G G_isSetoid (@pl G G_isSetoid G_isMonoid)
     }
   .
 
   End BASIC_DEFINITIONS_RELATED_TO_GROUP.
+
+  Global Hint Resolve pl_assoc ze_left_id_pl ze_right_id_pl ne_left_inv_pl ne_right_inv_pl AbelianGroup_requiresCommutative : algebra_hints.
 
   Global Instance nat_isMonoid : @isMonoid nat nat_isSetoid :=
     { pl := plus
@@ -227,4 +231,4 @@ Module BasicGroupTheory.
     }
   .
 
-End BasicGroupTheory.
+End BasicAlgebra.
