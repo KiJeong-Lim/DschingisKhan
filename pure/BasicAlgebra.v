@@ -52,7 +52,7 @@ Module BasicGroupTheory.
   Class isMonoid (M : MySet) `{M_isSetoid : isSetoid M} : MySet :=
     { pl : M -> M -> M
     ; ze : M
-    ; pl_preserves_eq : Proper (@eqProp M M_isSetoid ==> @eqProp M M_isSetoid ==> @eqProp M M_isSetoid) pl
+    ; pl_preserves_eq :> Proper (@eqProp M M_isSetoid ==> @eqProp M M_isSetoid ==> @eqProp M M_isSetoid) pl
     ; pl_assoc : @isAssociative M M_isSetoid pl
     ; ze_left_id_pl : @isLeftIdOf M M_isSetoid ze pl
     ; ze_right_id_pl : @isRightIdOf M M_isSetoid ze pl
@@ -73,7 +73,7 @@ Module BasicGroupTheory.
 
   Class isGroup {G : MySet} `{G_isSetoid : isSetoid G} (G_isMonoid : @isMonoid G G_isSetoid) : MySet :=
     { ne : G -> G
-    ; ne_preseves_eq : Proper (@eqProp G G_isSetoid ==> @eqProp G G_isSetoid) ne
+    ; ne_preseves_eq :> Proper (@eqProp G G_isSetoid ==> @eqProp G G_isSetoid) ne
     ; ne_left_inv_pl :
       forall x : G,
       @isLeftInverseOf G G_isSetoid G_isMonoid (ne x) x
