@@ -201,16 +201,14 @@ Module FunFacts.
 
   Let NOT_BB_SPEC1 (b : BB) (if_b_eq_TRUE_BB : b = TRUE_BB) :
     (¬ b) = FALSE_BB.
-  Proof with tauto.
-    unfold NOT_BB.
-    destruct (exclusive_middle (b = TRUE_BB))...
+  Proof.
+    cbv; destruct (exclusive_middle (b = TRUE_BB)); tauto.
   Qed.
 
   Let NOT_BB_SPEC2 (b : BB) (if_b_ne_TRUE_BB : b <> TRUE_BB) :
     (¬ b) = TRUE_BB.
-  Proof with tauto.
-    unfold NOT_BB.
-    destruct (exclusive_middle (b = TRUE_BB))...
+  Proof.
+    cbv; destruct (exclusive_middle (b = TRUE_BB)); tauto.
   Qed.
 
   Let russell : UNIV -> BB :=
