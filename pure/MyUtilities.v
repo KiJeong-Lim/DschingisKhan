@@ -1349,9 +1349,11 @@ Module MyScratch.
     forall m : nat,
     leq n m ->
     n <= m.
-  Proof with eauto.
+  Proof.
     intros n m Hleq.
-    induction Hleq as [| m Hleq IH]...
+    induction Hleq as [| m Hleq IH].
+    - exact (le_n n).
+    - exact (le_S n m IH).
   Qed.
 
   Lemma leq_asymmetry :
@@ -1378,8 +1380,7 @@ Module MyScratch.
       exact (leq_intro_leq_0_n m).
     - intros [| m'] Hle.
       + exact (lt_elim_n_lt_0 n Hle).
-      + apply leq_intro_leq_S_n_S_m, IH.
-        exact (le_elim_S_n_le_m n (S m') Hle).
+      + exact (leq_intro_leq_S_n_S_m n m' (IH m' (le_elim_S_n_le_m n (S m') Hle))).
   Qed.
 
   Lemma leq_unique :
