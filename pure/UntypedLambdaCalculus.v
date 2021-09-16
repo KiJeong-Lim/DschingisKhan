@@ -648,19 +648,19 @@ Module UntypedLamdbdaCalculus.
   Class isPreLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
     { runApp : D -> arrow D D
     ; runLam : arrow D D -> D
-    ; runApp_ext :
-      forall v1 : D,
-      forall v1' : D,
-      forall v2 : D,
-      forall v2' : D,
-      v1 == v1' ->
-      v2 == v2' ->
-      runApp v1 v2 == runApp v1' v2'
-    ; runLam_ext :
-      forall vv : arrow D D,
-      forall vv' : arrow D D,
-      vv == vv' ->
-      runLam vv == runLam vv'
+    ; runApp_preserves_eqProp :
+      forall x1 : D,
+      forall y1 : D,
+      forall x2 : D,
+      forall y2 : D,
+      x1 == x2 ->
+      y1 == y2 ->
+      runApp x1 y1 == runApp x2 y2
+    ; runLam_preserves_eqProp :
+      forall f1 : arrow D D,
+      forall f2 : arrow D D,
+      f1 == f2 ->
+      runLam f1 == runLam f2
     }
   .
 
@@ -691,9 +691,9 @@ Module UntypedLamdbdaCalculus.
     - intros E1 E2 H.
       apply H...
     - intros E1 E2 H.
-      apply runApp_ext; [apply IHM1 | apply IHM2]; intros z H0; apply H...
+      apply runApp_preserves_eqProp; [apply IHM1 | apply IHM2]; intros z H0; apply H...
     - intros E1 E2 H.
-      apply runLam_ext.
+      apply runLam_preserves_eqProp.
       intros v.
       apply (IHM (fun z : ivar => if ivar_eq_dec y z then v else E1 z) (fun z : ivar => if ivar_eq_dec y z then v else E2 z))...
       destruct (ivar_eq_dec y z); [subst | apply H]...
@@ -710,9 +710,9 @@ Module UntypedLamdbdaCalculus.
     induction M.
     - intros sigma E...
     - intros sigma E.
-      apply runApp_ext...
+      apply runApp_preserves_eqProp...
     - intros sigma E.
-      enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z) (run_substitution_on_tm (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) M)) by now apply runLam_ext.
+      enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z) (run_substitution_on_tm (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) M)) by now apply runLam_preserves_eqProp.
       intros v.
       assert (H := IHM (cons_substitution y (tmVar (chi sigma (tmLam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z)).
       assert ( claim1 :
@@ -744,7 +744,9 @@ Module UntypedLamdbdaCalculus.
 
   Class isLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
     { LambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
-    ; satisfiesBetaAxiom : forall vv : arrow D D, runApp (runLam vv) == vv
+    ; satisfiesBetaAxiom :
+      forall f : arrow D D,
+      runApp (runLam f) == f
     }
   .
 
