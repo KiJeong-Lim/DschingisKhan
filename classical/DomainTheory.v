@@ -16,7 +16,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
 
   Global Hint Unfold U : my_hints.
 
-  Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+  Lemma U_x_isOpen {D : Type} `{D_isPoset : isPoset D} :
     forall x : D,
     isOpen (U x).
   Proof. (* Thanks to Junyoung Jang *)
@@ -37,7 +37,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       ctauto.
   Qed.
 
-  Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} `{D'_isCompletePartialOrder : @isCompletePartialOrder D' D'_isPoset} :
+  Lemma ContinuousMap_isMonotonicMap {D : Type} {D' : Type} `{D_isPoset : isPoset D} `{D'_isPoset : isPoset D'} :
     forall f : D -> D',
     isContinuousMap f ->
     isMonotonicMap f.
