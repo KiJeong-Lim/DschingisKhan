@@ -24,14 +24,21 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
 
   Section AbstractFormOfTheTheorems.
 
-  Context (mathcalE : Type) `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
+  Context {mathcalE : Type} `{mathcalE_isGoedelianLanguage : isGoedelianLanguage mathcalE}.
 
-  Definition diagonalizer : nat -> nat :=
+  Let diagonalizer : nat -> nat :=
     fun n : nat =>
     proj1_sig (mathcalE_is_denumerable (appnat (enum_mathcalE n) n))
   .
 
-  Local Hint Unfold diagonalizer : core.
+  Lemma diagonalizer_spec :
+    forall n : nat,
+    enum_mathcalE (diagonalizer n) = appnat (enum_mathcalE n) n.
+  Proof.
+    exact (fun n : nat => proj2_sig (mathcalE_is_denumerable (appnat (enum_mathcalE n) n))).
+  Qed.
+
+  Local Hint Resolve diagonalizer_spec : core.
 
   Lemma diagonalizer_diagonalizes :
     forall n : nat,
@@ -39,11 +46,11 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
     enum_mathcalE n = E ->
     enum_mathcalE (diagonalizer n) = appnat E n.
   Proof with eauto with *.
-    unfold diagonalizer.
-    intros n E H_eqE.
-    subst.
-    destruct (mathcalE_is_denumerable (appnat (enum_mathcalE n) n)) as [d_n H]...
+    intros n E Heq.
+    subst...
   Qed.
+
+  Local Hint Resolve diagonalizer_diagonalizes : core.
 
   Definition expressPredicate : mathcalE -> ensemble nat -> Prop :=
     fun H : mathcalE =>
@@ -126,11 +133,7 @@ Module SmullyanGIT. (* Reference: "Goedel's Incompleteness Theorems" of "Raymond
     intros A [H H_express_StarOf_A].
     destruct (mathcalE_is_denumerable H) as [n g_H_is_n].
     assert (H_n_is_true_iff_d_n_is_in_A : isTrue (appnat H n) <-> member (diagonalizer n) A) by firstorder.
-    assert (d_n_is_g_H_n : enum_mathcalE (diagonalizer n) = appnat H n).
-    { unfold diagonalizer.
-      rewrite (proj2_sig (mathcalE_is_denumerable (appnat (enum_mathcalE n) n))), g_H_is_n...
-    }
-    exists (appnat H n)...
+    enough (d_n_is_g_H_n : enum_mathcalE (diagonalizer n) = appnat H n)...
   Qed.
 
   Lemma A_Diagonal_Lemma_b :

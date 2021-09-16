@@ -94,35 +94,39 @@ Module ExclusiveMiddle.
 
   End Classical_Prop.
 
+  Global Ltac cfirstorder :=
+    now apply NNPP; firstorder
+  .
+
   Section Classical_Pred_Type.
 
   Context (U : Type) (P : U -> Prop).
 
-  Let forall_exists_False : (~ (forall n : U, P n)) -> (~ (exists n : U, (~ P n))) -> False :=
+  Let not_forall_isInconsistentWith_not_exists_not : (~ (forall n : U, P n)) -> (~ (exists n : U, (~ P n))) -> False :=
     fun H : ~ (forall n : U, P n) =>
-    fun H0 : ~ (exists n : U, ~ P n) =>
+    fun H0 : ~ (exists n : U, ~ (P n)) =>
     H (fun n : U => NNPP (P n) (fun H1 : ~ P n => H0 (ex_intro (fun n0 : U => ~ P n0) n H1)))
   . 
 
   Lemma not_all_not_ex :
     (~ (forall n : U, ~ P n)) ->
     (exists n : U, P n).
-  Proof with firstorder.
-    destruct (classic (exists n : U, P n))...
+  Proof.
+    now destruct (classic (exists n : U, P n)); firstorder.
   Qed.
 
   Lemma not_all_ex_not :
     (~ (forall n : U, P n)) ->
     (exists n : U, (~ P n)).
-  Proof with firstorder.
-    destruct (classic (exists n : U, ~ P n))...
+  Proof.
+    now destruct (classic (exists n : U, ~ P n)); firstorder.
   Qed.
 
   Lemma not_ex_not_all :
     (~ (exists n : U, (~ P n))) ->
     (forall n : U, P n).
-  Proof with firstorder.
-    destruct (classic (forall n : U, P n))...
+  Proof.
+    now destruct (classic (forall n : U, P n)); firstorder.
   Qed.
 
   End Classical_Pred_Type.

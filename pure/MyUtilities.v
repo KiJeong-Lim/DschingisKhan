@@ -157,13 +157,13 @@ Module EqFacts.
     ind_eq_l x (fun y : A => fun H : x = y => eq_decoder y (eq_encoder y H) = H) (eq_round_trip x x (eq_encoder x (eq_reflexivity x)))
   .
 
-  Hypothesis eq_encoder_returns_the_same_code : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
+  Hypothesis all_eq_codes_are_indistinguishable_from_each_other : forall y : A, forall H1 : x = y, forall H2 : x = y, eq_encoder y H1 = eq_encoder y H2.
 
   Definition eq_pirrel_holds_if_we_have_an_eq_encoder_which_returns_the_same_code : forall y : A, forall H1 : x = y, forall H2 : x = y, H1 = H2 :=
     fun y : A =>
     fun H1 : x = y =>
     fun H2 : x = y =>
-    let claim1 : eq_decoder y (eq_encoder y H1) = eq_decoder y (eq_encoder y H2) := eq_congruence (eq_decoder y) (eq_encoder y H1) (eq_encoder y H2) (eq_encoder_returns_the_same_code y H1 H2) in
+    let claim1 : eq_decoder y (eq_encoder y H1) = eq_decoder y (eq_encoder y H2) := eq_congruence (eq_decoder y) (eq_encoder y H1) (eq_encoder y H2) (all_eq_codes_are_indistinguishable_from_each_other y H1 H2) in
     eq_ind (eq_decoder y (eq_encoder y H2)) (fun H : x = y => H1 = H) (eq_ind (eq_decoder y (eq_encoder y H1)) (fun H : x = y => H = eq_decoder y (eq_encoder y H2)) claim1 H1 (eq_decoder_decodes_properly y H1)) H2 (eq_decoder_decodes_properly y H2)
   .
 
