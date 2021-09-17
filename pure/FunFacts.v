@@ -125,9 +125,9 @@ Module FunFacts.
   Proof.
     set (phi := fun p1 : sigT B => fun p2 : sigT B => forall Heq1 : projT1 p1 = projT1 p2, eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) Heq1 = projT2 p2).
     assert (claim1 : forall y : B x, phi (existT B x y) (existT B x y)).
-    { intros y H_EQ.
+    { intros y Heq1.
       apply eq_symmetry.
-      exact (eq_rect_eq y H_EQ).
+      exact (eq_rect_eq y Heq1).
     }
     assert (claim2 : forall p1 : sigT B, forall p2 : sigT B, forall Heq : p1 = p2, phi p2 p2 -> phi p1 p2).
     { intros p1 p2 Heq phi_pf.
