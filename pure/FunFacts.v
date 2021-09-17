@@ -117,22 +117,27 @@ Module FunFacts.
 
   Hypothesis eq_rect_eq : forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Let phi' : forall p1 : sigT B, forall p2 : sigT B, p1 = p2 -> Type :=
-    fun p1 : sigT B =>
-    fun p2 : sigT B =>
-    fun H : p1 = p2 =>
-    forall H0 : projT1 p1 = projT1 p2,
-    eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) H0 = projT2 p2
-  .
-
-  Let phi : forall p1 : sigT B, forall p2 : sigT B, forall H : p1 = p2, phi' p2 p2 eq_refl -> phi' p1 p2 H :=
-    RuleJ phi'
-  .
-
-  Theorem eq_rect_eq_implies_existT_inj2_eq (y1 : B x) (y2 : B x) (Heq : existT B x y1 = existT B x y2) :
+  Theorem eq_rect_eq_implies_existT_inj2_eq :
+    forall y1 : B x,
+    forall y2 : B x,
+    existT B x y1 = existT B x y2 ->
     y1 = y2.
   Proof.
-    exact (phi (existT B x y1) (existT B x y2) Heq (fun H : x = x => eq_symmetry y2 (eq_rect x B y2 x H) (eq_rect_eq y2 H)) (eq_reflexivity (projT1 (existT B x y1)))).
+    set (phi := fun p1 : sigT B => fun p2 : sigT B => forall Heq1 : projT1 p1 = projT1 p2, eq_rect (projT1 p1) B (projT2 p1) (projT1 p2) Heq1 = projT2 p2).
+    assert (claim1 : forall y : B x, phi (existT B x y) (existT B x y)).
+    { intros y H_EQ.
+      apply eq_symmetry.
+      exact (eq_rect_eq y H_EQ).
+    }
+    assert (claim2 : forall p1 : sigT B, forall p2 : sigT B, forall Heq : p1 = p2, phi p2 p2 -> phi p1 p2).
+    { intros p1 p2 Heq phi_pf.
+      exact (eq_ind p2 (fun p : sigT B => phi p p2) phi_pf p1 (eq_symmetry p1 p2 Heq)).
+    }
+    assert (claim3 : forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2).
+    { intros y1 y2 Heq.
+      exact (claim2 (existT B x y1) (existT B x y2) Heq (claim1 y2) (eq_reflexivity x)).
+    }
+    exact claim3.
   Qed.
 
   End EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.

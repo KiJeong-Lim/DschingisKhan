@@ -52,21 +52,9 @@ Module EqFacts.
 
   End EQ_CONSTRUCTORS.
 
-  Section EQ_ELIMINATORS.
+  Section EQ_DESTRUCTORS.
 
   Context {A : Type}.
-
-  Definition RuleJ (phi' : forall x0 : A, forall y0 : A, x0 = y0 -> Type) : forall x : A, forall y : A, forall H : x = y, phi' y y (eq_reflexivity y) -> phi' x y H :=
-    fun x : A =>
-    fun y : A =>
-    fun H : eq x y =>
-    match H as H0 in eq _ y0 return forall phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type, phi y0 y0 (eq_reflexivity y0) -> phi x y0 H0 with
-    | eq_refl =>
-      fun phi : forall x0 : A, forall y0 : A, x0 = y0 -> Type =>
-      fun phi_y : phi x x (eq_reflexivity x) =>
-      phi_y
-    end phi'
-  .
 
   Definition ind_eq_l (lhs : A) (phi : forall rhs : A, lhs = rhs -> Prop) : phi lhs (eq_reflexivity lhs) -> forall rhs : A, forall H : lhs = rhs, phi rhs H :=
     fun phi_pf : phi lhs (eq_reflexivity lhs) =>
@@ -131,7 +119,7 @@ Module EqFacts.
     end phi phi_pf
   .
 
-  End EQ_ELIMINATORS.
+  End EQ_DESTRUCTORS.
 
   Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
 
