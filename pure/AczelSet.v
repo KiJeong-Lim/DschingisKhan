@@ -388,30 +388,27 @@ Module ConstructiveTheoryOfAczelTree. (* Thanks to Hanul Jeon *)
 
   Global Hint Resolve in_unions_iff : aczel_hint.
 
-  Lemma hyp_StrongCollection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) :
-    forall psi : AczelSet -> AczelSet -> Prop,
-    (forall X : AczelSet, forall y : AczelSet, elem y (build psi X) <-> (exists x : AczelSet, elem x X /\ psi x y)) ->
-    forall X : AczelSet,
+  Lemma hyp_StrongCollection (build : (AczelSet -> AczelSet -> Prop) -> AczelSet -> AczelSet) (psi : AczelSet -> AczelSet -> Prop) (X : AczelSet) (HYP : forall y : AczelSet, elem y (build psi X) <-> (exists x : AczelSet, elem x X /\ psi x y)) :
     (forall x : AczelSet, elem x X -> exists y : AczelSet, psi x y) ->
     (forall x : AczelSet, elem x X -> exists y : AczelSet, elem y (build psi X) /\ psi x y) /\ (forall y : AczelSet, elem y (build psi X) -> exists x : AczelSet, elem x X /\ psi x y).
   Proof with eauto with *.
-    intros psi in_build_iff X H.
+    intros H.
     split.
     - intros x H0.
       destruct (H x H0) as [y H1].
       assert (H2 : exists x : AczelSet, elem x X /\ psi x y) by firstorder.
-      assert (H3 := proj2 (in_build_iff X y) H2)...
+      assert (H3 := proj2 (HYP y) H2)...
     - intros y H0.
-      apply in_build_iff...
+      apply (proj1 (HYP y))...
   Qed.
 
   Definition isTransitiveSet : AczelSet -> Prop :=
-    fun A : AczelSet =>
+    fun z : AczelSet =>
     forall x : AczelSet,
-    elem x A ->
+    elem x z ->
     forall y : AczelSet,
     elem y x ->
-    elem y A
+    elem y z
   .
 
   Global Hint Unfold isTransitiveSet : aczel_hint.
