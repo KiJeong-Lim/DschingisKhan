@@ -844,7 +844,7 @@ Module MyUtilities.
     f (safe_nth xs (castFinSet i (map_length f xs))) = safe_nth (map f xs) i.
   Proof.
     intros f.
-    set (my_map_length := list_ind (fun xs : list A => length (map f xs) = length xs) (eq_reflexivity O) (fun _ : A => fun xs : list A => fun IH : length (map f xs) = length xs => eq_congruence S (length (map f xs)) (length xs) IH)).
+    set (my_map_length := list_ind (fun xs : list A => length (map f xs) = length xs) (eq_reflexivity O) (fun _ : A => fun xs : list A => eq_congruence S (length (map f xs)) (length xs))).
     intros xs.
     replace (map_length f xs) with (my_map_length xs).
     - induction xs as [| x xs IH]; simpl.
