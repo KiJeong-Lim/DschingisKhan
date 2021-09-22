@@ -835,8 +835,6 @@ Module MyUtilities.
     exact (fun i : FinSet m => eq_reflexivity (FS m i)).
   Qed.
 
-  Check list_ind.
-
   Lemma safe_nth_map {A : Type} {B : Type} :
     forall f : A -> B,
     forall xs : list A,
