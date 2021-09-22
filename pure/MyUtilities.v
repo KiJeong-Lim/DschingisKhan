@@ -810,6 +810,56 @@ Module MyUtilities.
     exact (fun i : FinSet n => eq_reflexivity (@evalFinSet n i)).
   Qed.
 
+  Lemma castFinSet_FZ :
+    forall m : nat,
+    forall n : nat,
+    forall H_EQ : m = n,
+    castFinSet (FZ m) (eq_congruence S m n H_EQ) = FZ n.
+  Proof.
+    intros m.
+    apply ind_eq_l.
+    exact (eq_reflexivity (FZ m)).
+  Qed.
+
+  Lemma castFinSet_FS :
+    forall m : nat,
+    forall n : nat,
+    forall H_EQ : m = n,
+    forall i : FinSet m,
+    castFinSet (FS m i) (eq_congruence S m n H_EQ) = FS n (castFinSet i H_EQ).
+  Proof.
+    intros m n H_EQ.
+    pattern n, H_EQ.
+    revert n H_EQ.
+    apply ind_eq_l.
+    exact (fun i : FinSet m => eq_reflexivity (FS m i)).
+  Qed.
+
+  Check list_ind.
+
+  Lemma safe_nth_map {A : Type} {B : Type} :
+    forall f : A -> B,
+    forall xs : list A,
+    forall i : FinSet (length (map f xs)),
+    f (safe_nth xs (castFinSet i (map_length f xs))) = safe_nth (map f xs) i.
+  Proof.
+    intros f.
+    set (my_map_length := list_ind (fun xs : list A => length (map f xs) = length xs) (eq_reflexivity O) (fun _ : A => fun xs : list A => fun IH : length (map f xs) = length xs => eq_congruence S (length (map f xs)) (length xs) IH)).
+    intros xs.
+    replace (map_length f xs) with (my_map_length xs).
+    - induction xs as [| x xs IH]; simpl.
+      + apply FinSet_case0.
+      + apply FinSet_caseS.
+        { rewrite (castFinSet_FZ (length (map f xs)) (length xs) (my_map_length xs)).
+          exact (eq_reflexivity (f x)).
+        }
+        { intros i.
+          rewrite (castFinSet_FS (length (map f xs)) (length xs) (my_map_length xs) i).
+          exact (IH i).
+        }
+    - apply eqnat_proof_irrelevance.
+  Qed.
+
   Definition liftFinSet : forall m : nat, forall n : nat, FinSet n -> FinSet (n + m) :=
     fun m : nat =>
     fix liftFinSet_fix (n : nat) (i : FinSet n) {struct i} : FinSet (n + m) :=
