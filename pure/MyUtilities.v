@@ -1249,6 +1249,12 @@ Module MyUtilities.
     end
   .
 
+  Definition injSome {A : Type} : forall x : A, forall y : A, Some x = Some y -> x = y :=
+    fun x : A =>
+    fun y : A =>
+    eq_congruence (maybe y id) (Some x) (Some y)
+  .
+
   Definition elemIndex {A : Type} : forall x : A, (forall x' : A, {x = x'} + {x <> x'}) -> forall xs : list A, option (FinSet (length xs)) :=
     fun x : A =>
     fun eq_dec : forall x' : A, {x = x'} + {x <> x'} =>
