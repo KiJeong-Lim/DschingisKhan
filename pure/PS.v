@@ -37,13 +37,13 @@ Module ProblemSolving.
 
   Local Hint Constructors G : core.
 
-  Fixpoint toPath (bs : list bool) : (nat * nat) :=
+  Fixpoint movePiece (piece_pos : nat * nat) (bs : list bool) : (nat * nat) :=
     match bs with
-    | [] => (0, 0)
+    | [] => piece_pos
     | b :: bs' =>
-      let x : nat := fst (toPath bs') in
-      let y : nat := snd (toPath bs') in
-      (if b then S x else x, if b then y else S y)
+      let x : nat := fst piece_pos in
+      let y : nat := snd piece_pos in
+      movePiece (if b then S x else x, if b then y else S y) bs'
     end
   .
 
