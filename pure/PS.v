@@ -10,18 +10,12 @@ Module ProblemSolving.
 
   Import ListNotations MyUtilities.
 
-  Fixpoint count_true (bs : list bool) : nat :=
-    match bs with
-    | [] => 0
-    | b :: bs' => if b then S (count_true bs') else count_true bs'
-    end
+  Definition count_true (bs : list bool) : nat :=
+    length (filter (fun b : bool => if b then true else false) bs)
   .
 
-  Fixpoint count_false (bs : list bool) : nat :=
-    match bs with
-    | [] => 0
-    | b :: bs' => if b then count_false bs' else S (count_false bs')
-    end
+  Definition count_false (bs : list bool) : nat :=
+    length (filter (fun b : bool => if b then false else true) bs)
   .
 
   Definition L (bs : list bool) : Prop :=
@@ -30,22 +24,33 @@ Module ProblemSolving.
 
   Inductive G : list bool -> Prop :=
   | G1 : G []
-  | G2 : forall bs1, G bs1 -> G ([true] ++ bs1 ++ [false])
-  | G3 : forall bs1, G bs1 -> G ([false] ++ bs1 ++ [true])
-  | G4 : forall bs1 bs2, G bs1 -> G bs2 -> G (bs1 ++ bs2)
+  | G2 : forall bs1 : list bool, G bs1 -> G ([true] ++ bs1 ++ [false])
+  | G3 : forall bs1 : list bool, G bs1 -> G ([false] ++ bs1 ++ [true])
+  | G4 : forall bs1 : list bool, forall bs2 : list bool, G bs1 -> G bs2 -> G (bs1 ++ bs2)
   .
 
   Local Hint Constructors G : core.
 
-  Fixpoint movePiece (piece_pos : nat * nat) (bs : list bool) : (nat * nat) :=
+  Fixpoint movePiece (pos : nat * nat) (bs : list bool) : (nat * nat) :=
     match bs with
-    | [] => piece_pos
+    | [] => pos
     | b :: bs' =>
-      let x : nat := fst piece_pos in
-      let y : nat := snd piece_pos in
+      let x : nat := fst pos in
+      let y : nat := snd pos in
       movePiece (if b then S x else x, if b then y else S y) bs'
     end
   .
+
+  Lemma movePiece_spec :
+    forall bs : list bool,
+    forall x : nat,
+    forall y : nat,
+    movePiece (x, y) bs = (x + count_true bs, y + count_false bs).
+  Proof with eauto.
+    unfold count_true, count_false.
+    induction bs as [| [|] bs IH]; intros; simpl...
+    all: rewrite IH; simpl; rewrite plus_n_Sm...
+  Qed.
 
 (*
 
