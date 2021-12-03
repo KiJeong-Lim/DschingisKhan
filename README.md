@@ -13,7 +13,7 @@ make
 
 ## COMPATIBLE COQ VERSIONS
 
-- With `The Coq Proof Assistant, version 8.13.2 (July 2021)`, everything works fine in `Windows 10`.
+- With `The Coq Proof Assistant, version 8.14.0 compiled with OCaml 4.12.0`, everything works fine in `Windows 10`.
 
 ## THANKS TO
 
