@@ -402,6 +402,56 @@ Module ConstructiveTheoryOfAczelTree. (* Thanks to Hanul Jeon *)
       apply (proj1 (HYP y))...
   Qed.
 
+  Section FirstSectionInWhichAxiomOfChoice.
+
+  Hypothesis axiom_of_choice : forall A : Type, forall B : Type, forall psi : A -> B -> Prop, (forall x : A, exists y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
+
+  (* Advise of Hanul Jeon
+  Aczel의 Strong Collection의 증명을 스케치해보면
+Hanul
+Hanul Jeon
+우선 forall x:X, exists y phi(x,y)가 성립한다고 합시다
+보낸 메시지
+네
+Hanul
+여기서 AC를 적용해서 f : forall x:X, phi(x,f(x))인 f를 찾고
+Hanul
+base set을 X의 base와 똑같이 잡을 겁니다
+Hanul
+그리고 원소는 f(x)에 대응하게끔 잡을 거고요
+Hanul
+Hanul Jeon
+문제는 AC가 Coq에서 작동할 것 같지 않다는 거네요
+  *)
+
+  Lemma AxiomOfChoice_implies_StrongCollection (psi : AczelSet -> AczelSet -> Prop) (psi_respect_eq_on_fst : forall y : AczelSet, respect_ext_eq (fun x : AczelSet => psi x y)) (psi_respect_eq_on_snd : forall x : AczelSet, respect_ext_eq (fun y : AczelSet => psi x y)) :
+    forall X : AczelSet,
+    (forall x : AczelSet, elem x X -> exists y : AczelSet, psi x y) ->
+    exists Y : AczelSet, (forall x : AczelSet, elem x X -> exists y : AczelSet, elem y Y /\ psi x y) /\ (forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ psi x y).
+  Proof with eauto with *.
+    intros X H.
+    set (Ground := childrenOf X).
+    assert (claim1 : exists f : Ground -> AczelSet, forall x : Ground, psi (childTreeOf X x) (f x)).
+    { apply axiom_of_choice with (psi := fun x : Ground => fun y : AczelSet => psi (childTreeOf X x) y).
+      intros x... 
+    }
+    destruct claim1 as [f claim1].
+    exists (RootNode Ground f).
+    split.
+    - intros x [key H0].
+      set (y := f key).
+      exists y.
+      split...
+      apply (psi_respect_eq_on_fst y (childTreeOf X key))...
+    - intros y [key H0].
+      simpl in *.
+      exists (childTreeOf X key).
+      split...
+      apply (psi_respect_eq_on_snd (childTreeOf X key) (f key))...
+  Qed.
+
+  End FirstSectionInWhichAxiomOfChoice.
+
   Definition isTransitiveSet : AczelSet -> Prop :=
     fun z : AczelSet =>
     forall x : AczelSet,
