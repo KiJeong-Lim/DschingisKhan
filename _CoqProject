@@ -10,6 +10,7 @@ pure/AczelSet.v #
 pure/CBA.v #
 pure/MyCoin.v #
 pure/PS.v #
+pure/Data.v
 #
 classical/ExclusiveMiddle.v #
 classical/DomainTheory.v #

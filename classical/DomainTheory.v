@@ -1350,18 +1350,18 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
 
   Local Hint Constructors iterations : core.
 
-  Lemma iterations_f_bottom_isDirected_if_f_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
+  Lemma iterations_f_bottom_isDirected_if_f_isMonotonicMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     forall f : D -> D,
-    isContinuousMap f ->
+    isMonotonicMap f ->
     isDirected (iterations f (proj1_sig bottom_exists)).
   Proof with eauto with *.
     assert (claim1 := n1_le_max_n1_n2).
     assert (claim2 := n2_le_max_n1_n2).
-    intros f f_continuous.
+    intros f f_monotonic.
     assert (claim3 : forall n : nat, iteration n f (proj1_sig bottom_exists) =< iteration (S n) f (proj1_sig bottom_exists)).
     { induction n as [| n' IH].
       - exact (proj2_sig bottom_exists (f (proj1_sig bottom_exists))).
-      - exact (ContinuousMap_isMonotonicMap f f_continuous (iteration n' f (proj1_sig bottom_exists)) (iteration (S n') f (proj1_sig bottom_exists)) IH).
+      - exact (f_monotonic (iteration n' f (proj1_sig bottom_exists)) (iteration (S n') f (proj1_sig bottom_exists)) IH).
     }
     assert (claim4 : forall n1 : nat, forall n2 : nat, n1 <= n2 -> iteration n1 f (proj1_sig bottom_exists) =< iteration n2 f (proj1_sig bottom_exists)).
     { intros n1 n2 n1_le_n2.
@@ -1381,7 +1381,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
 
   Definition get_lfp_of {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} : (D ~> D) -> D :=
     fun f : D ~> D =>
-    proj1_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))
+    proj1_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))))
   .
 
   Lemma every_ContinuousMap_has_a_fixed_point {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
@@ -1389,13 +1389,13 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     member (get_lfp_of f) (fixed_points (proj1_sig f)).
   Proof with eauto with *.
     intros f.
-    assert (claim1 : isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
+    assert (claim1 : isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))))).
     assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
     { induction n as [| n' IH].
       - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
       - exact (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f) (iteration n' (proj1_sig f) (proj1_sig bottom_exists)) (iteration (S n') (proj1_sig f) (proj1_sig bottom_exists)) IH).
     }
-    assert (claim3 := isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f) (proj2_sig f) (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) claim1).
+    assert (claim3 := isSupremum_of_image_f_X_iff_f_sup_X_eq (proj1_sig f) (proj2_sig f) (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))) (get_lfp_of f) claim1).
     assert (it_is_sufficient_to_show : proj1_sig f (get_lfp_of f) == get_lfp_of f).
     { apply claim3.
       intros y.
@@ -1422,7 +1422,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
     isLeastFixedPoint (get_lfp_of f) (proj1_sig f).
   Proof with eauto with *.
     intros f.
-    assert (claim1 : isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
+    assert (claim1 : isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))))).
     assert (claim2 : forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< iteration (S n) (proj1_sig f) (proj1_sig bottom_exists)).
     { induction n as [| n IH].
       - exact (proj2_sig bottom_exists (proj1_sig f (proj1_sig bottom_exists))).
@@ -1531,7 +1531,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   Lemma get_lfp_of_isContinuousMap {D : Type} `{D_isPoset : isPoset D} `{D_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset} :
     isContinuousMap (fun f : D ~> D => get_lfp_of f).
   Proof with eauto with *.
-    assert (get_lfp_of_isSupremum_of_iterations : forall f : D ~> D, isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (fun f : D ~> D => proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)))).
+    assert (get_lfp_of_isSupremum_of_iterations : forall f : D ~> D, isSupremum (get_lfp_of f) (iterations (proj1_sig f) (proj1_sig bottom_exists))) by exact (fun f : D ~> D => proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) ((iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f)))))).
     assert (iteration_isMonotonicMap : forall n : nat, isMonotonicMap (fun p : (D ~> D) * D => iteration n (proj1_sig (fst p)) (snd p))).
     { induction n as [| n IH]; intros [f1 x1] [f2 x2] [Hle_f Hle_x]; simpl.
       - exact Hle_x.
@@ -1571,7 +1571,7 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
       apply (proj1 O_isOpen (iteration n (proj1_sig f) (proj1_sig bottom_exists)) (get_lfp_of f) f_in)...
     - intros f_in.
       apply (in_preimage_iff f) in f_in.
-      destruct (proj2 O_isOpen (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isContinuousMap (proj1_sig f) (proj2_sig f)) (get_lfp_of f) (get_lfp_of_isSupremum_of_iterations f) f_in) as [f_i f_i_in].
+      destruct (proj2 O_isOpen (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))) (get_lfp_of f) (get_lfp_of_isSupremum_of_iterations f) f_in) as [f_i f_i_in].
       apply in_intersection_iff in f_i_in.
       destruct f_i_in as [f_i_in_iterations f_i_in_O].
       inversion f_i_in_iterations; subst.
@@ -1583,3 +1583,184 @@ Module ClassicalCpoTheory. (* Reference: "The Lambda Calculus: Its Syntax and Se
   .
 
 End ClassicalCpoTheory.
+
+Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles Formalized in the Calculus of Constructions" *)
+
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble MyEnsembleNova BasicPosetTheory BasicTopology ExclusiveMiddle ConstructiveCpoTheory ClassicalCpoTheory.
+
+  Definition is_complete (D : Type) (D_requiresPoset : isPoset D) : Type :=
+    forall X : ensemble D,
+    (forall x1 : D, forall x2 : D, member x1 X -> member x2 X -> exists x3 : D, member x3 X /\ x1 =< x3 /\ x2 =< x3) ->
+    {sup_X : D | isSupremum sup_X X}
+  .
+
+  Section StructuralInduction.
+
+  Context {D : Type}.
+
+  Definition preserves : (D -> D) -> ensemble D -> Prop :=
+    fun f : D -> D =>
+    fun X : ensemble D =>
+    forall x : D,
+    member x X ->
+    member (f x) X
+  .
+
+  Context `{D_isPoset : isPoset D}.
+
+  Hypothesis D_is_complete : is_complete D D_isPoset.
+
+  Definition bot_D : D :=
+    (proj1_sig (D_is_complete \emptyset (fun x1 : D => fun x2 : D => fun x1_in_empty : member x1 \emptyset => False_rect _ (proj1 (in_empty_iff x1) x1_in_empty))))
+  .
+
+  Let bot_D_is_bottom :
+    forall x : D, bot_D =< x.
+  Proof with eauto with *.
+    assert (claim1 := (proj2_sig (D_is_complete \emptyset (fun x : D => fun y : D => fun x_in_empty : member x \emptyset => False_rect _ (proj1 (in_empty_iff x) x_in_empty))))).
+    fold bot_D in claim1.
+    cbn in claim1.
+    intros u.
+    apply claim1.
+    intros x H.
+    apply in_empty_iff in H.
+    tauto.
+  Qed.
+
+  Definition lim_D : forall X : ensemble D, isDirected X -> D :=
+    fun X : ensemble D =>
+    fun X_isDirected : isDirected X =>
+    proj1_sig (D_is_complete X (fun x1 : D => fun x2 : D => fun x1_in_X : member x1 X => fun x2_in_X : member x2 X => proj2 X_isDirected x1 x1_in_X x2 x2_in_X))
+  .
+
+  Local Instance U_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset :=
+    { bottom_exists := exist (fun min_D : D => forall x : D, min_D =< x) bot_D bot_D_is_bottom
+    ; square_up_exists := 
+      fun X : ensemble D =>
+      fun X_isDirected : isDirected X =>
+      exist (fun sup_X : D => isSupremum sup_X X) (lim_D X X_isDirected) (proj2_sig (D_is_complete X (fun x1 : D => fun x2 : D => fun x1_in_X : member x1 X => fun x2_in_X : member x2 X => proj2 X_isDirected x1 x1_in_X x2 x2_in_X)))
+    }
+  .
+
+  Definition approximation : (D -> D) -> ensemble D :=
+    fun f : D -> D =>
+    iterations f (proj1_sig bottom_exists)
+  .
+
+  Let bot_is_bot : proj1_sig bottom_exists = bot_D :=
+    eq_refl
+  .
+
+  Lemma approximation_f_is_the_smallest_class_containing_bottom_and_preseved_by_f :
+    forall f : D -> D,
+    forall x : D,
+    member x (approximation f) <-> (forall X : ensemble D, member bot_D X -> preserves f X -> member x X).
+  Proof with eauto with *.
+    intros f x.
+    split.
+    - intros x_in_approximation_f X bot_in_X f_preserves_X.
+      enough (claim1 : forall n : nat, member (iteration n f bot_D) X).
+      + inversion x_in_approximation_f; subst...
+      + induction n as [| n IH]...
+    - intros H_x_in.
+      apply (H_x_in (approximation f)).
+      + apply (in_iterations _ _ 0).
+      + intros y H_y_in.
+        inversion H_y_in; subst.
+        apply (in_iterations _ _ (S n)).
+  Qed.
+
+  Definition isAdmissible : ensemble D -> Prop :=
+    fun X : ensemble D =>
+    forall Y : ensemble D,
+    isSubsetOf Y X ->
+    forall Y_isDirectedOrEmpty : (forall y1 : D, forall y2 : D, member y1 Y -> member y2 Y -> exists y3 : D, member y3 Y /\ y1 =< y3 /\ y2 =< y3),
+    member (proj1_sig (D_is_complete Y Y_isDirectedOrEmpty)) X
+  .
+
+  Local Notation " X '`is_an_admissible_set_preserved_by`' f " := (isAdmissible X /\ preserves f X) (at level 70, no associativity) : type_scope.
+
+  Definition transfinite_approximation : (D -> D) -> ensemble D :=
+    fun f : D -> D =>
+    fun u : D =>
+    forall X : ensemble D,
+    X `is_an_admissible_set_preserved_by` f ->
+    member u X
+  .
+
+  Lemma transfinite_approximation_f_isAdmissible :
+    forall f : D -> D,
+    isAdmissible (transfinite_approximation f).
+  Proof with eauto with *.
+    intros f X X_isSubsetOf_infty_f X_isDirectedOrEmpty Y [Y_isAdmissible f_preserves_Y].
+    enough (claim1 : isSubsetOf X Y) by apply (Y_isAdmissible X claim1 X_isDirectedOrEmpty).
+    intros u u_in_X.
+    apply X_isSubsetOf_infty_f...
+  Qed.
+
+  Lemma approximation_f_isSubsetOf_transfinite_approximation_f :
+    forall f : D -> D,
+    isSubsetOf (approximation f) (transfinite_approximation f).
+  Proof with eauto with *.
+    intros f x x_in_approximation_f.
+    assert (claim1 := proj1 (approximation_f_is_the_smallest_class_containing_bottom_and_preseved_by_f f x) x_in_approximation_f).
+    intros X [X_isAdmissible f_preserves_X].
+    apply claim1.
+    - apply X_isAdmissible...
+    - exact f_preserves_X.
+  Qed.
+
+  Local Hint Resolve approximation_f_isSubsetOf_transfinite_approximation_f : core.
+
+  Definition Y : (D >=> D) -> D :=
+    fun f : D >=> D =>
+    proj1_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (proj2_sig f)))
+  .
+
+  Theorem Scott's_computational_induction_principle :
+    forall f : D >=> D,
+    member (Y f) (transfinite_approximation (proj1_sig f)).
+  Proof with eauto with *.
+    intros f X [X_isAdmissible f_preserves_X].
+    apply (transfinite_approximation_f_isAdmissible (proj1_sig f) (approximation (proj1_sig f)))...
+  Qed.
+
+  Lemma f_preserves_transfinite_approximation_f :
+    forall f : D -> D,
+    preserves f (transfinite_approximation f).
+  Proof with eauto with *.
+    intros f x x_in_infty_f X [X_isAdmissible f_preserves_X].
+    apply (f_preserves_X x), (x_in_infty_f X)...
+  Qed.
+
+(* Unsolved: 2021-12-18
+
+  Lemma transfinite_approximation_f_isDirectedOrEmpty_if_f_isMonotonicMap :
+    forall f : D -> D,
+    isMonotonicMap f ->
+    forall x1 : D,
+    forall x2 : D,
+    member x1 (transfinite_approximation f) ->
+    member x2 (transfinite_approximation f) ->
+    exists x3 : D, member x3 (transfinite_approximation f) /\ x1 =< x3 /\ x2 =< x3.
+  Proof with eauto with *.
+    intros f f_monotonic x1 x2 H_x1_in H_x2_in.
+
+  Qed.
+
+  Definition Z : (D >=> D) -> D :=
+    fun f : D >=> D =>
+    proj1_sig (D_is_complete (transfinite_approximation (proj1_sig f)) (transfinite_approximation_f_isDirectedOrEmpty_if_f_isMonotonicMap (proj1_sig f) (proj2_sig f)))
+  .
+
+  Lemma Z_f_isLeastFixpointOf_f :
+    forall f : D >=> D,
+    isLeastFixedPoint (Z f) (proj1_sig f).
+  Proof with eauto with *.
+  Qed.
+
+*)
+
+  End StructuralInduction.
+
+End FORMALIZATION_OF_INDUCTION_PRINCIPLE.
