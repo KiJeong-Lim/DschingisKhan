@@ -1733,7 +1733,7 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     apply (f_preserves_X x), (x_in_infty_f X)...
   Qed.
 
-(* Unsolved: 2021-12-18
+(* Last try: 2021-12-18
 
   Lemma transfinite_approximation_f_isDirectedOrEmpty_if_f_isMonotonicMap :
     forall f : D -> D,
@@ -1744,8 +1744,6 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     member x2 (transfinite_approximation f) ->
     exists x3 : D, member x3 (transfinite_approximation f) /\ x1 =< x3 /\ x2 =< x3.
   Proof with eauto with *.
-    intros f f_monotonic x1 x2 H_x1_in H_x2_in.
-
   Qed.
 
   Definition Z : (D >=> D) -> D :=
