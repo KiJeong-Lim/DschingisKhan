@@ -1588,12 +1588,6 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble MyEnsembleNova BasicPosetTheory BasicTopology ExclusiveMiddle ConstructiveCpoTheory ClassicalCpoTheory.
 
-  Definition is_complete (D : Type) (D_requiresPoset : isPoset D) : Type :=
-    forall X : ensemble D,
-    (forall x1 : D, forall x2 : D, member x1 X -> member x2 X -> exists x3 : D, member x3 X /\ x1 =< x3 /\ x2 =< x3) ->
-    {sup_X : D | isSupremum sup_X X}
-  .
-
   Section StructuralInduction.
 
   Context {D : Type}.
@@ -1608,9 +1602,26 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
 
   Context `{D_isPoset : isPoset D}.
 
-  Hypothesis D_is_complete : is_complete D D_isPoset.
+  Definition isDirectedOrEmpty : ensemble D -> Prop :=
+    fun X : ensemble D =>
+    forall x1 : D,
+    forall x2 : D,
+    member x1 X ->
+    member x2 X ->
+    exists x3 : D, member x3 X /\ x1 =< x3 /\ x2 =< x3
+  .
 
-  Definition bot_D : D :=
+  Local Hint Unfold isDirectedOrEmpty : core.
+
+  Definition is_complete : Type :=
+    forall X : ensemble D,
+    isDirectedOrEmpty X ->
+    {sup_X : D | isSupremum sup_X X}
+  .
+
+  Hypothesis D_is_complete : forall X : ensemble D, isDirectedOrEmpty X -> {sup_X : D | isSupremum sup_X X}.
+
+  Let bot_D : D :=
     (proj1_sig (D_is_complete \emptyset (fun x1 : D => fun x2 : D => fun x1_in_empty : member x1 \emptyset => False_rect _ (proj1 (in_empty_iff x1) x1_in_empty))))
   .
 
@@ -1627,7 +1638,7 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     tauto.
   Qed.
 
-  Definition lim_D : forall X : ensemble D, isDirected X -> D :=
+  Let lim_D : forall X : ensemble D, isDirected X -> D :=
     fun X : ensemble D =>
     fun X_isDirected : isDirected X =>
     proj1_sig (D_is_complete X (fun x1 : D => fun x2 : D => fun x1_in_X : member x1 X => fun x2_in_X : member x2 X => proj2 X_isDirected x1 x1_in_X x2 x2_in_X))
@@ -1647,9 +1658,11 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     iterations f (proj1_sig bottom_exists)
   .
 
-  Let bot_is_bot : proj1_sig bottom_exists = bot_D :=
-    eq_refl
-  .
+  Let bot_eq_bot :
+    proj1_sig bottom_exists = bot_D.
+  Proof.
+    reflexivity.
+  Qed.
 
   Lemma approximation_f_is_the_smallest_class_containing_bottom_and_preseved_by_f :
     forall f : D -> D,
@@ -1674,11 +1687,11 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     fun X : ensemble D =>
     forall Y : ensemble D,
     isSubsetOf Y X ->
-    forall Y_isDirectedOrEmpty : (forall y1 : D, forall y2 : D, member y1 Y -> member y2 Y -> exists y3 : D, member y3 Y /\ y1 =< y3 /\ y2 =< y3),
+    forall Y_isDirectedOrEmpty : isDirectedOrEmpty Y,
     member (proj1_sig (D_is_complete Y Y_isDirectedOrEmpty)) X
   .
 
-  Local Notation " X '`is_an_admissible_set_preserved_by`' f " := (isAdmissible X /\ preserves f X) (at level 70, no associativity) : type_scope.
+  Local Notation " X `is_an_admissible_set_preserved_by` f " := (isAdmissible X /\ preserves f X) (at level 70, no associativity) : type_scope.
 
   Definition transfinite_approximation : (D -> D) -> ensemble D :=
     fun f : D -> D =>
@@ -1733,17 +1746,91 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     apply (f_preserves_X x), (x_in_infty_f X)...
   Qed.
 
-(* Last try: 2021-12-18
+  Lemma Y_f_le_f_Y_f :
+    forall f : D >=> D,
+    Y f =< proj1_sig f (Y f).
+  Proof with eauto with *.
+    intros f.
+    assert (claim1 : forall n : nat, iteration n (proj1_sig f) bot_D =< iteration (S n) (proj1_sig f) bot_D).
+    { induction n as [| n IH]; simpl.
+      - rewrite <- bot_eq_bot.
+        apply (proj2_sig bottom_exists).
+      - apply (proj2_sig f)...
+    }
+    assert (claim2 : isSupremum (Y f) (approximation (proj1_sig f))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (proj2_sig f)))).
+    apply claim2.
+    intros x H_x_in.
+    inversion H_x_in; subst.
+    rewrite bot_eq_bot.
+    transitivity (iteration (S n) (proj1_sig f) bot_D).
+    - exact (claim1 n).
+    - apply (proj2_sig f)...
+  Qed.
+
+  Lemma Y_f_isUpperBoundOf_prefixed_points_f :
+    forall f : D >=> D,
+    forall x : D,
+    member x (prefixed_points (proj1_sig f)) ->
+    Y f =< x.
+  Proof with eauto with *.
+    intros f.
+    assert (claim1 : forall n : nat, iteration n (proj1_sig f) bot_D =< iteration (S n) (proj1_sig f) bot_D).
+    { induction n as [| n IH]; simpl.
+      - rewrite <- bot_eq_bot.
+        apply (proj2_sig bottom_exists).
+      - apply (proj2_sig f)...
+    }
+    assert (claim2 : isSupremum (Y f) (approximation (proj1_sig f))) by exact (proj2_sig (square_up_exists (iterations (proj1_sig f) (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (proj2_sig f)))).
+    assert (claim3 : Y f =< proj1_sig f (Y f)) by exact (Y_f_le_f_Y_f f).
+    assert (claim4 : forall x : D, proj1_sig f x =< x -> forall n : nat, iteration n (proj1_sig f) (proj1_sig bottom_exists) =< x).
+    { intros x f_x_le_x.
+      induction n as [| n IH]; simpl.
+      - rewrite <- bot_eq_bot.
+        apply (proj2_sig bottom_exists).
+      - transitivity (proj1_sig f x).
+        + apply (proj2_sig f)...
+        + exact f_x_le_x.
+    }
+    unfold member, prefixed_points.
+    intros x f_x_le_x.
+    apply claim2.
+    intros x2 H_x2_in.
+    inversion H_x2_in; subst...
+  Qed.
+
+(* Last try: 2021-12-21
 
   Lemma transfinite_approximation_f_isDirectedOrEmpty_if_f_isMonotonicMap :
     forall f : D -> D,
     isMonotonicMap f ->
-    forall x1 : D,
-    forall x2 : D,
-    member x1 (transfinite_approximation f) ->
-    member x2 (transfinite_approximation f) ->
-    exists x3 : D, member x3 (transfinite_approximation f) /\ x1 =< x3 /\ x2 =< x3.
+    isDirectedOrEmpty (transfinite_approximation f).
   Proof with eauto with *.
+    intros f f_monotonic.
+    assert (claim1 : forall n : nat, forall x : D, member x (transfinite_approximation f) -> member (iteration n f x) (transfinite_approximation f)).
+    { induction n as [| n IH]; intros x H; simpl.
+      - exact H.
+      - apply (f_preserves_transfinite_approximation_f f)... 
+    }
+    assert (claim2 : forall n : nat, forall x : D, f (iteration n f x) = iteration n f (f x)).
+    { induction n as [| n IH]; simpl; intros x...
+      rewrite IH...
+    }
+    set (fix_f := Y (exist isMonotonicMap f f_monotonic)).
+    assert (claim3 : forall n : nat, forall x : D, fix_f =< x -> fix_f =< iteration n f x).
+    { induction n as [| n IH]; simpl; intros x H.
+      - exact H.
+      - rewrite claim2.
+        apply IH.
+        transitivity (f fix_f).
+        + apply Y_f_le_f_Y_f.
+        + apply f_monotonic...
+    }
+    assert (claim4 : forall x : D, f x =< x -> fix_f =< x).
+    { intros x H.
+      apply Y_f_isUpperBoundOf_prefixed_points_f.
+      exact H.
+    }
+    assert (claim5 : isSupremum fix_f (iterations f bot_D)) by exact (proj2_sig (square_up_exists (iterations f (proj1_sig bottom_exists)) (iterations_f_bottom_isDirected_if_f_isMonotonicMap f f_monotonic))).
   Qed.
 
   Definition Z : (D >=> D) -> D :=
