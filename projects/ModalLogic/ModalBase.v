@@ -41,11 +41,27 @@ Module FirstOrderModalLogicSyntax.
   | LAM : forall y : ivar, forall t1 : tm, tm
   .
 
+  Global Declare Scope object_level_ty_scope.
+
   Inductive ty : Set :=
   | TyI : ty
   | TyO : ty
-  | ARR : forall arg_ty : ty, forall ret_ty : ty, ty
+  | ARR (arg_ty : ty) (ret_ty : ty) : ty
   .
+
+  Global Declare Custom Entry object_level_ty.
+
+  Global Notation " 'i' " := (TyI) (in custom object_level_ty at level 0, no associativity).
+
+  Global Notation " 'o' " := (TyO) (in custom object_level_ty at level 0, no associativity).
+
+  Global Notation " ty1 '->' ty2 " := (ARR ty1 ty2) (in custom object_level_ty at level 1, right associativity).
+
+  Global Notation " ty1 " := (ty1) (in custom object_level_ty, ty1 ident).
+
+  Global Notation " '(' ty1 ')' " := (ty1) (in custom object_level_ty at level 0, no associativity).
+
+  Global Notation " '\ty(' ty_expr ')' " := (ty_expr) (ty_expr custom object_level_ty at level 1, at level 0, no associativity) : object_level_ty_scope.
 
   Definition ivar_eq_dec :
     forall x : ivar,
@@ -76,26 +92,6 @@ Module FirstOrderModalLogicSyntax.
       + right; congruence.
   Defined.
 
-  Global Declare Custom Entry object_level_ty.
-
-  Global Notation " 'i' " := (TyI) (in custom object_level_ty at level 0, no associativity).
-
-  Global Notation " 'o' " := (TyO) (in custom object_level_ty at level 0, no associativity).
-
-  Global Notation " ty1 '->' ty2 " := (ARR ty1 ty2) (in custom object_level_ty at level 1, right associativity).
-
-  Global Notation " ty1 " := (ty1) (in custom object_level_ty, ty1 ident).
-
-  Global Notation " '(' ty1 ')' " := (ty1) (in custom object_level_ty at level 0, no associativity).
-
-  Definition view_ty (ty_expr : ty) : ty :=
-    ty_expr
-  .
-
-  Global Declare Scope object_level_ty_scope.
-
-  Global Notation " 'Ty<' ty_expr '>' " := (view_ty ty_expr) (ty_expr custom object_level_ty at level 1, no associativity) : object_level_ty_scope.
-
   Section WELL_FORMED.
 
   Local Open Scope object_level_ty_scope.
@@ -105,19 +101,19 @@ Module FirstOrderModalLogicSyntax.
   Definition get_ty_of_ctor : ctor -> ty :=
     fun c : ctor =>
     match c with
-    | CONTRADICTION => Ty< o >
-    | NEGATION => Ty< o -> o >
-    | CONJUNCTION => Ty< o -> o -> o >
-    | DISJUNCTION => Ty< o -> o -> o >
-    | IMPLICATION => Ty< o -> o -> o >
-    | BICONDITIONAL => Ty< o -> o -> o >
-    | FORALL => Ty< (i -> o) -> o >
-    | EXISTS => Ty< (i -> o) -> o >
-    | EQUAL => Ty< i -> i -> o >
-    | BOX => Ty< o -> o >
-    | DIA => Ty< o -> o >
-    | FuncSym f_id => nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)
-    | PredSym p_id => nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id) 
+    | CONTRADICTION => \ty( o )
+    | NEGATION => \ty( o -> o )
+    | CONJUNCTION => \ty( o -> o -> o )
+    | DISJUNCTION => \ty( o -> o -> o )
+    | IMPLICATION => \ty( o -> o -> o )
+    | BICONDITIONAL => \ty( o -> o -> o )
+    | FORALL => \ty( (i -> o) -> o )
+    | EXISTS => \ty( (i -> o) -> o )
+    | EQUAL => \ty( i -> i -> o )
+    | BOX => \ty( o -> o )
+    | DIA => \ty( o -> o )
+    | FuncSym f_id => nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(func_arity) f_id)
+    | PredSym p_id => nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(pred_arity) p_id) 
     end
   .
 
@@ -149,9 +145,9 @@ Module FirstOrderModalLogicSyntax.
     fun ty1 : ty =>
     fun ty2 : ty =>
     match ty1 with
-    | TyI => None
-    | TyO => None
-    | ARR arg_ty ret_ty =>
+    | \ty( i ) => None
+    | \ty( o ) => None
+    | \ty( arg_ty -> ret_ty ) =>
       if ty_eq_dec arg_ty ty2
       then Some ret_ty
       else None
@@ -163,7 +159,7 @@ Module FirstOrderModalLogicSyntax.
     | VAR x => lookup x ty_ctx
     | CON c => pureMaybe (get_ty_of_ctor c)
     | APP t1 t2 => bindMaybe (typing ty_ctx t1) (fun ty1 : ty => bindMaybe (typing ty_ctx t2) (fun ty2 : ty => modus_ponens ty1 ty2))
-    | LAM y t1 => typing ((y, Ty< i >) :: ty_ctx) t1
+    | LAM y t1 => typing ((y, \ty( i )) :: ty_ctx) t1
     end
   .
 
@@ -183,12 +179,11 @@ Module FirstOrderModalLogicSemantics.
 
   Variable Univ : Type.
 
-  Definition interprete_ty : ty -> Type :=
-    fix interprete_ty_fix (ty_expr : ty) {struct ty_expr} : Type :=
+  Fixpoint interprete_ty (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
-    | TyI => Univ
-    | TyO => Prop
-    | ARR arg_ty ret_ty => interprete_ty_fix arg_ty -> interprete_ty_fix ret_ty
+    | \ty( i ) => Univ
+    | \ty( o ) => Prop
+    | \ty( arg_ty -> ret_ty ) => interprete_ty arg_ty -> interprete_ty ret_ty
     end
   .
 
@@ -205,9 +200,9 @@ Module FirstOrderModalLogicSemantics.
   Definition interpretew_ty : ty -> Type :=
     fix interpretew_ty_fix (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
-    | TyI => wUniv
-    | TyO => wProp
-    | ARR arg_ty ret_ty => interpretew_ty_fix arg_ty -> interpretew_ty_fix ret_ty
+    | \ty( i ) => wUniv
+    | \ty( o ) => wProp
+    | \ty( arg_ty -> ret_ty ) => interpretew_ty_fix arg_ty -> interpretew_ty_fix ret_ty
     end
   .
 
@@ -216,7 +211,7 @@ Module FirstOrderModalLogicSemantics.
   Inductive typeOf : tm -> ty -> Type :=
   | VAR_wt :
     forall x : ivar,
-    typeOf (VAR x) (Ty< i >)
+    typeOf (VAR x) \ty( i )
   | CON_wt :
     forall c : ctor,
     typeOf (CON c) (get_ty_of_ctor lang c)
@@ -225,7 +220,7 @@ Module FirstOrderModalLogicSemantics.
     forall t2 : tm,
     forall ty1 : ty,
     forall ty2 : ty,
-    typeOf t1 (Ty< ty1 -> ty2 >) ->
+    typeOf t1 \ty( ty1 -> ty2 ) ->
     typeOf t2 ty1 ->
     typeOf (APP t1 t2) ty2
   | LAM_wt :
@@ -233,80 +228,76 @@ Module FirstOrderModalLogicSemantics.
     forall t1 : tm,
     forall ty1 : ty,
     typeOf t1 ty1 ->
-    typeOf (LAM y t1) (Ty< i -> ty1 >)
+    typeOf (LAM y t1) \ty( i -> ty1 )
   .
 
   Section EVALUATION_FOR_FUNC.
 
-  Variable interprete_func : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+  Variable interprete_func : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(func_arity) f_id)).
 
   Definition interpretew_func :
     forall f_id : nat,
-    interpretew_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+    interpretew_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(func_arity) f_id)).
   Proof.
     intros f_id.
     assert (f_val := interprete_func f_id).
     revert f_val.
     generalize (func_arity lang f_id).
     induction n as [| n IH]; simpl.
-    - intros con_w w.
-      exact (con_w w).
+    - intros var_w.
+      exact (fun w : Worlds => var_w w).
     - intros fun_by_w arg_by_w.
-      apply IH.
-      intros w.
-      exact (fun_by_w w (arg_by_w w)).
+      exact (IH (fun w : Worlds => fun_by_w w (arg_by_w w))).
   Defined.
 
   End EVALUATION_FOR_FUNC.
 
   Section EVALUATION_FOR_PRED.
 
-  Variable interprete_pred : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+  Variable interprete_pred : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(pred_arity) p_id)).
 
   Definition interpretew_pred :
     forall p_id : nat,
-    interpretew_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+    interpretew_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(pred_arity) p_id)).
   Proof.
     intros p_id.
     assert (p_val := interprete_pred p_id).
     revert p_val.
     generalize (pred_arity lang p_id).
     induction n as [| n IH]; simpl.
-    - intros val_w w.
-      exact (val_w w).
+    - intros val_w.
+      exact (fun w : Worlds => val_w w).
     - intros fun_by_w arg_by_w.
-      apply IH.
-      intros w.
-      exact (fun_by_w w (arg_by_w w)).
+      exact (IH (fun w : Worlds => fun_by_w w (arg_by_w w))).
   Defined.
 
   End EVALUATION_FOR_PRED.
 
   Variable accessibility_relation : Worlds -> Worlds -> Prop.
 
-  Local Notation " w1 `is_accessible_to` w2 " := (accessibility_relation w1 w2) (at level 70, no associativity) : type_scope.
+  Local Notation " w1 '`is_accessible_to`' w2 " := (accessibility_relation w1 w2) (at level 70, no associativity) : type_scope.
 
-  Variable func_env : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+  Variable func_env : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(func_arity) f_id)).
 
-  Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+  Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(pred_arity) p_id)).
 
   Definition interpretew_ctor (c : ctor) : interpretew_ty (get_ty_of_ctor lang c) :=
     match c as c0 return
       interpretew_ty
       match c0 with
-      | CONTRADICTION => Ty< o >
-      | NEGATION => Ty< o -> o >
-      | CONJUNCTION => Ty< o -> o -> o >
-      | DISJUNCTION => Ty< o -> o -> o >
-      | IMPLICATION => Ty< o -> o -> o >
-      | BICONDITIONAL => Ty< o -> o -> o >
-      | FORALL => Ty< (i -> o) -> o >
-      | EXISTS => Ty< (i -> o) -> o >
-      | EQUAL => Ty< i -> i -> o >
-      | BOX => Ty< o -> o >
-      | DIA => Ty< o -> o >
-      | FuncSym f_id => (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id))
-      | PredSym p_id => (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id))
+      | CONTRADICTION => \ty( o )
+      | NEGATION => \ty( o -> o )
+      | CONJUNCTION => \ty( o -> o -> o )
+      | DISJUNCTION => \ty( o -> o -> o )
+      | IMPLICATION => \ty( o -> o -> o )
+      | BICONDITIONAL => \ty( o -> o -> o )
+      | FORALL => \ty( (i -> o) -> o )
+      | EXISTS => \ty( (i -> o) -> o )
+      | EQUAL => \ty( i -> i -> o )
+      | BOX => \ty( o -> o )
+      | DIA => \ty( o -> o )
+      | FuncSym f_id => (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(func_arity) f_id))
+      | PredSym p_id => (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (lang.(pred_arity) p_id))
       end
     with
     | CONTRADICTION => fun w : Worlds => False
