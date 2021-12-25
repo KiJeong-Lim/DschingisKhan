@@ -47,6 +47,14 @@ Module FirstOrderModalLogicSyntax.
   | ARR : forall arg_ty : ty, forall ret_ty : ty, ty
   .
 
+  Definition ivar_eq_dec :
+    forall x : ivar,
+    forall y : ivar,
+    {x = y} + {x <> y}.
+  Proof.
+    exact (Nat.eq_dec).
+  Defined.
+
   Definition ty_eq_dec :
     forall ty1 : ty,
     forall ty2 : ty,
@@ -131,7 +139,7 @@ Module FirstOrderModalLogicSyntax.
     match ty_ctx with
     | [] => None
     | ty_ctx_item :: ty_ctx' =>
-      if Nat.eq_dec (fst ty_ctx_item) x
+      if ivar_eq_dec (fst ty_ctx_item) x
       then Some (snd ty_ctx_item)
       else lookup_fix ty_ctx'
     end
@@ -329,16 +337,16 @@ Module FirstOrderModalLogicSemantics.
     | FORALL =>
       fun wP1' : wUniv -> wProp =>
       fun w : Worlds =>
-      forall x : wUniv, wP1' (fun _ : Worlds => x w) w
+      forall y_val : wUniv, wP1' (fun _ : Worlds => y_val w) w
     | EXISTS =>
       fun wP1' : wUniv -> wProp =>
       fun w : Worlds =>
-      exists x : wUniv, wP1' (fun _ : Worlds => x w) w
+      exists y_val : wUniv, wP1' (fun _ : Worlds => y_val w) w
     | EQUAL =>
-      fun x : wUniv =>
-      fun y : wUniv =>
+      fun x_val : wUniv =>
+      fun y_val : wUniv =>
       fun w : Worlds =>
-      x w = y w
+      x_val w = y_val w
     | DIA =>
       fun wP1 : wProp =>
       fun w : Worlds =>
@@ -352,26 +360,17 @@ Module FirstOrderModalLogicSemantics.
     end
   .
 
-  Definition interpretew_tm :
-    forall tm_expr : tm,
-    forall ty_expr : ty,
-    forall tm_expr_isof_ty_expr : typeOf tm_expr ty_expr,
-    forall value_assignment : ivar -> wUniv,
+  Definition interpretew_tm (tm_expr : tm) (ty_expr : ty) (tm_expr_isof_ty_expr : typeOf tm_expr ty_expr) :
+    forall interpretew_ivar : ivar -> wUniv,
     interpretew_ty ty_expr.
   Proof.
-    intros tm_expr ty_expr tm_expr_isof_ty_expr.
-    induction tm_expr_isof_ty_expr; simpl.
-    - intros value_assignment.
-      exact (value_assignment x).
-    - intros value_assignment.
-      exact (interpretew_ctor c).
-    - intros value_assignment.
-      exact (IHtm_expr_isof_ty_expr1 value_assignment (IHtm_expr_isof_ty_expr2 value_assignment)).
-    - intros value_assignment y_val.
-      exact (IHtm_expr_isof_ty_expr (fun z : ivar => if Nat.eq_dec y z then y_val else value_assignment z)).
+    induction tm_expr_isof_ty_expr as [x | c | t1 t2 ty1 ty2 H1 IH1 H2 IH2 | y t1 ty1 H1 IH1]; intros var_env.
+    - exact (var_env x).
+    - exact (interpretew_ctor c).
+    - exact (IH1 var_env (IH2 var_env)).
+    - exact (fun y_val : wUniv => IH1 (fun z : ivar => if ivar_eq_dec y z then y_val else var_env z)).
   Defined.
 
   End EVALUATION.
 
 End FirstOrderModalLogicSemantics.
-
