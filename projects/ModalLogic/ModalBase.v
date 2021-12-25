@@ -337,11 +337,11 @@ Module FirstOrderModalLogicSemantics.
     | FORALL =>
       fun wP1' : wUniv -> wProp =>
       fun w : Worlds =>
-      forall y_val : wUniv, wP1' (fun _ : Worlds => y_val w) w
+      forall y_val : wUniv, wP1' y_val w
     | EXISTS =>
       fun wP1' : wUniv -> wProp =>
       fun w : Worlds =>
-      exists y_val : wUniv, wP1' (fun _ : Worlds => y_val w) w
+      exists y_val : wUniv, wP1' y_val w
     | EQUAL =>
       fun x_val : wUniv =>
       fun y_val : wUniv =>
