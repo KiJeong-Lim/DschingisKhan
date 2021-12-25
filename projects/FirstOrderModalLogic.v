@@ -134,11 +134,11 @@ Module FirstOrderModalLogic.
     Worlds -> Prop
   .
 
-  Fixpoint interpretew_ty (ty_expr : ty) {struct ty_expr} : Type :=
+  Fixpoint interpreteW_ty (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
     | \ty( i ) => wUniv
     | \ty( o ) => wProp
-    | \ty( arg_ty -> ret_ty ) => interpretew_ty arg_ty -> interpretew_ty ret_ty
+    | \ty( arg_ty -> ret_ty ) => interpreteW_ty arg_ty -> interpreteW_ty ret_ty
     end
   .
 
@@ -155,9 +155,9 @@ Module FirstOrderModalLogic.
 
   Variable interprete_func : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
 
-  Definition interpretew_func (f_id : nat) : interpretew_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)) :=
+  Definition interpreteW_func (f_id : nat) : interpreteW_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpretew_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (func_arity arity_env f_id)
@@ -170,9 +170,9 @@ Module FirstOrderModalLogic.
 
   Variable interprete_pred : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
 
-  Definition interpretew_pred (p_id : nat) : interpretew_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)) :=
+  Definition interpreteW_pred (p_id : nat) : interpreteW_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpretew_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (pred_arity arity_env p_id)
@@ -189,7 +189,7 @@ Module FirstOrderModalLogic.
 
   Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
 
-  Definition interpretew_ctor (c : ctor) : interpretew_ty (get_ty_of_ctor arity_env c) :=
+  Definition interpreteW_ctor (c : ctor) : interpreteW_ty (get_ty_of_ctor arity_env c) :=
     match c with
     | CONTRADICTION => fun w => False
     | NEGATION => fun wP1 w => ~ wP1 w
@@ -202,17 +202,17 @@ Module FirstOrderModalLogic.
     | EQUAL => fun x_val y_val w => x_val w = y_val w
     | BOX => fun wP1 w => forall w' : Worlds, w `is_accessible_to` w' -> wP1 w'
     | DIA => fun wP1 w => exists w' : Worlds, w `is_accessible_to` w' /\ wP1 w'
-    | FuncSym f_id => interpretew_func func_env f_id
-    | PredSym p_id => interpretew_pred pred_env p_id
+    | FuncSym f_id => interpreteW_func func_env f_id
+    | PredSym p_id => interpreteW_pred pred_env p_id
     end
   .
 
-  Fixpoint interpretew_tm (tm_expr : tm) (ty_expr : ty) (tm_expr_isof_ty_expr : typeOf tm_expr ty_expr) {struct tm_expr_isof_ty_expr} : forall interpretew_ivar : ivar -> wUniv, interpretew_ty ty_expr :=
-    match tm_expr_isof_ty_expr with
+  Fixpoint interpretew_tm (tm_expr : tm) (ty_expr : ty) (H : typeOf tm_expr ty_expr) {struct H} : (ivar -> wUniv) -> interpreteW_ty ty_expr :=
+    match H with
     | VAR_typeOf x => fun var_env => var_env x
-    | CON_typeOf c => fun var_env => interpretew_ctor c
-    | APP_typeOf t1 t2 ty1 ty2 H1 H2 => fun var_env => interpretew_tm t1 \ty( ty1 -> ty2 ) H1 var_env (interpretew_tm t2 \ty( ty1 ) H2 var_env)
-    | LAM_typeOf y t1 ty1 H1 => fun var_env y_val => interpretew_tm t1 \ty( ty1 ) H1 (fun z => if ivar_eq_dec y z then y_val else var_env z)
+    | CON_typeOf c => fun _ => interpreteW_ctor c
+    | APP_typeOf t1 t2 ty1 ty2 H1 H2 => fun var_env => (interpretew_tm t1 \ty( ty1 -> ty2 ) H1 var_env) (interpretew_tm t2 \ty( ty1 ) H2 var_env)
+    | LAM_typeOf y t1 ty1 H1 => fun var_env y_val => (interpretew_tm t1 \ty( ty1 ) H1) (fun z => if ivar_eq_dec y z then y_val else var_env z)
     end
   .
 
