@@ -28,8 +28,8 @@ Module FirstOrderModalLogicSyntax.
   | FORALL : ctor
   | EXISTS : ctor
   | EQUAL : ctor
-  | DIA : ctor
   | BOX : ctor
+  | DIA : ctor
   | FuncSym : forall f_id : nat, ctor
   | PredSym : forall p_id : nat, ctor
   .
@@ -114,8 +114,8 @@ Module FirstOrderModalLogicSyntax.
     | FORALL => Ty< (i -> o) -> o >
     | EXISTS => Ty< (i -> o) -> o >
     | EQUAL => Ty< i -> i -> o >
-    | DIA => Ty< o -> o >
     | BOX => Ty< o -> o >
+    | DIA => Ty< o -> o >
     | FuncSym f_id => nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)
     | PredSym p_id => nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id) 
     end
@@ -301,8 +301,8 @@ Module FirstOrderModalLogicSemantics.
       | FORALL => Ty< (i -> o) -> o >
       | EXISTS => Ty< (i -> o) -> o >
       | EQUAL => Ty< i -> i -> o >
-      | DIA => Ty< o -> o >
       | BOX => Ty< o -> o >
+      | DIA => Ty< o -> o >
       | FuncSym f_id => (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id))
       | PredSym p_id => (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id))
       end
@@ -347,11 +347,11 @@ Module FirstOrderModalLogicSemantics.
       fun y_val : wUniv =>
       fun w : Worlds =>
       x_val w = y_val w
-    | DIA =>
+    | BOX =>
       fun wP1 : wProp =>
       fun w : Worlds =>
       forall w' : Worlds, is_accessible_to w w' -> wP1 w'
-    | BOX =>
+    | DIA =>
       fun wP1 : wProp =>
       fun w : Worlds =>
       exists w' : Worlds, is_accessible_to w w' /\ wP1 w'
