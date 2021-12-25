@@ -9,8 +9,8 @@ Module FirstOrderModalLogic.
 
   Record language_arity_env : Set :=
     MkArityEnv
-    { func_arity : (forall fsym_id : nat, nat)
-    ; pred_arity : (forall psym_id : nat, nat)
+    { func_arity : forall fsym_id : nat, nat
+    ; pred_arity : forall psym_id : nat, nat
     }
   .
 
@@ -153,7 +153,7 @@ Module FirstOrderModalLogic.
 
   Section EVALUATION_FOR_FUNC.
 
-  Variable interprete0_func : (forall fsym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (FuncSym fsym_id))).
+  Variable interprete0_func : forall fsym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (FuncSym fsym_id)).
 
   Definition interpreteW_func (fsym_id : nat) : interpreteW_ty (get_ty_of_symbol arity_env (FuncSym fsym_id)) :=
     nat_rect
@@ -168,7 +168,7 @@ Module FirstOrderModalLogic.
 
   Section EVALUATION_FOR_PRED.
 
-  Variable interprete0_pred : (forall psym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (PredSym psym_id))).
+  Variable interprete0_pred : forall psym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (PredSym psym_id)).
 
   Definition interpreteW_pred (psym_id : nat) : interpreteW_ty (get_ty_of_symbol arity_env (PredSym psym_id)) :=
     nat_rect
@@ -181,13 +181,13 @@ Module FirstOrderModalLogic.
 
   End EVALUATION_FOR_PRED.
 
-  Variable accessibility_relation : Worlds -> Worlds -> Prop.
+  Variable accessibility_relation : ensemble (Worlds * Worlds).
 
-  Local Notation " w1 '`is_accessible_to`' w2 " := (accessibility_relation w1 w2) (at level 70, no associativity) : type_scope.
+  Local Notation " w1 '`is_accessible_to`' w2 " := (accessibility_relation (w1, w2)) (at level 70, no associativity) : type_scope.
 
-  Variable func_env : (forall fsym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (FuncSym fsym_id))).
+  Variable func_env : forall fsym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (FuncSym fsym_id)).
 
-  Variable pred_env : (forall psym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (PredSym psym_id))).
+  Variable pred_env : forall psym_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (PredSym psym_id)).
 
   Definition interpreteW_symbol (c : symbol) : interpreteW_ty (get_ty_of_symbol arity_env c) :=
     match c with
