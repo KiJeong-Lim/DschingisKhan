@@ -18,25 +18,25 @@ Module FirstOrderModalLogic.
     nat
   .
 
-  Variant ctor : Set :=
-  | CONTRADICTION : ctor
-  | NEGATION : ctor
-  | CONJUNCTION : ctor
-  | DISJUNCTION : ctor
-  | IMPLICATION : ctor
-  | BICONDITIONAL : ctor 
-  | FORALL : ctor
-  | EXISTS : ctor
-  | EQUAL : ctor
-  | BOX : ctor
-  | DIA : ctor
-  | FuncSym (f_id : nat) : ctor
-  | PredSym (p_id : nat) : ctor
+  Variant symbol : Set :=
+  | CONTRADICTION : symbol
+  | NEGATION : symbol
+  | CONJUNCTION : symbol
+  | DISJUNCTION : symbol
+  | IMPLICATION : symbol
+  | BICONDITIONAL : symbol 
+  | FORALL : symbol
+  | EXISTS : symbol
+  | EQUAL : symbol
+  | BOX : symbol
+  | DIA : symbol
+  | FuncSym (f_id : nat) : symbol
+  | PredSym (p_id : nat) : symbol
   .
 
   Inductive tm : Set :=
   | VAR (x : ivar) : tm
-  | CON (c : ctor) : tm
+  | CON (c : symbol) : tm
   | APP (t1 : tm) (t2 : tm) : tm
   | LAM (y : ivar) (t1 : tm) : tm
   .
@@ -70,7 +70,7 @@ Module FirstOrderModalLogic.
     forall y : ivar,
     {x = y} + {x <> y}.
   Proof.
-    exact (Nat.eq_dec).
+    exact (fun x y => Nat.eq_dec x y).
   Defined.
 
   Definition ty_eq_dec :
@@ -78,7 +78,7 @@ Module FirstOrderModalLogic.
     forall ty2 : ty,
     {ty1 = ty2} + {ty1 <> ty2}.
   Proof.
-    induction ty1; destruct ty2.
+    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2]; destruct ty2 as [ | | ty2_1 ty2_2].
     - left; congruence.
     - right; congruence.
     - right; congruence.
@@ -87,7 +87,7 @@ Module FirstOrderModalLogic.
     - right; congruence.
     - right; congruence.
     - right; congruence.
-    - destruct (IHty1_1 ty2_1); destruct (IHty1_2 ty2_2).
+    - destruct (IH1 ty2_1); destruct (IH2 ty2_2).
       + left; congruence.
       + right; congruence.
       + right; congruence.
@@ -96,7 +96,7 @@ Module FirstOrderModalLogic.
 
   Section EVALUATION.
 
-  Definition get_ty_of_ctor (arity_env : language_arity_env) (c : ctor) : ty :=
+  Definition get_ty_of_symbol (arity_env : language_arity_env) (c : symbol) : ty :=
     match c with
     | CONTRADICTION => \ty( o )
     | NEGATION => \ty( o -> o )
@@ -109,18 +109,18 @@ Module FirstOrderModalLogic.
     | EQUAL => \ty( i -> i -> o )
     | BOX => \ty( o -> o )
     | DIA => \ty( o -> o )
-    | FuncSym f_id => nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)
-    | PredSym p_id => nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id) 
+    | FuncSym f_id => nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)
+    | PredSym p_id => nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)
     end
   .
 
   Variable Univ : Type.
 
-  Fixpoint interprete_ty (ty_expr : ty) {struct ty_expr} : Type :=
+  Fixpoint interprete0_ty (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
     | \ty( i ) => Univ
     | \ty( o ) => Prop
-    | \ty( arg_ty -> ret_ty ) => interprete_ty arg_ty -> interprete_ty ret_ty
+    | \ty( arg_ty -> ret_ty ) => interprete0_ty arg_ty -> interprete0_ty ret_ty
     end
   .
 
@@ -146,37 +146,37 @@ Module FirstOrderModalLogic.
 
   Inductive typeOf : tm -> ty -> Type :=
   | VAR_typeOf (x : ivar) : typeOf (VAR x) \ty( i )
-  | CON_typeOf (c : ctor) : typeOf (CON c) (get_ty_of_ctor arity_env c)
+  | CON_typeOf (c : symbol) : typeOf (CON c) (get_ty_of_symbol arity_env c)
   | APP_typeOf (t1 : tm) (t2 : tm) (ty1 : ty) (ty2 : ty) (H_typeOf_t1 : typeOf t1 \ty( ty1 -> ty2 )) (H_typeOf_t2 : typeOf t2 \ty( ty1 )) : typeOf (APP t1 t2) ty2
   | LAM_typeOf (y : ivar) (t1 : tm) (ty1 : ty) (H_typeOf_t1 : typeOf t1 \ty( ty1 )) : typeOf (LAM y t1) \ty( i -> ty1 )
   .
 
   Section EVALUATION_FOR_FUNC.
 
-  Variable interprete_func : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
+  Variable interprete0_func : forall f_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
 
   Definition interpreteW_func (f_id : nat) : interpreteW_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete0_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (func_arity arity_env f_id)
-    (interprete_func f_id)
+    (interprete0_func f_id)
   .
 
   End EVALUATION_FOR_FUNC.
 
   Section EVALUATION_FOR_PRED.
 
-  Variable interprete_pred : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
+  Variable interprete0_pred : forall p_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
 
   Definition interpreteW_pred (p_id : nat) : interpreteW_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete0_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (pred_arity arity_env p_id)
-    (interprete_pred p_id)
+    (interprete0_pred p_id)
   .
 
   End EVALUATION_FOR_PRED.
@@ -185,11 +185,11 @@ Module FirstOrderModalLogic.
 
   Local Notation " w1 '`is_accessible_to`' w2 " := (accessibility_relation w1 w2) (at level 70, no associativity) : type_scope.
 
-  Variable func_env : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
+  Variable func_env : forall f_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
 
-  Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
+  Variable pred_env : forall p_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
 
-  Definition interpreteW_ctor (c : ctor) : interpreteW_ty (get_ty_of_ctor arity_env c) :=
+  Definition interpreteW_symbol (c : symbol) : interpreteW_ty (get_ty_of_symbol arity_env c) :=
     match c with
     | CONTRADICTION => fun w => False
     | NEGATION => fun wP1 w => ~ wP1 w
@@ -210,7 +210,7 @@ Module FirstOrderModalLogic.
   Fixpoint interpreteW_tm (tm_expr : tm) (ty_expr : ty) (H : typeOf tm_expr ty_expr) {struct H} : (ivar -> wUniv) -> interpreteW_ty ty_expr :=
     match H with
     | VAR_typeOf x => fun var_env => var_env x
-    | CON_typeOf c => fun _ => interpreteW_ctor c
+    | CON_typeOf c => fun _ => interpreteW_symbol c
     | APP_typeOf t1 t2 ty1 ty2 H1 H2 => fun var_env => (interpreteW_tm t1 \ty( ty1 -> ty2 ) H1 var_env) (interpreteW_tm t2 \ty( ty1 ) H2 var_env)
     | LAM_typeOf y t1 ty1 H1 => fun var_env y_val => (interpreteW_tm t1 \ty( ty1 ) H1) (fun z => if ivar_eq_dec y z then y_val else var_env z)
     end
