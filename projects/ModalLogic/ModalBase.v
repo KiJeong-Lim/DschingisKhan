@@ -282,11 +282,13 @@ Module FirstOrderModalLogicSemantics.
 
   End EVALUATION_FOR_PRED.
 
+  Variable accessibility_relation : Worlds -> Worlds -> Prop.
+
+  Local Notation " w1 `is_accessible_to` w2 " := (accessibility_relation w1 w2) (at level 70, no associativity) : type_scope.
+
   Variable func_env : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
 
   Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
-
-  Variable is_accessible_to : Worlds -> Worlds -> Prop.
 
   Definition interpretew_ctor (c : ctor) : interpretew_ty (get_ty_of_ctor lang c) :=
     match c as c0 return
@@ -307,54 +309,17 @@ Module FirstOrderModalLogicSemantics.
       | PredSym p_id => (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id))
       end
     with
-    | CONTRADICTION =>
-      fun w : Worlds =>
-      False
-    | NEGATION =>
-      fun wP1 : wProp =>
-      fun w : Worlds =>
-      ~ wP1 w
-    | CONJUNCTION =>
-      fun wP1 : wProp =>
-      fun wP2 : wProp =>
-      fun w : Worlds =>
-      wP1 w /\ wP2 w
-    | DISJUNCTION =>
-      fun wP1 : wProp =>
-      fun wP2 : wProp =>
-      fun w : Worlds =>
-      wP1 w \/ wP2 w
-    | IMPLICATION =>
-      fun wP1 : wProp =>
-      fun wP2 : wProp =>
-      fun w : Worlds =>
-      wP1 w -> wP2 w
-    | BICONDITIONAL =>
-      fun wP1 : wProp =>
-      fun wP2 : wProp =>
-      fun w : Worlds =>
-      wP1 w <-> wP2 w
-    | FORALL =>
-      fun wP1' : wUniv -> wProp =>
-      fun w : Worlds =>
-      forall y_val : wUniv, wP1' y_val w
-    | EXISTS =>
-      fun wP1' : wUniv -> wProp =>
-      fun w : Worlds =>
-      exists y_val : wUniv, wP1' y_val w
-    | EQUAL =>
-      fun x_val : wUniv =>
-      fun y_val : wUniv =>
-      fun w : Worlds =>
-      x_val w = y_val w
-    | BOX =>
-      fun wP1 : wProp =>
-      fun w : Worlds =>
-      forall w' : Worlds, is_accessible_to w w' -> wP1 w'
-    | DIA =>
-      fun wP1 : wProp =>
-      fun w : Worlds =>
-      exists w' : Worlds, is_accessible_to w w' /\ wP1 w'
+    | CONTRADICTION => fun w : Worlds => False
+    | NEGATION => fun wP1 : wProp => fun w : Worlds => ~ wP1 w
+    | CONJUNCTION => fun wP1 : wProp => fun wP2 : wProp => fun w : Worlds => wP1 w /\ wP2 w
+    | DISJUNCTION => fun wP1 : wProp => fun wP2 : wProp => fun w : Worlds => wP1 w \/ wP2 w
+    | IMPLICATION => fun wP1 : wProp => fun wP2 : wProp => fun w : Worlds => wP1 w -> wP2 w
+    | BICONDITIONAL => fun wP1 : wProp => fun wP2 : wProp => fun w : Worlds => wP1 w <-> wP2 w
+    | FORALL => fun wP1' : wUniv -> wProp => fun w : Worlds => forall y_val : wUniv, wP1' y_val w
+    | EXISTS => fun wP1' : wUniv -> wProp => fun w : Worlds => exists y_val : wUniv, wP1' y_val w
+    | EQUAL => fun x_val : wUniv => fun y_val : wUniv => fun w : Worlds => x_val w = y_val w
+    | BOX => fun wP1 : wProp => fun w : Worlds => forall w' : Worlds, w `is_accessible_to` w' -> wP1 w'
+    | DIA => fun wP1 : wProp => fun w : Worlds => exists w' : Worlds, w `is_accessible_to` w' /\ wP1 w'
     | FuncSym f_id => interpretew_func func_env f_id
     | PredSym p_id => interpretew_pred pred_env p_id
     end
