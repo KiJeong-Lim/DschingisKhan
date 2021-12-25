@@ -207,12 +207,12 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Fixpoint interpretew_tm (tm_expr : tm) (ty_expr : ty) (H : typeOf tm_expr ty_expr) {struct H} : (ivar -> wUniv) -> interpreteW_ty ty_expr :=
+  Fixpoint interpreteW_tm (tm_expr : tm) (ty_expr : ty) (H : typeOf tm_expr ty_expr) {struct H} : (ivar -> wUniv) -> interpreteW_ty ty_expr :=
     match H with
     | VAR_typeOf x => fun var_env => var_env x
     | CON_typeOf c => fun _ => interpreteW_ctor c
-    | APP_typeOf t1 t2 ty1 ty2 H1 H2 => fun var_env => (interpretew_tm t1 \ty( ty1 -> ty2 ) H1 var_env) (interpretew_tm t2 \ty( ty1 ) H2 var_env)
-    | LAM_typeOf y t1 ty1 H1 => fun var_env y_val => (interpretew_tm t1 \ty( ty1 ) H1) (fun z => if ivar_eq_dec y z then y_val else var_env z)
+    | APP_typeOf t1 t2 ty1 ty2 H1 H2 => fun var_env => (interpreteW_tm t1 \ty( ty1 -> ty2 ) H1 var_env) (interpreteW_tm t2 \ty( ty1 ) H2 var_env)
+    | LAM_typeOf y t1 ty1 H1 => fun var_env y_val => (interpreteW_tm t1 \ty( ty1 ) H1) (fun z => if ivar_eq_dec y z then y_val else var_env z)
     end
   .
 
