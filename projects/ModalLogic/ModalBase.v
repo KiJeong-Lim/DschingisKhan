@@ -30,8 +30,8 @@ Module FirstOrderModalLogicSyntax.
   | EQUAL : ctor
   | BOX : ctor
   | DIA : ctor
-  | FuncSym : forall f_id : nat, ctor
-  | PredSym : forall p_id : nat, ctor
+  | FuncSym (f_id : nat) : ctor
+  | PredSym (p_id : nat) : ctor
   .
 
   Inductive tm : Set :=
@@ -40,8 +40,6 @@ Module FirstOrderModalLogicSyntax.
   | APP : forall t1 : tm, forall t2 : tm, tm
   | LAM : forall y : ivar, forall t1 : tm, tm
   .
-
-  Global Declare Scope object_level_ty_scope.
 
   Inductive ty : Set :=
   | TyI : ty
@@ -60,6 +58,8 @@ Module FirstOrderModalLogicSyntax.
   Global Notation " ty1 " := (ty1) (in custom object_level_ty, ty1 ident).
 
   Global Notation " '(' ty1 ')' " := (ty1) (in custom object_level_ty at level 0, no associativity).
+
+  Global Declare Scope object_level_ty_scope.
 
   Global Notation " '\ty(' ty_expr ')' " := (ty_expr) (ty_expr custom object_level_ty at level 1, at level 0, no associativity) : object_level_ty_scope.
 
@@ -92,7 +92,7 @@ Module FirstOrderModalLogicSyntax.
       + right; congruence.
   Defined.
 
-  Section WELL_FORMED.
+  Section WELL_TYPED.
 
   Local Open Scope object_level_ty_scope.
 
@@ -163,7 +163,7 @@ Module FirstOrderModalLogicSyntax.
     end
   .
 
-  End WELL_FORMED.
+  End WELL_TYPED.
 
   Global Notation " ty_ctx '\vdash_{' lang  '}' tm_expr '\isof' ty_expr " := (typing lang ty_ctx tm_expr = Some ty_expr) (at level 70, no associativity) : type_scope.
 
@@ -197,12 +197,11 @@ Module FirstOrderModalLogicSemantics.
     Worlds -> Prop
   .
 
-  Definition interpretew_ty : ty -> Type :=
-    fix interpretew_ty_fix (ty_expr : ty) {struct ty_expr} : Type :=
+  Fixpoint interpretew_ty (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
     | \ty( i ) => wUniv
     | \ty( o ) => wProp
-    | \ty( arg_ty -> ret_ty ) => interpretew_ty_fix arg_ty -> interpretew_ty_fix ret_ty
+    | \ty( arg_ty -> ret_ty ) => interpretew_ty arg_ty -> interpretew_ty ret_ty
     end
   .
 
