@@ -84,9 +84,13 @@ Module FirstOrderModalLogicSyntax.
     ty_expr
   .
 
-  Global Notation " 'Ty<' ty_expr '>' " := (view_ty ty_expr) (ty_expr custom object_level_ty at level 1, no associativity).
+  Global Declare Scope object_level_ty_scope.
+
+  Global Notation " 'Ty<' ty_expr '>' " := (view_ty ty_expr) (ty_expr custom object_level_ty at level 1, no associativity) : object_level_ty_scope.
 
   Section WELL_FORMED.
+
+  Local Open Scope object_level_ty_scope.
 
   Variable lang : first_order_modal_language.
 
@@ -165,89 +169,207 @@ Module FirstOrderModalLogicSemantics.
 
   Import MyEnsemble FirstOrderModalLogicSyntax.
 
+  Local Open Scope object_level_ty_scope.
+
   Section EVALUATION.
 
-  Variable worlds : Type.
-
-  Let wProp : Type :=
-    worlds -> Prop
-  .
-
-  Let wIndividuals : Type :=
-    worlds -> Type
-  .
+  Variable Univ : Type.
 
   Definition interprete_ty : ty -> Type :=
     fix interprete_ty_fix (ty_expr : ty) {struct ty_expr} : Type :=
     match ty_expr with
-    | TyI => wIndividuals
-    | TyO => wProp
+    | TyI => Univ
+    | TyO => Prop
     | ARR arg_ty ret_ty => interprete_ty_fix arg_ty -> interprete_ty_fix ret_ty
     end
   .
 
-  Variable is_accessible_to : worlds -> worlds -> Prop.
+  Variable Worlds : Type.
+
+  Let wUniv : Type :=
+    Worlds -> Univ
+  .
+
+  Let wProp : Type :=
+    Worlds -> Prop
+  .
+
+  Definition interpretew_ty : ty -> Type :=
+    fix interpretew_ty_fix (ty_expr : ty) {struct ty_expr} : Type :=
+    match ty_expr with
+    | TyI => wUniv
+    | TyO => wProp
+    | ARR arg_ty ret_ty => interpretew_ty_fix arg_ty -> interpretew_ty_fix ret_ty
+    end
+  .
 
   Variable lang : first_order_modal_language.
 
-  Variable func_env : forall f_id : nat, interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+  Inductive typeOf : tm -> ty -> Type :=
+  | VAR_wt :
+    forall x : ivar,
+    typeOf (VAR x) (Ty< i >)
+  | CON_wt :
+    forall c : ctor,
+    typeOf (CON c) (get_ty_of_ctor lang c)
+  | APP_wt :
+    forall t1 : tm,
+    forall t2 : tm,
+    forall ty1 : ty,
+    forall ty2 : ty,
+    typeOf t1 (Ty< ty1 -> ty2 >) ->
+    typeOf t2 ty1 ->
+    typeOf (APP t1 t2) ty2
+  | LAM_wt :
+    forall y : ivar,
+    forall t1 : tm,
+    forall ty1 : ty,
+    typeOf t1 ty1 ->
+    typeOf (LAM y t1) (Ty< i -> ty1 >)
+  .
 
-  Variable pred_env : forall p_id : nat, interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+  Section EVALUATION_FOR_FUNC.
 
-  Definition interprete_ctor (c : ctor) : interprete_ty (get_ty_of_ctor lang c) :=
-    match c with
+  Variable interprete_func : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+
+  Definition interpretew_func :
+    forall f_id : nat,
+    interpretew_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+  Proof.
+    intros f_id.
+    assert (f_val := interprete_func f_id).
+    revert f_val.
+    generalize (func_arity lang f_id).
+    induction n as [| n IH]; simpl.
+    - intros con_w w.
+      exact (con_w w).
+    - intros fun_by_w arg_by_w.
+      apply IH.
+      intros w.
+      exact (fun_by_w w (arg_by_w w)).
+  Defined.
+
+  End EVALUATION_FOR_FUNC.
+
+  Section EVALUATION_FOR_PRED.
+
+  Variable interprete_pred : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+
+  Definition interpretew_pred :
+    forall p_id : nat,
+    interpretew_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+  Proof.
+    intros p_id.
+    assert (p_val := interprete_pred p_id).
+    revert p_val.
+    generalize (pred_arity lang p_id).
+    induction n as [| n IH]; simpl.
+    - intros val_w w.
+      exact (val_w w).
+    - intros fun_by_w arg_by_w.
+      apply IH.
+      intros w.
+      exact (fun_by_w w (arg_by_w w)).
+  Defined.
+
+  End EVALUATION_FOR_PRED.
+
+  Variable func_env : forall f_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id)).
+
+  Variable pred_env : forall p_id : nat, Worlds -> interprete_ty (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id)).
+
+  Variable is_accessible_to : Worlds -> Worlds -> Prop.
+
+  Definition interpretew_ctor (c : ctor) : interpretew_ty (get_ty_of_ctor lang c) :=
+    match c as c0 return
+      interpretew_ty
+      match c0 with
+      | CONTRADICTION => Ty< o >
+      | NEGATION => Ty< o -> o >
+      | CONJUNCTION => Ty< o -> o -> o >
+      | DISJUNCTION => Ty< o -> o -> o >
+      | IMPLICATION => Ty< o -> o -> o >
+      | BICONDITIONAL => Ty< o -> o -> o >
+      | FORALL => Ty< (i -> o) -> o >
+      | EXISTS => Ty< (i -> o) -> o >
+      | EQUAL => Ty< i -> i -> o >
+      | DIA => Ty< o -> o >
+      | BOX => Ty< o -> o >
+      | FuncSym f_id => (nat_rec _ (Ty< i >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(func_arity) f_id))
+      | PredSym p_id => (nat_rec _ (Ty< o >) (fun _ : nat => fun ty1 : ty => Ty< i -> ty1 >) (lang.(pred_arity) p_id))
+      end
+    with
     | CONTRADICTION =>
-      fun w : worlds =>
+      fun w : Worlds =>
       False
     | NEGATION =>
       fun wP1 : wProp =>
-      fun w : worlds =>
+      fun w : Worlds =>
       ~ wP1 w
     | CONJUNCTION =>
       fun wP1 : wProp =>
       fun wP2 : wProp =>
-      fun w : worlds =>
+      fun w : Worlds =>
       wP1 w /\ wP2 w
     | DISJUNCTION =>
       fun wP1 : wProp =>
       fun wP2 : wProp =>
-      fun w : worlds =>
+      fun w : Worlds =>
       wP1 w \/ wP2 w
     | IMPLICATION =>
       fun wP1 : wProp =>
       fun wP2 : wProp =>
-      fun w : worlds =>
+      fun w : Worlds =>
       wP1 w -> wP2 w
     | BICONDITIONAL =>
       fun wP1 : wProp =>
       fun wP2 : wProp =>
-      fun w : worlds =>
+      fun w : Worlds =>
       wP1 w <-> wP2 w
     | FORALL =>
-      fun wP1' : wIndividuals -> wProp =>
-      fun w : worlds =>
-      forall x : wIndividuals, wP1' (fun _ : worlds => x w) w
+      fun wP1' : wUniv -> wProp =>
+      fun w : Worlds =>
+      forall x : wUniv, wP1' (fun _ : Worlds => x w) w
     | EXISTS =>
-      fun wP1' : wIndividuals -> wProp =>
-      fun w : worlds =>
-      exists x : wIndividuals, wP1' (fun _ : worlds => x w) w
+      fun wP1' : wUniv -> wProp =>
+      fun w : Worlds =>
+      exists x : wUniv, wP1' (fun _ : Worlds => x w) w
     | EQUAL =>
-      fun x : wIndividuals =>
-      fun y : wIndividuals =>
-      fun w : worlds =>
+      fun x : wUniv =>
+      fun y : wUniv =>
+      fun w : Worlds =>
       x w = y w
     | DIA =>
       fun wP1 : wProp =>
-      fun w : worlds =>
-      forall w' : worlds, is_accessible_to w w' -> wP1 w'
+      fun w : Worlds =>
+      forall w' : Worlds, is_accessible_to w w' -> wP1 w'
     | BOX =>
       fun wP1 : wProp =>
-      fun w : worlds =>
-      exists w' : worlds, is_accessible_to w w' /\ wP1 w'
-    | FuncSym f_id => func_env f_id
-    | PredSym p_id => pred_env p_id
+      fun w : Worlds =>
+      exists w' : Worlds, is_accessible_to w w' /\ wP1 w'
+    | FuncSym f_id => interpretew_func func_env f_id
+    | PredSym p_id => interpretew_pred pred_env p_id
     end
   .
+
+  Definition interpretew_tm :
+    forall tm_expr : tm,
+    forall ty_expr : ty,
+    forall tm_expr_isof_ty_expr : typeOf tm_expr ty_expr,
+    forall value_assignment : ivar -> wUniv,
+    interpretew_ty ty_expr.
+  Proof.
+    intros tm_expr ty_expr tm_expr_isof_ty_expr.
+    induction tm_expr_isof_ty_expr; simpl.
+    - intros value_assignment.
+      exact (value_assignment x).
+    - intros value_assignment.
+      exact (interpretew_ctor c).
+    - intros value_assignment.
+      exact (IHtm_expr_isof_ty_expr1 value_assignment (IHtm_expr_isof_ty_expr2 value_assignment)).
+    - intros value_assignment y_val.
+      exact (IHtm_expr_isof_ty_expr (fun z : ivar => if Nat.eq_dec y z then y_val else value_assignment z)).
+  Defined.
 
   End EVALUATION.
 
