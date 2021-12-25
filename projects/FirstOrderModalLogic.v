@@ -109,8 +109,8 @@ Module FirstOrderModalLogic.
     | EQUAL => \ty( i -> i -> o )
     | BOX => \ty( o -> o )
     | DIA => \ty( o -> o )
-    | FuncSym f_id => nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)
-    | PredSym p_id => nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)
+    | FuncSym f_id => nat_rec (fun _ => ty) \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)
+    | PredSym p_id => nat_rec (fun _ => ty) \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)
     end
   .
 
@@ -153,11 +153,11 @@ Module FirstOrderModalLogic.
 
   Section EVALUATION_FOR_FUNC.
 
-  Variable interprete0_func : forall f_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)).
+  Variable interprete0_func : forall f_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (FuncSym f_id)).
 
-  Definition interpreteW_func (f_id : nat) : interpreteW_ty (nat_rec _ \ty( i ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(func_arity) f_id)) :=
+  Definition interpreteW_func (f_id : nat) : interpreteW_ty (get_ty_of_symbol arity_env (FuncSym f_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete0_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete0_ty (nat_rec (fun _ => ty) \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec (fun _ => ty) \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (func_arity arity_env f_id)
@@ -168,11 +168,11 @@ Module FirstOrderModalLogic.
 
   Section EVALUATION_FOR_PRED.
 
-  Variable interprete0_pred : forall p_id : nat, Worlds -> interprete0_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)).
+  Variable interprete0_pred : forall p_id : nat, Worlds -> interprete0_ty (get_ty_of_symbol arity_env (PredSym p_id)).
 
-  Definition interpreteW_pred (p_id : nat) : interpreteW_ty (nat_rec _ \ty( o ) (fun _ : nat => fun ty1 : ty => \ty( i -> ty1 )) (arity_env.(pred_arity) p_id)) :=
+  Definition interpreteW_pred (p_id : nat) : interpreteW_ty (get_ty_of_symbol arity_env (PredSym p_id)) :=
     nat_rect
-    (fun arity => (Worlds -> interprete0_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec _ \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
+    (fun arity => (Worlds -> interprete0_ty (nat_rec (fun _ => ty) \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity)) -> interpreteW_ty (nat_rec (fun _ => ty) \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) arity))
     (fun var_w => var_w)
     (fun arity IH fun_by_w arg_by_w => IH (fun w => fun_by_w w (arg_by_w w)))
     (pred_arity arity_env p_id)
