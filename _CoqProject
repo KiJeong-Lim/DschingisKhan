@@ -20,5 +20,9 @@ projects/PropositionalLogic/ConstructiveMetaTheories.v #
 projects/PropositionalLogic/ClassicalMetaTheories.v #
 projects/PropositionalLogic.v #
 #
+projects/ModalLogic/ClassicalModal.v #
+projects/ModalLogic/ConstructiveModal.v #
+projects/ModalLogic/ModalBase.v #
+#
 projects/SmullyanGIT/PA.v #
 projects/SmullyanGIT.v #
