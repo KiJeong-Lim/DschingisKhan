@@ -94,17 +94,19 @@ Module FirstOrderModalLogic.
 
   Section SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
 
-  Set Primitive Projections.
-
   Let arity : Set :=
     nat
   .
+
+  Set Primitive Projections.
 
   Record language_signature : Set :=
     { func_arity_env : forall f_id : nat, option arity
     ; pred_arity_env : forall p_id : nat, option arity
     }
   .
+
+  Unset Primitive Projections.
 
   Variable lsig : language_signature.
 
