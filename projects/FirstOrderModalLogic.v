@@ -92,7 +92,11 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Definition arity : Set :=
+  Section SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
+
+  Set Primitive Projections.
+
+  Let arity : Set :=
     nat
   .
 
@@ -101,8 +105,6 @@ Module FirstOrderModalLogic.
     ; pred_arity_env : forall p_id : nat, option arity
     }
   .
-
-  Section SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
 
   Variable lsig : language_signature.
 
@@ -182,6 +184,22 @@ Module FirstOrderModalLogic.
     end
   .
 
+  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}) :
+    (Worlds -> interprete0_ty (get_ty_of_symbol lsig (FuncSym fsym_id))) ->
+    interpreteW_ty (get_ty_of_symbol lsig (FuncSym fsym_id)).
+  Proof.
+    simpl; generalize (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
+    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
+  Defined.
+
+  Definition interpreteW_pred (lsig : language_signature) (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) :
+    (Worlds -> interprete0_ty (get_ty_of_symbol lsig (PredSym psym_id))) ->
+    interpreteW_ty (get_ty_of_symbol lsig (PredSym psym_id)).
+  Proof.
+    simpl; generalize (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id)) as n.
+    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
+  Defined.
+
   Variable accessibility_relation : ensemble (Worlds * Worlds).
 
   Local Notation " w1 '`is_accessible_to`' w2 " := (member (w1, w2) accessibility_relation) (at level 70, no associativity) : type_scope.
@@ -204,22 +222,6 @@ Module FirstOrderModalLogic.
 
   Variable lsig : language_signature.
 
-  Definition interpreteW_func (fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}) :
-    (Worlds -> interprete0_ty (get_ty_of_symbol lsig (FuncSym fsym_id))) ->
-    interpreteW_ty (get_ty_of_symbol lsig (FuncSym fsym_id)).
-  Proof.
-    simpl; generalize (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
-    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w)))].
-  Defined.
-
-  Definition interpreteW_pred (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) :
-    (Worlds -> interprete0_ty (get_ty_of_symbol lsig (PredSym psym_id))) ->
-    interpreteW_ty (get_ty_of_symbol lsig (PredSym psym_id)).
-  Proof.
-    simpl; generalize (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id)) as n.
-    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w)))].
-  Defined.
-
   Variable func_env : forall fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}, Worlds -> interprete0_ty (get_ty_of_symbol lsig (FuncSym fsym_id)).
 
   Variable pred_env : forall psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}, Worlds -> interprete0_ty (get_ty_of_symbol lsig (PredSym psym_id)).
@@ -227,8 +229,8 @@ Module FirstOrderModalLogic.
   Definition interpreteW_symbol (c : symbol lsig) : interpreteW_ty (get_ty_of_symbol lsig c) :=
     match c with
     | PrimSym s => interpreteW_logical s
-    | FuncSym fsym_id => interpreteW_func fsym_id (func_env fsym_id) 
-    | PredSym psym_id => interpreteW_pred psym_id (pred_env psym_id)
+    | FuncSym fsym_id => interpreteW_func lsig fsym_id (func_env fsym_id) 
+    | PredSym psym_id => interpreteW_pred lsig psym_id (pred_env psym_id)
     end
   .
 
