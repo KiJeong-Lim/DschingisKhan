@@ -99,8 +99,8 @@ Module FirstOrderModalLogic.
   Set Primitive Projections.
 
   Record language_signature : Set :=
-    { funArityEnv : forall f_id : nat, option arity
-    ; relArityEnv : forall r_id : nat, option arity
+    { fun_arity : forall f_id : nat, option arity
+    ; rel_arity : forall r_id : nat, option arity
     }
   .
 
@@ -110,15 +110,15 @@ Module FirstOrderModalLogic.
 
   Variant symbol : Set :=
   | CncSym (c : connectives) : symbol
-  | FunSym (fsym_id : {f_id : nat | lsig.(funArityEnv) f_id <> None}) : symbol
-  | RelSym (rsym_id : {r_id : nat | lsig.(relArityEnv) r_id <> None}) : symbol
+  | FunSym (fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}) : symbol
+  | RelSym (rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}) : symbol
   .
 
   Definition get_type_of_symbol (s : symbol) : tyExpr :=
     match s with
     | CncSym s => get_type_of_connectives s
-    | FunSym fsym_id => nat_rec (fun _ => tyExpr) \ty[ i ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(funArityEnv) (proj1_sig fsym_id)) (proj2_sig fsym_id))
-    | RelSym rsym_id => nat_rec (fun _ => tyExpr) \ty[ o ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(relArityEnv) (proj1_sig rsym_id)) (proj2_sig rsym_id))
+    | FunSym fsym_id => nat_rec (fun _ => tyExpr) \ty[ i ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(fun_arity) (proj1_sig fsym_id)) (proj2_sig fsym_id))
+    | RelSym rsym_id => nat_rec (fun _ => tyExpr) \ty[ o ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(rel_arity) (proj1_sig rsym_id)) (proj2_sig rsym_id))
     end
   .
 
@@ -183,19 +183,19 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(funArityEnv) f_id <> None}) :
+  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}) :
     (Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id))) ->
     interpreteW_ty (get_type_of_symbol lsig (FunSym fsym_id)).
   Proof.
-    simpl; generalize (fromJust (lsig.(funArityEnv) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
+    simpl; generalize (fromJust (lsig.(fun_arity) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
     induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
   Defined.
 
-  Definition interpreteW_pred (lsig : language_signature) (rsym_id : {r_id : nat | lsig.(relArityEnv) r_id <> None}) :
+  Definition interpreteW_pred (lsig : language_signature) (rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}) :
     (Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id))) ->
     interpreteW_ty (get_type_of_symbol lsig (RelSym rsym_id)).
   Proof.
-    simpl; generalize (fromJust (lsig.(relArityEnv) (proj1_sig rsym_id)) (proj2_sig rsym_id)) as n.
+    simpl; generalize (fromJust (lsig.(rel_arity) (proj1_sig rsym_id)) (proj2_sig rsym_id)) as n.
     induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
   Defined.
 
@@ -221,9 +221,9 @@ Module FirstOrderModalLogic.
 
   Variable lsig : language_signature.
 
-  Variable func_env : forall fsym_id : {f_id : nat | lsig.(funArityEnv) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
+  Variable func_env : forall fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
 
-  Variable pred_env : forall rsym_id : {r_id : nat | lsig.(relArityEnv) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
+  Variable pred_env : forall rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
 
   Definition interpreteW_symbol (s : symbol lsig) : interpreteW_ty (get_type_of_symbol lsig s) :=
     match s with
