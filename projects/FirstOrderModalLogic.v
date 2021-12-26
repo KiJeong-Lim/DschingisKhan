@@ -183,7 +183,7 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}) :
+  Definition interpreteW_fun (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}) :
     (Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id))) ->
     interpreteW_ty (get_type_of_symbol lsig (FunSym fsym_id)).
   Proof.
@@ -191,7 +191,7 @@ Module FirstOrderModalLogic.
     induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
   Defined.
 
-  Definition interpreteW_pred (lsig : language_signature) (rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}) :
+  Definition interpreteW_rel (lsig : language_signature) (rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}) :
     (Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id))) ->
     interpreteW_ty (get_type_of_symbol lsig (RelSym rsym_id)).
   Proof.
@@ -203,7 +203,7 @@ Module FirstOrderModalLogic.
 
   Local Notation " w1 '`is_accessible_to`' w2 " := (member (w1, w2) accessibility_relation) (at level 70, no associativity) : type_scope.
 
-  Definition interpreteW_logical (c : connectives) : interpreteW_ty (get_type_of_connectives c) :=
+  Definition interpreteW_connectives (c : connectives) : interpreteW_ty (get_type_of_connectives c) :=
     match c with
     | CONTRADICTION => fun w => False
     | NEGATION => fun wP1 w => ~ wP1 w
@@ -221,24 +221,24 @@ Module FirstOrderModalLogic.
 
   Variable lsig : language_signature.
 
-  Variable func_env : forall fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
+  Variable fun_val_env : forall fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
 
-  Variable pred_env : forall rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
+  Variable red_val_env : forall rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
 
   Definition interpreteW_symbol (s : symbol lsig) : interpreteW_ty (get_type_of_symbol lsig s) :=
     match s with
-    | CncSym c => interpreteW_logical c
-    | FunSym fsym_id => interpreteW_func lsig fsym_id (func_env fsym_id) 
-    | RelSym rsym_id => interpreteW_pred lsig rsym_id (pred_env rsym_id)
+    | CncSym c => interpreteW_connectives c
+    | FunSym fsym_id => interpreteW_fun lsig fsym_id (fun_val_env fsym_id) 
+    | RelSym rsym_id => interpreteW_rel lsig rsym_id (red_val_env rsym_id)
     end
   .
 
-  Fixpoint interpreteW_tm (ivar_env : ivar -> wUniv) (tm : tmExpr lsig) (ty : tyExpr) (H : typeOf tm ty) {struct H} : interpreteW_ty ty :=
+  Fixpoint interpreteW_tm (var_val_env : ivar -> wUniv) (tm : tmExpr lsig) (ty : tyExpr) (H : typeOf tm ty) {struct H} : interpreteW_ty ty :=
     match H with
-    | TypeOfVAR x => ivar_env x
+    | TypeOfVAR x => var_val_env x
     | TypeOfCON s => interpreteW_symbol s
-    | TypeOfAPP t1 t2 ty1 ty2 H1 H2 => (interpreteW_tm ivar_env t1 \ty[ ty1 -> ty2 ] H1) (interpreteW_tm ivar_env t2 \ty[ ty1 ] H2)
-    | TypeOfLAM y t1 ty1 H1 => (fun y_val => interpreteW_tm (fun z => if ivar_eq_dec y z then y_val else ivar_env z) t1 \ty[ ty1 ] H1)
+    | TypeOfAPP t1 t2 ty1 ty2 H1 H2 => (interpreteW_tm var_val_env t1 \ty[ ty1 -> ty2 ] H1) (interpreteW_tm var_val_env t2 \ty[ ty1 ] H2)
+    | TypeOfLAM y t1 ty1 H1 => (fun y_val => interpreteW_tm (fun z => if ivar_eq_dec y z then y_val else var_val_env z) t1 \ty[ ty1 ] H1)
     end
   .
 
