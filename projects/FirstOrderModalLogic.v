@@ -127,15 +127,15 @@ Module FirstOrderModalLogic.
   Inductive tm_expr : Set :=
   | VAR (x : ivar) : tm_expr
   | CON (c : symbol) : tm_expr
-  | APP (tm1 : tm_expr) (tm2 : tm_expr) : tm_expr
-  | LAM (y : ivar) (tm1 : tm_expr) : tm_expr
+  | APP (t1 : tm_expr) (t2 : tm_expr) : tm_expr
+  | LAM (y : ivar) (t1 : tm_expr) : tm_expr
   .
 
   Inductive typeOf : tm_expr -> ty_expr -> Set :=
   | TypeOfVAR (x : ivar) : typeOf (VAR x) \ty[ i ]
   | TypeOfCON (c : symbol) : typeOf (CON c) (get_type_of_symbol c)
-  | TypeOfAPP (tm1 : tm_expr) (tm2 : tm_expr) (ty1 : ty_expr) (ty2 : ty_expr) (H_typeOf_t1 : typeOf tm1 \ty[ ty1 -> ty2 ]) (H_typeOf_t2 : typeOf tm2 \ty[ ty1 ]) : typeOf (APP tm1 tm2) ty2
-  | TypeOfLAM (y : ivar) (tm1 : tm_expr) (ty1 : ty_expr) (H_typeOf_t1 : typeOf tm1 \ty[ ty1 ]) : typeOf (LAM y tm1) \ty[ i -> ty1 ]
+  | TypeOfAPP (t1 : tm_expr) (t2 : tm_expr) (ty1 : ty_expr) (ty2 : ty_expr) (H1 : typeOf t1 \ty[ ty1 -> ty2 ]) (H2 : typeOf t2 \ty[ ty1 ]) : typeOf (APP t1 t2) \ty[ ty2 ]
+  | TypeOfLAM (y : ivar) (t1 : tm_expr) (ty1 : ty_expr) (H1 : typeOf t1 \ty[ ty1 ]) : typeOf (LAM y t1) \ty[ i -> ty1 ]
   .
 
   End SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
@@ -239,8 +239,8 @@ Module FirstOrderModalLogic.
     match H with
     | TypeOfVAR x => ivar_env x
     | TypeOfCON c => interpreteW_symbol c
-    | TypeOfAPP tm1 tm2 ty1 ty2 H1 H2 => (interpreteW_tm ivar_env tm1 \ty[ ty1 -> ty2 ] H1) (interpreteW_tm ivar_env tm2 \ty[ ty1 ] H2)
-    | TypeOfLAM y tm1 ty1 H1 => (fun y_val => interpreteW_tm (fun z => if ivar_eq_dec y z then y_val else ivar_env z) tm1 \ty[ ty1 ] H1)
+    | TypeOfAPP t1 t2 ty1 ty2 H1 H2 => (interpreteW_tm ivar_env t1 \ty[ ty1 -> ty2 ] H1) (interpreteW_tm ivar_env t2 \ty[ ty1 ] H2)
+    | TypeOfLAM y t1 ty1 H1 => (fun y_val => interpreteW_tm (fun z => if ivar_eq_dec y z then y_val else ivar_env z) t1 \ty[ ty1 ] H1)
     end
   .
 
