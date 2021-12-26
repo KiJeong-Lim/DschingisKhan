@@ -38,7 +38,9 @@ Module FirstOrderModalLogic.
     forall s2 : logical_symbol,
     {s1 = s2} + {s1 <> s2}.
   Proof.
-    induction s1; destruct s2; ((left; congruence) || (right; congruence)).
+    induction s1;
+    destruct s2;
+    (left; congruence) || (right; congruence).
   Defined.
 
   Inductive ty : Set :=
@@ -52,20 +54,14 @@ Module FirstOrderModalLogic.
     forall ty2 : ty,
     {ty1 = ty2} + {ty1 <> ty2}.
   Proof.
-    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2]; destruct ty2 as [ | | ty2_1 ty2_2].
-    - left; congruence.
-    - right; congruence.
-    - right; congruence.
-    - right; congruence.
-    - left; congruence.
-    - right; congruence.
-    - right; congruence.
-    - right; congruence.
-    - destruct (IH1 ty2_1); destruct (IH2 ty2_2).
-      + left; congruence.
-      + right; congruence.
-      + right; congruence.
-      + right; congruence.
+    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2];
+    destruct ty2 as [ | | ty2_1 ty2_2];
+    repeat (
+      first
+      [ now ((left; congruence) || (right; congruence))
+      | destruct (IH1 ty2_1); destruct (IH2 ty2_2)
+      ]
+    ).
   Defined.
 
   Global Declare Custom Entry object_level_ty.
@@ -187,7 +183,7 @@ Module FirstOrderModalLogic.
   Definition get_ty_of_symbol (c : symbol lsig) : ty :=
     match c with
     | PrimSym s => get_ty_of_logical_symbol s
-    | FuncSym fsym_id => nat_rec (fun _ => ty) \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id))
+    | FuncSym fsym_id => nat_rec (fun _ => ty) \ty( i ) (fun _ ty1 => \ty( i -> ty1 )) (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id))
     | PredSym psym_id => nat_rec (fun _ => ty) \ty( o ) (fun _ ty1 => \ty( i -> ty1 )) (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id))
     end
   .
@@ -203,22 +199,16 @@ Module FirstOrderModalLogic.
     (Worlds -> interprete0_ty (get_ty_of_symbol (FuncSym fsym_id))) ->
     interpreteW_ty (get_ty_of_symbol (FuncSym fsym_id)).
   Proof.
-    simpl.
-    generalize (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)).
-    induction a as [| a IH].
-    - exact (fun val_w => val_w).
-    - exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w))).
+    simpl; generalize (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
+    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w)))].
   Defined.
 
   Definition interpreteW_pred (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) :
     (Worlds -> interprete0_ty (get_ty_of_symbol (PredSym psym_id))) ->
     interpreteW_ty (get_ty_of_symbol (PredSym psym_id)).
   Proof.
-    simpl.
-    generalize (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id)).
-    induction a as [| a IH].
-    - exact (fun val_w => val_w).
-    - exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w))).
+    simpl; generalize (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id)) as n.
+    induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun fun_w arg_w => IH (fun w => fun_w w (arg_w w)))].
   Defined.
 
   Variable func_env : forall fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}, Worlds -> interprete0_ty (get_ty_of_symbol (FuncSym fsym_id)).
