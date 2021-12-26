@@ -19,26 +19,26 @@ Module FirstOrderModalLogic.
     exact (fun x y => Nat.eq_dec x y).
   Defined.
 
-  Variant logical_symbol : Set :=
-  | CONTRADICTION : logical_symbol
-  | NEGATION : logical_symbol
-  | CONJUNCTION : logical_symbol
-  | DISJUNCTION : logical_symbol
-  | IMPLICATION : logical_symbol
-  | BICONDITIONAL : logical_symbol 
-  | FORALL : logical_symbol
-  | EXISTS : logical_symbol
-  | EQUAL : logical_symbol
-  | BOX : logical_symbol
-  | DIA : logical_symbol
+  Variant connectives : Set :=
+  | CONTRADICTION : connectives
+  | NEGATION : connectives
+  | CONJUNCTION : connectives
+  | DISJUNCTION : connectives
+  | IMPLICATION : connectives
+  | BICONDITIONAL : connectives 
+  | FORALL : connectives
+  | EXISTS : connectives
+  | EQUAL : connectives
+  | BOX : connectives
+  | DIA : connectives
   .
 
-  Definition logical_symbol_eq_dec :
-    forall s1 : logical_symbol,
-    forall s2 : logical_symbol,
-    {s1 = s2} + {s1 <> s2}.
+  Definition connectives_eq_dec :
+    forall c1 : connectives,
+    forall c2 : connectives,
+    {c1 = c2} + {c1 <> c2}.
   Proof.
-    induction s1; destruct s2;
+    induction c1; destruct c2;
     (left; congruence) || (right; congruence); trivial.
   Defined.
 
@@ -74,8 +74,8 @@ Module FirstOrderModalLogic.
 
   Local Open Scope object_level_ty_expr_scope.
 
-  Definition get_type_of_logical_symbol (s : logical_symbol) : ty_expr :=
-    match s with
+  Definition get_type_of_connectives (c : connectives) : ty_expr :=
+    match c with
     | CONTRADICTION => \ty[ o ]
     | NEGATION => \ty[ o -> o ]
     | CONJUNCTION => \ty[ o -> o -> o ]
@@ -99,8 +99,8 @@ Module FirstOrderModalLogic.
   Set Primitive Projections.
 
   Record language_signature : Set :=
-    { func_arity_env : forall f_id : nat, option arity
-    ; pred_arity_env : forall p_id : nat, option arity
+    { fun_arity_env : forall f_id : nat, option arity
+    ; rel_arity_env : forall r_id : nat, option arity
     }
   .
 
@@ -109,38 +109,38 @@ Module FirstOrderModalLogic.
   Variable lsig : language_signature.
 
   Variant symbol : Set :=
-  | PrimSym (s : logical_symbol) : symbol
-  | FuncSym (fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}) : symbol
-  | PredSym (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) : symbol
+  | CncSym (c : connectives) : symbol
+  | FunSym (fsym_id : {f_id : nat | lsig.(fun_arity_env) f_id <> None}) : symbol
+  | RelSym (rsym_id : {r_id : nat | lsig.(rel_arity_env) r_id <> None}) : symbol
   .
 
-  Definition get_type_of_symbol (c : symbol) : ty_expr :=
-    match c with
-    | PrimSym s => get_type_of_logical_symbol s
-    | FuncSym fsym_id => nat_rec (fun _ => ty_expr) \ty[ i ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id))
-    | PredSym psym_id => nat_rec (fun _ => ty_expr) \ty[ o ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id))
+  Definition get_type_of_symbol (s : symbol) : ty_expr :=
+    match s with
+    | CncSym s => get_type_of_connectives s
+    | FunSym fsym_id => nat_rec (fun _ => ty_expr) \ty[ i ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(fun_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id))
+    | RelSym rsym_id => nat_rec (fun _ => ty_expr) \ty[ o ] (fun _ ty1 => \ty[ i -> ty1 ]) (fromJust (lsig.(rel_arity_env) (proj1_sig rsym_id)) (proj2_sig rsym_id))
     end
   .
 
   Inductive tm_expr : Set :=
   | VAR (x : ivar) : tm_expr
-  | CON (c : symbol) : tm_expr
+  | CON (s : symbol) : tm_expr
   | APP (t1 : tm_expr) (t2 : tm_expr) : tm_expr
   | LAM (y : ivar) (t1 : tm_expr) : tm_expr
   .
 
   Inductive typeOf : tm_expr -> ty_expr -> Set :=
   | TypeOfVAR (x : ivar) : typeOf (VAR x) \ty[ i ]
-  | TypeOfCON (c : symbol) : typeOf (CON c) (get_type_of_symbol c)
+  | TypeOfCON (s : symbol) : typeOf (CON s) (get_type_of_symbol s)
   | TypeOfAPP (t1 : tm_expr) (t2 : tm_expr) (ty1 : ty_expr) (ty2 : ty_expr) (H1 : typeOf t1 \ty[ ty1 -> ty2 ]) (H2 : typeOf t2 \ty[ ty1 ]) : typeOf (APP t1 t2) \ty[ ty2 ]
   | TypeOfLAM (y : ivar) (t1 : tm_expr) (ty1 : ty_expr) (H1 : typeOf t1 \ty[ ty1 ]) : typeOf (LAM y t1) \ty[ i -> ty1 ]
   .
 
   End SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
 
-  Arguments PrimSym {lsig}.
-  Arguments FuncSym {lsig}.
-  Arguments PredSym {lsig}.
+  Arguments CncSym {lsig}.
+  Arguments FunSym {lsig}.
+  Arguments RelSym {lsig}.
 
   Arguments VAR {lsig}.
   Arguments CON {lsig}.
@@ -183,19 +183,19 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}) :
-    (Worlds -> interprete0_ty (get_type_of_symbol lsig (FuncSym fsym_id))) ->
-    interpreteW_ty (get_type_of_symbol lsig (FuncSym fsym_id)).
+  Definition interpreteW_func (lsig : language_signature) (fsym_id : {f_id : nat | lsig.(fun_arity_env) f_id <> None}) :
+    (Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id))) ->
+    interpreteW_ty (get_type_of_symbol lsig (FunSym fsym_id)).
   Proof.
-    simpl; generalize (fromJust (lsig.(func_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
+    simpl; generalize (fromJust (lsig.(fun_arity_env) (proj1_sig fsym_id)) (proj2_sig fsym_id)) as n.
     induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
   Defined.
 
-  Definition interpreteW_pred (lsig : language_signature) (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) :
-    (Worlds -> interprete0_ty (get_type_of_symbol lsig (PredSym psym_id))) ->
-    interpreteW_ty (get_type_of_symbol lsig (PredSym psym_id)).
+  Definition interpreteW_pred (lsig : language_signature) (rsym_id : {r_id : nat | lsig.(rel_arity_env) r_id <> None}) :
+    (Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id))) ->
+    interpreteW_ty (get_type_of_symbol lsig (RelSym rsym_id)).
   Proof.
-    simpl; generalize (fromJust (lsig.(pred_arity_env) (proj1_sig psym_id)) (proj2_sig psym_id)) as n.
+    simpl; generalize (fromJust (lsig.(rel_arity_env) (proj1_sig rsym_id)) (proj2_sig rsym_id)) as n.
     induction n as [ | n IH]; [exact (fun val_w => val_w) | exact (fun kon_w arg_w => IH (fun w => kon_w w (arg_w w)))].
   Defined.
 
@@ -203,8 +203,8 @@ Module FirstOrderModalLogic.
 
   Local Notation " w1 '`is_accessible_to`' w2 " := (member (w1, w2) accessibility_relation) (at level 70, no associativity) : type_scope.
 
-  Definition interpreteW_logical (s : logical_symbol) : interpreteW_ty (get_type_of_logical_symbol s) :=
-    match s with
+  Definition interpreteW_logical (c : connectives) : interpreteW_ty (get_type_of_connectives c) :=
+    match c with
     | CONTRADICTION => fun w => False
     | NEGATION => fun wP1 w => ~ wP1 w
     | CONJUNCTION => fun wP1 wP2 w => wP1 w /\ wP2 w
@@ -221,22 +221,22 @@ Module FirstOrderModalLogic.
 
   Variable lsig : language_signature.
 
-  Variable func_env : forall fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FuncSym fsym_id)).
+  Variable func_env : forall fsym_id : {f_id : nat | lsig.(fun_arity_env) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
 
-  Variable pred_env : forall psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (PredSym psym_id)).
+  Variable pred_env : forall rsym_id : {r_id : nat | lsig.(rel_arity_env) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
 
-  Definition interpreteW_symbol (c : symbol lsig) : interpreteW_ty (get_type_of_symbol lsig c) :=
-    match c with
-    | PrimSym s => interpreteW_logical s
-    | FuncSym fsym_id => interpreteW_func lsig fsym_id (func_env fsym_id) 
-    | PredSym psym_id => interpreteW_pred lsig psym_id (pred_env psym_id)
+  Definition interpreteW_symbol (s : symbol lsig) : interpreteW_ty (get_type_of_symbol lsig s) :=
+    match s with
+    | CncSym c => interpreteW_logical c
+    | FunSym fsym_id => interpreteW_func lsig fsym_id (func_env fsym_id) 
+    | RelSym rsym_id => interpreteW_pred lsig rsym_id (pred_env rsym_id)
     end
   .
 
   Fixpoint interpreteW_tm (ivar_env : ivar -> wUniv) (tm : tm_expr lsig) (ty : ty_expr) (H : typeOf tm ty) {struct H} : interpreteW_ty ty :=
     match H with
     | TypeOfVAR x => ivar_env x
-    | TypeOfCON c => interpreteW_symbol c
+    | TypeOfCON s => interpreteW_symbol s
     | TypeOfAPP t1 t2 ty1 ty2 H1 H2 => (interpreteW_tm ivar_env t1 \ty[ ty1 -> ty2 ] H1) (interpreteW_tm ivar_env t2 \ty[ ty1 ] H2)
     | TypeOfLAM y t1 ty1 H1 => (fun y_val => interpreteW_tm (fun z => if ivar_eq_dec y z then y_val else ivar_env z) t1 \ty[ ty1 ] H1)
     end
