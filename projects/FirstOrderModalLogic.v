@@ -225,13 +225,13 @@ Module FirstOrderModalLogic.
 
   Variable fun_val_env : forall fsym_id : {f_id : nat | lsig.(fun_arity) f_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (FunSym fsym_id)).
 
-  Variable red_val_env : forall rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
+  Variable rel_val_env : forall rsym_id : {r_id : nat | lsig.(rel_arity) r_id <> None}, Worlds -> interprete0_ty (get_type_of_symbol lsig (RelSym rsym_id)).
 
   Definition interpreteW_symbol (s : symbol lsig) : interpreteW_ty (get_type_of_symbol lsig s) :=
     match s with
     | CncSym c => interpreteW_connectives c
     | FunSym fsym_id => interpreteW_fun lsig fsym_id (fun_val_env fsym_id) 
-    | RelSym rsym_id => interpreteW_rel lsig rsym_id (red_val_env rsym_id)
+    | RelSym rsym_id => interpreteW_rel lsig rsym_id (rel_val_env rsym_id)
     end
   .
 
