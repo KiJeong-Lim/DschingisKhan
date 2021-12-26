@@ -38,8 +38,9 @@ Module FirstOrderModalLogic.
     forall c2 : connectives,
     {c1 = c2} + {c1 <> c2}.
   Proof.
-    induction c1; destruct c2;
-    (left; congruence) || (right; congruence); trivial.
+    induction c1;
+    destruct c2;
+    (left; congruence) || (right; congruence).
   Defined.
 
   Inductive tyExpr : Set :=
@@ -53,10 +54,11 @@ Module FirstOrderModalLogic.
     forall ty2 : tyExpr,
     {ty1 = ty2} + {ty1 <> ty2}.
   Proof.
-    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2]; destruct ty2 as [ | | ty2_1 ty2_2];
+    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2];
+    destruct ty2 as [ | | ty2_1 ty2_2];
     repeat (
       first
-      [ (left; congruence) || (right; congruence); trivial
+      [ (left; congruence) || (right; congruence)
       | destruct (IH1 ty2_1); destruct (IH2 ty2_2)
       ]
     ).
