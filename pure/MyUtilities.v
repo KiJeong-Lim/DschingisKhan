@@ -119,6 +119,50 @@ Module EqFacts.
     end phi phi_pf
   .
 
+  Context {B : A -> Type}.
+
+  Definition elim_eq_l : forall x1 : A, forall x2 : A, x1 = x2 -> B x1 -> B x2 :=
+    fun x1 : A =>
+    fun x2 : A =>
+    fun H_eq : x1 = x2 =>
+    fun pf : B x1 =>
+    eq_rect x1 B pf x2 H_eq
+  .
+
+  Definition elim_eq_r : forall x1 : A, forall x2 : A, x1 = x2 -> B x2 -> B x1 :=
+    fun x1 : A =>
+    fun x2 : A =>
+    fun H_eq : x1 = x2 =>
+    fun pf : B x2 =>
+    eq_rect x2 B pf x1 (eq_symmetry x1 x2 H_eq)
+  .
+
+  Local Notation " 'pi_A_B' " := (forall x : A, B x) : type_scope.
+
+  Lemma elim_eq_l_spec :
+    forall x1 : A,
+    forall x2 : A,
+    forall f : pi_A_B,
+    forall H_eq : x1 = x2,
+    elim_eq_l x1 x2 H_eq (f x1) = f x2.
+  Proof.
+    intros x1 x2 f []; constructor.
+  Qed.
+
+  Lemma elim_eq_r_spec :
+    forall x1 : A,
+    forall x2 : A,
+    forall f : pi_A_B,
+    forall H_eq : x1 = x2,
+    elim_eq_r x1 x2 H_eq (f x2) = f x1.
+  Proof.
+    intros x1 x2 f []; constructor.
+  Qed.
+
+  Definition transport {x1 : A} {x2 : A} : x1 = x2 -> B x1 -> B x2 :=
+    elim_eq_l x1 x2
+  .
+
   End EQ_DESTRUCTORS.
 
   Section EQ_EM_implies_EQ_PIRREL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Eqdep_dec.html" *)
@@ -1255,6 +1299,12 @@ Module MyUtilities.
     eq_congruence (maybe y id) (Some x) (Some y)
   .
 
+  Definition Some_ne_None {A : Type} : forall x : A, Some x <> None :=
+    fun x : A =>
+    fun H_eq : Some x = None =>
+    @transport (option A) (maybe False (fun _ : A => True)) (Some x) None H_eq I
+  .
+
   Definition elemIndex {A : Type} : forall x : A, (forall x' : A, {x = x'} + {x <> x'}) -> forall xs : list A, option (FinSet (length xs)) :=
     fun x : A =>
     fun eq_dec : forall x' : A, {x = x'} + {x <> x'} =>
@@ -1264,6 +1314,32 @@ Module MyUtilities.
     | x' :: xs' => if eq_dec x' then Some (FZ (length xs')) else fmapMaybe (FS (length xs')) (elemIndex_fix xs')
     end
   .
+
+  Definition fromJust {A : Type} : forall Some_x : option A, Some_x <> None -> A :=
+    fun Some_x : option A =>
+    match Some_x as Some_x0 return Some_x0 <> None -> A with
+    | None => fun H_no : None <> None => False_rect A (H_no (eq_reflexivity None))
+    | Some x => fun _ : Some x <> None => x
+    end
+  .
+
+  Lemma fromJust_spec {A : Type} :
+    forall Some_x : option A,
+    forall x : A,
+    Some_x = Some x <-> (exists H_no : Some_x <> None, x = fromJust Some_x H_no).
+  Proof with eauto.
+    intros Some_x x.
+    split.
+    - intros H_yes.
+      subst Some_x.
+      exists (Some_ne_None x).
+      reflexivity.
+    - intros [H_no H_eq].
+      subst x.
+      destruct Some_x as [x |].
+      + reflexivity.
+      + contradiction.
+  Qed.
 
   Global Ltac repeat_rewrite :=
     simpl in *;
@@ -1289,44 +1365,6 @@ Module MyUtilities.
   Global Ltac auto_rewrite :=
     repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .
-
-End MyUtilities.
-
-Module MyUniverses.
-
-  Definition SuperiorUniverse : Type :=
-    Type
-  .
-
-  Definition InferiorUniverse : SuperiorUniverse :=
-    Type
-  .
-
-End MyUniverses.
-
-Module MyScratch.
-
-  Import EqFacts MyUtilities.
-
-  Section MyStream.
-
-  Variable A : Type.
-
-  CoInductive Stream : Type :=
-    Cons
-    { hd : A
-    ; tl : Stream
-    }
-  .
-
-  Definition Stream_corec (X : Type) : (X -> A * X) -> (X -> Stream) :=
-    fun acc : X -> A * X =>
-    cofix CIH : X -> Stream :=
-    fun x : X =>
-    {| hd := fst (acc x); tl := CIH (snd (acc x)) |}
-  .
-
-  End MyStream.
 
   Section SET_LEVEL_LE.
 
@@ -1513,6 +1551,44 @@ Module MyScratch.
   Qed.
 
   End ACKERMANN.
+
+End MyUtilities.
+
+Module MyUniverses.
+
+  Definition SuperiorUniverse : Type :=
+    Type
+  .
+
+  Definition InferiorUniverse : SuperiorUniverse :=
+    Type
+  .
+
+End MyUniverses.
+
+Module MyScratch.
+
+  Import EqFacts MyUtilities.
+
+  Section MyStream.
+
+  Variable A : Type.
+
+  CoInductive Stream : Type :=
+    Cons
+    { hd : A
+    ; tl : Stream
+    }
+  .
+
+  Definition Stream_corec (X : Type) : (X -> A * X) -> (X -> Stream) :=
+    fun acc : X -> A * X =>
+    cofix CIH : X -> Stream :=
+    fun x : X =>
+    {| hd := fst (acc x); tl := CIH (snd (acc x)) |}
+  .
+
+  End MyStream.
 
   Section SYNCHRONOUS_CIRCUIT.
 
