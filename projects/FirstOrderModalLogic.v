@@ -38,9 +38,8 @@ Module FirstOrderModalLogic.
     forall s2 : logical_symbol,
     {s1 = s2} + {s1 <> s2}.
   Proof.
-    induction s1;
-    destruct s2;
-    (left; congruence) || (right; congruence).
+    induction s1; destruct s2;
+    (left; congruence) || (right; congruence); trivial.
   Defined.
 
   Inductive ty_expr : Set :=
@@ -54,11 +53,10 @@ Module FirstOrderModalLogic.
     forall ty2 : ty_expr,
     {ty1 = ty2} + {ty1 <> ty2}.
   Proof.
-    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2];
-    destruct ty2 as [ | | ty2_1 ty2_2];
+    induction ty1 as [ | | ty1_1 IH1 ty1_2 IH2]; destruct ty2 as [ | | ty2_1 ty2_2];
     repeat (
       first
-      [ now ((left; congruence) || (right; congruence))
+      [ (left; congruence) || (right; congruence); trivial
       | destruct (IH1 ty2_1); destruct (IH2 ty2_2)
       ]
     ).
@@ -163,7 +161,7 @@ Module FirstOrderModalLogic.
     match ty with
     | \ty[ i ] => Univ
     | \ty[ o ] => Prop
-    | \ty[ arg_ty -> ret_ty ] => interprete0_ty arg_ty -> interprete0_ty ret_ty
+    | \ty[ ty1 -> ty2 ] => interprete0_ty \ty[ ty1 ] -> interprete0_ty \ty[ ty2 ]
     end
   .
 
@@ -181,7 +179,7 @@ Module FirstOrderModalLogic.
     match ty with
     | \ty[ i ] => wUniv
     | \ty[ o ] => wProp
-    | \ty[ arg_ty -> ret_ty ] => interpreteW_ty arg_ty -> interpreteW_ty ret_ty
+    | \ty[ ty1 -> ty2 ] => interpreteW_ty \ty[ ty1 ] -> interpreteW_ty \ty[ ty2 ]
     end
   .
 
