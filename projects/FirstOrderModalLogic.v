@@ -69,19 +69,13 @@ Module FirstOrderModalLogic.
   Defined.
 
   Global Declare Custom Entry object_level_ty.
-
   Global Notation " 'i' " := (TyI) (in custom object_level_ty at level 0, no associativity).
-
   Global Notation " 'o' " := (TyO) (in custom object_level_ty at level 0, no associativity).
-
   Global Notation " ty1 '->' ty2 " := (ARR ty1 ty2) (in custom object_level_ty at level 1, right associativity).
-
   Global Notation " ty1 " := (ty1) (in custom object_level_ty, ty1 ident).
-
   Global Notation " '(' ty1 ')' " := (ty1) (in custom object_level_ty at level 0, no associativity).
 
   Global Declare Scope object_level_ty_scope.
-
   Global Notation " '\ty(' ty_expr ')' " := (ty_expr) (ty_expr custom object_level_ty at level 1, at level 0, no associativity) : object_level_ty_scope.
 
   Local Open Scope object_level_ty_scope.
@@ -112,7 +106,7 @@ Module FirstOrderModalLogic.
     }
   .
 
-  Inductive symbol (lsig : language_signature) : Set :=
+  Variant symbol (lsig : language_signature) : Set :=
   | PrimSym (s : logical_symbol) : symbol lsig
   | FuncSym (fsym_id : {f_id : nat | lsig.(func_arity_env) f_id <> None}) : symbol lsig
   | PredSym (psym_id : {p_id : nat | lsig.(pred_arity_env) p_id <> None}) : symbol lsig
