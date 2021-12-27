@@ -1592,8 +1592,8 @@ Module MyUtilities.
       exists f_1.
       constructor 2.
     - set (acc_n'' := acc n'' (leq_step n'' (S n'') (leq_step n'' n'' (leq_init n''))) (n_ne_S_plus_m_n 1 n'')).
-      set (f_n'' := proj1_sig acc_n'').
       set (acc_n' := acc (S n'') (leq_step (S n'') (S n'') (leq_init (S n''))) (n_ne_S_plus_m_n 0 (S n''))).
+      set (f_n'' := proj1_sig acc_n'').
       set (f_n' := proj1_sig acc_n').
       set (f_n := f_n'' + f_n').
       exists f_n.
