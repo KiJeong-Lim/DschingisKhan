@@ -1572,10 +1572,10 @@ Module MyUtilities.
   | FibonacciSpec_when_n_ge_2 :
     forall n : nat,
     forall f_n : nat,
-    forall f_S_n : nat,
+    forall f_n' : nat,
     fibonacci_spec n f_n ->
-    fibonacci_spec (S n) f_S_n ->
-    fibonacci_spec (S (S n)) (f_n + f_S_n)
+    fibonacci_spec (S n) f_n' ->
+    fibonacci_spec (S (S n)) (f_n + f_n')
   .
 
   Definition fibonacci :
@@ -1584,18 +1584,15 @@ Module MyUtilities.
   Proof.
     apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
     intros [| [| n]] acc.
-    - set (f_0 := 0).
-      exists f_0.
+    - exists 0.
       constructor 1.
-    - set (f_1 := 1).
-      exists f_1.
+    - exists 1.
       constructor 2.
     - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
       set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
       set (f_n := proj1_sig acc_n).
       set (f_n' := proj1_sig acc_n').
-      set (f_n'' := f_n + f_n').
-      exists f_n''.
+      exists (f_n + f_n').
       constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
   Defined.
 
