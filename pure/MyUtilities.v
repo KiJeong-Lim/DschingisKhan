@@ -1379,15 +1379,15 @@ Module MyUtilities.
     forall n : nat,
     leq n n.
   Proof.
-    exact leq_init.
-  Qed.
+    constructor 1.
+  Defined.
 
   Lemma leq_intro_leq_0_n :
     forall n : nat,
     leq 0 n.
   Proof with eauto.
     induction n as [| n IH]...
-  Qed.
+  Defined.
 
   Lemma leq_intro_leq_S_n_S_m :
     forall n : nat,
@@ -1397,7 +1397,7 @@ Module MyUtilities.
   Proof with eauto.
     intros n m Hleq.
     induction Hleq as [| m Hleq IH]...
-  Qed.
+  Defined.
 
   Lemma leq_transitivity :
     forall n1 : nat,
@@ -1407,9 +1407,10 @@ Module MyUtilities.
     leq n2 n3 ->
     leq n1 n3.
   Proof with eauto.
-    enough (it_is_sufficient_to_show : forall l : nat, forall n : nat, forall m : nat, leq n l -> leq m n -> leq m l) by firstorder.
-    induction l; intros n m H H0; inversion H; subst...
-  Qed.
+    intros n1 n2 n3 Hle1 Hle2.
+    revert n3 n2 n1 Hle2 Hle1.
+    induction n3; intros n2 n1 Hle2 Hle1; inversion Hle2; subst...
+  Defined.
 
   Local Hint Resolve leq_transitivity : core.
 
@@ -1422,19 +1423,17 @@ Module MyUtilities.
     enough (it_is_sufficient_to_show : forall n : nat, forall i : nat, leq i n -> phi i)...
     induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
     all: inversion leq_m_n; subst...
-  Qed.
+  Defined.
 
   Lemma leq_implies_le :
     forall n : nat,
     forall m : nat,
     leq n m ->
     n <= m.
-  Proof.
+  Proof with eauto.
     intros n m Hleq.
-    induction Hleq as [| m Hleq IH].
-    - exact (le_n n).
-    - exact (le_S n m IH).
-  Qed.
+    induction Hleq as [| m Hleq IH]...
+  Defined.
 
   Lemma leq_asymmetry :
     forall n1 : nat,
@@ -1447,7 +1446,7 @@ Module MyUtilities.
     apply le_asymmetry.
     - exact (leq_implies_le n1 n2 Hleq1).
     - exact (leq_implies_le n2 n1 Hleq2).
-  Qed.
+  Defined.
 
   Lemma le_implies_leq :
     forall n : nat,
@@ -1461,7 +1460,7 @@ Module MyUtilities.
     - intros [| m'] Hle.
       + exact (lt_elim_n_lt_0 n Hle).
       + exact (leq_intro_leq_S_n_S_m n m' (IH m' (le_elim_S_n_le_m n (S m') Hle))).
-  Qed.
+  Defined.
 
   Lemma leq_unique :
     forall n1 : nat,
@@ -1551,6 +1550,30 @@ Module MyUtilities.
   Qed.
 
   End ACKERMANN.
+
+  Lemma n_ne_S_plus_m_n :
+    forall m : nat,
+    forall n : nat,
+    n <> S (m + n).
+  Proof.
+    intros m n H_eq.
+    contradiction (not_n_lt_n n).
+    enough (it_is_sufficient_to_show : n < S (m + n)) by congruence.
+    apply le_intro_S_n_le_S_m, le_intro_plus2.
+  Defined.
+
+  Definition fibonacci : nat -> nat.
+  Proof.
+    apply accumulation_leq with (phi := fun _ => nat).
+    intros n acc.
+    destruct n as [| [| n'']].
+    - exact 0.
+    - exact 1.
+    - set (f_n'' := acc n'' (leq_step n'' (S n'') (leq_step n'' n'' (leq_init n''))) (n_ne_S_plus_m_n 1 n'')).
+      set (f_n' := acc (S n'') (leq_step (S n'') (S n'') (leq_init (S n''))) (n_ne_S_plus_m_n 0 (S n''))).
+      set (f_n := f_n'' + f_n').
+      exact f_n.
+  Defined.
 
 End MyUtilities.
 
