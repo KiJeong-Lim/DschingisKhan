@@ -1565,11 +1565,11 @@ Module MyUtilities.
   Defined.
 
   Inductive fibonacci_spec : nat -> nat -> Prop :=
-  | FibonacciSpec1 :
+  | FibonacciSpec_when_n_eq_0 :
     fibonacci_spec 0 0
-  | FibonacciSpec2 :
+  | FibonacciSpec_when_n_eq_1 :
     fibonacci_spec 1 1
-  | FibonacciSpec3 :
+  | FibonacciSpec_when_n_ge_2 :
     forall n : nat,
     forall f_n : nat,
     forall f_S_n : nat,
@@ -1584,20 +1584,20 @@ Module MyUtilities.
   Proof.
     apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
     intros n acc.
-    destruct n as [| [| n'']].
+    destruct n as [| [| n]].
     - set (f_0 := 0).
       exists f_0.
       constructor 1.
     - set (f_1 := 1).
       exists f_1.
       constructor 2.
-    - set (acc_n'' := acc n'' (leq_step n'' (S n'') (leq_step n'' n'' (leq_init n''))) (n_ne_S_plus_m_n 1 n'')).
-      set (acc_n' := acc (S n'') (leq_step (S n'') (S n'') (leq_init (S n''))) (n_ne_S_plus_m_n 0 (S n''))).
-      set (f_n'' := proj1_sig acc_n'').
+    - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
+      set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
+      set (f_n := proj1_sig acc_n).
       set (f_n' := proj1_sig acc_n').
-      set (f_n := f_n'' + f_n').
-      exists f_n.
-      constructor 3; [exact (proj2_sig acc_n'') | exact (proj2_sig acc_n')].
+      set (f_n'' := f_n + f_n').
+      exists f_n''.
+      constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
   Defined.
 
   (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
