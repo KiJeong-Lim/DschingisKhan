@@ -1600,6 +1600,8 @@ Module MyUtilities.
       constructor 3; [exact (proj2_sig acc_n'') | exact (proj2_sig acc_n')].
   Defined.
 
+  (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
+
   End FIBONACCI.
 
 End MyUtilities.
