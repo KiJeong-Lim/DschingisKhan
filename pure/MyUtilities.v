@@ -1567,8 +1567,10 @@ Module MyUtilities.
     apply accumulation_leq with (phi := fun _ => nat).
     intros n acc.
     destruct n as [| [| n'']].
-    - exact 0.
-    - exact 1.
+    - set (f_0 := 0).
+      exact f_0.
+    - set (f_1 := 1).
+      exact f_1.
     - set (f_n'' := acc n'' (leq_step n'' (S n'') (leq_step n'' n'' (leq_init n''))) (n_ne_S_plus_m_n 1 n'')).
       set (f_n' := acc (S n'') (leq_step (S n'') (S n'') (leq_init (S n''))) (n_ne_S_plus_m_n 0 (S n''))).
       set (f_n := f_n'' + f_n').
