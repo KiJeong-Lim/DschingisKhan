@@ -1583,8 +1583,7 @@ Module MyUtilities.
     {f_n : nat | fibonacci_spec n f_n}.
   Proof.
     apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
-    intros n acc.
-    destruct n as [| [| n]].
+    intros [| [| n]] acc.
     - set (f_0 := 0).
       exists f_0.
       constructor 1.
