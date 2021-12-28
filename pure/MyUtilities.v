@@ -990,16 +990,16 @@ Module MyUtilities.
     a / b = q /\ a mod b = r.
   Proof with try (lia || now (firstorder; eauto)).
     intros a b q r H H0.
-    assert (H1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
-    assert (H2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
-    assert (claim1 : ~ q > a / b).
-    { intros H3.
-      destruct (proj1 (greater_than_iff q (a / b)) H3) as [z H4].
+    assert (claim1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
+    assert (claim2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
+    assert (claim3 : ~ q > a / b).
+    { intros H1.
+      destruct (proj1 (greater_than_iff q (a / b)) H1) as [z H2].
       enough (so_we_obatain : b * q + r >= b * S (a / b) + r)...
     }
-    assert (claim2 : ~ q < a / b).
-    { intros H3.
-      destruct (proj1 (greater_than_iff (a / b) q) H3) as [z H4].
+    assert (claim4 : ~ q < a / b).
+    { intros H1.
+      destruct (proj1 (greater_than_iff (a / b) q) H1) as [z H2].
       enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
     }
     enough (therefore : q = a / b)...
@@ -1566,9 +1566,9 @@ Module MyUtilities.
 
   Inductive fibonacci_spec : nat -> nat -> Prop :=
   | FibonacciSpec_when_n_eq_0 :
-    fibonacci_spec 0 0
+    fibonacci_spec 0 (0)
   | FibonacciSpec_when_n_eq_1 :
-    fibonacci_spec 1 1
+    fibonacci_spec 1 (1)
   | FibonacciSpec_when_n_ge_2 :
     forall n : nat,
     forall f_n : nat,
@@ -1584,9 +1584,9 @@ Module MyUtilities.
   Proof.
     apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
     intros [| [| n]] acc.
-    - exists 0.
+    - exists (0).
       constructor 1.
-    - exists 1.
+    - exists (1).
       constructor 2.
     - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
       set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
