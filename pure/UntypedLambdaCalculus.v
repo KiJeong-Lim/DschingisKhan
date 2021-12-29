@@ -655,7 +655,7 @@ Module SimplyTypedLambdaCalculus.
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory UntypedLamdbdaCalculus.
 
-  Global Reserved Notation " lsig ';' ctx '⊢' M '\isof' ty " (at level 70, no associativity).
+  Global Reserved Notation " Sigma ';' Gamma '⊢' M '\isof' tau " (at level 70, no associativity).
 
   Section STLC_WITH_CONSTANT.
 
@@ -696,7 +696,7 @@ Module SimplyTypedLambdaCalculus.
     forall ret_ty : tyExpr,
     lsig; (y, arg_ty) :: ctx ⊢ Q \isof ret_ty ->
     lsig; ctx ⊢ Lam y Q \isof ARR arg_ty ret_ty
-  where " lsig ';' ctx '⊢' M '\isof' ty " := (typeOf lsig ctx M ty) : type_scope.
+  where " Sigma ';' Gamma '⊢' M '\isof' tau " := (typeOf Sigma Gamma M tau) : type_scope.
 
   End STLC_WITH_CONSTANT.
 
@@ -709,6 +709,6 @@ Module SimplyTypedLambdaCalculus.
   Arguments AppTypeOf {BaseTy} {CON} {lsig}.
   Arguments LamTypeOf {BaseTy} {CON} {lsig}.
 
-  Global Notation " lsig ';' ctx '⊢' M '\isof' ty " := (typeOf lsig ctx M ty) : type_scope.
+  Global Notation " Sigma ';' Gamma '⊢' M '\isof' tau " := (typeOf Sigma Gamma M tau): type_scope.
 
 End SimplyTypedLambdaCalculus.
