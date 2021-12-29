@@ -270,15 +270,15 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     or_plus x1 x2 =< d <-> (x1 =< d /\ x2 =< d).
   Proof with eauto with *.
     intros x1 x2 d.
-    assert (H : isSupremum (or_plus x1 x2) (finite [x1; x2])) by apply (proj2_sig (supremum_always_exists_in_CompleteLattice (finite [x1; x2]))).
+    assert (claim1 : isSupremum (or_plus x1 x2) (finite [x1; x2])) by apply (proj2_sig (supremum_always_exists_in_CompleteLattice (finite [x1; x2]))).
     split.
-    - intros H0.
+    - intros H.
       split...
-    - intros [H0 H1].
-      apply H.
-      intros x H2.
-      inversion H2; subst.
-      destruct H3 as [H3 | [H3 | []]]; subst...
+    - intros [H H0].
+      apply claim1.
+      intros x H1.
+      inversion H1; subst.
+      destruct H2 as [H2 | [H2 | []]]; subst...
   Qed.
 
   Lemma PrincipleOfTarski {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
@@ -393,23 +393,23 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
     intros f.
     symmetry.
     unfold ParameterizedGreatestFixedpoint, G_f.
-    assert (H := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus bot y)) (G_f_aux_x_isMonotonic f bot))).
-    assert (H0 := nu_isSupremum f).
+    assert (claim1 := nu_isSupremum (exist isMonotonicMap (fun y : D => proj1_sig f (or_plus bot y)) (G_f_aux_x_isMonotonic f bot))).
+    assert (claim2 := nu_isSupremum f).
     simpl in *.
     apply Poset_asym.
-    - apply H.
-      intros x H1.
-      apply H0...
+    - apply claim1.
+      intros x H.
+      apply claim2...
       unfold member, postfixed_points in *.
       transitivity (proj1_sig f (or_plus bot x)).
-      + exact H1.
+      + exact H.
       + apply (proj2_sig f), or_plus_le_iff...
-    - apply H0.
-      intros x H1.
-      apply H...
+    - apply claim2.
+      intros x H.
+      apply claim1...
       unfold member, postfixed_points in *.
       transitivity (proj1_sig f x).
-      + apply H1.
+      + apply H.
       + apply (proj2_sig f)...
   Qed.
 
@@ -598,12 +598,12 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
 
   Global Hint Unfold isCompatibleFor : my_hints.
 
-  Local Notation "f 'is-compatible-for' b" := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
+  Global Notation " f '`is_compatible_for`' b " := (isCompatibleFor f b) (at level 70, no associativity) : type_scope.
 
   Lemma const_isCompatibleFor_iff {D : Type} `{D_isPoset : isPoset D} :
     forall b : D >=> D,
     forall d : D,
-    const_m d is-compatible-for b <-> d =< proj1_sig b d.
+    const_m d `is_compatible_for` b <-> d =< proj1_sig b d.
   Proof with eauto with *.
     intros b d.
     unfold isCompatibleFor, const_m, const.
@@ -612,7 +612,7 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
 
   Lemma id_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} :
     forall b : D >=> D,
-    id_m is-compatible-for b.
+    id_m `is_compatible_for` b.
   Proof with eauto with *.
     unfold isCompatibleFor, id_m.
     simpl...
@@ -622,9 +622,9 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
     forall b : D >=> D,
     forall f1 : D >=> D,
     forall f2 : D >=> D,
-    f1 is-compatible-for b ->
-    f2 is-compatible-for b ->
-    compose_m f1 f2 is-compatible-for b.
+    f1 `is_compatible_for` b ->
+    f2 `is_compatible_for` b ->
+    compose_m f1 f2 `is_compatible_for` b.
   Proof with eauto with *.
     unfold isCompatibleFor, compose_m.
     simpl.
@@ -636,8 +636,8 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
   Lemma supremum_isCompatibleFor {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall b : D >=> D,
     forall F : ensemble (D >=> D),
-    (forall f : D >=> D, member f F -> f is-compatible-for b) ->
-    supremum_m F is-compatible-for b.
+    (forall f : D >=> D, member f F -> f `is_compatible_for` b) ->
+    supremum_m F `is_compatible_for` b.
   Proof with eauto with *.
     intros b F H.
     set (F_b := fun x : D => image (fun f_i : D >=> D => proj1_sig f_i (proj1_sig b x)) F).
@@ -697,14 +697,14 @@ Module CAWU. (* Reference: "Coinduction All the Way Up" written by "Damien Pous"
   Context {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} (b : D >=> D).
 
   Lemma companion_isCompatibleFor :
-    companion b is-compatible-for b.
+    companion b `is_compatible_for` b.
   Proof with eauto with *.
     apply supremum_isCompatibleFor...
   Qed.
 
   Lemma companion_isTheGreatestCompatibleFunction :
     forall f : D >=> D,
-    f is-compatible-for b ->
+    f `is_compatible_for` b ->
     f =< companion b.
   Proof with eauto with *.
     intros f H.

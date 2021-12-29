@@ -59,10 +59,10 @@ Module UntypedLamdbdaCalculus.
   Variable CON : Set.
 
   Inductive tm : Set :=
-  | tmVar : forall x : ivar, tm
-  | tmCon : forall c : CON, tm
-  | tmApp : forall P1 : tm, forall P2 : tm, tm
-  | tmLam : forall y : ivar, forall Q : tm, tm
+  | Var (x : ivar) : tm
+  | Con (c : CON) : tm
+  | App (P1 : tm) (P2 : tm) : tm
+  | Lam (y : ivar) (Q : tm) : tm
   .
 
   Lemma tm_eq_dec :
@@ -75,23 +75,23 @@ Module UntypedLamdbdaCalculus.
     - destruct (CON_eq_dec c1 c2)...
     - destruct (IH1 P1_2); destruct (IH2 P2_2)...
     - destruct (ivar_eq_dec y1 y2); destruct (IH1 Q2)...
-  Qed.
+  Defined.
 
   Fixpoint getFVs (M : tm) {struct M} : list ivar :=
     match M with
-    | tmVar x => [x]
-    | tmCon c => []
-    | tmApp P1 P2 => getFVs P1 ++ getFVs P2
-    | tmLam y Q => remove ivar_eq_dec y (getFVs Q)
+    | Var x => [x]
+    | Con c => []
+    | App P1 P2 => getFVs P1 ++ getFVs P2
+    | Lam y Q => remove ivar_eq_dec y (getFVs Q)
     end
   .
 
   Fixpoint isFreeIn (z : ivar) (M : tm) {struct M} : bool :=
     match M with
-    | tmVar x => Nat.eqb x z
-    | tmCon c => false
-    | tmApp P1 P2 => isFreeIn z P1 || isFreeIn z P2
-    | tmLam y Q => isFreeIn z Q && negb (Nat.eqb z y)
+    | Var x => Nat.eqb x z
+    | Con c => false
+    | App P1 P2 => isFreeIn z P1 || isFreeIn z P2
+    | Lam y Q => isFreeIn z Q && negb (Nat.eqb z y)
     end
   .
 
@@ -109,7 +109,7 @@ Module UntypedLamdbdaCalculus.
   .
 
   Definition tmSubst_nil : tmSubst :=
-    tmVar
+    Var
   .
 
   Definition tmSubst_cons : ivar -> tm -> tmSubst -> tmSubst :=
@@ -125,7 +125,7 @@ Module UntypedLamdbdaCalculus.
   Fixpoint tmSubstMaker (sigma : list (ivar * tm)) {struct sigma} : tmSubst :=
     match sigma with
     | [] => tmSubst_nil
-    | (x, M) :: sigma' => tmSubst_cons x M (tmSubstMaker sigma')
+    | item :: sigma' => tmSubst_cons (fst item) (snd item) (tmSubstMaker sigma')
     end
   .
 
@@ -197,12 +197,12 @@ Module UntypedLamdbdaCalculus.
 
   Fixpoint run_tmSubst_on_tm (sigma : tmSubst) (M : tm) {struct M} : tm :=
     match M with
-    | tmVar x => sigma x
-    | tmCon c => tmCon c
-    | tmApp P1 P2 => tmApp (run_tmSubst_on_tm sigma P1) (run_tmSubst_on_tm sigma P2)
-    | tmLam y Q =>
+    | Var x => sigma x
+    | Con c => Con c
+    | App P1 P2 => App (run_tmSubst_on_tm sigma P1) (run_tmSubst_on_tm sigma P2)
+    | Lam y Q =>
       let z : ivar := chi sigma M in
-      tmLam z (run_tmSubst_on_tm (tmSubst_cons y (tmVar z) sigma) Q)
+      Lam z (run_tmSubst_on_tm (tmSubst_cons y (Var z) sigma) Q)
     end
   .
 
@@ -214,7 +214,7 @@ Module UntypedLamdbdaCalculus.
   Proof with auto_rewrite.
     induction M; unfold isFreshIn_tmSubst; simpl...
     split; intros H.
-    - destruct (ivar_eq_dec z (chi sigma (tmLam y M)))...
+    - destruct (ivar_eq_dec z (chi sigma (Lam y M)))...
       left.
       apply IHM.
       unfold isFreshIn_tmSubst, tmSubst_cons.
@@ -224,13 +224,13 @@ Module UntypedLamdbdaCalculus.
     - auto_rewrite.
       destruct H0 as [H0 H1].
       destruct H as [H | H].
-      + assert (H2 : isFreshIn_tmSubst z (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma) M = true) by now apply IHM.
+      + assert (H2 : isFreshIn_tmSubst z (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) M = true) by now apply IHM.
         unfold isFreshIn_tmSubst in H2.
         rewrite forallb_true_iff in H2.
         assert (H3 := H2 x H0).
         unfold tmSubst_cons in H3.
         destruct (ivar_eq_dec y x)...
-      + assert (H2 : isFreshIn_tmSubst z sigma (tmLam y M) = true) by now rewrite H; apply main_property_of_chi.
+      + assert (H2 : isFreshIn_tmSubst z sigma (Lam y M) = true) by now rewrite H; apply main_property_of_chi.
         unfold isFreshIn_tmSubst in H2.
         rewrite forallb_true_iff in H2.
         apply negb_true_iff, H2.
@@ -290,20 +290,20 @@ Module UntypedLamdbdaCalculus.
       rewrite (IHM1 sigma1 sigma2 claim1), (IHM2 sigma1 sigma2 claim2)...
       all: intros x H0; apply H...
     - intros sigma1 sigma2 H.
-      enough (claim3 : equiv_tmSubst_wrt (tmSubst_cons y (tmVar (chi sigma1 (tmLam y M))) sigma1) (tmSubst_cons y (tmVar (chi sigma2 (tmLam y M))) sigma2) M).
-      assert (claim4 : chi sigma1 (tmLam y M) = chi sigma2 (tmLam y M)) by now apply chi_equiv_tmSubst_wrt.
-      rewrite (IHM (tmSubst_cons y (tmVar (chi sigma1 (tmLam y M))) sigma1) (tmSubst_cons y (tmVar (chi sigma2 (tmLam y M))) sigma2) claim3), claim4...
+      enough (claim3 : equiv_tmSubst_wrt (tmSubst_cons y (Var (chi sigma1 (Lam y M))) sigma1) (tmSubst_cons y (Var (chi sigma2 (Lam y M))) sigma2) M).
+      assert (claim4 : chi sigma1 (Lam y M) = chi sigma2 (Lam y M)) by now apply chi_equiv_tmSubst_wrt.
+      rewrite (IHM (tmSubst_cons y (Var (chi sigma1 (Lam y M))) sigma1) (tmSubst_cons y (Var (chi sigma2 (Lam y M))) sigma2) claim3), claim4...
       intros x H0.
       unfold tmSubst_cons.
       destruct (ivar_eq_dec y x).
-      + rewrite (chi_equiv_tmSubst_wrt sigma1 sigma2 (tmLam y M) H)...
+      + rewrite (chi_equiv_tmSubst_wrt sigma1 sigma2 (Lam y M) H)...
       + apply H...
   Qed.
 
   Lemma trivial_tmSubst :
     forall x : ivar,
     forall M : tm,
-    run_tmSubst_on_tm (tmSubst_cons x (tmVar x) tmSubst_nil) M = run_tmSubst_on_tm tmSubst_nil M.
+    run_tmSubst_on_tm (tmSubst_cons x (Var x) tmSubst_nil) M = run_tmSubst_on_tm tmSubst_nil M.
   Proof with try now firstorder.
     unfold tmSubst_cons.
     intros x M.
@@ -326,10 +326,10 @@ Module UntypedLamdbdaCalculus.
     forall sigma2 : tmSubst,
     forall x : ivar,
     forall y : ivar,
-    isFreshIn_tmSubst y sigma1 (tmLam x M) = true ->
+    isFreshIn_tmSubst y sigma1 (Lam x M) = true ->
     forall z : ivar,
     isFreeIn z M = true ->
-    tmSubst_cons x N (compose_tmSubst sigma2 sigma1) z = compose_tmSubst (tmSubst_cons y N sigma2) (tmSubst_cons x (tmVar y) sigma1) z.
+    tmSubst_cons x N (compose_tmSubst sigma2 sigma1) z = compose_tmSubst (tmSubst_cons y N sigma2) (tmSubst_cons x (Var y) sigma1) z.
   Proof with try now firstorder.
     intros M N sigma1 sigma2 x y H z H0.
     unfold tmSubst_cons, compose_tmSubst.
@@ -358,10 +358,10 @@ Module UntypedLamdbdaCalculus.
     forall sigma1 : tmSubst,
     forall sigma2 : tmSubst,
     forall x : ivar,
-    let y : ivar := chi sigma1 (tmLam x M) in
+    let y : ivar := chi sigma1 (Lam x M) in
     forall z : ivar,
     isFreeIn z M = true ->
-    tmSubst_cons x N (compose_tmSubst sigma2 sigma1) z = compose_tmSubst (tmSubst_cons y N sigma2) (tmSubst_cons x (tmVar y) sigma1) z.
+    tmSubst_cons x N (compose_tmSubst sigma2 sigma1) z = compose_tmSubst (tmSubst_cons y N sigma2) (tmSubst_cons x (Var y) sigma1) z.
   Proof with eauto using distri_compose_cons, main_property_of_chi.
     intros M N sigma1 sigma2 x y z H...
   Qed.
@@ -394,9 +394,9 @@ Module UntypedLamdbdaCalculus.
     - intros x sigma...
       split; intros H.
       + destruct H as [H H0].
-        assert (H1 := proj1 (IHM x (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma)) H).
+        assert (H1 := proj1 (IHM x (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma)) H).
         destruct H1 as [w [H1 H2]].
-        set (z := chi sigma (tmLam y M)).
+        set (z := chi sigma (Lam y M)).
         fold z in H, H0, H2.
         destruct (ivar_eq_dec y w).
         * subst.
@@ -409,10 +409,10 @@ Module UntypedLamdbdaCalculus.
           destruct (ivar_eq_dec y w)...
       + rename y into z.
         destruct H as [y [H H0]].
-        set (w := chi sigma (tmLam z M))...
+        set (w := chi sigma (Lam z M))...
         destruct (ivar_eq_dec w x).
         * subst.
-          assert (isFreshIn_tmSubst w sigma (tmLam z M) = true) by now apply main_property_of_chi.
+          assert (isFreshIn_tmSubst w sigma (Lam z M) = true) by now apply main_property_of_chi.
           unfold isFreshIn_tmSubst in H1.
           rewrite forallb_true_iff in H1.
           enough (H2 : isFreeIn w (sigma y) = false) by now rewrite H0 in H2.
@@ -462,27 +462,27 @@ Module UntypedLamdbdaCalculus.
   Proof with auto_rewrite.
     induction M; simpl...
     - rewrite IHM1, IHM2...
-    - enough (it_is_sufficient_to_show : chi sigma2 (run_tmSubst_on_tm sigma1 (tmLam y M)) = chi (compose_tmSubst sigma2 sigma1) (tmLam y M)).
-      { set (x := chi sigma1 (tmLam y M)).
-        set (x' := chi sigma2 (tmLam x (run_tmSubst_on_tm (tmSubst_cons y (tmVar x) sigma1) M))).
-        set (z := chi (compose_tmSubst sigma2 sigma1) (tmLam y M)).
-        assert (H := IHM (tmSubst_cons y (tmVar x) sigma1) (tmSubst_cons x (tmVar x') sigma2)).
+    - enough (it_is_sufficient_to_show : chi sigma2 (run_tmSubst_on_tm sigma1 (Lam y M)) = chi (compose_tmSubst sigma2 sigma1) (Lam y M)).
+      { set (x := chi sigma1 (Lam y M)).
+        set (x' := chi sigma2 (Lam x (run_tmSubst_on_tm (tmSubst_cons y (Var x) sigma1) M))).
+        set (z := chi (compose_tmSubst sigma2 sigma1) (Lam y M)).
+        assert (H := IHM (tmSubst_cons y (Var x) sigma1) (tmSubst_cons x (Var x') sigma2)).
         rewrite H.
-        assert (H0 := distri_compose_cons_for_chi M (tmVar x') sigma1 sigma2 y).
-        assert (H1 : run_tmSubst_on_tm (compose_tmSubst (tmSubst_cons x (tmVar x') sigma2) (tmSubst_cons y (tmVar x) sigma1)) M = run_tmSubst_on_tm (tmSubst_cons y (tmVar x') (compose_tmSubst sigma2 sigma1)) M) by now apply main_property_of_equiv_tmSubst_wrt; firstorder.
+        assert (H0 := distri_compose_cons_for_chi M (Var x') sigma1 sigma2 y).
+        assert (H1 : run_tmSubst_on_tm (compose_tmSubst (tmSubst_cons x (Var x') sigma2) (tmSubst_cons y (Var x) sigma1)) M = run_tmSubst_on_tm (tmSubst_cons y (Var x') (compose_tmSubst sigma2 sigma1)) M) by now apply main_property_of_equiv_tmSubst_wrt; firstorder.
         rewrite H1.
         replace x' with z...
       }
       rename y into x.
-      set (y := chi sigma1 (tmLam x M)).
+      set (y := chi sigma1 (Lam x M)).
       assert ( claim1 :
         forall y' : ivar,
-        (exists x' : ivar, isFreeIn x' (tmLam y (run_tmSubst_on_tm (tmSubst_cons x (tmVar y) sigma1) M)) = true /\ isFreeIn y' (sigma2 x') = true) ->
-        (exists u : ivar, isFreeIn u (tmLam x M) = true /\ isFreeIn y' (compose_tmSubst sigma2 sigma1 u) = true)
+        (exists x' : ivar, isFreeIn x' (Lam y (run_tmSubst_on_tm (tmSubst_cons x (Var y) sigma1) M)) = true /\ isFreeIn y' (sigma2 x') = true) ->
+        (exists u : ivar, isFreeIn u (Lam x M) = true /\ isFreeIn y' (compose_tmSubst sigma2 sigma1 u) = true)
       ).
       { intros y' [x' [H H0]]...
         destruct H as [H H1].
-        destruct (proj1 (isFreeIn_wrt_true_iff M x' (tmSubst_cons x (tmVar y) sigma1)) H) as [u [H2 H3]].
+        destruct (proj1 (isFreeIn_wrt_true_iff M x' (tmSubst_cons x (Var y) sigma1)) H) as [u [H2 H3]].
         unfold tmSubst_cons in H3.
         destruct (ivar_eq_dec x u).
         - unfold isFreeIn in H3.
@@ -493,15 +493,15 @@ Module UntypedLamdbdaCalculus.
       }
       assert ( claim2 :
         forall y' : ivar,
-        (exists x' : ivar, isFreeIn x' (tmLam x M) = true /\ isFreeIn y' (compose_tmSubst sigma2 sigma1 x') = true) ->
-        (exists u : ivar, isFreeIn u (tmLam y (run_tmSubst_on_tm (tmSubst_cons x (tmVar y) sigma1) M)) = true /\ isFreeIn y' (sigma2 u) = true)
+        (exists x' : ivar, isFreeIn x' (Lam x M) = true /\ isFreeIn y' (compose_tmSubst sigma2 sigma1 x') = true) ->
+        (exists u : ivar, isFreeIn u (Lam y (run_tmSubst_on_tm (tmSubst_cons x (Var y) sigma1) M)) = true /\ isFreeIn y' (sigma2 u) = true)
       ).
       { intros y' [x' [H H0]].
         simpl in H.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq in H.
         destruct H as [H H1].
         destruct (proj1 (isFreeIn_wrt_true_iff (sigma1 x') y' sigma2) H0) as [u [H2 H3]].
-        assert (claim2_aux1 : isFreeIn u (run_tmSubst_on_tm (tmSubst_cons x (tmVar y) sigma1) M) = true).
+        assert (claim2_aux1 : isFreeIn u (run_tmSubst_on_tm (tmSubst_cons x (Var y) sigma1) M) = true).
         { apply isFreeIn_wrt_true_iff.
           exists x'.
           split...
@@ -513,7 +513,7 @@ Module UntypedLamdbdaCalculus.
         split...
         subst.
         enough (claim2_aux2 : isFreeIn y (sigma1 x') = false) by now rewrite H2 in claim2_aux2.
-        assert (H4 := main_property_of_chi (tmLam x M) sigma1).
+        assert (H4 := main_property_of_chi (Lam x M) sigma1).
         unfold isFreshIn_tmSubst in H4.
         rewrite forallb_true_iff in H4.
         apply negb_true_iff, H4.
@@ -542,11 +542,11 @@ Module UntypedLamdbdaCalculus.
     forall M : tm,
     forall N : tm,
     forall sigma : tmSubst,
-    isFreeIn z (tmLam x M) = false ->
-    run_tmSubst_on_tm (tmSubst_cons x N sigma) M = run_tmSubst_on_tm (tmSubst_cons z N sigma) (run_tmSubst_on_tm (tmSubst_cons x (tmVar z) tmSubst_nil) M).
+    isFreeIn z (Lam x M) = false ->
+    run_tmSubst_on_tm (tmSubst_cons x N sigma) M = run_tmSubst_on_tm (tmSubst_cons z N sigma) (run_tmSubst_on_tm (tmSubst_cons x (Var z) tmSubst_nil) M).
   Proof with auto_rewrite.
     intros x z M N sigma H.
-    rewrite (main_property_of_compose_tmSubst M (tmSubst_cons x (tmVar z) tmSubst_nil) (tmSubst_cons z N sigma)).
+    rewrite (main_property_of_compose_tmSubst M (tmSubst_cons x (Var z) tmSubst_nil) (tmSubst_cons z N sigma)).
     apply main_property_of_equiv_tmSubst_wrt.
     intros w H0.
     unfold tmSubst_cons, tmSubst_nil, compose_tmSubst.
@@ -571,10 +571,10 @@ Module UntypedLamdbdaCalculus.
 
   Fixpoint eval_tm (E : evalEnv) (M : tm) {struct M} : D :=
     match M with
-    | tmVar x => E x
-    | tmCon c => runCon c
-    | tmApp P1 P2 => runApp (eval_tm E P1) (eval_tm E P2)
-    | tmLam y Q => runLam (fun v : D => eval_tm (fun z : ivar => if ivar_eq_dec y z then v else E z) Q)
+    | Var x => E x
+    | Con c => runCon c
+    | App P1 P2 => runApp (eval_tm E P1) (eval_tm E P2)
+    | Lam y Q => runLam (fun v : D => eval_tm (fun z : ivar => if ivar_eq_dec y z then v else E z) Q)
     end
   .
 
@@ -612,42 +612,42 @@ Module UntypedLamdbdaCalculus.
     - intros sigma E.
       apply runApp_preserves_eqProp...
     - intros sigma E.
-      enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z) (run_tmSubst_on_tm (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma) M)) by now apply runLam_preserves_eqProp.
+      enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z then v else E z) (run_tmSubst_on_tm (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) M)) by now apply runLam_preserves_eqProp.
       intros v.
-      assert (H := IHM (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z then v else E z)).
+      assert (H := IHM (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z then v else E z)).
       assert ( claim1 :
         forall z : ivar,
         isFreeIn z M = true ->
-        eval_tm (fun x : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) x then v else E x) (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma z) == (if ivar_eq_dec y z then v else eval_tm E (sigma z))
+        eval_tm (fun x : ivar => if ivar_eq_dec (chi sigma (Lam y M)) x then v else E x) (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma z) == (if ivar_eq_dec y z then v else eval_tm E (sigma z))
       ).
       { intros z H0.
         unfold tmSubst_cons.
         destruct (ivar_eq_dec y z).
         - unfold eval_tm.
-          destruct (ivar_eq_dec (chi sigma (tmLam y M)) (chi sigma (tmLam y M)))...
+          destruct (ivar_eq_dec (chi sigma (Lam y M)) (chi sigma (Lam y M)))...
           contradiction.
         - apply eval_tm_ext.
           intros z' H1.
-          destruct (ivar_eq_dec (chi sigma (tmLam y M)) z')...
+          destruct (ivar_eq_dec (chi sigma (Lam y M)) z')...
           subst.
-          assert (H2 : isFreshIn_tmSubst (chi sigma (tmLam y M)) sigma (tmLam y M) = true) by now apply main_property_of_chi.
+          assert (H2 : isFreshIn_tmSubst (chi sigma (Lam y M)) sigma (Lam y M) = true) by now apply main_property_of_chi.
           unfold isFreshIn_tmSubst in H2.
           rewrite forallb_true_iff in H2.
-          enough (H3 : isFreeIn (chi sigma (tmLam y M)) (sigma z) = false) by now rewrite H3 in H1.
+          enough (H3 : isFreeIn (chi sigma (Lam y M)) (sigma z) = false) by now rewrite H3 in H1.
           apply negb_true_iff, H2, getFVs_isFreeIn.
           auto_rewrite.
       }
-      transitivity (eval_tm (fun z : ivar => eval_tm (fun z0 : ivar => if ivar_eq_dec (chi sigma (tmLam y M)) z0 then v else E z0) (tmSubst_cons y (tmVar (chi sigma (tmLam y M))) sigma z)) M)...
+      transitivity (eval_tm (fun z : ivar => eval_tm (fun z0 : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z0 then v else E z0) (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma z)) M)...
   Qed.
 
   End PreliminariesOfSemantics.
 
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
-  Arguments tmVar {CON}.
-  Arguments tmCon {CON}.
-  Arguments tmApp {CON}.
-  Arguments tmLam {CON}.
+  Arguments Var {CON}.
+  Arguments Con {CON}.
+  Arguments App {CON}.
+  Arguments Lam {CON}.
 
 End UntypedLamdbdaCalculus.
 
@@ -679,44 +679,30 @@ Module SimplyTypedLambdaCalculus.
   Local Reserved Notation " ctx '⊢' t '\isof' ty " (at level 70, no associativity).
 
   Inductive typeOf : tyCtx -> tmExpr -> tyExpr -> Set :=
-  | Var_typeOf :
-    forall x : ivar,
+  | Var_typeOf (x : ivar) :
     forall good_ctx : {ctx : tyCtx | lookup x (ivar_eq_dec x) ctx <> None},
-    proj1_sig good_ctx ⊢ tmVar x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
-  | Con_typeOf :
-    forall c : CON,
+    proj1_sig good_ctx ⊢ Var x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
+  | Con_typeOf (c : CON) :
     forall ctx : tyCtx,
-    ctx ⊢ tmCon c \isof CON_tyEnv c
-  | App_typeOf :
-    forall t1 : tmExpr,
-    forall t2 : tmExpr,
+    ctx ⊢ Con c \isof CON_tyEnv c
+  | App_typeOf (P1 : tmExpr) (P2 : tmExpr) :
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
-    ctx ⊢ t1 \isof ARR arg_ty ret_ty ->
-    ctx ⊢ t2 \isof arg_ty ->
-    ctx ⊢ tmApp t1 t2 \isof ret_ty
-  | Lam_typeOf :
-    forall y : ivar,
-    forall t1 : tmExpr,
+    ctx ⊢ P1 \isof ARR arg_ty ret_ty ->
+    ctx ⊢ P2 \isof arg_ty ->
+    ctx ⊢ App P1 P2 \isof ret_ty
+  | Lam_typeOf (y : ivar) (Q : tmExpr) :
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
-    (y, arg_ty) :: ctx ⊢ t1 \isof ret_ty ->
-    ctx ⊢ tmLam y t1 \isof ARR arg_ty ret_ty  
+    (y, arg_ty) :: ctx ⊢ Q \isof ret_ty ->
+    ctx ⊢ Lam y Q \isof ARR arg_ty ret_ty  
   where " ctx '⊢' t '\isof' ty " := (typeOf ctx t ty) : type_scope.
 
   End STLC_WITH_CONSTANT.
 
   Arguments TyC {BaseType}.
   Arguments ARR {BaseType}.
-
-  Definition evalTyExpr {BaseType : Set} (evalBaseType : BaseType -> Type) : tyExpr BaseType -> Type :=
-    fix evalTyExpr_fix (ty : tyExpr BaseType) {struct ty} : Type :=
-    match ty with
-    | TyC c => evalBaseType c
-    | ARR arg_ty ret_ty => evalTyExpr_fix arg_ty -> evalTyExpr_fix ret_ty
-    end
-  .
 
 End SimplyTypedLambdaCalculus.
