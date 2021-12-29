@@ -1366,17 +1366,6 @@ Module MyUtilities.
     repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .
 
-  Definition lookup {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : list (A * B) -> option B :=
-    fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
-    match zs with
-    | [] => None
-    | z :: zs' =>
-      if eq_dec (fst z)
-      then Some (snd z)
-      else lookup_fix zs'
-    end
-  .
-
   Section SET_LEVEL_LE.
 
   Inductive leq (n : nat) : nat -> Set :=
@@ -1610,6 +1599,32 @@ Module MyUtilities.
   (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
 
   End FIBONACCI.
+
+  Definition lookup {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : list (A * B) -> option B :=
+    fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
+    match zs with
+    | [] => None
+    | z :: zs' =>
+      if eq_dec (fst z)
+      then Some (snd z)
+      else lookup_fix zs'
+    end
+  .
+
+  Definition elemIndex' {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
+    fix elemIndex'_fix (xs : list A) {struct xs} : In x xs -> nat :=
+    match xs as xs0 return In x xs0 -> nat with
+    | [] => False_rect nat
+    | x' :: xs' =>
+      fun H : x' = x \/ In x xs' =>
+      match eq_dec x' with
+      | left H_yes => O
+      | right H_no =>
+        let H' : In x xs' := @or_ind _ _ _ (fun H0 : x' = x => False_rect _ (H_no (eq_symmetry _ _ H0))) (fun H0 : In x xs' => H0) H in
+        S (elemIndex'_fix xs' H')
+      end
+    end
+  .
 
 End MyUtilities.
 

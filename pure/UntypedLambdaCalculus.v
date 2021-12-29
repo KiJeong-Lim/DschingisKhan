@@ -13,7 +13,34 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module UntypedLamdbdaCalculus.
 
-  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
+  Import ListNotations EqFacts MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
+
+  Class isPreLambdaStructure (DOM : Type) `{DOM_isSetoid : isSetoid DOM} : Type :=
+    { runApp : DOM -> arrow DOM DOM
+    ; runLam : arrow DOM DOM -> DOM
+    ; runApp_preserves_eqProp :
+      forall x1 : DOM,
+      forall y1 : DOM,
+      forall x2 : DOM,
+      forall y2 : DOM,
+      x1 == x2 ->
+      y1 == y2 ->
+      runApp x1 y1 == runApp x2 y2
+    ; runLam_preserves_eqProp :
+      forall f1 : arrow DOM DOM,
+      forall f2 : arrow DOM DOM,
+      f1 == f2 ->
+      runLam f1 == runLam f2
+    }
+  .
+
+  Class isUntypedLambdaStructure (DOM : Type) `{DOM_isSetoid : isSetoid DOM} : Type :=
+    { UntypedLambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure DOM DOM_isSetoid
+    ; satisfiesBetaAxiom :
+      forall f : arrow DOM DOM,
+      runApp (runLam f) == f
+    }
+  .
 
   Section UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
@@ -37,6 +64,18 @@ Module UntypedLamdbdaCalculus.
   | tmApp : forall P1 : tm, forall P2 : tm, tm
   | tmLam : forall y : ivar, forall Q : tm, tm
   .
+
+  Lemma tm_eq_dec :
+    (forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) ->
+    (forall t1 : tm, forall t2 : tm, {t1 = t2} + {t1 <> t2}).
+  Proof with ((left; congruence) || (right; congruence)) || eauto.
+    intros CON_eq_dec.
+    induction t1 as [x1 | c1 | P1_1 IH1 P2_1 IH2 | y1 Q1 IH1]; destruct t2 as [x2 | c2 | P1_2 P2_2 | y2 Q2]...
+    - destruct (ivar_eq_dec x1 x2)...
+    - destruct (CON_eq_dec c1 c2)...
+    - destruct (IH1 P1_2); destruct (IH2 P2_2)...
+    - destruct (ivar_eq_dec y1 y2); destruct (IH1 Q2)...
+  Qed.
 
   Fixpoint getFVs (M : tm) {struct M} : list ivar :=
     match M with
@@ -520,26 +559,6 @@ Module UntypedLamdbdaCalculus.
 
   End SUBSTITUTION.
 
-  Class isPreLambdaStructure (DOM : Type) `{DOM_isSetoid : isSetoid DOM} : Type :=
-    { runCon : CON -> DOM
-    ; runApp : DOM -> arrow DOM DOM
-    ; runLam : arrow DOM DOM -> DOM
-    ; runApp_preserves_eqProp :
-      forall x1 : DOM,
-      forall y1 : DOM,
-      forall x2 : DOM,
-      forall y2 : DOM,
-      x1 == x2 ->
-      y1 == y2 ->
-      runApp x1 y1 == runApp x2 y2
-    ; runLam_preserves_eqProp :
-      forall f1 : arrow DOM DOM,
-      forall f2 : arrow DOM DOM,
-      f1 == f2 ->
-      runLam f1 == runLam f2
-    }
-  .
-
   Section PreliminariesOfSemantics.
 
   Context {D : Type} `{D_isSetoid : isSetoid D} `{D_isPreLambdaStructure : @isPreLambdaStructure D D_isSetoid}.
@@ -547,6 +566,8 @@ Module UntypedLamdbdaCalculus.
   Let evalEnv : Type :=
     ivar -> D
   .
+
+  Variable runCon : CON -> D.
 
   Fixpoint eval_tm (E : evalEnv) (M : tm) {struct M} : D :=
     match M with
@@ -621,14 +642,6 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Class isUntypedLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
-    { UntypedLambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
-    ; satisfiesBetaAxiom :
-      forall f : arrow D D,
-      runApp (runLam f) == f
-    }
-  .
-
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
   Arguments tmVar {CON}.
@@ -651,14 +664,6 @@ Module SimplyTypedLambdaCalculus.
   | ARR (arg_ty : tyExpr) (ret_ty : tyExpr) : tyExpr
   .
 
-  Definition evalTyExpr (evalTyCon : BaseType -> Type) : tyExpr -> Type :=
-    fix evalTyExpr_fix (ty : tyExpr) {struct ty} : Type :=
-    match ty with
-    | TyC c => evalTyCon c
-    | ARR arg_ty ret_ty => evalTyExpr_fix arg_ty -> evalTyExpr_fix ret_ty
-    end
-  .
-
   Let tyCtx : Set :=
     list (ivar * tyExpr)
   .
@@ -671,36 +676,47 @@ Module SimplyTypedLambdaCalculus.
 
   Variable CON_tyEnv : CON -> tyExpr.
 
-  Local Reserved Notation " ctx '|-' t '\isof' ty " (at level 70, no associativity).
+  Local Reserved Notation " ctx '⊢' t '\isof' ty " (at level 70, no associativity).
 
   Inductive typeOf : tyCtx -> tmExpr -> tyExpr -> Set :=
   | Var_typeOf :
     forall x : ivar,
     forall good_ctx : {ctx : tyCtx | lookup x (ivar_eq_dec x) ctx <> None},
-    proj1_sig good_ctx |- tmVar x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
+    proj1_sig good_ctx ⊢ tmVar x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
   | Con_typeOf :
     forall c : CON,
     forall ctx : tyCtx,
-    ctx |- tmCon c \isof CON_tyEnv c
+    ctx ⊢ tmCon c \isof CON_tyEnv c
   | App_typeOf :
     forall t1 : tmExpr,
     forall t2 : tmExpr,
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
-    ctx |- t1 \isof ARR arg_ty ret_ty ->
-    ctx |- t2 \isof arg_ty ->
-    ctx |- tmApp t1 t2 \isof ret_ty
+    ctx ⊢ t1 \isof ARR arg_ty ret_ty ->
+    ctx ⊢ t2 \isof arg_ty ->
+    ctx ⊢ tmApp t1 t2 \isof ret_ty
   | Lam_typeOf :
     forall y : ivar,
     forall t1 : tmExpr,
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
-    (y, arg_ty) :: ctx |- t1 \isof ret_ty ->
-    ctx |- tmLam y t1 \isof ARR arg_ty ret_ty  
-  where " ctx '|-' t '\isof' ty " := (typeOf ctx t ty) : type_scope.
+    (y, arg_ty) :: ctx ⊢ t1 \isof ret_ty ->
+    ctx ⊢ tmLam y t1 \isof ARR arg_ty ret_ty  
+  where " ctx '⊢' t '\isof' ty " := (typeOf ctx t ty) : type_scope.
 
   End STLC_WITH_CONSTANT.
+
+  Arguments TyC {BaseType}.
+  Arguments ARR {BaseType}.
+
+  Definition evalTyExpr {BaseType : Set} (evalBaseType : BaseType -> Type) : tyExpr BaseType -> Type :=
+    fix evalTyExpr_fix (ty : tyExpr BaseType) {struct ty} : Type :=
+    match ty with
+    | TyC c => evalBaseType c
+    | ARR arg_ty ret_ty => evalTyExpr_fix arg_ty -> evalTyExpr_fix ret_ty
+    end
+  .
 
 End SimplyTypedLambdaCalculus.
