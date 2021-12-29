@@ -659,10 +659,10 @@ Module SimplyTypedLambdaCalculus.
 
   Section STLC_WITH_CONSTANT.
 
-  Variable BaseType : Set.
+  Variable BaseTy : Set.
 
   Inductive tyExpr : Set :=
-  | TyC (c : BaseType) : tyExpr
+  | TyC (base_ty : BaseTy) : tyExpr
   | ARR (arg_ty : tyExpr) (ret_ty : tyExpr) : tyExpr
   .
 
@@ -700,10 +700,14 @@ Module SimplyTypedLambdaCalculus.
 
   End STLC_WITH_CONSTANT.
 
-  Arguments TyC {BaseType}.
-  Arguments ARR {BaseType}.
+  Arguments TyC {BaseTy}.
+  Arguments ARR {BaseTy}.
 
-  Arguments typeOf {BaseType} {CON}.
+  Arguments typeOf {BaseTy} {CON}.
+  Arguments Var_typeOf {BaseTy} {CON} {lsig}.
+  Arguments Con_typeOf {BaseTy} {CON} {lsig}.
+  Arguments App_typeOf {BaseTy} {CON} {lsig}.
+  Arguments Lam_typeOf {BaseTy} {CON} {lsig}.
 
   Global Notation " lsig ';' ctx '⊢' t '\isof' ty " := (typeOf lsig ctx t ty) : type_scope.
 
