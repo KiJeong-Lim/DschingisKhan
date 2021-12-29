@@ -740,7 +740,7 @@ Module PowerSetCoLa.
   Import MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory.
 
   Global Instance ensemble_isPoset {A : Type} : isPoset (ensemble A) :=
-    arrow_isPoset Prop_isPoset
+    @arrow_isPoset A Prop Prop_isPoset
   .
 
   Lemma unions_isSupremum {A : Type} :
@@ -750,15 +750,15 @@ Module PowerSetCoLa.
     intros Xs X.
     split.
     - intros H X_i H0 x H1.
-      assert (H2 : exists X : ensemble A, member x X /\ member X Xs) by firstorder.
-      assert (H3 := proj2 (in_unions_iff x Xs) H2).
+      assert (claim1 : exists X : ensemble A, member x X /\ member X Xs) by firstorder.
+      assert (claim2 := proj2 (in_unions_iff x Xs) claim1).
       apply H...
     - intros H x H0.
       destruct (proj1 (in_unions_iff x Xs) H0) as [X_i [H1 H2]].
       apply (H X_i H2)...
   Qed.
 
-  Global Instance ensemble_isCompleteLattice {A : Type} : @isCompleteLattice (ensemble A) ensemble_isPoset :=
+  Global Instance ensemble_isCompleteLattice {A : Type} : @isCompleteLattice (ensemble A) (@ensemble_isPoset A) :=
     { supremum_always_exists_in_CompleteLattice :=
       fun Xs : ensemble (ensemble A) =>
       exist _ (unions Xs) (unions_isSupremum Xs)
