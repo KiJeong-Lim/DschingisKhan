@@ -1366,6 +1366,17 @@ Module MyUtilities.
     repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .
 
+  Definition lookup {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : list (A * B) -> option B :=
+    fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
+    match zs with
+    | [] => None
+    | z :: zs' =>
+      if eq_dec (fst z)
+      then Some (snd z)
+      else lookup_fix zs'
+    end
+  .
+
   Section SET_LEVEL_LE.
 
   Inductive leq (n : nat) : nat -> Set :=

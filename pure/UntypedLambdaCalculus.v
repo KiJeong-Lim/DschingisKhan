@@ -13,7 +13,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module UntypedLamdbdaCalculus.
 
-  Import ListNotations EqFacts MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory BasicTopology.
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
   Section UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
@@ -621,8 +621,8 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Class isLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
-    { LambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
+  Class isUntypedLambdaStructure (D : Type) `{D_isSetoid : isSetoid D} : Type :=
+    { UntypedLambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure D D_isSetoid
     ; satisfiesBetaAxiom :
       forall f : arrow D D,
       runApp (runLam f) == f
@@ -631,4 +631,76 @@ Module UntypedLamdbdaCalculus.
 
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
+  Arguments tmVar {CON}.
+  Arguments tmCon {CON}.
+  Arguments tmApp {CON}.
+  Arguments tmLam {CON}.
+
 End UntypedLamdbdaCalculus.
+
+Module SimplyTypedLambdaCalculus.
+
+  Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory UntypedLamdbdaCalculus.
+
+  Section STLC_WITH_CONSTANT.
+
+  Variable BaseType : Set.
+
+  Inductive tyExpr : Set :=
+  | TyC (c : BaseType) : tyExpr
+  | ARR (arg_ty : tyExpr) (ret_ty : tyExpr) : tyExpr
+  .
+
+  Definition evalTyExpr (evalTyCon : BaseType -> Type) : tyExpr -> Type :=
+    fix evalTyExpr_fix (ty : tyExpr) {struct ty} : Type :=
+    match ty with
+    | TyC c => evalTyCon c
+    | ARR arg_ty ret_ty => evalTyExpr_fix arg_ty -> evalTyExpr_fix ret_ty
+    end
+  .
+
+  Let tyCtx : Set :=
+    list (ivar * tyExpr)
+  .
+
+  Variable CON : Set.
+
+  Let tmExpr : Set :=
+    tm CON
+  .
+
+  Variable CON_tyEnv : CON -> tyExpr.
+
+  Local Reserved Notation " ctx '|-' t '\isof' ty " (at level 70, no associativity).
+
+  Inductive typeOf : tyCtx -> tmExpr -> tyExpr -> Set :=
+  | Var_typeOf :
+    forall x : ivar,
+    forall good_ctx : {ctx : tyCtx | lookup x (ivar_eq_dec x) ctx <> None},
+    proj1_sig good_ctx |- tmVar x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
+  | Con_typeOf :
+    forall c : CON,
+    forall ctx : tyCtx,
+    ctx |- tmCon c \isof CON_tyEnv c
+  | App_typeOf :
+    forall t1 : tmExpr,
+    forall t2 : tmExpr,
+    forall ctx : tyCtx,
+    forall arg_ty : tyExpr,
+    forall ret_ty : tyExpr,
+    ctx |- t1 \isof ARR arg_ty ret_ty ->
+    ctx |- t2 \isof arg_ty ->
+    ctx |- tmApp t1 t2 \isof ret_ty
+  | Lam_typeOf :
+    forall y : ivar,
+    forall t1 : tmExpr,
+    forall ctx : tyCtx,
+    forall arg_ty : tyExpr,
+    forall ret_ty : tyExpr,
+    (y, arg_ty) :: ctx |- t1 \isof ret_ty ->
+    ctx |- tmLam y t1 \isof ARR arg_ty ret_ty  
+  where " ctx '|-' t '\isof' ty " := (typeOf ctx t ty) : type_scope.
+
+  End STLC_WITH_CONSTANT.
+
+End SimplyTypedLambdaCalculus.

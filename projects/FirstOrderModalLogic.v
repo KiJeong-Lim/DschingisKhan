@@ -2,46 +2,11 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Lists.List.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
+Require Import DschingisKhan.pure.UntypedLambdaCalculus.
 
 Module FirstOrderModalLogic.
 
-  Import ListNotations MyUtilities MyEnsemble.
-
-  Definition ivar : Set :=
-    nat
-  .
-
-  Definition ivar_eq_dec :
-    forall x : ivar,
-    forall y : ivar,
-    {x = y} + {x <> y}.
-  Proof.
-    exact (fun x y => Nat.eq_dec x y).
-  Defined.
-
-  Variant connectives : Set :=
-  | CONTRADICTION : connectives
-  | NEGATION : connectives
-  | CONJUNCTION : connectives
-  | DISJUNCTION : connectives
-  | IMPLICATION : connectives
-  | BICONDITIONAL : connectives 
-  | FORALL : connectives
-  | EXISTS : connectives
-  | EQUAL : connectives
-  | BOX : connectives
-  | DIA : connectives
-  .
-
-  Definition connectives_eq_dec :
-    forall c1 : connectives,
-    forall c2 : connectives,
-    {c1 = c2} + {c1 <> c2}.
-  Proof.
-    induction c1;
-    destruct c2;
-    (left; congruence) || (right; congruence).
-  Defined.
+  Import ListNotations MyUtilities MyEnsemble UntypedLamdbdaCalculus.
 
   Inductive tyExpr : Set :=
   | TyI : tyExpr
@@ -76,6 +41,30 @@ Module FirstOrderModalLogic.
 
   Local Open Scope tyExprView_scope.
 
+  Variant connectives : Set :=
+  | CONTRADICTION : connectives
+  | NEGATION : connectives
+  | CONJUNCTION : connectives
+  | DISJUNCTION : connectives
+  | IMPLICATION : connectives
+  | BICONDITIONAL : connectives 
+  | FORALL : connectives
+  | EXISTS : connectives
+  | EQUAL : connectives
+  | BOX : connectives
+  | DIA : connectives
+  .
+
+  Definition connectives_eq_dec :
+    forall c1 : connectives,
+    forall c2 : connectives,
+    {c1 = c2} + {c1 <> c2}.
+  Proof.
+    induction c1;
+    destruct c2;
+    (left; congruence) || (right; congruence).
+  Defined.
+
   Definition get_type_of_connectives (c : connectives) : tyExpr :=
     match c with
     | CONTRADICTION => \ty[ o ]
@@ -91,6 +80,8 @@ Module FirstOrderModalLogic.
     | DIA => \ty[ o -> o ]
     end
   .
+
+(*
 
   Section SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
 
@@ -124,18 +115,15 @@ Module FirstOrderModalLogic.
     end
   .
 
-  Inductive tmExpr : Set :=
-  | VAR (x : ivar) : tmExpr
-  | CON (s : symbol) : tmExpr
-  | APP (t1 : tmExpr) (t2 : tmExpr) : tmExpr
-  | LAM (y : ivar) (t1 : tmExpr) : tmExpr
+  Definition tmExpr : Set :=
+    tm symbol
   .
 
   Inductive typeOf : tmExpr -> tyExpr -> Set :=
-  | TypeOfVAR (x : ivar) : typeOf (VAR x) \ty[ i ]
-  | TypeOfCON (s : symbol) : typeOf (CON s) (get_type_of_symbol s)
-  | TypeOfAPP (t1 : tmExpr) (t2 : tmExpr) (ty1 : tyExpr) (ty2 : tyExpr) (H1 : typeOf t1 \ty[ ty1 -> ty2 ]) (H2 : typeOf t2 \ty[ ty1 ]) : typeOf (APP t1 t2) \ty[ ty2 ]
-  | TypeOfLAM (y : ivar) (t1 : tmExpr) (ty1 : tyExpr) (H1 : typeOf t1 \ty[ ty1 ]) : typeOf (LAM y t1) \ty[ i -> ty1 ]
+  | TypeOfVAR (x : ivar) : typeOf (tmVar x) \ty[ i ]
+  | TypeOfCON (s : symbol) : typeOf (tmCon s) (get_type_of_symbol s)
+  | TypeOfAPP (t1 : tmExpr) (t2 : tmExpr) (ty1 : tyExpr) (ty2 : tyExpr) (H1 : typeOf t1 \ty[ ty1 -> ty2 ]) (H2 : typeOf t2 \ty[ ty1 ]) : typeOf (tmApp t1 t2) \ty[ ty2 ]
+  | TypeOfLAM (y : ivar) (t1 : tmExpr) (ty1 : tyExpr) (H1 : typeOf t1 \ty[ ty1 ]) : typeOf (tmLam y t1) \ty[ i -> ty1 ]
   .
 
   End SYNTAX_OF_FIRST_ORDER_MODAL_LOGIC.
@@ -245,5 +233,7 @@ Module FirstOrderModalLogic.
   .
 
   End SEMANTICS_OF_FIRST_ORDER_MODAL_LOGIC.
+
+*)
 
 End FirstOrderModalLogic.
