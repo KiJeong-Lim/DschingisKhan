@@ -655,14 +655,14 @@ Module SimplyTypedLambdaCalculus.
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory UntypedLamdbdaCalculus.
 
-  Global Reserved Notation " lsig ';' ctx '⊢' t '\isof' ty " (at level 70, no associativity).
+  Global Reserved Notation " lsig ';' ctx '⊢' M '\isof' ty " (at level 70, no associativity).
 
   Section STLC_WITH_CONSTANT.
 
   Variable BaseTy : Set.
 
   Inductive tyExpr : Set :=
-  | TyC (base_ty : BaseTy) : tyExpr
+  | TyB (base_ty : BaseTy) : tyExpr
   | ARR (arg_ty : tyExpr) (ret_ty : tyExpr) : tyExpr
   .
 
@@ -677,38 +677,38 @@ Module SimplyTypedLambdaCalculus.
   .
 
   Inductive typeOf (lsig : CON -> tyExpr) : tyCtx -> tmExpr -> tyExpr -> Set :=
-  | Var_typeOf (x : ivar) :
+  | VarTypeOf (x : ivar) :
     forall good_ctx : {ctx : tyCtx | lookup x (ivar_eq_dec x) ctx <> None},
     lsig; proj1_sig good_ctx ⊢ Var x \isof fromJust (lookup x (ivar_eq_dec x) (proj1_sig good_ctx)) (proj2_sig good_ctx)
-  | Con_typeOf (c : CON) :
+  | ConTypeOf (c : CON) :
     forall ctx : tyCtx,
     lsig; ctx ⊢ Con c \isof lsig c
-  | App_typeOf (P1 : tmExpr) (P2 : tmExpr) :
+  | AppTypeOf (P1 : tmExpr) (P2 : tmExpr) :
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
     lsig; ctx ⊢ P1 \isof ARR arg_ty ret_ty ->
     lsig; ctx ⊢ P2 \isof arg_ty ->
     lsig; ctx ⊢ App P1 P2 \isof ret_ty
-  | Lam_typeOf (y : ivar) (Q : tmExpr) :
+  | LamTypeOf (y : ivar) (Q : tmExpr) :
     forall ctx : tyCtx,
     forall arg_ty : tyExpr,
     forall ret_ty : tyExpr,
     lsig; (y, arg_ty) :: ctx ⊢ Q \isof ret_ty ->
-    lsig; ctx ⊢ Lam y Q \isof ARR arg_ty ret_ty  
-  where " lsig ';' ctx '⊢' t '\isof' ty " := (typeOf lsig ctx t ty) : type_scope.
+    lsig; ctx ⊢ Lam y Q \isof ARR arg_ty ret_ty
+  where " lsig ';' ctx '⊢' M '\isof' ty " := (typeOf lsig ctx M ty) : type_scope.
 
   End STLC_WITH_CONSTANT.
 
-  Arguments TyC {BaseTy}.
+  Arguments TyB {BaseTy}.
   Arguments ARR {BaseTy}.
 
   Arguments typeOf {BaseTy} {CON}.
-  Arguments Var_typeOf {BaseTy} {CON} {lsig}.
-  Arguments Con_typeOf {BaseTy} {CON} {lsig}.
-  Arguments App_typeOf {BaseTy} {CON} {lsig}.
-  Arguments Lam_typeOf {BaseTy} {CON} {lsig}.
+  Arguments VarTypeOf {BaseTy} {CON} {lsig}.
+  Arguments ConTypeOf {BaseTy} {CON} {lsig}.
+  Arguments AppTypeOf {BaseTy} {CON} {lsig}.
+  Arguments LamTypeOf {BaseTy} {CON} {lsig}.
 
-  Global Notation " lsig ';' ctx '⊢' t '\isof' ty " := (typeOf lsig ctx t ty) : type_scope.
+  Global Notation " lsig ';' ctx '⊢' M '\isof' ty " := (typeOf lsig ctx M ty) : type_scope.
 
 End SimplyTypedLambdaCalculus.
