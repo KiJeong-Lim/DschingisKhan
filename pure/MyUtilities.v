@@ -1611,7 +1611,8 @@ Module MyUtilities.
     end
   .
 
-  Lemma lookup_ne_None_iff {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) (zs : list (A * B)) :
+  Lemma lookup_ne_None_iff {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
+    forall zs : list (A * B),
     lookup x eq_dec zs <> None <-> In x (map fst zs).
   Proof.
     induction zs as [| z zs IH]; simpl.
