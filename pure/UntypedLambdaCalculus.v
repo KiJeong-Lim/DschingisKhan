@@ -564,13 +564,15 @@ Module UntypedLamdbdaCalculus.
 
   Section PreliminariesOfSemantics.
 
-  Context {D : Type} `{D_isSetoid : isSetoid D} `{D_isPreLambdaStructure : @isPreLambdaStructure D D_isSetoid}.
+  Context {D : Type}.
 
   Let evalEnv : Type :=
     ivar -> D
   .
 
   Variable runCon : CON -> D.
+
+  Context `{D_isSetoid : isSetoid D} `{D_isPreLambdaStructure : @isPreLambdaStructure D D_isSetoid}.
 
   Fixpoint eval_tm (E : evalEnv) (M : tm) {struct M} : D :=
     match M with
@@ -645,11 +647,19 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Section DE_BRUIJN.
+  Section SUBTERM.
 
   Definition position : Set :=
     FinSet 3
   .
+
+  Lemma position_eq_dec :
+    forall pos1 : position,
+    forall pos2 : position,
+    {pos1 = pos2} + {pos1 <> pos2}.
+  Proof.
+    exact (FinSet_eq_dec 3).
+  Defined.
 
   Lemma list_position_eq_pirrel :
     forall poss1 : list position,
@@ -659,8 +669,8 @@ Module UntypedLamdbdaCalculus.
     H_EQ1 = H_EQ2.
   Proof.
     intros poss1; apply (eq_em_implies_eq_pirrel poss1).
-    intros poss2; now destruct (list_eq_dec (FinSet_eq_dec 3) poss1 poss2); [left | right].
-  Qed.
+    intros poss2; destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right]; assumption.
+  Defined.
 
   Definition POS0 : position :=
     (FZ 2)
@@ -687,24 +697,6 @@ Module UntypedLamdbdaCalculus.
       exact (lt_elim_n_lt_0 n Hlt).
   Qed.
 
-  Lemma POS0_ne_POS1 :
-    POS0 <> POS1.
-  Proof.
-    intros H; inversion H.
-  Qed.
-
-  Lemma POS0_ne_POS2 :
-    POS0 <> POS2.
-  Proof.
-    intros H; inversion H.
-  Qed.
-
-  Lemma POS1_ne_POS2 :
-    POS1 <> POS2.
-  Proof.
-    intros H; inversion H.
-  Qed.
-
   Inductive occurs (M : tm) : list position -> tm -> Set :=
   | OccursRefl : occurs M [] M
   | OccursApp1 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P1 -> occurs M (POS1 :: poss) (App P1 P2)
@@ -719,14 +711,14 @@ Module UntypedLamdbdaCalculus.
     occurs M poss N
   .
 
-  Definition isSuper_nil (N : tm) :
+  Definition isSuper_refl (N : tm) :
     isSuper N [] N.
   Proof.
     unfold isSuper.
     constructor 1.
   Defined.
 
-  Definition isSuper_append (N : tm) :
+  Definition isSuper_trans (N : tm) :
     forall poss1 : list position,
     forall M1 : tm,
     isSuper N poss1 M1 ->
@@ -744,9 +736,7 @@ Module UntypedLamdbdaCalculus.
     - constructor 4; apply IHX1; exact X2.
   Defined.
 
-  Section SUBTERM.
-
-  Local Hint Resolve isSuper_nil isSuper_append : core.
+  Local Hint Resolve isSuper_refl isSuper_trans : core.
 
   Definition isSubtermOf : tm -> tm -> Prop :=
     fun N : tm =>
@@ -824,6 +814,8 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   End SUBTERM.
+
+  Section DE_BRUIJN.
 
   Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, isSuper M poss N -> list ivar :=
     fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) {struct X} : list ivar :=
