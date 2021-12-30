@@ -644,38 +644,53 @@ Module UntypedLamdbdaCalculus.
 
   Section DE_BRUIJN.
 
-  Let position : Set :=
-    nat
+  Definition position : Set :=
+    FinSet 3
   .
 
-  Let positions_eq_pirrel :
+  Lemma list_position_eq_pirrel :
     forall poss1 : list position,
     forall poss2 : list position,
     forall H_EQ1 : poss1 = poss2,
     forall H_EQ2 : poss1 = poss2,
     H_EQ1 = H_EQ2.
   Proof.
-    intros poss1.
-    apply (eq_em_implies_eq_pirrel poss1).
-    intros poss2.
-    now destruct (list_eq_dec Nat.eq_dec poss1 poss2); [left | right].
+    intros poss1; apply (eq_em_implies_eq_pirrel poss1).
+    intros poss2; now destruct (list_eq_dec (FinSet_eq_dec 3) poss1 poss2); [left | right].
+  Qed.
+
+  Definition pos0 : position :=
+    (FZ 2)
+  .
+
+  Definition pos1 : position :=
+    (FS 2 (FZ 1))
+  .
+
+  Definition pos2 : position :=
+    (FS 2 (FS 1 (FZ 0)))
+  .
+
+  Lemma position_exhausted :
+    forall pos : position,
+    pos = pos0 \/ pos = pos1 \/ pos = pos2.
+  Proof.
+    intros pos.
+    assert (claim1 : forall n : nat, n < 3 -> n = 0 \/ n = 1 \/ n = 2).
+    { intros n Hlt.
+      do 3 (destruct n as [| n]; [tauto | apply le_elim_S_n_le_m in Hlt]).
+      now apply (lt_elim_n_lt_0 n Hlt).
+    }
+    set (n := evalFinSet pos).
+    destruct (claim1 n (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := pos0) | set (i := pos1) | set (i := pos2)].
+    all: pose (evalFinSet_inj pos i H); eauto.
   Qed.
 
   Inductive occurs (M : tm) : list position -> tm -> Set :=
-  | OccursRefl :
-    occurs M [] M
-  | OccursApp1 (P1 : tm) (P2 : tm) :
-    forall poss : list position,
-    occurs M poss P1 ->
-    occurs M (1 :: poss) (App P1 P2)
-  | OccursApp2 (P1 : tm) (P2 : tm) :
-    forall poss : list position,
-    occurs M poss P2 ->
-    occurs M (2 :: poss) (App P1 P2)
-  | OccursLam0 (y : ivar) (Q : tm) :
-    forall poss : list position,
-    occurs M poss Q ->
-    occurs M (0 :: poss) (Lam y Q)
+  | OccursRefl : occurs M [] M
+  | OccursApp1 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P1 -> occurs M (pos1 :: poss) (App P1 P2)
+  | OccursApp2 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P2 -> occurs M (pos2 :: poss) (App P1 P2)
+  | OccursLam0 (y : ivar) (Q : tm) : forall poss : list position, occurs M poss Q -> occurs M (pos0 :: poss) (Lam y Q)
   .
 
   Definition isSuper : tm -> list position -> tm -> Set :=
@@ -791,8 +806,8 @@ Module UntypedLamdbdaCalculus.
 
   End SUBTERM.
 
-  Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, occurs N poss M -> list ivar :=
-    fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) : list ivar :=
+  Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, isSuper M poss N -> list ivar :=
+    fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) {struct X} : list ivar :=
     match X with
     | OccursRefl _ => []
     | OccursApp1 _ P1 P2 poss X1 => mkDeBruijnCtx_fix poss P1 X1
