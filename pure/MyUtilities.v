@@ -1564,12 +1564,12 @@ Module MyUtilities.
     apply le_intro_S_n_le_S_m, le_intro_plus2.
   Defined.
 
-  Inductive fibonacci_spec : nat -> nat -> Prop :=
-  | FibonacciSpec_when_n_eq_0 :
+  Inductive fibonacci_spec : forall n : nat, forall f_n : nat, Prop :=
+  | FibonacciSpec_when_eq_0 :
     fibonacci_spec 0 (0)
-  | FibonacciSpec_when_n_eq_1 :
+  | FibonacciSpec_when_eq_1 :
     fibonacci_spec 1 (1)
-  | FibonacciSpec_when_n_ge_2 :
+  | FibonacciSpec_when_ge_2 :
     forall n : nat,
     forall f_n : nat,
     forall f_n' : nat,
