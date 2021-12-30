@@ -661,47 +661,45 @@ Module UntypedLamdbdaCalculus.
     now destruct (list_eq_dec Nat.eq_dec poss1 poss2); [left | right].
   Qed.
 
-  Inductive isSuper (M : tm) : list position -> tm -> Set :=
+  Inductive occurs (M : tm) : list position -> tm -> Set :=
   | OccursRefl :
-    isSuper M [] M
+    occurs M [] M
   | OccursApp1 (P1 : tm) (P2 : tm) :
     forall poss : list position,
-    isSuper M poss P1 ->
-    isSuper M (1 :: poss) (App P1 P2)
+    occurs M poss P1 ->
+    occurs M (1 :: poss) (App P1 P2)
   | OccursApp2 (P1 : tm) (P2 : tm) :
     forall poss : list position,
-    isSuper M poss P2 ->
-    isSuper M (2 :: poss) (App P1 P2)
+    occurs M poss P2 ->
+    occurs M (2 :: poss) (App P1 P2)
   | OccursLam0 (y : ivar) (Q : tm) :
     forall poss : list position,
-    isSuper M poss Q ->
-    isSuper M (0 :: poss) (Lam y Q)
+    occurs M poss Q ->
+    occurs M (0 :: poss) (Lam y Q)
   .
 
-  Definition occurs : tm -> list position -> tm -> Set :=
+  Definition isSuper : tm -> list position -> tm -> Set :=
     fun N : tm =>
     fun poss : list position =>
     fun M : tm =>
-    isSuper M poss N
+    occurs M poss N
   .
 
-  Definition occurs_nil (N : tm) :
-    occurs N [] N.
+  Definition isSuper_nil (N : tm) :
+    isSuper N [] N.
   Proof.
-    unfold occurs.
     constructor 1.
   Defined.
 
-  Definition occurs_append (N : tm) :
+  Definition isSuper_append (N : tm) :
     forall poss1 : list position,
     forall M1 : tm,
-    occurs N poss1 M1 ->
+    isSuper N poss1 M1 ->
     forall poss2 : list position,
     forall M2 : tm,
-    occurs M1 poss2 M2 ->
-    occurs N (poss1 ++ poss2) M2.
+    isSuper M1 poss2 M2 ->
+    isSuper N (poss1 ++ poss2) M2.
   Proof.
-    unfold occurs.
     intros poss1 M1 X1.
     induction X1; intros poss2 M2 X2; simpl.
     - exact X2.
@@ -716,8 +714,87 @@ Module UntypedLamdbdaCalculus.
       exact X2.
   Defined.
 
-  Definition mkDeBruijnCtx (M : tm) : forall poss : list position, forall N : tm, occurs N poss M -> list ivar :=
-    fix mkDeBruijnCtx_fix (poss : list position) (N : tm) (X : isSuper M poss N) : list ivar :=
+  Definition isSubtermOf : tm -> tm -> Prop :=
+    fun N : tm =>
+    fun M : tm =>
+    exists poss : list position, inhabited (isSuper M poss N)
+  .
+
+  Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
+    { leProp := isSubtermOf
+    ; Poset_requiresSetoid := {| eqProp := @eq tm; Setoid_requiresEquivalence := eq_equivalence |}
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros N.
+      exists [].
+      pose (isSuper_nil N)...
+    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]].
+      exists (poss2 ++ poss1).
+      pose (isSuper_append M2 poss2 M1 X2 poss1 N X1)...
+  Qed.
+
+  Next Obligation with eauto with *.
+    set ( getRank :=
+      fix getRank_fix (M : tm) {struct M} : nat :=
+      match M with
+      | Var x => O
+      | Con c => O
+      | App P1 P2 => S (max (getRank_fix P1) (getRank_fix P2))
+      | Lam y Q => S (getRank_fix Q)
+      end
+    ).
+    assert (claim1 := n1_le_max_n1_n2).
+    assert (claim2 := n2_le_max_n1_n2).
+    assert (claim3 := le_intro_S_n_le_S_m).
+    assert (claim4 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
+    { intros N M [poss [X]].
+      induction X; simpl.
+      - reflexivity.
+      - transitivity (getRank P1)...
+      - transitivity (getRank P2)...
+      - transitivity (getRank Q)...
+    }
+    assert (claim5 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
+    { intros N M [poss [X]].
+      induction X; simpl; intros H_EQ.
+      - tauto.
+      - contradiction (not_n_lt_n (getRank N)).
+        enough (claim5_aux1 : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+        apply le_intro_S_n_le_S_m.
+        transitivity (getRank P1).
+        + apply claim4.
+          exists poss...
+        + apply claim1...
+      - contradiction (not_n_lt_n (getRank N)).
+        enough (claim5_aux2 : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+        apply le_intro_S_n_le_S_m.
+        transitivity (getRank P2).
+        + apply claim4.
+          exists poss...
+        + apply claim2...
+      - contradiction (not_n_lt_n (getRank N)).
+        enough (claim5_aux3 : getRank N < S (getRank Q)) by congruence.
+        apply le_intro_S_n_le_S_m.
+        transitivity (getRank Q).
+        + apply claim4.
+          exists poss...
+        + reflexivity.
+    }
+    intros M N.
+    split.
+    - intros H_EQ; subst M.
+      split; exists []; constructor; constructor 1.
+    - intros [H1 H2].
+      apply claim5.
+      + exact H1.
+      + apply le_asymmetry...
+  Qed.
+
+  Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, occurs N poss M -> list ivar :=
+    fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) : list ivar :=
     match X with
     | OccursRefl _ => []
     | OccursApp1 _ P1 P2 poss X1 => mkDeBruijnCtx_fix poss P1 X1
