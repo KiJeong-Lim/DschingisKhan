@@ -1611,6 +1611,18 @@ Module MyUtilities.
     end
   .
 
+  Lemma lookup_ne_None_iff {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) (zs : list (A * B)) :
+    lookup x eq_dec zs <> None <-> In x (map fst zs).
+  Proof.
+    induction zs as [| z zs IH]; simpl.
+    - tauto.
+    - destruct (eq_dec (fst z)) as [H_yes | H_no]; split; intros H.
+      + now left.
+      + apply Some_ne_None.
+      + tauto.
+      + now firstorder.
+  Qed.
+
   Definition elemIndex' {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
     fix elemIndex'_fix (xs : list A) {struct xs} : In x xs -> nat :=
     match xs as xs0 return In x xs0 -> nat with
