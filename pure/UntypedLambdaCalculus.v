@@ -676,14 +676,12 @@ Module UntypedLamdbdaCalculus.
     pos = pos0 \/ pos = pos1 \/ pos = pos2.
   Proof.
     intros pos.
-    assert (claim1 : forall n : nat, n < 3 -> n = 0 \/ n = 1 \/ n = 2).
-    { intros n Hlt.
+    enough (it_is_sufficient_to_show : forall n : nat, n < 3 -> n = 0 \/ n = 1 \/ n = 2).
+    - destruct (it_is_sufficient_to_show (evalFinSet pos) (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := pos0) | set (i := pos1) | set (i := pos2)].
+      all: pose (evalFinSet_inj pos i H); eauto.
+    - intros n Hlt.
       do 3 (destruct n as [| n]; [tauto | apply le_elim_S_n_le_m in Hlt]).
-      now apply (lt_elim_n_lt_0 n Hlt).
-    }
-    set (n := evalFinSet pos).
-    destruct (claim1 n (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := pos0) | set (i := pos1) | set (i := pos2)].
-    all: pose (evalFinSet_inj pos i H); eauto.
+      exact (lt_elim_n_lt_0 n Hlt).
   Qed.
 
   Inductive occurs (M : tm) : list position -> tm -> Set :=
