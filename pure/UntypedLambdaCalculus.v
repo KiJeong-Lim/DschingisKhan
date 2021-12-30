@@ -659,36 +659,54 @@ Module UntypedLamdbdaCalculus.
     intros poss2; now destruct (list_eq_dec (FinSet_eq_dec 3) poss1 poss2); [left | right].
   Qed.
 
-  Definition pos0 : position :=
+  Definition POS0 : position :=
     (FZ 2)
   .
 
-  Definition pos1 : position :=
+  Definition POS1 : position :=
     (FS 2 (FZ 1))
   .
 
-  Definition pos2 : position :=
+  Definition POS2 : position :=
     (FS 2 (FS 1 (FZ 0)))
   .
 
   Lemma position_exhausted :
     forall pos : position,
-    pos = pos0 \/ pos = pos1 \/ pos = pos2.
+    pos = POS0 \/ pos = POS1 \/ pos = POS2.
   Proof.
     intros pos.
     enough (it_is_sufficient_to_show : forall n : nat, n < 3 -> n = 0 \/ n = 1 \/ n = 2).
-    - destruct (it_is_sufficient_to_show (evalFinSet pos) (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := pos0) | set (i := pos1) | set (i := pos2)].
+    - destruct (it_is_sufficient_to_show (evalFinSet pos) (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := POS0) | set (i := POS1) | set (i := POS2)].
       all: pose (evalFinSet_inj pos i H); eauto.
     - intros n Hlt.
       do 3 (destruct n as [| n]; [tauto | apply le_elim_S_n_le_m in Hlt]).
       exact (lt_elim_n_lt_0 n Hlt).
   Qed.
 
+  Lemma POS0_ne_POS1 :
+    POS0 <> POS1.
+  Proof.
+    intros H; inversion H.
+  Qed.
+
+  Lemma POS0_ne_POS2 :
+    POS0 <> POS2.
+  Proof.
+    intros H; inversion H.
+  Qed.
+
+  Lemma POS1_ne_POS2 :
+    POS1 <> POS2.
+  Proof.
+    intros H; inversion H.
+  Qed.
+
   Inductive occurs (M : tm) : list position -> tm -> Set :=
   | OccursRefl : occurs M [] M
-  | OccursApp1 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P1 -> occurs M (pos1 :: poss) (App P1 P2)
-  | OccursApp2 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P2 -> occurs M (pos2 :: poss) (App P1 P2)
-  | OccursLam0 (y : ivar) (Q : tm) : forall poss : list position, occurs M poss Q -> occurs M (pos0 :: poss) (Lam y Q)
+  | OccursApp1 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P1 -> occurs M (POS1 :: poss) (App P1 P2)
+  | OccursApp2 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P2 -> occurs M (POS2 :: poss) (App P1 P2)
+  | OccursLam0 (y : ivar) (Q : tm) : forall poss : list position, occurs M poss Q -> occurs M (POS0 :: poss) (Lam y Q)
   .
 
   Definition isSuper : tm -> list position -> tm -> Set :=
