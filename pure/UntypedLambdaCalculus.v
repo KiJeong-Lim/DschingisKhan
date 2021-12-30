@@ -642,7 +642,7 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
-  Section SUBTERM_AND_DE_BRUIJN.
+  Section DE_BRUIJN.
 
   Let position : Set :=
     nat
@@ -688,6 +688,7 @@ Module UntypedLamdbdaCalculus.
   Definition isSuper_nil (N : tm) :
     isSuper N [] N.
   Proof.
+    unfold isSuper.
     constructor 1.
   Defined.
 
@@ -700,19 +701,18 @@ Module UntypedLamdbdaCalculus.
     isSuper M1 poss2 M2 ->
     isSuper N (poss1 ++ poss2) M2.
   Proof.
+    unfold isSuper.
     intros poss1 M1 X1.
     induction X1; intros poss2 M2 X2; simpl.
     - exact X2.
-    - constructor 2.
-      apply IHX1.
-      exact X2.
-    - constructor 3.
-      apply IHX1.
-      exact X2.
-    - constructor 4.
-      apply IHX1.
-      exact X2.
+    - constructor 2; apply IHX1; exact X2.
+    - constructor 3; apply IHX1; exact X2.
+    - constructor 4; apply IHX1; exact X2.
   Defined.
+
+  Section SUBTERM.
+
+  Local Hint Resolve isSuper_nil isSuper_append : core.
 
   Definition isSubtermOf : tm -> tm -> Prop :=
     fun N : tm =>
@@ -722,18 +722,16 @@ Module UntypedLamdbdaCalculus.
 
   Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
     { leProp := isSubtermOf
-    ; Poset_requiresSetoid := {| eqProp := @eq tm; Setoid_requiresEquivalence := eq_equivalence |}
+    ; Poset_requiresSetoid := {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
     }
   .
 
   Next Obligation with eauto with *.
     split.
     - intros N.
-      exists [].
-      pose (isSuper_nil N)...
+      exists []...
     - intros N M1 M2 [poss1 [X1]] [poss2 [X2]].
-      exists (poss2 ++ poss1).
-      pose (isSuper_append M2 poss2 M1 X2 poss1 N X1)...
+      exists (poss2 ++ poss1)...
   Qed.
 
   Next Obligation with eauto with *.
@@ -749,7 +747,8 @@ Module UntypedLamdbdaCalculus.
     assert (claim1 := n1_le_max_n1_n2).
     assert (claim2 := n2_le_max_n1_n2).
     assert (claim3 := le_intro_S_n_le_S_m).
-    assert (claim4 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
+    assert (claim4 := @le_asymmetry).
+    assert (claim5 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
     { intros N M [poss [X]].
       induction X; simpl.
       - reflexivity.
@@ -757,41 +756,40 @@ Module UntypedLamdbdaCalculus.
       - transitivity (getRank P2)...
       - transitivity (getRank Q)...
     }
-    assert (claim5 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
+    assert (claim6 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
     { intros N M [poss [X]].
       induction X; simpl; intros H_EQ.
       - tauto.
       - contradiction (not_n_lt_n (getRank N)).
-        enough (claim5_aux1 : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+        enough (claim6_aux : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
         apply le_intro_S_n_le_S_m.
         transitivity (getRank P1).
-        + apply claim4.
+        + apply claim5.
           exists poss...
         + apply claim1...
       - contradiction (not_n_lt_n (getRank N)).
-        enough (claim5_aux2 : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+        enough (claim6_aux : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
         apply le_intro_S_n_le_S_m.
         transitivity (getRank P2).
-        + apply claim4.
+        + apply claim5.
           exists poss...
         + apply claim2...
       - contradiction (not_n_lt_n (getRank N)).
-        enough (claim5_aux3 : getRank N < S (getRank Q)) by congruence.
+        enough (claim6_aux : getRank N < S (getRank Q)) by congruence.
         apply le_intro_S_n_le_S_m.
         transitivity (getRank Q).
-        + apply claim4.
+        + apply claim5.
           exists poss...
         + reflexivity.
     }
     intros M N.
     split.
     - intros H_EQ; subst M.
-      split; exists []; constructor; constructor 1.
-    - intros [H1 H2].
-      apply claim5.
-      + exact H1.
-      + apply le_asymmetry...
+      split; exists []...
+    - intros [H_subtm_1 H_subtm_2]...
   Qed.
+
+  End SUBTERM.
 
   Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, occurs N poss M -> list ivar :=
     fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) : list ivar :=
@@ -810,7 +808,7 @@ Module UntypedLamdbdaCalculus.
   | NLAM (e1 : node) : node
   .
 
-  End SUBTERM_AND_DE_BRUIJN.
+  End DE_BRUIJN.
 
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
