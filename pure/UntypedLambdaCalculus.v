@@ -693,7 +693,7 @@ Module UntypedLamdbdaCalculus.
     - destruct (it_is_sufficient_to_show (evalFinSet pos) (evalFinSet_lt pos)) as [H | [H | H]]; [set (i := POS0) | set (i := POS1) | set (i := POS2)].
       all: pose (evalFinSet_inj pos i H); eauto.
     - intros n Hlt.
-      do 3 (destruct n as [| n]; [tauto | apply le_elim_S_n_le_m in Hlt]).
+      do 3 (destruct n as [| n]; [tauto | apply lt_elim_S_n_lt_S_m in Hlt]).
       exact (lt_elim_n_lt_0 n Hlt).
   Qed.
 
@@ -746,7 +746,8 @@ Module UntypedLamdbdaCalculus.
 
   Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
     { leProp := isSubtermOf
-    ; Poset_requiresSetoid := {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
+    ; Poset_requiresSetoid :=
+      {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
     }
   .
 
