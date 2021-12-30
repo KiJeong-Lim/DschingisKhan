@@ -1585,15 +1585,15 @@ Module MyUtilities.
     apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
     intros [| [| n]] acc.
     - exists (0).
-      constructor 1.
+      now constructor 1.
     - exists (1).
-      constructor 2.
+      now constructor 2.
     - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
       set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
       set (f_n := proj1_sig acc_n).
       set (f_n' := proj1_sig acc_n').
       exists (f_n + f_n').
-      constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
+      now constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
   Defined.
 
   (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
