@@ -1613,12 +1613,6 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
 
   Local Hint Unfold isDirectedOrEmpty : core.
 
-  Definition is_complete : Type :=
-    forall X : ensemble D,
-    isDirectedOrEmpty X ->
-    {sup_X : D | isSupremum sup_X X}
-  .
-
   Hypothesis D_is_complete : forall X : ensemble D, isDirectedOrEmpty X -> {sup_X : D | isSupremum sup_X X}.
 
   Let bot_D : D :=
@@ -1644,7 +1638,7 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
     proj1_sig (D_is_complete X (fun x1 : D => fun x2 : D => fun x1_in_X : member x1 X => fun x2_in_X : member x2 X => proj2 X_isDirected x1 x1_in_X x2 x2_in_X))
   .
 
-  Local Instance U_isCompletePartialOrder : @isCompletePartialOrder D D_isPoset :=
+  Local Instance makeCompletePartialOrder : @isCompletePartialOrder D D_isPoset :=
     { bottom_exists := exist (fun min_D : D => forall x : D, min_D =< x) bot_D bot_D_is_bottom
     ; square_up_exists := 
       fun X : ensemble D =>

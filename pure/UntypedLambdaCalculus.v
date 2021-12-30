@@ -709,6 +709,6 @@ Module SimplyTypedLambdaCalculus.
   Arguments AppTypeOf {BaseTy} {CON} {lsig}.
   Arguments LamTypeOf {BaseTy} {CON} {lsig}.
 
-  Global Notation " Sigma ';' Gamma '⊢' M '\isof' tau " := (typeOf Sigma Gamma M tau): type_scope.
+  Global Notation " Sigma ';' Gamma '⊢' M '\isof' tau " := (typeOf Sigma Gamma M tau) : type_scope.
 
 End SimplyTypedLambdaCalculus.
