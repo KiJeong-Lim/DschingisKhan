@@ -1623,20 +1623,34 @@ Module MyUtilities.
       + now firstorder.
   Qed.
 
-  Definition elemIndex' {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
-    fix elemIndex'_fix (xs : list A) {struct xs} : In x xs -> nat :=
+  Definition elemIndex_In {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
+    fix elemIndex_In_fix (xs : list A) {struct xs} : In x xs -> nat :=
     match xs as xs0 return In x xs0 -> nat with
     | [] => False_rect nat
     | x' :: xs' =>
-      fun H : x' = x \/ In x xs' =>
+      fun H_In : x' = x \/ In x xs' =>
       match eq_dec x' with
       | left H_yes => O
       | right H_no =>
-        let H' : In x xs' := @or_ind _ _ _ (fun H0 : x' = x => False_rect _ (H_no (eq_symmetry _ _ H0))) (fun H0 : In x xs' => H0) H in
-        S (elemIndex'_fix xs' H')
+        let H_In' : In x xs' := or_ind (fun H : x' = x => False_rect (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
+        S (elemIndex_In_fix xs' H_In')
       end
     end
   .
+
+  Lemma elemIndex_In_nth_error {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
+    forall xs : list A,
+    forall H_In : In x xs,
+    nth_error xs (elemIndex_In x eq_dec xs H_In) = Some x.
+  Proof.
+    induction xs as [| x' xs' IH]; simpl.
+    - contradiction.
+    - intros [H_eq | H_In']; destruct (eq_dec x') as [H_yes | H_no].
+      + now subst x'.
+      + now contradiction H_no.
+      + now subst x'.
+      + exact (IH H_In').
+  Qed.
 
 End MyUtilities.
 

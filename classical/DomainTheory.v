@@ -1671,7 +1671,7 @@ Module FORMALIZATION_OF_INDUCTION_PRINCIPLE. (* Reference: "Induction Principles
       + induction n as [| n IH]...
     - intros H_x_in.
       apply (H_x_in (approximation f)).
-      + apply (in_iterations _ _ 0).
+      + apply (in_iterations _ _ O).
       + intros y H_y_in.
         inversion H_y_in; subst.
         apply (in_iterations _ _ (S n)).
