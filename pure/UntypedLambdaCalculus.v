@@ -2,7 +2,6 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
-Require Import Coq.micromega.Lia.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
@@ -138,11 +137,12 @@ Module UntypedLamdbdaCalculus.
     forall x : ivar,
     get_max_ivar M < x ->
     isFreeIn x M = false.
-  Proof with lia.
+  Proof with eauto.
+    assert (claim1 := le_gt_False).
     intros x.
     enough (it_is_sufficient_to_show : get_max_ivar M < x -> ~ In x (getFVs M)) by now rewrite getFVs_isFreeIn, not_true_iff_false in it_is_sufficient_to_show.
     assert (In x (getFVs M) -> fold_right_max_0 (getFVs M) >= x) by now apply fold_right_max_0_in.
-    enough (fold_right_max_0 (getFVs M) >= x -> fold_right_max_0 (getFVs M) < x -> False) by eauto...
+    enough (therefore : fold_right_max_0 (getFVs M) >= x -> fold_right_max_0 (getFVs M) < x -> False)...
   Qed.
 
   Definition isFreshIn_tmSubst : ivar -> tmSubst -> tm -> bool :=
@@ -171,9 +171,9 @@ Module UntypedLamdbdaCalculus.
       isFreeIn (chi sigma M) (sigma x) = false
     ).
     { intros sigma M x H.
-      enough (get_max_ivar (sigma x) < chi sigma M) by now apply get_max_ivar_lt.
+      enough (claim1_aux : get_max_ivar (sigma x) < chi sigma M) by now apply get_max_ivar_lt.
       unfold chi, fold_right_max_0.
-      enough (fold_right max 0 (map (fun z : ivar => get_max_ivar (sigma z)) (getFVs M)) >= get_max_ivar (sigma x)) by lia.
+      enough (claim1_aux : fold_right max 0 (map (fun z : ivar => get_max_ivar (sigma z)) (getFVs M)) >= get_max_ivar (sigma x)) by now apply le_intro_S_n_le_S_m.
       rewrite <- getFVs_isFreeIn in H.
       apply fold_right_max_0_in...
     }
@@ -186,13 +186,13 @@ Module UntypedLamdbdaCalculus.
     isFreeIn (chi tmSubst_nil M) M = false.
   Proof with auto_rewrite.
     intros M.
-    assert (H : isFreshIn_tmSubst (chi tmSubst_nil M) tmSubst_nil M = true) by apply main_property_of_chi.
-    unfold isFreshIn_tmSubst in H.
-    rewrite forallb_true_iff in H.
-    simpl in H.
+    assert (claim1 : isFreshIn_tmSubst (chi tmSubst_nil M) tmSubst_nil M = true) by apply main_property_of_chi.
+    unfold isFreshIn_tmSubst in claim1.
+    rewrite forallb_true_iff in claim1.
+    simpl in claim1.
     apply not_true_iff_false.
-    intros H0.
-    assert (H1 : negb (chi tmSubst_nil M =? chi tmSubst_nil M) = true) by now apply H, getFVs_isFreeIn...
+    intros H.
+    assert (claim2 : negb (chi tmSubst_nil M =? chi tmSubst_nil M) = true) by now apply claim1, getFVs_isFreeIn...
   Qed.
 
   Fixpoint run_tmSubst_on_tm (sigma : tmSubst) (M : tm) {struct M} : tm :=
@@ -224,16 +224,16 @@ Module UntypedLamdbdaCalculus.
     - auto_rewrite.
       destruct H0 as [H0 H1].
       destruct H as [H | H].
-      + assert (H2 : isFreshIn_tmSubst z (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) M = true) by now apply IHM.
-        unfold isFreshIn_tmSubst in H2.
-        rewrite forallb_true_iff in H2.
-        assert (H3 := H2 x H0).
-        unfold tmSubst_cons in H3.
+      + assert (claim1 : isFreshIn_tmSubst z (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) M = true) by now apply IHM.
+        unfold isFreshIn_tmSubst in claim1.
+        rewrite forallb_true_iff in claim1.
+        assert (claim2 := claim1 x H0).
+        unfold tmSubst_cons in claim2.
         destruct (ivar_eq_dec y x)...
-      + assert (H2 : isFreshIn_tmSubst z sigma (Lam y M) = true) by now rewrite H; apply main_property_of_chi.
-        unfold isFreshIn_tmSubst in H2.
-        rewrite forallb_true_iff in H2.
-        apply negb_true_iff, H2.
+      + assert (claim3 : isFreshIn_tmSubst z sigma (Lam y M) = true) by now rewrite H; apply main_property_of_chi.
+        unfold isFreshIn_tmSubst in claim3.
+        rewrite forallb_true_iff in claim3.
+        apply negb_true_iff, claim3.
         rewrite getFVs_isFreeIn.
         auto_rewrite.
         rewrite <- getFVs_isFreeIn...
@@ -392,37 +392,40 @@ Module UntypedLamdbdaCalculus.
         all: destruct it_is_sufficient_to_show as [y [H0 H1]]; exists y...
       + intros [y [H H0]]...
     - intros x sigma...
-      split; intros H.
-      + destruct H as [H H0].
-        assert (H1 := proj1 (IHM x (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma)) H).
-        destruct H1 as [w [H1 H2]].
+      split.
+      + intros [H H0].
+        destruct (proj1 (IHM x (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma)) H) as [w [H1 H2]].
         set (z := chi sigma (Lam y M)).
         fold z in H, H0, H2.
         destruct (ivar_eq_dec y w).
-        * subst.
+        { subst.
           unfold tmSubst_cons in H2.
           destruct (ivar_eq_dec w w)...
           unfold isFreeIn in H2.
           rewrite Nat.eqb_eq in H2...
-        * exists w...
+        }
+        { exists w...
           unfold tmSubst_cons in H2.
           destruct (ivar_eq_dec y w)...
+        }
       + rename y into z.
-        destruct H as [y [H H0]].
+        intros [y [H H0]].
         set (w := chi sigma (Lam z M))...
         destruct (ivar_eq_dec w x).
-        * subst.
+        { subst.
           assert (isFreshIn_tmSubst w sigma (Lam z M) = true) by now apply main_property_of_chi.
           unfold isFreshIn_tmSubst in H1.
           rewrite forallb_true_iff in H1.
-          enough (H2 : isFreeIn w (sigma y) = false) by now rewrite H0 in H2.
+          enough (claim1 : isFreeIn w (sigma y) = false) by now rewrite H0 in claim1.
           apply negb_true_iff, H1, getFVs_isFreeIn...
-        * split...
+        }
+        { split...
           apply IHM.
           exists y.
           split...
           unfold tmSubst_cons.
           destruct (ivar_eq_dec z y)...
+        }
   Qed.
 
   Lemma chi_ext :
@@ -435,7 +438,7 @@ Module UntypedLamdbdaCalculus.
   Proof with try now firstorder.
     unfold chi, FreeIn_wrt.
     intros sigma sigma' M M' H.
-    enough (fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma x)) (getFVs M)) = fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma' x)) (getFVs M'))) by lia.
+    enough (it_is_sufficient_to_show : fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma x)) (getFVs M)) = fold_right_max_0 (map (fun x : ivar => get_max_ivar (sigma' x)) (getFVs M'))) by congruence.
     assert ( claim1 :
       forall z : ivar,
       In z (flat_map (fun y : ivar => getFVs (sigma y)) (getFVs M)) <-> In z (flat_map (fun y : ivar => getFVs (sigma' y)) (getFVs M'))
@@ -443,13 +446,13 @@ Module UntypedLamdbdaCalculus.
     { intros z.
       repeat (rewrite in_flat_map).
       split; intros [x H0]; rewrite getFVs_isFreeIn in H0.
-      1: assert (H1 : exists y : ivar, isFreeIn y M' = true /\ isFreeIn z (sigma' y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
-      2: assert (H1 : exists y : ivar, isFreeIn y M = true /\ isFreeIn z (sigma y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
-      all: destruct H1 as [y [H1 H2]]; exists y; repeat (rewrite getFVs_isFreeIn)...
+      1: assert (claim2_aux : exists y : ivar, isFreeIn y M' = true /\ isFreeIn z (sigma' y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
+      2: assert (claim2_aux : exists y : ivar, isFreeIn y M = true /\ isFreeIn z (sigma y) = true) by now apply H; exists x; rewrite getFVs_isFreeIn in H0; firstorder.
+      all: destruct claim2_aux as [y [H1 H2]]; exists y; repeat (rewrite getFVs_isFreeIn)...
     }
-    assert (H0 : fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma y)) (getFVs M)) = fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma' y)) (getFVs M'))) by now apply fold_right_max_0_ext.
+    assert (claim2 : fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma y)) (getFVs M)) = fold_right_max_0 (flat_map (fun y : ivar => getFVs (sigma' y)) (getFVs M'))) by now apply fold_right_max_0_ext.
     unfold get_max_ivar.
-    enough (H1 : forall xs : list ivar, forall f : ivar -> list ivar, fold_right_max_0 (map (fun x : ivar => fold_right_max_0 (f x)) xs) = fold_right_max_0 (flat_map f xs)) by now repeat (rewrite H1).
+    enough (claim3 : forall xs : list ivar, forall f : ivar -> list ivar, fold_right_max_0 (map (fun x : ivar => fold_right_max_0 (f x)) xs) = fold_right_max_0 (flat_map f xs)) by now repeat (rewrite claim3).
     induction xs; simpl; intros f...
     rewrite fold_right_max_0_app...
   Qed.
@@ -466,11 +469,11 @@ Module UntypedLamdbdaCalculus.
       { set (x := chi sigma1 (Lam y M)).
         set (x' := chi sigma2 (Lam x (run_tmSubst_on_tm (tmSubst_cons y (Var x) sigma1) M))).
         set (z := chi (compose_tmSubst sigma2 sigma1) (Lam y M)).
-        assert (H := IHM (tmSubst_cons y (Var x) sigma1) (tmSubst_cons x (Var x') sigma2)).
-        rewrite H.
-        assert (H0 := distri_compose_cons_for_chi M (Var x') sigma1 sigma2 y).
-        assert (H1 : run_tmSubst_on_tm (compose_tmSubst (tmSubst_cons x (Var x') sigma2) (tmSubst_cons y (Var x) sigma1)) M = run_tmSubst_on_tm (tmSubst_cons y (Var x') (compose_tmSubst sigma2 sigma1)) M) by now apply main_property_of_equiv_tmSubst_wrt; firstorder.
-        rewrite H1.
+        assert (claim1 := IHM (tmSubst_cons y (Var x) sigma1) (tmSubst_cons x (Var x') sigma2)).
+        rewrite claim1.
+        assert (claim2 := distri_compose_cons_for_chi M (Var x') sigma1 sigma2 y).
+        assert (claim3 : run_tmSubst_on_tm (compose_tmSubst (tmSubst_cons x (Var x') sigma2) (tmSubst_cons y (Var x) sigma1)) M = run_tmSubst_on_tm (tmSubst_cons y (Var x') (compose_tmSubst sigma2 sigma1)) M) by now apply main_property_of_equiv_tmSubst_wrt; firstorder.
+        rewrite claim3.
         replace x' with z...
       }
       rename y into x.
@@ -501,7 +504,7 @@ Module UntypedLamdbdaCalculus.
         rewrite andb_true_iff, negb_true_iff, Nat.eqb_neq in H.
         destruct H as [H H1].
         destruct (proj1 (isFreeIn_wrt_true_iff (sigma1 x') y' sigma2) H0) as [u [H2 H3]].
-        assert (claim2_aux1 : isFreeIn u (run_tmSubst_on_tm (tmSubst_cons x (Var y) sigma1) M) = true).
+        assert (claim2_aux : isFreeIn u (run_tmSubst_on_tm (tmSubst_cons x (Var y) sigma1) M) = true).
         { apply isFreeIn_wrt_true_iff.
           exists x'.
           split...
@@ -512,11 +515,11 @@ Module UntypedLamdbdaCalculus.
         split...
         split...
         subst.
-        enough (claim2_aux2 : isFreeIn y (sigma1 x') = false) by now rewrite H2 in claim2_aux2.
-        assert (H4 := main_property_of_chi (Lam x M) sigma1).
-        unfold isFreshIn_tmSubst in H4.
-        rewrite forallb_true_iff in H4.
-        apply negb_true_iff, H4.
+        enough (it_is_sufficient_to_show : isFreeIn y (sigma1 x') = false) by now rewrite H2 in it_is_sufficient_to_show.
+        assert (therefore := main_property_of_chi (Lam x M) sigma1).
+        unfold isFreshIn_tmSubst in therefore.
+        rewrite forallb_true_iff in therefore.
+        apply negb_true_iff, therefore.
         rewrite getFVs_isFreeIn...
       }
       apply chi_ext...
