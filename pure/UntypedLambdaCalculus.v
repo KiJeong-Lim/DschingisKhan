@@ -769,49 +769,37 @@ Module UntypedLamdbdaCalculus.
       | Lam y Q => S (getRank_fix Q)
       end
     ).
-    assert (claim1 := n1_le_max_n1_n2).
-    assert (claim2 := n2_le_max_n1_n2).
-    assert (claim3 := le_intro_S_n_le_S_m).
-    assert (claim4 := @le_asymmetry).
-    assert (claim5 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
-    { intros N M [poss [X]].
-      induction X; simpl.
-      - reflexivity.
-      - transitivity (getRank P1)...
-      - transitivity (getRank P2)...
-      - transitivity (getRank Q)...
-    }
-    assert (claim6 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
-    { intros N M [poss [X]].
+    assert (lemma1 := n1_le_max_n1_n2).
+    assert (lemma2 := n2_le_max_n1_n2).
+    assert (lemma3 := @le_asymmetry).
+    assert (lemma4 := le_intro_S_n_le_S_m).
+    enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
+    enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
+    - intros M N.
+      split.
+      + intros []; split; exists []...
+      + intros [? ?]...
+    - intros N M [poss [X]].
       induction X; simpl; intros H_EQ.
-      - tauto.
-      - contradiction (not_n_lt_n (getRank N)).
-        enough (claim6_aux : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+      + tauto.
+      + contradiction (not_n_lt_n (getRank N)).
+        enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
         apply le_intro_S_n_le_S_m.
-        transitivity (getRank P1).
-        + apply claim5.
-          exists poss...
-        + apply claim1...
-      - contradiction (not_n_lt_n (getRank N)).
-        enough (claim6_aux : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
+        transitivity (getRank P1); [apply claim1; exists poss | ..]...
+      + contradiction (not_n_lt_n (getRank N)).
+        enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
         apply le_intro_S_n_le_S_m.
-        transitivity (getRank P2).
-        + apply claim5.
-          exists poss...
-        + apply claim2...
-      - contradiction (not_n_lt_n (getRank N)).
-        enough (claim6_aux : getRank N < S (getRank Q)) by congruence.
+        transitivity (getRank P2); [apply claim1; exists poss | ..]...
+      + contradiction (not_n_lt_n (getRank N)).
+        enough (H_false : getRank N < S (getRank Q)) by congruence.
         apply le_intro_S_n_le_S_m.
-        transitivity (getRank Q).
-        + apply claim5.
-          exists poss...
-        + reflexivity.
-    }
-    intros M N.
-    split.
-    - intros H_EQ; subst M.
-      split; exists []...
-    - intros [H_subtm_1 H_subtm_2]...
+        transitivity (getRank Q); [apply claim1; exists poss | ..]...
+    - intros N M [poss [X]].
+      induction X; simpl.
+      + reflexivity.
+      + transitivity (getRank P1)...
+      + transitivity (getRank P2)...
+      + transitivity (getRank Q)...
   Qed.
 
   End SUBTERM.
