@@ -775,12 +775,10 @@ Module UntypedLamdbdaCalculus.
     assert (lemma4 := le_intro_S_n_le_S_m).
     enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
     enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
-    - intros M N.
-      split.
+    - intros M N; split.
       + intros []; split; exists []...
       + intros [? ?]...
-    - intros N M [poss [X]].
-      induction X; simpl; intros H_EQ.
+    - intros N M [poss [X]]; induction X; simpl; intros H_EQ.
       + tauto.
       + contradiction (not_n_lt_n (getRank N)).
         enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
@@ -794,8 +792,7 @@ Module UntypedLamdbdaCalculus.
         enough (H_false : getRank N < S (getRank Q)) by congruence.
         apply le_intro_S_n_le_S_m.
         transitivity (getRank Q); [apply claim1; exists poss | ..]...
-    - intros N M [poss [X]].
-      induction X; simpl.
+    - intros N M [poss [X]]; induction X; simpl.
       + reflexivity.
       + transitivity (getRank P1)...
       + transitivity (getRank P2)...
