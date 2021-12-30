@@ -617,27 +617,27 @@ Module UntypedLamdbdaCalculus.
     - intros sigma E.
       enough (it_is_sufficient_to_show : forall v : D, eval_tm (fun z : ivar => if ivar_eq_dec y z then v else eval_tm E (sigma z)) M == eval_tm (fun z : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z then v else E z) (run_tmSubst_on_tm (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) M)) by now apply runLam_preserves_eqProp.
       intros v.
-      assert (H := IHM (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z then v else E z)).
+      assert (hence := IHM (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma) (fun z : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z then v else E z)).
       assert ( claim1 :
         forall z : ivar,
         isFreeIn z M = true ->
         eval_tm (fun x : ivar => if ivar_eq_dec (chi sigma (Lam y M)) x then v else E x) (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma z) == (if ivar_eq_dec y z then v else eval_tm E (sigma z))
       ).
-      { intros z H0.
+      { intros z H.
         unfold tmSubst_cons.
         destruct (ivar_eq_dec y z).
         - unfold eval_tm.
           destruct (ivar_eq_dec (chi sigma (Lam y M)) (chi sigma (Lam y M)))...
           contradiction.
         - apply eval_tm_ext.
-          intros z' H1.
+          intros z' H0.
           destruct (ivar_eq_dec (chi sigma (Lam y M)) z')...
           subst.
-          assert (H2 : isFreshIn_tmSubst (chi sigma (Lam y M)) sigma (Lam y M) = true) by now apply main_property_of_chi.
-          unfold isFreshIn_tmSubst in H2.
-          rewrite forallb_true_iff in H2.
-          enough (H3 : isFreeIn (chi sigma (Lam y M)) (sigma z) = false) by now rewrite H3 in H1.
-          apply negb_true_iff, H2, getFVs_isFreeIn.
+          assert (claim1_aux : isFreshIn_tmSubst (chi sigma (Lam y M)) sigma (Lam y M) = true) by now apply main_property_of_chi.
+          unfold isFreshIn_tmSubst in claim1_aux.
+          rewrite forallb_true_iff in claim1_aux.
+          enough (therefore : isFreeIn (chi sigma (Lam y M)) (sigma z) = false) by now rewrite H0 in therefore.
+          apply negb_true_iff, claim1_aux, getFVs_isFreeIn.
           auto_rewrite.
       }
       transitivity (eval_tm (fun z : ivar => eval_tm (fun z0 : ivar => if ivar_eq_dec (chi sigma (Lam y M)) z0 then v else E z0) (tmSubst_cons y (Var (chi sigma (Lam y M))) sigma z)) M)...
