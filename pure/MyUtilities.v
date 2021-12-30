@@ -1653,6 +1653,15 @@ Module MyUtilities.
       + exact (IH H_In').
   Qed.
 
+  Lemma list_eq_dec {A : Type} (eq_dec : forall x : A, forall y : A, {x = y} + {x <> y}) :
+    forall xs : list A,
+    forall ys : list A,
+    {xs = ys} + {xs <> ys}.
+  Proof with ((left; congruence) || (right; congruence)) || eauto.
+    induction xs as [| x xs IH]; destruct ys as [| y ys]...
+    - destruct (eq_dec x y); destruct (IH ys)...
+  Defined.
+
 End MyUtilities.
 
 Module MyUniverses.

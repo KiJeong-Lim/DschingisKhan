@@ -642,6 +642,99 @@ Module UntypedLamdbdaCalculus.
 
   End PreliminariesOfSemantics.
 
+  Section SUBTERM_AND_DE_BRUIJN.
+
+  Let position : Set :=
+    nat
+  .
+
+  Let positions_eq_pirrel :
+    forall poss1 : list position,
+    forall poss2 : list position,
+    forall H_EQ1 : poss1 = poss2,
+    forall H_EQ2 : poss1 = poss2,
+    H_EQ1 = H_EQ2.
+  Proof.
+    intros poss1.
+    apply (eq_em_implies_eq_pirrel poss1).
+    intros poss2.
+    now destruct (list_eq_dec Nat.eq_dec poss1 poss2); [left | right].
+  Qed.
+
+  Inductive isSuper (M : tm) : list position -> tm -> Set :=
+  | OccursRefl :
+    isSuper M [] M
+  | OccursApp1 (P1 : tm) (P2 : tm) :
+    forall poss : list position,
+    isSuper M poss P1 ->
+    isSuper M (1 :: poss) (App P1 P2)
+  | OccursApp2 (P1 : tm) (P2 : tm) :
+    forall poss : list position,
+    isSuper M poss P2 ->
+    isSuper M (2 :: poss) (App P1 P2)
+  | OccursLam0 (y : ivar) (Q : tm) :
+    forall poss : list position,
+    isSuper M poss Q ->
+    isSuper M (0 :: poss) (Lam y Q)
+  .
+
+  Definition occurs : tm -> list position -> tm -> Set :=
+    fun N : tm =>
+    fun poss : list position =>
+    fun M : tm =>
+    isSuper M poss N
+  .
+
+  Definition occurs_nil (N : tm) :
+    occurs N [] N.
+  Proof.
+    unfold occurs.
+    constructor 1.
+  Defined.
+
+  Definition occurs_append (N : tm) :
+    forall poss1 : list position,
+    forall M1 : tm,
+    occurs N poss1 M1 ->
+    forall poss2 : list position,
+    forall M2 : tm,
+    occurs M1 poss2 M2 ->
+    occurs N (poss1 ++ poss2) M2.
+  Proof.
+    unfold occurs.
+    intros poss1 M1 X1.
+    induction X1; intros poss2 M2 X2; simpl.
+    - exact X2.
+    - constructor 2.
+      apply IHX1.
+      exact X2.
+    - constructor 3.
+      apply IHX1.
+      exact X2.
+    - constructor 4.
+      apply IHX1.
+      exact X2.
+  Defined.
+
+  Definition mkDeBruijnCtx (M : tm) : forall poss : list position, forall N : tm, occurs N poss M -> list ivar :=
+    fix mkDeBruijnCtx_fix (poss : list position) (N : tm) (X : isSuper M poss N) : list ivar :=
+    match X with
+    | OccursRefl _ => []
+    | OccursApp1 _ P1 P2 poss X1 => mkDeBruijnCtx_fix poss P1 X1
+    | OccursApp2 _ P1 P2 poss X2 => mkDeBruijnCtx_fix poss P2 X2
+    | OccursLam0 _ y Q poss X0 => y :: mkDeBruijnCtx_fix poss Q X0
+    end
+  .
+
+  Inductive node : Set :=
+  | NIDX (i : nat) : node
+  | DCON (c : CON) : node
+  | NAPP (e1 : node) (e2 : node) : node
+  | NLAM (e1 : node) : node
+  .
+
+  End SUBTERM_AND_DE_BRUIJN.
+
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
   Arguments Var {CON}.
