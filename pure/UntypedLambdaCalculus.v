@@ -711,14 +711,14 @@ Module UntypedLamdbdaCalculus.
     occurs M poss N
   .
 
-  Definition isSuper_refl (N : tm) :
+  Definition isSuper_reflexivity (N : tm) :
     isSuper N [] N.
   Proof.
     unfold isSuper.
     constructor 1.
   Defined.
 
-  Definition isSuper_trans (N : tm) :
+  Definition isSuper_transitivity (N : tm) :
     forall poss1 : list position,
     forall M1 : tm,
     isSuper N poss1 M1 ->
@@ -736,7 +736,7 @@ Module UntypedLamdbdaCalculus.
     - constructor 4; apply IHX1; exact X2.
   Defined.
 
-  Local Hint Resolve isSuper_refl isSuper_trans : core.
+  Local Hint Resolve isSuper_reflexivity isSuper_transitivity : core.
 
   Definition isSubtermOf : tm -> tm -> Prop :=
     fun N : tm =>
@@ -753,10 +753,8 @@ Module UntypedLamdbdaCalculus.
 
   Next Obligation with eauto with *.
     split.
-    - intros N.
-      exists []...
-    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]].
-      exists (poss2 ++ poss1)...
+    - intros N; exists []...
+    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]]; exists (poss2 ++ poss1)...
   Qed.
 
   Next Obligation with eauto with *.
@@ -776,19 +774,12 @@ Module UntypedLamdbdaCalculus.
     enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
     enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
     - intros N M; split; [intros []; split; exists [] | intros [? ?]]...
-    - intros N M [poss [X]]; induction X; simpl; intros H_EQ.
-      + tauto.
-      + contradiction (not_n_lt_n (getRank N)).
-        enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
-        apply le_intro_S_n_le_S_m.
+    - intros N M [poss [X]]; induction X; simpl; intros H_EQ; [tauto | ..]; contradiction (not_n_lt_n (getRank N)).
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
         transitivity (getRank P1); [apply claim1; exists poss | ..]...
-      + contradiction (not_n_lt_n (getRank N)).
-        enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence.
-        apply le_intro_S_n_le_S_m.
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
         transitivity (getRank P2); [apply claim1; exists poss | ..]...
-      + contradiction (not_n_lt_n (getRank N)).
-        enough (H_false : getRank N < S (getRank Q)) by congruence.
-        apply le_intro_S_n_le_S_m.
+      + enough (H_false : getRank N < S (getRank Q)) by congruence; apply lemma4.
         transitivity (getRank Q); [apply claim1; exists poss | ..]...
     - intros N M [poss [X]]; induction X; simpl.
       + reflexivity.

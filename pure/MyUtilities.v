@@ -1604,10 +1604,7 @@ Module MyUtilities.
     fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
     match zs with
     | [] => None
-    | z :: zs' =>
-      if eq_dec (fst z)
-      then Some (snd z)
-      else lookup_fix zs'
+    | z :: zs => if eq_dec (fst z) then Some (snd z) else lookup_fix zs
     end
   .
 
@@ -1627,14 +1624,14 @@ Module MyUtilities.
   Definition elemIndex_In {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
     fix elemIndex_In_fix (xs : list A) {struct xs} : In x xs -> nat :=
     match xs as xs0 return In x xs0 -> nat with
-    | [] => False_rect nat
+    | [] => False_rec nat
     | x' :: xs' =>
       fun H_In : x' = x \/ In x xs' =>
       match eq_dec x' with
-      | left H_yes => O
+      | left H_yes => 0
       | right H_no =>
-        let H_In' : In x xs' := or_ind (fun H : x' = x => False_rect (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
-        S (elemIndex_In_fix xs' H_In')
+        let H_In' : In x xs' := or_ind (fun H : x' = x => False_ind (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
+        1 + elemIndex_In_fix xs' H_In'
       end
     end
   .
@@ -1653,13 +1650,13 @@ Module MyUtilities.
       + exact (IH H_In').
   Qed.
 
-  Lemma list_eq_dec {A : Type} (eq_dec : forall x : A, forall y : A, {x = y} + {x <> y}) :
-    forall xs : list A,
-    forall ys : list A,
-    {xs = ys} + {xs <> ys}.
+  Lemma list_eq_dec {A : Type} (eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}) :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    {xs1 = xs2} + {xs1 <> xs2}.
   Proof with ((left; congruence) || (right; congruence)) || eauto.
-    induction xs as [| x xs IH]; destruct ys as [| y ys]...
-    - destruct (eq_dec x y); destruct (IH ys)...
+    induction xs1 as [| x1 xs1 IH]; destruct xs2 as [| x2 xs2]...
+    - destruct (eq_dec x1 x2); destruct (IH xs2)...
   Defined.
 
 End MyUtilities.
