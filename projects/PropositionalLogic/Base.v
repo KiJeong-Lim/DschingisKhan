@@ -157,7 +157,7 @@ Module SyntaxOfPL.
       assert (H7 : cantor_pairing (sum_from_0_to (seed2 + seed3) + seed3) = (seed2, seed3)) by now apply claim1.
       exists (sum_from_0_to ((sum_from_0_to (seed2 + seed3) + seed3) + piece) + piece)...
     }
-  Qed.
+  Defined.
 
   Definition enum_formula : nat -> formula :=
     fun n : nat =>
@@ -176,7 +176,7 @@ Module SyntaxOfPL.
     exists (sum_from_0_to (getRankOfFormula p + seed) + seed).
     rewrite <- (cantor_pairing_is_surjective (getRankOfFormula p) seed).
     exact Heq.
-  Qed.
+  Defined.
 
   End WE_CAN_ENUMERATE_ALL_FORMULAE.
 

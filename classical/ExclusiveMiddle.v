@@ -27,10 +27,6 @@ Module ExclusiveMiddle.
     eq_rect_eq_implies_existT_inj2_eq A x B (eq_rect_eq A x B)
   .
 
-  Definition unrestricted_minimization : forall phi : nat -> Prop, (~ forall n : nat, ~ phi n) -> (exists m : nat, phi m /\ (forall i : nat, phi i -> m <= i)) :=
-    exclusive_middle_implies_unrestricted_minimization classic
-  .
-
   Global Ltac ctauto :=
     match goal with
     | |- ?P => destruct (classic P); tauto

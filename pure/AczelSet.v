@@ -404,7 +404,7 @@ Module ConstructiveTheoryOfAczelTree. (* Thanks to Hanul Jeon *)
 
   Section FirstSectionInWhichAxiomOfChoice.
 
-  Hypothesis axiom_of_choice : forall A : Type, forall B : Type, forall psi : A -> B -> Prop, (forall x : A, exists y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
+  Hypothesis axiom_of_choice : forall A : InferiorUniverse, forall B : SuperiorUniverse, forall psi : A -> B -> Prop, (forall x : A, exists y : B, psi x y) -> (exists f : A -> B, forall x : A, psi x (f x)).
 
   (* Advise of Hanul Jeon
   Aczel의 Strong Collection의 증명을 스케치해보면
@@ -424,30 +424,34 @@ Hanul Jeon
 문제는 AC가 Coq에서 작동할 것 같지 않다는 거네요
   *)
 
-  Lemma AxiomOfChoice_implies_StrongCollection (psi : AczelSet -> AczelSet -> Prop) (psi_respect_eq_on_fst : forall y : AczelSet, respect_ext_eq (fun x : AczelSet => psi x y)) (psi_respect_eq_on_snd : forall x : AczelSet, respect_ext_eq (fun y : AczelSet => psi x y)) :
+  Variable psi : AczelSet -> AczelSet -> Prop.
+
+  Hypothesis psi_respect_eq_on_fst : forall y : AczelSet, respect_ext_eq (fun x : AczelSet => psi x y).
+
+  Hypothesis psi_respect_eq_on_snd : forall x : AczelSet, respect_ext_eq (fun y : AczelSet => psi x y).
+
+  Lemma AxiomOfChoice_implies_StrongCollection :
     forall X : AczelSet,
     (forall x : AczelSet, elem x X -> exists y : AczelSet, psi x y) ->
     exists Y : AczelSet, (forall x : AczelSet, elem x X -> exists y : AczelSet, elem y Y /\ psi x y) /\ (forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ psi x y).
   Proof with eauto with *.
     intros X H.
     set (Ground := childrenOf X).
-    assert (claim1 : exists f : Ground -> AczelSet, forall x : Ground, psi (childTreeOf X x) (f x)).
-    { apply axiom_of_choice with (psi := fun x : Ground => fun y : AczelSet => psi (childTreeOf X x) y).
-      intros x... 
-    }
-    destruct claim1 as [f claim1].
-    exists (RootNode Ground f).
-    split.
-    - intros x [key H0].
-      set (y := f key).
-      exists y.
-      split...
-      apply (psi_respect_eq_on_fst y (childTreeOf X key))...
-    - intros y [key H0].
-      simpl in *.
-      exists (childTreeOf X key).
-      split...
-      apply (psi_respect_eq_on_snd (childTreeOf X key) (f key))...
+    enough (claim1 : exists f : Ground -> AczelSet, forall x : Ground, psi (childTreeOf X x) (f x)).
+    - destruct claim1 as [f claim1].
+      exists (RootNode Ground f).
+      split.
+      + intros x [key H0].
+        set (y := f key).
+        exists y.
+        split...
+        apply (psi_respect_eq_on_fst y (childTreeOf X key))...
+      + intros y [key H0].
+        simpl in *.
+        exists (childTreeOf X key).
+        split...
+        apply (psi_respect_eq_on_snd (childTreeOf X key) (f key))...
+    - apply axiom_of_choice with (psi := fun x : Ground => fun y : AczelSet => psi (childTreeOf X x) y)...
   Qed.
 
   End FirstSectionInWhichAxiomOfChoice.

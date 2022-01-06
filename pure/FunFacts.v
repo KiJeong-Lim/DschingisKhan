@@ -254,37 +254,6 @@ Module FunFacts.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
-  Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
-
-  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
-
-  Let isMinimal : nat -> (nat -> Prop) -> Prop :=
-    fun n : nat =>
-    fun phi : nat -> Prop =>
-    phi n /\ (forall m : nat, phi m -> n <= m)
-  .
-
-  Theorem exclusive_middle_implies_unrestricted_minimization (phi : nat -> Prop) :
-    (~ forall n : nat, ~ phi n) ->
-    exists n_min : nat, isMinimal n_min phi.
-  Proof.
-    intros not_forall_n_not_phi_n.
-    assert (claim1 : exists n : nat, phi n) by now destruct (exclusive_middle (exists n : nat, phi n)); firstorder.
-    destruct claim1 as [n phi_n].
-    destruct (exclusive_middle (forall x : nat, ~ isMinimal x phi)) as [H_yes | H_no].
-    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction (it_is_sufficient_to_show phi_n).
-      apply (@strong_induction (fun x : nat => ~ phi x)).
-      intros i acc_hyp phi_i.
-      contradiction (H_yes i).
-      split.
-      + exact phi_i.
-      + intros m phi_m.
-        now destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m i m); firstorder.
-    - now destruct (exclusive_middle (exists m : nat, isMinimal m phi)); firstorder.
-  Qed.
-
-  End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
-
   Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
@@ -337,5 +306,35 @@ Module FunFacts.
   Qed.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
+
+  Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
+
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
+
+  Definition isMinimalNum (phi : nat -> Prop) : nat -> Prop :=
+    fun n : nat =>
+    phi n /\ (forall m : nat, phi m -> n <= m)
+  .
+
+  Theorem exclusive_middle_implies_Prop_level_unrestricted_minimization (phi : nat -> Prop) :
+    (~ forall n : nat, ~ phi n) ->
+    exists n_min : nat, isMinimalNum phi n_min.
+  Proof.
+    intros not_forall_n_not_phi_n.
+    assert (claim1 : exists n : nat, phi n) by now destruct (exclusive_middle (exists n : nat, phi n)); firstorder.
+    destruct claim1 as [n phi_n].
+    destruct (exclusive_middle (forall x : nat, ~ isMinimalNum phi x)) as [H_yes | H_no].
+    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction (it_is_sufficient_to_show phi_n).
+      apply (@strong_induction (fun x : nat => ~ phi x)).
+      intros i acc_hyp phi_i.
+      contradiction (H_yes i).
+      split.
+      + exact phi_i.
+      + intros m phi_m.
+        now destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m i m); firstorder.
+    - now destruct (exclusive_middle (exists m : nat, isMinimalNum phi m)); firstorder.
+  Qed.
+
+  End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
 End FunFacts.
