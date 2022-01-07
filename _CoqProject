@@ -8,7 +8,6 @@ pure/DomainTheory.v #
 pure/UntypedLambdaCalculus.v #
 pure/AczelSet.v #
 pure/CBA.v #
-pure/MyCoin.v #
 pure/PS.v #
 pure/Data.v
 #
@@ -20,7 +19,3 @@ projects/PropositionalLogic/ConstructiveMetaTheories.v #
 projects/PropositionalLogic/ClassicalMetaTheories.v #
 projects/PropositionalLogic.v #
 #
-projects/SmullyanGIT/PA.v #
-projects/SmullyanGIT.v #
-#
-projects/FirstOrderModalLogic.v #
