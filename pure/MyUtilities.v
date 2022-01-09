@@ -1506,6 +1506,22 @@ Module MyUtilities.
       exact (leq_unique_fix m2' Hleq1' Hleq2').
   Qed.
 
+  Corollary well_founded_recursion_of_nat [phi : nat -> Type] :
+    (forall n : nat, (forall i : nat, i < n -> phi i) -> phi n) ->
+    (forall n : nat, phi n).
+  Proof.
+    intros acc_hyp.
+    apply accumulation_leq with (phi := phi).
+    intros n IH.
+    apply acc_hyp.
+    intros i H_lt.
+    apply IH.
+    - apply le_implies_leq.
+      exact (le_transitivity (le_S i i (le_n i)) H_lt).
+    - intros H_eq; subst n.
+      contradiction (not_n_lt_n i).
+  Defined.
+
   End SET_LEVEL_LE.
 
   Section ACKERMANN.
