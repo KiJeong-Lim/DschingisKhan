@@ -985,37 +985,27 @@ Module PowerSetCoLa.
   Qed.
 
   Lemma bot_is_empty :
-  @bot (ensemble A) (ensemble_isPoset) (ensemble_isCompleteLattice) == \emptyset.
+    @bot (ensemble A) ensemble_isPoset ensemble_isCompleteLattice == \emptyset.
   Proof with eauto with *.
     unfold bot.
-    symmetry.
-    destruct (supremum_always_exists_in_CompleteLattice \emptyset) as [BOT H_BOT].
-    simpl.
-    intros x.
-    split.
-    - intros H_in; inversion H_in; subst; contradiction.
-    - intros H_in.
-      apply H_BOT.
+    destruct (supremum_always_exists_in_CompleteLattice \emptyset) as [BOT H_BOT]; simpl.
+    intros x; split; intros H_in.
+    - apply H_BOT.
       + intros X X_in; inversion X_in; subst; contradiction.
       + exact H_in.
+    - inversion H_in; subst; contradiction.
   Qed.
 
-  Lemma exploit_paco (P : ensemble A) :
-    forall F : ensemble A >=> ensemble A,
-    isSubsetOf (proj1_sig (paco F) bot) P ->
+  Theorem paco_conclusion (P : ensemble A) (F : ensemble A >=> ensemble A) (nu_F_le_P : isSubsetOf (proj1_sig (paco F) bot) P) :
     forall X : ensemble A,
     isSubsetOf X (proj1_sig F X) ->
     isSubsetOf X P.
   Proof with eauto with *.
-    intros F F_bot_le_P.
-    assert (claim1 : proj1_sig (nu F) == proj1_sig (paco F) bot).
+    assert (claim1 := PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F)).
+    assert (claim2 : proj1_sig (nu F) == proj1_sig (paco F) bot).
     { transitivity (PaCo (proj1_sig F) bot).
       - exact (PaCo_init (proj1_sig F) (proj2_sig F)).
-      - apply MonotonicMap_preservesSetoid.
-        + simpl.
-          apply PaCo_preserves_monotonicity.
-          exact (proj2_sig F).
-        + reflexivity.
+      - apply MonotonicMap_preservesSetoid...
     }
     apply (proj1 (nu_isSupremum F P)).
     transitivity (proj1_sig (paco F) bot)...
