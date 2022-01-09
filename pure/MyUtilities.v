@@ -146,7 +146,7 @@ Module EqFacts.
     forall H_eq : x1 = x2,
     elim_eq_l x1 x2 H_eq (f x1) = f x2.
   Proof.
-    intros x1 x2 f []; constructor.
+    now intros x1 x2 f [].
   Qed.
 
   Lemma elim_eq_r_spec :
@@ -156,7 +156,7 @@ Module EqFacts.
     forall H_eq : x1 = x2,
     elim_eq_r x1 x2 H_eq (f x2) = f x1.
   Proof.
-    intros x1 x2 f []; constructor.
+    now intros x1 x2 f [].
   Qed.
 
   Definition transport {x1 : A} {x2 : A} : x1 = x2 -> B x1 -> B x2 :=
@@ -1414,7 +1414,7 @@ Module MyUtilities.
 
   Local Hint Resolve leq_transitivity : core.
 
-  Theorem accumulation_leq (phi : nat -> Type) :
+  Theorem accumulation_leq [phi : nat -> Type] :
     (forall n : nat, (forall i : nat, leq i n -> i <> n -> phi i) -> phi n) ->
     forall n : nat,
     phi n.
