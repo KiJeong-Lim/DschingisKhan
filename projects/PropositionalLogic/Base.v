@@ -186,33 +186,39 @@ Module FormulaNotationsOfPL.
 
   Import SyntaxOfPL.
 
-  Global Declare Custom Entry pl_formula_scope.
+  Global Declare Scope pl_formula_scope.
 
-  Global Notation " '$$' p '$$' " := p (p custom pl_formula_scope at level 3, only parsing).
+  Global Open Scope pl_formula_scope.
 
-  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_scope at level 0, only parsing).
+  Bind Scope pl_formula_scope with formula.
 
-  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_scope at level 0, no associativity, only parsing).
+  Global Declare Custom Entry pl_formula_viewer.
 
-  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_scope at level 1, right associativity, only parsing).
+  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_viewer at level 0).
 
-  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_scope at level 1, right associativity, only parsing).
+  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_viewer at level 0, no associativity).
 
-  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
+  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_viewer at level 1, right associativity).
 
-  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_scope at level 2, right associativity, only parsing).
+  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_viewer at level 1, right associativity).
 
-  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_scope at level 2, no associativity, only parsing).
+  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
 
-  Global Notation " x " := x (in custom pl_formula_scope at level 0, x ident).
+  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
 
-  Global Notation " ( p ) " := p (in custom pl_formula_scope, p at level 3).
+  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_viewer at level 2, no associativity).
+
+  Global Notation " x " := x (in custom pl_formula_viewer at level 0, x ident).
+
+  Global Notation " '(' p ')' " := p (in custom pl_formula_viewer, p at level 3).
+
+  Global Notation " '\obj[' p  ']' " := p (p custom pl_formula_viewer at level 3, at level 0, no associativity) : pl_formula_scope.
 
 End FormulaNotationsOfPL.
 
 Module SemanticsOfPL.
 
-  Import MyUniverses MyEnsemble SyntaxOfPL.
+  Import MyUniverses MyEnsemble SyntaxOfPL FormulaNotationsOfPL.
 
   Definition value : InferiorUniverse :=
     Prop
@@ -224,13 +230,13 @@ Module SemanticsOfPL.
 
   Fixpoint eval_formula (v : env) (p : formula) {struct p} : value :=
     match p with
-    | AtomF i => v i
-    | ContradictionF => False
-    | NegationF p1 => ~ eval_formula v p1
-    | ConjunctionF p1 p2 => eval_formula v p1 /\ eval_formula v p2
-    | DisjunctionF p1 p2 => eval_formula v p1 \/ eval_formula v p2
-    | ImplicationF p1 p2 => eval_formula v p1 -> eval_formula v p2
-    | BiconditionalF p1 p2 => eval_formula v p1 <-> eval_formula v p2
+    | \obj[ p_{ i } ] => v i
+    | \obj[ _|_ ] => False
+    | \obj[ ~ p1 ] => ~ eval_formula v p1
+    | \obj[ p1 /\ p2 ] => eval_formula v p1 /\ eval_formula v p2
+    | \obj[ p1 \/ p2 ] => eval_formula v p1 \/ eval_formula v p2
+    | \obj[ p1 -> p2 ] => eval_formula v p1 -> eval_formula v p2
+    | \obj[ p1 <-> p2 ] => eval_formula v p1 <-> eval_formula v p2
     end
   .
 
@@ -278,31 +284,99 @@ Module InferenceRulesOfPL.
 
   Import MyEnsemble MyEnsembleNova SyntaxOfPL FormulaNotationsOfPL.
 
+  Global Reserved Notation " hs '|-' c " (at level 70, no associativity).
+
   Inductive infers : ensemble formula -> formula -> Prop :=
-  | ByAssumption {hs : ensemble formula} : forall h : formula, member h hs -> infers hs h
-  | ContradictionI {hs : ensemble formula} : forall a : formula, infers hs a -> infers hs (NegationF a) -> infers hs ContradictionF
-  | ContradictionE {hs : ensemble formula} : forall a : formula, infers hs ContradictionF -> infers hs a
-  | NegationI {hs : ensemble formula} : forall a : formula, infers (insert a hs) ContradictionF -> infers hs (NegationF a)
-  | NegationE {hs : ensemble formula} : forall a : formula, infers (insert (NegationF a) hs) ContradictionF -> infers hs a
-  | ConjunctionI {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs a -> infers hs b -> infers hs (ConjunctionF a b)
-  | ConjunctionE1 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (ConjunctionF a b) -> infers hs a
-  | ConjunctionE2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (ConjunctionF a b) -> infers hs b
-  | DisjunctionI1 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs a -> infers hs (DisjunctionF a b)
-  | DisjunctionI2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs b -> infers hs (DisjunctionF a b)
-  | DisjunctionE {hs : ensemble formula} : forall a : formula, forall b : formula, forall c : formula, infers hs (DisjunctionF a b) -> infers (insert a hs) c -> infers (insert b hs) c -> infers hs c
-  | ImplicationI {hs : ensemble formula} : forall a : formula, forall b : formula, infers (insert a hs) b -> infers hs (ImplicationF a b)
-  | ImplicationE {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (ImplicationF a b) -> infers hs a -> infers hs b
-  | BiconditionalI {hs : ensemble formula} : forall a : formula, forall b : formula, infers (insert a hs) b -> infers (insert b hs) a -> infers hs (BiconditionalF a b)
-  | BiconditionalE1 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs a -> infers hs b
-  | BiconditionalE2 {hs : ensemble formula} : forall a : formula, forall b : formula, infers hs (BiconditionalF a b) -> infers hs b -> infers hs a
-  .
+  | ByAssumption {hs : ensemble formula} :
+    forall h : formula,
+    h \in hs ->
+    hs |- h
+  | ContradictionI {hs : ensemble formula} :
+    forall a : formula,
+    hs |- a ->
+    hs |- NegationF a ->
+    hs |- ContradictionF
+  | ContradictionE {hs : ensemble formula} :
+    forall a : formula,
+    hs |- ContradictionF ->
+    hs |- a
+  | NegationI {hs : ensemble formula} :
+    forall a : formula,
+    insert a hs |- ContradictionF ->
+    hs |- NegationF a
+  | NegationE {hs : ensemble formula} :
+    forall a : formula,
+    insert (NegationF a) hs |- ContradictionF ->
+    hs |- a
+  | ConjunctionI {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- a ->
+    hs |- b ->
+    hs |- ConjunctionF a b
+  | ConjunctionE1 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- ConjunctionF a b ->
+    hs |- a
+  | ConjunctionE2 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- ConjunctionF a b ->
+    hs |- b
+  | DisjunctionI1 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- a ->
+    hs |- DisjunctionF a b
+  | DisjunctionI2 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- b ->
+    hs |- DisjunctionF a b
+  | DisjunctionE {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    forall c : formula,
+    hs |- DisjunctionF a b ->
+    insert a hs |- c ->
+    insert b hs |- c ->
+    hs |- c
+  | ImplicationI {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    insert a hs |- b ->
+    hs |- ImplicationF a b
+  | ImplicationE {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- ImplicationF a b ->
+    hs |- a ->
+    hs |- b
+  | BiconditionalI {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    insert a hs |- b ->
+    insert b hs |- a ->
+    hs |- BiconditionalF a b
+  | BiconditionalE1 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- BiconditionalF a b ->
+    hs |- a ->
+    hs |- b
+  | BiconditionalE2 {hs : ensemble formula} :
+    forall a : formula,
+    forall b : formula,
+    hs |- BiconditionalF a b ->
+    hs |- b ->
+    hs |- a
+  where " hs '|-' c " := (infers hs c) : type_scope.
 
   Local Hint Constructors infers : core.
 
-  Global Notation " hs '|-' c " := (infers hs c) (at level 70, no associativity) : type_scope.
-
   Lemma Law_of_Exclusive_Middle (p : formula) :
-    \emptyset |- $$p \/ ~ p$$.
+    \emptyset |- \obj[ p \/ ~ p ].
   Proof with reflexivity.
     eapply NegationE, ContradictionI.
     - eapply DisjunctionI2, NegationI, ContradictionI.
@@ -319,7 +393,7 @@ Module InferenceRulesOfPL.
     hs |- p2.
   Proof with eauto with *.
     intros p1 p2 H_infers H_cut.
-    assert (claim1 : hs |- $$p1 -> p2$$)...
+    assert (claim1 : hs |- \obj[ p1 -> p2 ])...
   Qed.
 
   Lemma extend_infers {hs1 : ensemble formula} {c : formula} :
