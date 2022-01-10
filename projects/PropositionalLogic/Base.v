@@ -220,15 +220,15 @@ Module SemanticsOfPL.
 
   Import MyUniverses MyEnsemble SyntaxOfPL FormulaNotationsOfPL.
 
-  Definition value : InferiorUniverse :=
+  Definition truth_value : InferiorUniverse :=
     Prop
   .
 
-  Definition env : InferiorUniverse :=
-    pvar -> value
+  Definition pvar_env : InferiorUniverse :=
+    pvar -> truth_value
   .
 
-  Fixpoint eval_formula (v : env) (p : formula) {struct p} : value :=
+  Fixpoint eval_formula (v : pvar_env) (p : formula) {struct p} : truth_value :=
     match p with
     | \obj[ p_{ i } ] => v i
     | \obj[ _|_ ] => False
@@ -240,11 +240,11 @@ Module SemanticsOfPL.
     end
   .
 
-  Variant satisfies (v : env) (p : formula) : Prop :=
+  Variant satisfies (v : pvar_env) (p : formula) : Prop :=
   | IsModel : eval_formula v p -> satisfies v p
   .
 
-  Global Notation " hs '|=' c " := (forall v : env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
+  Global Notation " hs '|=' c " := (forall v : pvar_env, (forall h : formula, member h hs -> satisfies v h) -> satisfies v c) (at level 70, no associativity) : type_scope.
 
   Lemma extend_entails {hs1 : ensemble formula} {c : formula} :
     hs1 |= c ->
@@ -266,7 +266,7 @@ Module SemanticsOfPL.
     isStructure ps_dagger ->
     forall ps : ensemble formula,
     isSubsetOf ps ps_dagger ->
-    {v : env | (forall p : formula, member p ps -> satisfies v p) /\ (v = preimage AtomF ps_dagger)}.
+    {v : pvar_env | (forall p : formula, member p ps -> satisfies v p) /\ (v = preimage AtomF ps_dagger)}.
   Proof.
     intros ps_dagger ps_dagger_isStructure ps ps_isSubsetOf_ps_dagger.
     exists (preimage AtomF ps_dagger).

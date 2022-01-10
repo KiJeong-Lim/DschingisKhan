@@ -888,7 +888,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: "Constructive Co
     forall hs : ensemble formula,
     forall c : formula,
     hs |= c ->
-    forall E : env,
+    forall E : pvar_env,
     equiconsistent (Th (insert (NegationF c) hs)) (eval_formula E) ->
     isSubsetOf (Th (insert (NegationF c) hs)) (eval_formula E) ->
     isFilter (eval_formula E) ->
