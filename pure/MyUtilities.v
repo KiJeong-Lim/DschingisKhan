@@ -968,6 +968,169 @@ Module MyUtilities.
 
   End MyFinSet.
 
+  Section SET_LEVEL_LE.
+
+  Inductive leq (n : nat) : nat -> Set :=
+  | leq_init : leq n n
+  | leq_step : forall m : nat, leq n m -> leq n (S m)
+  .
+
+  Local Hint Constructors leq : core.
+
+  Lemma leq_reflexivity :
+    forall n : nat,
+    leq n n.
+  Proof.
+    constructor 1.
+  Defined.
+
+  Lemma leq_intro_leq_0_n :
+    forall n : nat,
+    leq 0 n.
+  Proof with eauto.
+    induction n as [| n IH]...
+  Defined.
+
+  Lemma leq_intro_leq_S_n_S_m :
+    forall n : nat,
+    forall m : nat,
+    leq n m ->
+    leq (S n) (S m).
+  Proof with eauto.
+    intros n m Hleq.
+    induction Hleq as [| m Hleq IH]...
+  Defined.
+
+  Lemma leq_transitivity :
+    forall n1 : nat,
+    forall n2 : nat,
+    forall n3 : nat,
+    leq n1 n2 ->
+    leq n2 n3 ->
+    leq n1 n3.
+  Proof with eauto.
+    intros n1 n2 n3 Hle1 Hle2.
+    revert n3 n2 n1 Hle2 Hle1.
+    induction n3; intros n2 n1 Hle2 Hle1; inversion Hle2; subst...
+  Defined.
+
+  Local Hint Resolve leq_transitivity : core.
+
+  Theorem accumulation_leq [phi : nat -> Type] :
+    (forall n : nat, (forall i : nat, leq i n -> i <> n -> phi i) -> phi n) ->
+    forall n : nat,
+    phi n.
+  Proof with (congruence || eauto).
+    intros acc_hyp.
+    enough (it_is_sufficient_to_show : forall n : nat, forall i : nat, leq i n -> phi i)...
+    induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
+    all: inversion leq_m_n; subst...
+  Defined.
+
+  Lemma leq_implies_le :
+    forall n : nat,
+    forall m : nat,
+    leq n m ->
+    n <= m.
+  Proof with eauto.
+    intros n m Hleq.
+    induction Hleq as [| m Hleq IH]...
+  Defined.
+
+  Lemma leq_asymmetry :
+    forall n1 : nat,
+    forall n2 : nat,
+    leq n1 n2 ->
+    leq n2 n1 ->
+    n1 = n2.
+  Proof.
+    intros n1 n2 Hleq1 Hleq2.
+    apply le_asymmetry.
+    - exact (leq_implies_le n1 n2 Hleq1).
+    - exact (leq_implies_le n2 n1 Hleq2).
+  Defined.
+
+  Lemma le_implies_leq :
+    forall n : nat,
+    forall m : nat,
+    n <= m ->
+    leq n m.
+  Proof.
+    induction n as [| n IH].
+    - intros m Hle.
+      exact (leq_intro_leq_0_n m).
+    - intros [| m'] Hle.
+      + exact (lt_elim_n_lt_0 n Hle).
+      + exact (leq_intro_leq_S_n_S_m n m' (IH m' (le_elim_S_n_le_m n (S m') Hle))).
+  Defined.
+
+  Lemma leq_unique :
+    forall n1 : nat,
+    forall n2 : nat,
+    forall Hleq1 : leq n1 n2,
+    forall Hleq2 : leq n1 n2,
+    Hleq1 = Hleq2.
+  Proof.
+    refine (
+      fun n1 : nat =>
+      fix leq_unique_fix (n2 : nat) (Hleq1 : leq n1 n2) {struct Hleq1} : forall Hleq2 : leq n1 n2, Hleq1 = Hleq2 :=
+      match Hleq1 as Hleq in leq _ m1 return forall Hleq2 : leq n1 m1, Hleq = Hleq2 with
+      | leq_init _ =>
+        fun Hleq2 : leq n1 n1 =>
+        match Hleq2 as Hleq in leq _ m2 return forall Heq : n1 = m2, eq_rec n1 (leq n1) (leq_init n1) m2 Heq = Hleq with
+        | leq_init _ => _
+        | leq_step _ m2' H_LE2' => _
+        end (eq_reflexivity n1)
+      | leq_step _ m1' Hleq1' =>
+        fun Hleq2 : leq n1 (S m1') =>
+        match Hleq2 as Hleq in leq _ m2 return forall Heq : m2 = S m1', leq_step n1 m1' Hleq1' = eq_rec m2 (leq n1) Hleq (S m1') Heq with
+        | leq_init _ => _
+        | leq_step _ m2' Hleq2' => _
+        end (eq_reflexivity (S m1'))
+      end
+    ).
+    - intros Heq.
+      rewrite (eqnat_proof_irrelevance n1 n1 Heq (eq_reflexivity n1)).
+      reflexivity.
+    - intros Heq.
+      assert (Hlt : m2' < n1) by now rewrite Heq; constructor.
+      assert (Hle : n1 <= m2') by now apply leq_implies_le.
+      contradiction (le_gt_False n1 m2' Hle Hlt).
+    - intros Heq.
+      assert (Hlt : m1' < n1) by now rewrite Heq; constructor.
+      assert (Hle : n1 <= m1') by now apply leq_implies_le.
+      contradiction (le_gt_False n1 m1' Hle Hlt).
+    - intros Heq.
+      assert (Heq' : m2' = m1') by exact (S_eq_S_elim m2' m1' Heq).
+      destruct Heq' as [].
+      rewrite (eqnat_proof_irrelevance (S m2') (S m2') Heq (eq_reflexivity (S m2'))).
+      apply (eq_congruence (leq_step n1 m2')).
+      exact (leq_unique_fix m2' Hleq1' Hleq2').
+  Qed.
+
+  Corollary well_founded_recursion_of_nat [phi : nat -> Type] :
+    (forall n : nat, (forall i : nat, i < n -> phi i) -> phi n) ->
+    (forall n : nat, phi n).
+  Proof.
+    intros acc_hyp.
+    apply accumulation_leq with (phi := phi).
+    intros n IH.
+    apply acc_hyp.
+    intros i H_lt.
+    apply IH.
+    - apply le_implies_leq.
+      exact (le_transitivity (le_S i i (le_n i)) H_lt).
+    - intros H_eq; subst n.
+      contradiction (not_n_lt_n i).
+  Defined.
+
+  End SET_LEVEL_LE.
+
+  Global Ltac strong_rec :=
+    let n := fresh "n" in
+    intros n; pattern n; revert n; apply accumulation_leq
+  .
+
   Lemma greater_than_iff :
     forall x : nat,
     forall y : nat,
@@ -1258,6 +1421,254 @@ Module MyUtilities.
     assert (claim2 := in_in_remove A_eq_dec)...
   Qed.
 
+  Section ACKERMANN.
+
+  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
+    { AckermannFunc_spec1 : forall n, ack (0, n) = n + 1
+    ; AckermannFunc_spec2 : forall m, ack (m + 1, 0) = ack (m, 1)
+    ; AckermannFunc_spec3 : forall m n, ack (m + 1, n + 1) = ack (m, ack (m + 1, n))
+    }
+  .
+
+  Let AckermannFunc1_aux1 : (nat -> nat) -> nat -> nat :=
+    fun kont : nat -> nat =>
+    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
+    match n return nat with
+    | O => kont 1
+    | S n' => kont (AckermannFunc1_aux1_fix n')
+    end
+  .
+
+  Let AckermannFunc1_aux2 : nat -> nat -> nat :=
+    fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
+    match m return nat -> nat with
+    | O => S
+    | S m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
+    end
+  .
+
+  Definition AckermannFunc1 : (nat * nat) -> nat :=
+    fun p : nat * nat =>
+    AckermannFunc1_aux2 (fst p) (snd p)
+  .
+
+  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
+    AckermannFuncSpec AckermannFunc1.
+  Proof with (lia || eauto).
+    split.
+    - intros n; replace (n + 1) with (S n)...
+    - intros m; replace (m + 1) with (S m)...
+    - intros [| m']; induction n as [| n IHn]; cbn in *...
+      all: replace (m' + 1) with (S m') in *...
+  Qed.
+
+  End ACKERMANN.
+
+  Section FIBONACCI.
+
+  Lemma n_ne_S_plus_m_n :
+    forall m : nat,
+    forall n : nat,
+    n <> S (m + n).
+  Proof.
+    intros m n H_eq.
+    contradiction (not_n_lt_n n).
+    enough (it_is_sufficient_to_show : n < S (m + n)) by congruence.
+    apply le_intro_S_n_le_S_m, le_intro_plus2.
+  Qed.
+
+  Inductive fibonacci_spec : forall n : nat, forall f_n : nat, Prop :=
+  | FibonacciSpec_when_eq_0 :
+    fibonacci_spec 0 (0)
+  | FibonacciSpec_when_eq_1 :
+    fibonacci_spec 1 (1)
+  | FibonacciSpec_when_ge_2 :
+    forall n : nat,
+    forall f_n : nat,
+    forall f_n' : nat,
+    fibonacci_spec n f_n ->
+    fibonacci_spec (S n) f_n' ->
+    fibonacci_spec (S (S n)) (f_n + f_n')
+  .
+
+  Definition fibonacci :
+    forall n : nat,
+    {f_n : nat | fibonacci_spec n f_n}.
+  Proof.
+    strong_rec.
+    intros [| [| n]] acc.
+    - exists (0).
+      now constructor 1.
+    - exists (1).
+      now constructor 2.
+    - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
+      set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
+      set (f_n := proj1_sig acc_n).
+      set (f_n' := proj1_sig acc_n').
+      exists (f_n + f_n').
+      now constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
+  Defined.
+
+  (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
+
+  End FIBONACCI.
+
+  Section BINARY_LOGARITHM.
+
+  Lemma div_mod_lemma1 :
+    forall a : nat,
+    forall b : nat,
+    b <> 0 ->
+    (a + b) / b = (a / b) + 1 /\ (a + b) mod b = a mod b.
+  Proof.
+    intros a b H_b_ne_0.
+    apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
+    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b).
+      + enough (claim1 : a = b * (a / b) + a mod b) by congruence.
+        exact (Nat.div_mod a b H_b_ne_0).
+      + lia.
+    - assert (claim2 : b > 0) by lia.
+      exact (proj2 (Nat.mod_bound_pos a b (le_intro_0_le_n a) claim2)).
+  Qed.
+
+  Inductive binlog_spec : nat -> nat -> Prop :=
+  | BinLogSpec_when_eq_1 :
+    binlog_spec 1 (0)
+  | BinLogSpec_when_gt_1 :
+    forall n : nat,
+    forall l_n : nat,
+    n > 1 ->
+    binlog_spec (n / 2) l_n ->
+    binlog_spec n (S l_n)
+  .
+
+  Definition binlog :
+    forall n : nat,
+    {l_n : nat | n >= 1 -> binlog_spec n l_n}.
+  Proof.
+    assert (lemma1 : 2 <> 0) by exact (fun H_EQ : 2 = 0 => S_eq_0_elim 1 H_EQ).
+    enough (lemma2 : forall n : nat, n >= 1 -> n / 2 < n).
+    { strong_rec.
+      intros [ | [ | n]] acc.
+      - exists (0).
+        now intros H_n_ge_1; contradiction (not_n_lt_n 0 H_n_ge_1).
+      - exists (0).
+        now intros H_n_ge_1; constructor 1.
+      - assert (H_ge : S (S n) >= 1) by apply le_intro_S_n_le_S_m, le_intro_0_le_n.
+        assert (claim1 := lemma2 (S (S n)) H_ge).
+        assert (claim2 : leq (S (S n) / 2) (S (S n))).
+        { apply le_implies_leq.
+          exact (le_transitivity (le_S _ _ (le_n _)) claim1).
+        }
+        assert (claim3 : (S (S n) / 2) <> (S (S n))).
+        { intros H_EQ.
+          contradiction (not_n_lt_n (S (S n))).
+          congruence.
+        }
+        assert (claim4 : (S (S n) / 2) >= 1).
+        { replace (S (S n) / 2) with ((n / 2) + 1).
+          - rewrite Nat.add_comm.
+            apply le_intro_S_n_le_S_m, le_intro_0_le_n.
+          - symmetry.
+            replace (S (S n) / 2) with ((n + 2) / 2).
+            + exact (proj1 (div_mod_lemma1 n 2 lemma1)).
+            + rewrite (Nat.add_comm n 2).
+              reflexivity.
+        }
+        set (acc_n_div_2 := acc (S (S n) / 2) claim2 claim3).
+        set (l_n := proj1_sig acc_n_div_2).
+        exists (S l_n).
+        now intros H_n_ge_1; constructor 2; [apply lt_intro_S_m_lt_S_n, lt_intro_0_lt_S_n | exact (proj2_sig acc_n_div_2 claim4)].
+    }
+    { enough (claim5 : forall n : nat, 2 <= n -> n / 2 < n).
+      { intros n H_n_ge_1.
+        inversion H_n_ge_1; subst.
+        - apply lt_intro_0_lt_S_n.
+        - now apply claim5, le_intro_S_n_le_S_m.
+      }
+      intros n H_le.
+      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n (n / 2)) as [H_yes | H_no].
+      - enough (claim6 : n / 2 > 0).
+        { assert (claim7 := Nat.div_mod n 2 lemma1).
+          assert (claim8 := proj2 (Nat.mod_bound_pos n 2 (le_intro_0_le_n n) (le_S 1 1 (le_n 1)))).  
+          enough (it_is_sufficient_to_show : n / 2 < 2 * (n / 2) + n mod 2) by congruence.
+          lia.
+        }
+        { do 2 (destruct n as [ | n]; [inversion H_le | apply le_elim_S_n_le_m in H_le]).
+          replace (S (S n)) with (n + 2).
+          - rewrite (proj1 (div_mod_lemma1 n 2 lemma1)).
+            rewrite Nat.add_comm.
+            apply lt_intro_0_lt_S_n.
+          - rewrite Nat.add_comm.
+            reflexivity.
+        }
+      - exact H_no.
+    }
+  Defined.
+
+  (* Eval compute in (proj1_sig (binlog 64)). = 6 : nat *)
+
+  End BINARY_LOGARITHM.
+
+  Definition lookup {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : list (A * B) -> option B :=
+    fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
+    match zs with
+    | [] => None
+    | z :: zs => if eq_dec (fst z) then Some (snd z) else lookup_fix zs
+    end
+  .
+
+  Lemma lookup_ne_None_iff {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
+    forall zs : list (A * B),
+    lookup x eq_dec zs <> None <-> In x (map fst zs).
+  Proof.
+    induction zs as [| z zs IH]; simpl.
+    - tauto.
+    - destruct (eq_dec (fst z)) as [H_yes | H_no]; split; intros H.
+      + now left.
+      + apply Some_ne_None.
+      + tauto.
+      + now firstorder.
+  Qed.
+
+  Definition elemIndex_In {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
+    fix elemIndex_In_fix (xs : list A) {struct xs} : In x xs -> nat :=
+    match xs as xs0 return In x xs0 -> nat with
+    | [] => False_rec nat
+    | x' :: xs' =>
+      fun H_In : x' = x \/ In x xs' =>
+      match eq_dec x' with
+      | left H_yes => 0
+      | right H_no =>
+        let H_In' : In x xs' := or_ind (fun H : x' = x => False_ind (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
+        1 + elemIndex_In_fix xs' H_In'
+      end
+    end
+  .
+
+  Lemma elemIndex_In_nth_error {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
+    forall xs : list A,
+    forall H_In : In x xs,
+    nth_error xs (elemIndex_In x eq_dec xs H_In) = Some x.
+  Proof.
+    induction xs as [| x' xs' IH]; simpl.
+    - contradiction.
+    - intros [H_eq | H_In']; destruct (eq_dec x') as [H_yes | H_no].
+      + now subst x'.
+      + now contradiction H_no.
+      + now subst x'.
+      + exact (IH H_In').
+  Qed.
+
+  Lemma list_eq_dec {A : Type} (eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}) :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    {xs1 = xs2} + {xs1 <> xs2}.
+  Proof with ((left; congruence) || (right; congruence)) || eauto.
+    induction xs1 as [| x1 xs1 IH]; destruct xs2 as [| x2 xs2]...
+    - destruct (eq_dec x1 x2); destruct (IH xs2)...
+  Defined.
+
   Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
     fun f : {i : I & prod (A i) (B i)} -> C =>
     fun i : I =>
@@ -1365,315 +1776,6 @@ Module MyUtilities.
   Global Ltac auto_rewrite :=
     repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .
-
-  Section SET_LEVEL_LE.
-
-  Inductive leq (n : nat) : nat -> Set :=
-  | leq_init : leq n n
-  | leq_step : forall m : nat, leq n m -> leq n (S m)
-  .
-
-  Local Hint Constructors leq : core.
-
-  Lemma leq_reflexivity :
-    forall n : nat,
-    leq n n.
-  Proof.
-    constructor 1.
-  Defined.
-
-  Lemma leq_intro_leq_0_n :
-    forall n : nat,
-    leq 0 n.
-  Proof with eauto.
-    induction n as [| n IH]...
-  Defined.
-
-  Lemma leq_intro_leq_S_n_S_m :
-    forall n : nat,
-    forall m : nat,
-    leq n m ->
-    leq (S n) (S m).
-  Proof with eauto.
-    intros n m Hleq.
-    induction Hleq as [| m Hleq IH]...
-  Defined.
-
-  Lemma leq_transitivity :
-    forall n1 : nat,
-    forall n2 : nat,
-    forall n3 : nat,
-    leq n1 n2 ->
-    leq n2 n3 ->
-    leq n1 n3.
-  Proof with eauto.
-    intros n1 n2 n3 Hle1 Hle2.
-    revert n3 n2 n1 Hle2 Hle1.
-    induction n3; intros n2 n1 Hle2 Hle1; inversion Hle2; subst...
-  Defined.
-
-  Local Hint Resolve leq_transitivity : core.
-
-  Theorem accumulation_leq [phi : nat -> Type] :
-    (forall n : nat, (forall i : nat, leq i n -> i <> n -> phi i) -> phi n) ->
-    forall n : nat,
-    phi n.
-  Proof with (congruence || eauto).
-    intros acc_hyp.
-    enough (it_is_sufficient_to_show : forall n : nat, forall i : nat, leq i n -> phi i)...
-    induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
-    all: inversion leq_m_n; subst...
-  Defined.
-
-  Lemma leq_implies_le :
-    forall n : nat,
-    forall m : nat,
-    leq n m ->
-    n <= m.
-  Proof with eauto.
-    intros n m Hleq.
-    induction Hleq as [| m Hleq IH]...
-  Defined.
-
-  Lemma leq_asymmetry :
-    forall n1 : nat,
-    forall n2 : nat,
-    leq n1 n2 ->
-    leq n2 n1 ->
-    n1 = n2.
-  Proof.
-    intros n1 n2 Hleq1 Hleq2.
-    apply le_asymmetry.
-    - exact (leq_implies_le n1 n2 Hleq1).
-    - exact (leq_implies_le n2 n1 Hleq2).
-  Defined.
-
-  Lemma le_implies_leq :
-    forall n : nat,
-    forall m : nat,
-    n <= m ->
-    leq n m.
-  Proof.
-    induction n as [| n IH].
-    - intros m Hle.
-      exact (leq_intro_leq_0_n m).
-    - intros [| m'] Hle.
-      + exact (lt_elim_n_lt_0 n Hle).
-      + exact (leq_intro_leq_S_n_S_m n m' (IH m' (le_elim_S_n_le_m n (S m') Hle))).
-  Defined.
-
-  Lemma leq_unique :
-    forall n1 : nat,
-    forall n2 : nat,
-    forall Hleq1 : leq n1 n2,
-    forall Hleq2 : leq n1 n2,
-    Hleq1 = Hleq2.
-  Proof.
-    refine (
-      fun n1 : nat =>
-      fix leq_unique_fix (n2 : nat) (Hleq1 : leq n1 n2) {struct Hleq1} : forall Hleq2 : leq n1 n2, Hleq1 = Hleq2 :=
-      match Hleq1 as Hleq in leq _ m1 return forall Hleq2 : leq n1 m1, Hleq = Hleq2 with
-      | leq_init _ =>
-        fun Hleq2 : leq n1 n1 =>
-        match Hleq2 as Hleq in leq _ m2 return forall Heq : n1 = m2, eq_rec n1 (leq n1) (leq_init n1) m2 Heq = Hleq with
-        | leq_init _ => _
-        | leq_step _ m2' H_LE2' => _
-        end (eq_reflexivity n1)
-      | leq_step _ m1' Hleq1' =>
-        fun Hleq2 : leq n1 (S m1') =>
-        match Hleq2 as Hleq in leq _ m2 return forall Heq : m2 = S m1', leq_step n1 m1' Hleq1' = eq_rec m2 (leq n1) Hleq (S m1') Heq with
-        | leq_init _ => _
-        | leq_step _ m2' Hleq2' => _
-        end (eq_reflexivity (S m1'))
-      end
-    ).
-    - intros Heq.
-      rewrite (eqnat_proof_irrelevance n1 n1 Heq (eq_reflexivity n1)).
-      reflexivity.
-    - intros Heq.
-      assert (Hlt : m2' < n1) by now rewrite Heq; constructor.
-      assert (Hle : n1 <= m2') by now apply leq_implies_le.
-      contradiction (le_gt_False n1 m2' Hle Hlt).
-    - intros Heq.
-      assert (Hlt : m1' < n1) by now rewrite Heq; constructor.
-      assert (Hle : n1 <= m1') by now apply leq_implies_le.
-      contradiction (le_gt_False n1 m1' Hle Hlt).
-    - intros Heq.
-      assert (Heq' : m2' = m1') by exact (S_eq_S_elim m2' m1' Heq).
-      destruct Heq' as [].
-      rewrite (eqnat_proof_irrelevance (S m2') (S m2') Heq (eq_reflexivity (S m2'))).
-      apply (eq_congruence (leq_step n1 m2')).
-      exact (leq_unique_fix m2' Hleq1' Hleq2').
-  Qed.
-
-  Corollary well_founded_recursion_of_nat [phi : nat -> Type] :
-    (forall n : nat, (forall i : nat, i < n -> phi i) -> phi n) ->
-    (forall n : nat, phi n).
-  Proof.
-    intros acc_hyp.
-    apply accumulation_leq with (phi := phi).
-    intros n IH.
-    apply acc_hyp.
-    intros i H_lt.
-    apply IH.
-    - apply le_implies_leq.
-      exact (le_transitivity (le_S i i (le_n i)) H_lt).
-    - intros H_eq; subst n.
-      contradiction (not_n_lt_n i).
-  Defined.
-
-  End SET_LEVEL_LE.
-
-  Section ACKERMANN.
-
-  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
-    { AckermannFunc_spec1 : forall n, ack (0, n) = n + 1
-    ; AckermannFunc_spec2 : forall m, ack (m + 1, 0) = ack (m, 1)
-    ; AckermannFunc_spec3 : forall m n, ack (m + 1, n + 1) = ack (m, ack (m + 1, n))
-    }
-  .
-
-  Let AckermannFunc1_aux1 : (nat -> nat) -> nat -> nat :=
-    fun kont : nat -> nat =>
-    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
-    match n return nat with
-    | O => kont 1
-    | S n' => kont (AckermannFunc1_aux1_fix n')
-    end
-  .
-
-  Let AckermannFunc1_aux2 : nat -> nat -> nat :=
-    fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
-    match m return nat -> nat with
-    | O => S
-    | S m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
-    end
-  .
-
-  Definition AckermannFunc1 : (nat * nat) -> nat :=
-    fun p : nat * nat =>
-    AckermannFunc1_aux2 (fst p) (snd p)
-  .
-
-  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
-    AckermannFuncSpec AckermannFunc1.
-  Proof with (lia || eauto).
-    split.
-    - intros n; replace (n + 1) with (S n)...
-    - intros m; replace (m + 1) with (S m)...
-    - intros [| m']; induction n as [| n IHn]; cbn in *...
-      all: replace (m' + 1) with (S m') in *...
-  Qed.
-
-  End ACKERMANN.
-
-  Section FIBONACCI.
-
-  Lemma n_ne_S_plus_m_n :
-    forall m : nat,
-    forall n : nat,
-    n <> S (m + n).
-  Proof.
-    intros m n H_eq.
-    contradiction (not_n_lt_n n).
-    enough (it_is_sufficient_to_show : n < S (m + n)) by congruence.
-    apply le_intro_S_n_le_S_m, le_intro_plus2.
-  Defined.
-
-  Inductive fibonacci_spec : forall n : nat, forall f_n : nat, Prop :=
-  | FibonacciSpec_when_eq_0 :
-    fibonacci_spec 0 (0)
-  | FibonacciSpec_when_eq_1 :
-    fibonacci_spec 1 (1)
-  | FibonacciSpec_when_ge_2 :
-    forall n : nat,
-    forall f_n : nat,
-    forall f_n' : nat,
-    fibonacci_spec n f_n ->
-    fibonacci_spec (S n) f_n' ->
-    fibonacci_spec (S (S n)) (f_n + f_n')
-  .
-
-  Definition fibonacci :
-    forall n : nat,
-    {f_n : nat | fibonacci_spec n f_n}.
-  Proof.
-    apply accumulation_leq with (phi := fun n : nat => {f_n : nat | fibonacci_spec n f_n}).
-    intros [| [| n]] acc.
-    - exists (0).
-      now constructor 1.
-    - exists (1).
-      now constructor 2.
-    - set (acc_n := acc n (leq_step n (S n) (leq_step n n (leq_init n))) (n_ne_S_plus_m_n 1 n)).
-      set (acc_n' := acc (S n) (leq_step (S n) (S n) (leq_init (S n))) (n_ne_S_plus_m_n 0 (S n))).
-      set (f_n := proj1_sig acc_n).
-      set (f_n' := proj1_sig acc_n').
-      exists (f_n + f_n').
-      now constructor 3; [exact (proj2_sig acc_n) | exact (proj2_sig acc_n')].
-  Defined.
-
-  (* Eval compute in proj1_sig (fibonacci 10). = 55 : nat *)
-
-  End FIBONACCI.
-
-  Definition lookup {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : list (A * B) -> option B :=
-    fix lookup_fix (zs : list (A * B)) {struct zs} : option B :=
-    match zs with
-    | [] => None
-    | z :: zs => if eq_dec (fst z) then Some (snd z) else lookup_fix zs
-    end
-  .
-
-  Lemma lookup_ne_None_iff {A : Type} {B : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
-    forall zs : list (A * B),
-    lookup x eq_dec zs <> None <-> In x (map fst zs).
-  Proof.
-    induction zs as [| z zs IH]; simpl.
-    - tauto.
-    - destruct (eq_dec (fst z)) as [H_yes | H_no]; split; intros H.
-      + now left.
-      + apply Some_ne_None.
-      + tauto.
-      + now firstorder.
-  Qed.
-
-  Definition elemIndex_In {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
-    fix elemIndex_In_fix (xs : list A) {struct xs} : In x xs -> nat :=
-    match xs as xs0 return In x xs0 -> nat with
-    | [] => False_rec nat
-    | x' :: xs' =>
-      fun H_In : x' = x \/ In x xs' =>
-      match eq_dec x' with
-      | left H_yes => 0
-      | right H_no =>
-        let H_In' : In x xs' := or_ind (fun H : x' = x => False_ind (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
-        1 + elemIndex_In_fix xs' H_In'
-      end
-    end
-  .
-
-  Lemma elemIndex_In_nth_error {A : Type} (x : A) (eq_dec : forall y : A, {x = y} + {x <> y}) :
-    forall xs : list A,
-    forall H_In : In x xs,
-    nth_error xs (elemIndex_In x eq_dec xs H_In) = Some x.
-  Proof.
-    induction xs as [| x' xs' IH]; simpl.
-    - contradiction.
-    - intros [H_eq | H_In']; destruct (eq_dec x') as [H_yes | H_no].
-      + now subst x'.
-      + now contradiction H_no.
-      + now subst x'.
-      + exact (IH H_In').
-  Qed.
-
-  Lemma list_eq_dec {A : Type} (eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2}) :
-    forall xs1 : list A,
-    forall xs2 : list A,
-    {xs1 = xs2} + {xs1 <> xs2}.
-  Proof with ((left; congruence) || (right; congruence)) || eauto.
-    induction xs1 as [| x1 xs1 IH]; destruct xs2 as [| x2 xs2]...
-    - destruct (eq_dec x1 x2); destruct (IH xs2)...
-  Defined.
 
 End MyUtilities.
 
