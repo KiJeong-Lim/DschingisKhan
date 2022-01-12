@@ -6,7 +6,7 @@ Require Import DschingisKhan.pure.MyUtilities.
 
 Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive Completeness Proofs and Delimited Control" written by "Danko Ilik" *)
 
-  Import BasicSetoidTheory MyUtilities MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL.
+  Import BasicSetoidTheory MyUtilities MyEnsemble MyEnsembleNova CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL FormulaNotationsOfPL.
 
   Local Program Instance formula_isSetoid : isSetoid formula :=
     { eqProp :=

@@ -188,8 +188,6 @@ Module FormulaNotationsOfPL.
 
   Global Declare Scope pl_formula_scope.
 
-  Global Open Scope pl_formula_scope.
-
   Bind Scope pl_formula_scope with formula.
 
   Global Declare Custom Entry pl_formula_viewer.
@@ -208,9 +206,11 @@ Module FormulaNotationsOfPL.
 
   Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_viewer at level 2, no associativity).
 
-  Global Notation " x " := x (in custom pl_formula_viewer at level 0, x ident).
+  Global Notation " p " := p (in custom pl_formula_viewer at level 0, p ident).
 
   Global Notation " '(' p ')' " := p (in custom pl_formula_viewer, p at level 3).
+
+  Global Open Scope pl_formula_scope.
 
   Global Notation " '\obj[' p  ']' " := p (p custom pl_formula_viewer at level 3, at level 0, no associativity) : pl_formula_scope.
 
