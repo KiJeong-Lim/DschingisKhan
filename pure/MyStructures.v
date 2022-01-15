@@ -345,20 +345,20 @@ Module MyEnsemble.
 
   Global Hint Resolve in_preimage_iff : my_hints.
 
-  Definition completement {A : Type} : ensemble A -> ensemble A :=
+  Definition complement {A : Type} : ensemble A -> ensemble A :=
     fun X : ensemble A =>
     fun x : A =>
     ~ member x X
   .
 
-  Global Hint Unfold completement : my_hints.
+  Global Hint Unfold complement : my_hints.
 
-  Global Notation " X '^c' " := (completement X) (at level 15, right associativity) : type_scope.
+  Global Notation " X '^c' " := (complement X) (at level 15, right associativity) : type_scope.
 
   Lemma in_complement_iff {A : Type} :
     forall x : A,
     forall X : ensemble A,
-    member x (completement X) <-> ~ member x X.
+    member x (complement X) <-> ~ member x X.
   Proof with reflexivity.
     intros x X...
   Qed.

@@ -173,7 +173,7 @@ Module FunFacts.
     LEFT (RIGHT phi)
   .
 
-  Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (at level 0, no associativity) : type_scope.
+  Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (x binder, at level 0, no associativity) : type_scope.
 
   Let HAS_AS_AN_ELEMENT : UNIV -> UNIV -> BB :=
     fun x : UNIV =>

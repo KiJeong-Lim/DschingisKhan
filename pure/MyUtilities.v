@@ -1795,26 +1795,6 @@ Module MyScratch.
 
   Import EqFacts MyUtilities.
 
-  Section MyStream.
-
-  Variable A : Type.
-
-  CoInductive Stream : Type :=
-    Cons
-    { hd : A
-    ; tl : Stream
-    }
-  .
-
-  Definition Stream_corec (X : Type) : (X -> A * X) -> (X -> Stream) :=
-    fun acc : X -> A * X =>
-    cofix CIH : X -> Stream :=
-    fun x : X =>
-    {| hd := fst (acc x); tl := CIH (snd (acc x)) |}
-  .
-
-  End MyStream.
-
   Section SYNCHRONOUS_CIRCUIT.
 
   CoInductive circuit (Input : Type) (Output : Type) : Type :=
@@ -1850,66 +1830,5 @@ Module MyScratch.
   Defined.
 
   End SYNCHRONOUS_CIRCUIT.
-
-  Section CONAT.
-
-  CoInductive conat : Set :=
-  | coO : conat
-  | coS : conat -> conat
-  .
-
-  Fixpoint burn_conat (n : nat) {struct n} : conat -> conat :=
-    fun cn : conat =>
-    match n with
-    | O => cn
-    | S n' =>
-      match cn with
-      | coO => coO
-      | coS cn' => coS (burn_conat n' cn')
-      end
-    end
-  .
-
-  Lemma usage_of_burn_conat :
-    forall n : nat,
-    forall cn : conat,
-    burn_conat n cn = cn.
-  Proof.
-    induction n as [| n IH]; simpl.
-    - reflexivity.
-    - intros cn.
-      destruct cn as [| cn'].
-      + exact (eq_reflexivity coO).
-      + exact (eq_congruence coS (burn_conat n cn') cn' (IH cn')).
-  Qed.
-
-  Local Hint Resolve usage_of_burn_conat : core.
-
-  CoInductive conat_bisim : conat -> conat -> Prop :=
-  | bisim_coO :
-    conat_bisim coO coO
-  | bisim_coS :
-    forall cn1 : conat,
-    forall cn2 : conat,
-    conat_bisim cn1 cn2 ->
-    conat_bisim (coS cn1) (coS cn2)
-  .
-
-  Local Notation " cn1 =-= cn2 " := (conat_bisim cn1 cn2) (at level 70, no associativity) : type_scope.
-
-  Local Hint Constructors conat_bisim : core.
-
-  Fixpoint to_conat (n : nat) {struct n} : conat :=
-    match n with
-    | O => coO
-    | S n' => coS (to_conat n')
-    end
-  .
-
-  CoFixpoint infty : conat :=
-    coS infty
-  .
-
-  End CONAT.
 
 End MyScratch.

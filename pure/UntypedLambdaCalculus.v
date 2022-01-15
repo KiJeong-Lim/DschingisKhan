@@ -758,7 +758,7 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   Next Obligation with eauto with *.
-    set ( getRank :=
+    set (getRank :=
       fix getRank_fix (M : tm) {struct M} : nat :=
       match M with
       | Var x => O
@@ -789,27 +789,6 @@ Module UntypedLamdbdaCalculus.
   Qed.
 
   End SUBTERM.
-
-  Section DE_BRUIJN.
-
-  Definition mkDeBruijnCtx (N : tm) : forall poss : list position, forall M : tm, isSuper M poss N -> list ivar :=
-    fix mkDeBruijnCtx_fix (poss : list position) (M : tm) (X : occurs N poss M) {struct X} : list ivar :=
-    match X with
-    | OccursRefl _ => []
-    | OccursApp1 _ P1 P2 poss X1 => mkDeBruijnCtx_fix poss P1 X1
-    | OccursApp2 _ P1 P2 poss X2 => mkDeBruijnCtx_fix poss P2 X2
-    | OccursLam0 _ y Q poss X0 => y :: mkDeBruijnCtx_fix poss Q X0
-    end
-  .
-
-  Inductive node : Set :=
-  | NIDX (i : nat) : node
-  | DCON (c : CON) : node
-  | NAPP (e1 : node) (e2 : node) : node
-  | NLAM (e1 : node) : node
-  .
-
-  End DE_BRUIJN.
 
   End UNTYPED_LAMBDA_CALCULUS_WITH_CONSTANT.
 
