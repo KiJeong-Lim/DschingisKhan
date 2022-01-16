@@ -49,6 +49,12 @@ Module FunFacts.
 
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
+  Definition axiom_schema_of_replacement_on (A : Type) : Type :=
+    forall P : A -> Prop,
+    (exists x : A, forall y : A, P y <-> x = y) ->
+    {x : A | P x}
+  .
+
   Lemma derive_fixedpoint_combinator (D : Prop) :
     RETRACT (D -> D) D ->
     {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
@@ -336,5 +342,32 @@ Module FunFacts.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
+
+  Section CLASSICAL_IF_THEN_ELSE.
+
+  Hypothesis axiom_schema_of_replacement : forall A : Type, axiom_schema_of_replacement_on A.
+
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
+
+  Theorem classical_if_then_else :
+    forall P : Prop,
+    {P} + {~ P}.
+  Proof.
+    assert (claim1 := exclusive_middle_implies_proof_irrelevance exclusive_middle).
+    intros Q.
+    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then Q else ~ Q) <-> x = y).
+    - assert (claim2 := axiom_schema_of_replacement bool (fun b : bool => if b then Q else ~ Q) it_is_sufficient_to_show).
+      exact (
+        match proj1_sig claim2 as b return (if b then Q else ~ Q) -> {Q} + {~ Q} with
+        | true => fun H_yes : Q => left H_yes
+        | false => fun H_no : ~ Q => right H_no
+        end (proj2_sig claim2)
+      ).
+    - destruct (exclusive_middle Q) as [H_yes | H_no].
+      + exists (true); intros [ | ]; [tauto | now split].
+      + exists (false); intros [ | ]; [now split | tauto].
+  Qed.
+
+  End CLASSICAL_IF_THEN_ELSE.
 
 End FunFacts.
