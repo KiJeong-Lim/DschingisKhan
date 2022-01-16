@@ -345,7 +345,7 @@ Module FunFacts.
 
   Section CLASSICAL_IF_THEN_ELSE.
 
-  Hypothesis axiom_schema_of_replacement : forall A : Type, axiom_schema_of_replacement_on A.
+  Hypothesis axiom_schema_of_replacement_on_bool : axiom_schema_of_replacement_on bool.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
@@ -353,13 +353,13 @@ Module FunFacts.
     forall P : Prop,
     {P} + {~ P}.
   Proof.
-    intros Q.
-    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then Q else ~ Q) <-> x = y).
-    - assert (claim1 := axiom_schema_of_replacement bool (fun b : bool => if b then Q else ~ Q) it_is_sufficient_to_show).
+    intros P.
+    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then P else ~ P) <-> x = y).
+    - assert (claim1 := axiom_schema_of_replacement_on_bool (fun b : bool => if b then P else ~ P) it_is_sufficient_to_show).
       assert (claim2 := proj2_sig claim1).
       revert claim2.
       destruct (proj1_sig claim1); intros H; [left | right]; exact H.
-    - destruct (exclusive_middle Q) as [H_yes | H_no].
+    - destruct (exclusive_middle P) as [H_yes | H_no].
       + exists (true); intros [ | ]; [tauto | now split].
       + exists (false); intros [ | ]; [now split | tauto].
   Qed.
