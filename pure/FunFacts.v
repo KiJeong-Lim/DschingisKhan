@@ -357,8 +357,7 @@ Module FunFacts.
     enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then P else ~ P) <-> x = y).
     - assert (claim1 := axiom_schema_of_replacement_on_bool (fun b : bool => if b then P else ~ P) it_is_sufficient_to_show).
       assert (claim2 := proj2_sig claim1).
-      revert claim2.
-      destruct (proj1_sig claim1); intros H; [left | right]; exact H.
+      revert claim2; destruct (proj1_sig claim1); eauto.
     - destruct (exclusive_middle P) as [H_yes | H_no].
       + exists (true); intros [ | ]; [tauto | now split].
       + exists (false); intros [ | ]; [now split | tauto].
