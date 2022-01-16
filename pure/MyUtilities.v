@@ -1064,6 +1064,22 @@ Module MyUtilities.
       + exact (leq_intro_leq_S_n_S_m n m' (IH m' (le_elim_S_n_le_m n (S m') Hle))).
   Defined.
 
+  Corollary well_founded_recursion_of_nat [phi : nat -> Type] :
+    (forall n : nat, (forall i : nat, i < n -> phi i) -> phi n) ->
+    (forall n : nat, phi n).
+  Proof.
+    intros acc_hyp.
+    apply accumulation_leq with (phi := phi).
+    intros n IH.
+    apply acc_hyp.
+    intros i H_lt.
+    apply IH.
+    - apply le_implies_leq.
+      exact (le_transitivity (le_S i i (le_n i)) H_lt).
+    - intros H_eq; subst n.
+      contradiction (not_n_lt_n i).
+  Defined.
+
   Lemma leq_unique :
     forall n1 : nat,
     forall n2 : nat,
@@ -1107,22 +1123,6 @@ Module MyUtilities.
       apply (eq_congruence (leq_step n1 m2')).
       exact (leq_unique_fix m2' Hleq1' Hleq2').
   Qed.
-
-  Corollary well_founded_recursion_of_nat [phi : nat -> Type] :
-    (forall n : nat, (forall i : nat, i < n -> phi i) -> phi n) ->
-    (forall n : nat, phi n).
-  Proof.
-    intros acc_hyp.
-    apply accumulation_leq with (phi := phi).
-    intros n IH.
-    apply acc_hyp.
-    intros i H_lt.
-    apply IH.
-    - apply le_implies_leq.
-      exact (le_transitivity (le_S i i (le_n i)) H_lt).
-    - intros H_eq; subst n.
-      contradiction (not_n_lt_n i).
-  Defined.
 
   End SET_LEVEL_LE.
 
@@ -1173,14 +1173,13 @@ Module MyUtilities.
     forall b : nat,
     b <> 0 ->
     (a + b) / b = (a / b) + 1 /\ (a + b) mod b = a mod b.
-  Proof.
+  Proof with try lia.
     intros a b H_b_ne_0.
     apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
-    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b).
-      + enough (claim1 : a = b * (a / b) + a mod b) by congruence.
-        exact (Nat.div_mod a b H_b_ne_0).
-      + lia.
-    - assert (claim2 : b > 0) by lia.
+    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b)...
+      enough (claim1 : a = b * (a / b) + a mod b) by congruence.
+      exact (Nat.div_mod a b H_b_ne_0).
+    - assert (claim2 : b > 0)...
       exact (proj2 (Nat.mod_bound_pos a b (le_intro_0_le_n a) claim2)).
   Qed.
 
@@ -1190,16 +1189,14 @@ Module MyUtilities.
     n / b < n.
   Proof with try lia.
     intros H_b_gt_1 H_n_ge_1.
-    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n (n / b)) as [H_yes | H_no].
-    - assert (claim1 : b <> 0)...
-      assert (claim2 := Nat.mod_bound_pos n b (le_intro_0_le_n n) (le_transitivity (le_S 1 1 (le_n 1)) H_b_gt_1)).
-      assert (claim3 := Nat.div_mod n b claim1).
-      enough (it_is_sufficient_to_show : n / b < b * (n / b) + n mod b)...
-      assert (claim4 : n mod b > 0 \/ n mod b = 0)...
-      assert (claim5 := guarantee1_S_pred_n_eq_n H_b_gt_1).
-      assert (claim6 := le_intro_0_le_n (pred b * (n / b))).
-      assert (claim7 : n / b > 0 \/ n / b = 0)...
-    - exact H_no.
+    assert (claim1 : b <> 0)...
+    assert (claim2 := Nat.mod_bound_pos n b (le_intro_0_le_n n) (le_transitivity (le_S 1 1 (le_n 1)) H_b_gt_1)).
+    assert (claim3 := Nat.div_mod n b claim1).
+    enough (it_is_sufficient_to_show : n / b < b * (n / b) + n mod b)...
+    assert (claim4 : n mod b > 0 \/ n mod b = 0)...
+    assert (claim5 := guarantee1_S_pred_n_eq_n H_b_gt_1).
+    assert (claim6 := le_intro_0_le_n (pred b * (n / b))).
+    assert (claim7 : n / b > 0 \/ n / b = 0)...
   Qed.
 
   Definition first_nat : (nat -> bool) -> nat -> nat :=
@@ -1274,23 +1271,23 @@ Module MyUtilities.
   Proof with (lia || eauto).
     enough (forall z : nat, forall y : nat, forall x : nat, z = x + y -> (x, y) = cantor_pairing (sum_from_0_to z + y)) by firstorder.
     induction z.
-    - intros y x H.
-      assert (H0 : x = 0) by lia.
-      assert (H1 : y = 0) by lia.
-      subst...
-    - induction y; intros x H.
+    - intros y x H_0_eq_plus_x_y.
+      assert (claim1 : x = 0) by lia.
+      assert (claim2 : y = 0) by lia.
+      subst x y...
+    - induction y as [| y IHy]; intros x H_S_z_eq_plus_x_0.
       + assert (Heq : x = S z) by lia.
-        subst.
+        subst x.
         simpl.
-        destruct (cantor_pairing (z + sum_from_0_to z + 0)) as [x y] eqn: H0.
-        assert (H1 : (0, z) = cantor_pairing (sum_from_0_to z + z))...
-        rewrite Nat.add_0_r, Nat.add_comm in H0.
-        rewrite H0 in H1.
-        inversion H1; subst...
-      + assert (H0 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)) by now apply (IHy (S x)); lia.
-        assert (H1 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl.
+        destruct (cantor_pairing (z + sum_from_0_to z + 0)) as [x y] eqn: H_eqn.
+        assert (claim3 : (0, z) = cantor_pairing (sum_from_0_to z + z))...
+        rewrite Nat.add_0_r, Nat.add_comm in H_eqn.
+        assert (claim4 := eq_transitivity _ _ _ claim3 H_eqn).
+        inversion claim4; subst...
+      + assert (claim5 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)) by now apply (IHy (S x)); lia.
+        assert (claim6 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl.
         simpl.
-        rewrite H1, <- H0...
+        rewrite claim6, <- claim5...
   Qed.
 
   Lemma cantor_pairing_is_injective :
@@ -1300,16 +1297,14 @@ Module MyUtilities.
     cantor_pairing n = (x, y) ->
     n = sum_from_0_to (x + y) + y.
   Proof with (lia || eauto).
-    induction n; simpl.
-    - intros x y H.
-      inversion H; subst...
-    - intros x y H.
-      destruct (cantor_pairing n) as [[| x'] y'] eqn: H0; inversion H; subst.
+    induction n; simpl; intros x y H_eq.
+    - inversion H_eq; subst...
+    - destruct (cantor_pairing n) as [[| x'] y'] eqn: H_eqn; inversion H_eq; subst.
       + do 2 rewrite Nat.add_0_r.
         simpl.
         rewrite (IHn 0 y' eq_refl), Nat.add_0_l...
-      + assert (H1 : forall x' : nat, S x' + y' = x' + S y') by lia.
-        rewrite (IHn (S x) y' eq_refl), (H1 x)...
+      + assert (claim1 : forall x' : nat, S x' + y' = x' + S y')...
+        rewrite (IHn (S x) y' eq_refl), (claim1 x)...
   Qed.
 
   Theorem cantor_pairing_spec :
@@ -1550,16 +1545,19 @@ Module MyUtilities.
   Section LOGARITHM_ON_NAT.
 
   Inductive log_on_nat_spec (base : nat) : nat -> nat -> Prop :=
-  | LogOnNatSpec_when_eq_1 (H_base_gt_1 : base > 1) (n : nat) :
+  | LogOnNatSpec_base_case (H_base_gt_1 : base > 1) (n : nat) :
     n >= 1 ->
     n < base ->
     log_on_nat_spec base n (0)
-  | LogOnNatSpec_when_gt_1 (H_base_gt_1 : base > 1) (n : nat) :
+  | LogOnNatSpec_step_case (H_base_gt_1 : base > 1) (n : nat) :
+    n >= 1 ->
     n >= base ->
     forall l_n : nat,
     log_on_nat_spec base (n / base) l_n ->
     log_on_nat_spec base n (S l_n)
   .
+
+  Local Hint Constructors log_on_nat_spec : core.
 
   Lemma n_div_b_ge_1_if_n_ge_b_and_b_ge_1 (n : nat) (b : nat) :
     n >= b ->
@@ -1567,52 +1565,41 @@ Module MyUtilities.
     n / b >= 1.
   Proof with try lia.
     intros H_n_ge_b H_b_ge_1.
-    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m 1 (n / b)) as [H_yes | H_no].
-    - exact H_yes.
-    - assert (claim1 : b <> 0)...
-      assert (claim2 := Nat.div_mod n b claim1).
-      assert (claim3 : b * (n / b) + n mod b >= b)...
-      assert (claim4 := Nat.mod_bound_pos n b (le_intro_0_le_n n) H_b_ge_1).
-      assert (therefore : b * (n / b) + b > b)...
+    assert (claim1 : b <> 0)...
+    assert (claim2 := Nat.div_mod n b claim1).
+    assert (claim3 : b * (n / b) + n mod b >= b)...
+    assert (claim4 := Nat.mod_bound_pos n b (le_intro_0_le_n n) H_b_ge_1).
+    assert (therefore : b * (n / b) + b > b)...
   Qed.
 
   Definition lognat (base : nat) (H_base_gt_1 : base > 1) :
     forall n : nat,
     {l_n : nat | n >= 1 -> log_on_nat_spec base n l_n}.
-  Proof.
+  Proof with eauto.
     strong_rec.
     intros [ | n'] acc.
     - exists (0).
       now intros H_n_ge_1; contradiction (not_n_lt_n 0 H_n_ge_1).
     - set (n := S n').
       destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m base n) as [H_yes | H_no].
-      { assert (n_div_base_lt_n : n / base < n).
+      + assert (n_div_base_lt_n : n / base < n).
         { apply n_div_b_lt_n_if_b_gt_1_and_n_ge_1.
           - exact H_base_gt_1.
           - apply le_intro_S_n_le_S_m, le_intro_0_le_n.
         }
-        enough (claim1 : leq (n / base) n).
-        enough (claim2 : n / base <> n).
-        - set (l_n := acc (n / base) claim1 claim2).
-          exists (S (proj1_sig l_n)).
-          intros H_n_ge_1.
-          constructor 2.
-          + exact H_base_gt_1.
-          + exact H_yes.
-          + exact (proj2_sig l_n (n_div_b_ge_1_if_n_ge_b_and_b_ge_1 n base H_yes (le_transitivity (le_S 1 1 (le_n 1)) H_base_gt_1))).
-        - intros H_eq.
+        assert (claim1 : leq (n / base) n).
+        { apply le_implies_leq.
+          exact (le_transitivity (le_S (n / base) (n / base) (le_n (n / base))) n_div_base_lt_n).
+        }
+        assert (claim2 : n / base <> n).
+        { intros H_eq.
           contradiction (not_n_lt_n (n / base)).
           congruence.
-        - apply le_implies_leq.
-          exact (le_transitivity (le_S (n / base) (n / base) (le_n (n / base))) n_div_base_lt_n).
-      }
-      { exists (0).
-        intros H_n_ge_1.
-        constructor 1.
-        - exact H_base_gt_1.
-        - exact H_n_ge_1.
-        - exact H_no.
-      }
+        }
+        set (l_n := acc (n / base) claim1 claim2).
+        assert (claim3 := proj2_sig l_n (n_div_b_ge_1_if_n_ge_b_and_b_ge_1 n base H_yes (le_transitivity (le_S 1 1 (le_n 1)) H_base_gt_1))).
+        exists (S (proj1_sig l_n))...
+      + exists (0)...
   Defined.
 
   (* Eval compute in (proj1_sig (lognat 4 _ 4096)). = 6 : nat *)
