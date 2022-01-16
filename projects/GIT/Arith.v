@@ -173,6 +173,12 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     end
   .
 
+  Definition itree_trigger {E : Type -> Type} : E -< itree E :=
+    fun R : Type =>
+    fun e : E R =>
+    Vis R e (fun x : R => Ret x)
+  .
+
   Definition itree_iter {E : Type -> Type} {R : Type} {I : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
     expand_leaves (@sum_rect I R (fun _ => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
@@ -200,7 +206,8 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
-    itree_iter (E := E') (R := R) (I := itree (E +' E') R) (fun t0 : itree (E +' E') R =>
+    let itree_iter' := itree_iter (E := E') (R := R) (I := itree (E +' E') R) in
+    itree_iter' (fun t0 : itree (E +' E') R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
@@ -217,12 +224,6 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     fun R : Type =>
     fun e : E R =>
     itree_interpret_mrec ctx R (ctx R e)
-  .
-
-  Definition itree_trigger {E : Type -> Type} : E -< itree E :=
-    fun R : Type =>
-    fun e : E R =>
-    Vis R e (fun x : R => Ret x)
   .
 
   Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +' E') :=
