@@ -36,9 +36,9 @@ Module MyCategories.
     k2 x >>= k1
   .
 
-  Global Infix " `fcat` " := fcat (at level 45, right associativity).
+  Global Infix " `fcat` " := fcat (at level 25, right associativity) : function_scope.
 
-  Global Infix " `kcat` " := kcat (at level 45, right associativity).
+  Global Infix " `kcat` " := kcat (at level 25, right associativity) : function_scope.
 
   Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
 
@@ -202,12 +202,6 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     )
   .
 
-  Definition itree_trigger {E : Type -> Type} : E -< itree E :=
-    fun R : Type =>
-    fun e : E R =>
-    Vis R e (fun x : R => Ret x)
-  .
-
   Inductive callE (A : Type) (B : Type) : Type -> Type :=
   | Call (arg : A) : callE A B B
   .
@@ -237,6 +231,12 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     itree_interpret_mrec ctx R (ctx R e)
   .
 
+  Definition itree_trigger {E : Type -> Type} : E -< itree E :=
+    fun R : Type =>
+    fun e : E R =>
+    Vis R e (fun x : R => Ret x)
+  .
+
   Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +1 E') :=
     fun R : Type =>
     fun e : E R =>
@@ -249,7 +249,7 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     itree_mrec (ctx itree_trigger_inl1)
   .
 
-  Definition calling {A : Type} {B : Type} {E : Type -> Type} (callee : A -> itree E B) : callE A B -< itree E :=
+  Definition calling {E : Type -> Type} {A : Type} {B : Type} (callee : A -> itree E B) : callE A B -< itree E :=
     fun R : Type =>
     fun e : callE A B R =>
     match e in callE _ _ X return itree E X with
@@ -257,7 +257,7 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     end
   .
 
-  Definition itree_rec {E : Type -> Type} {A B : Type} (body : A -> itree (callE A B +1 E) B) : A -> itree E B :=
+  Definition itree_rec {E : Type -> Type} {A : Type} {B : Type} (body : A -> itree (callE A B +1 E) B) : A -> itree E B :=
     fun arg : A =>
     itree_mrec (calling body) B (Call arg)
   .
