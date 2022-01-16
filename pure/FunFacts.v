@@ -349,17 +349,13 @@ Module FunFacts.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
-  Theorem classical_if_then_else :
-    forall P : Prop,
+  Theorem classical_if_then_else (P : Prop) :
     {P} + {~ P}.
   Proof.
-    intros P.
-    assert (claim1 : {b : bool | if b then P else ~ P}).
-    { apply axiom_schema_of_replacement_on_bool with (phi := fun b : bool => if b then P else ~ P).
-      destruct (exclusive_middle P); [exists (true) | exists (false)].
-      all: now intros [ | ]; split.
-    }
-    exact ((if proj1_sig claim1 as b return (if b then P else ~ P) -> ({P} + {~ P}) then left else right) (proj2_sig claim1)).
+    enough (claim1 : {b : bool | if b then P else ~ P}) by exact ((if proj1_sig claim1 as b return (if b then P else ~ P) -> ({P} + {~ P}) then left else right) (proj2_sig claim1)).
+    apply axiom_schema_of_replacement_on_bool with (phi := fun b : bool => if b then P else ~ P).
+    destruct (exclusive_middle P) as [H_yes | H_no]; [exists (true) | exists (false)].
+    all: now intros [ | ]; split.
   Qed.
 
   End CLASSICAL_IF_THEN_ELSE.
