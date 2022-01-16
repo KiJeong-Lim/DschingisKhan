@@ -353,16 +353,12 @@ Module FunFacts.
     forall P : Prop,
     {P} + {~ P}.
   Proof.
-    assert (claim1 := exclusive_middle_implies_proof_irrelevance exclusive_middle).
     intros Q.
     enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then Q else ~ Q) <-> x = y).
-    - assert (claim2 := axiom_schema_of_replacement bool (fun b : bool => if b then Q else ~ Q) it_is_sufficient_to_show).
-      exact (
-        match proj1_sig claim2 as b return (if b then Q else ~ Q) -> {Q} + {~ Q} with
-        | true => fun H_yes : Q => left H_yes
-        | false => fun H_no : ~ Q => right H_no
-        end (proj2_sig claim2)
-      ).
+    - assert (claim1 := axiom_schema_of_replacement bool (fun b : bool => if b then Q else ~ Q) it_is_sufficient_to_show).
+      assert (claim2 := proj2_sig claim1).
+      revert claim2.
+      destruct (proj1_sig claim1); intros H; [left | right]; exact H.
     - destruct (exclusive_middle Q) as [H_yes | H_no].
       + exists (true); intros [ | ]; [tauto | now split].
       + exists (false); intros [ | ]; [now split | tauto].
