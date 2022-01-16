@@ -1168,6 +1168,40 @@ Module MyUtilities.
     enough (therefore : q = a / b)...
   Qed.
 
+  Lemma plus_a_b_divmod_b :
+    forall a : nat,
+    forall b : nat,
+    b <> 0 ->
+    (a + b) / b = (a / b) + 1 /\ (a + b) mod b = a mod b.
+  Proof.
+    intros a b H_b_ne_0.
+    apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
+    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b).
+      + enough (claim1 : a = b * (a / b) + a mod b) by congruence.
+        exact (Nat.div_mod a b H_b_ne_0).
+      + lia.
+    - assert (claim2 : b > 0) by lia.
+      exact (proj2 (Nat.mod_bound_pos a b (le_intro_0_le_n a) claim2)).
+  Qed.
+
+  Lemma n_div_b_lt_n_if_b_gt_1_and_n_ge_1 (n : nat) (b : nat) :
+    b > 1 ->
+    n >= 1 ->
+    n / b < n.
+  Proof with try lia.
+    intros H_b_gt_1 H_n_ge_1.
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n (n / b)) as [H_yes | H_no].
+    - assert (claim1 : b <> 0)...
+      assert (claim2 := Nat.mod_bound_pos n b (le_intro_0_le_n n) (le_transitivity (le_S 1 1 (le_n 1)) H_b_gt_1)).
+      assert (claim3 := Nat.div_mod n b claim1).
+      enough (it_is_sufficient_to_show : n / b < b * (n / b) + n mod b)...
+      assert (claim4 : n mod b > 0 \/ n mod b = 0)...
+      assert (claim5 := guarantee1_S_pred_n_eq_n H_b_gt_1).
+      assert (claim6 := le_intro_0_le_n (pred b * (n / b))).
+      assert (claim7 : n / b > 0 \/ n / b = 0)...
+    - exact H_no.
+  Qed.
+
   Definition first_nat : (nat -> bool) -> nat -> nat :=
     fun p : nat -> bool =>
     fix first_nat_fix (n : nat) {struct n} : nat :=
@@ -1466,17 +1500,6 @@ Module MyUtilities.
 
   Section FIBONACCI.
 
-  Lemma n_ne_S_plus_m_n :
-    forall m : nat,
-    forall n : nat,
-    n <> S (m + n).
-  Proof.
-    intros m n H_eq.
-    contradiction (not_n_lt_n n).
-    enough (it_is_sufficient_to_show : n < S (m + n)) by congruence.
-    apply le_intro_S_n_le_S_m, le_intro_plus2.
-  Qed.
-
   Inductive fibonacci_spec : forall n : nat, forall f_n : nat, Prop :=
   | FibonacciSpec_when_eq_0 :
     fibonacci_spec 0 (0)
@@ -1490,6 +1513,17 @@ Module MyUtilities.
     fibonacci_spec (S n) f_n' ->
     fibonacci_spec (S (S n)) (f_n + f_n')
   .
+
+  Lemma n_ne_S_plus_m_n :
+    forall m : nat,
+    forall n : nat,
+    n <> S (m + n).
+  Proof.
+    intros m n H_eq.
+    contradiction (not_n_lt_n n).
+    enough (it_is_sufficient_to_show : n < S (m + n)) by congruence.
+    apply le_intro_S_n_le_S_m, le_intro_plus2.
+  Qed.
 
   Definition fibonacci :
     forall n : nat,
@@ -1513,102 +1547,77 @@ Module MyUtilities.
 
   End FIBONACCI.
 
-  Section BINARY_LOGARITHM.
+  Section LOGARITHM_ON_NAT.
 
-  Lemma div_mod_lemma1 :
-    forall a : nat,
-    forall b : nat,
-    b <> 0 ->
-    (a + b) / b = (a / b) + 1 /\ (a + b) mod b = a mod b.
-  Proof.
-    intros a b H_b_ne_0.
-    apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
-    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b).
-      + enough (claim1 : a = b * (a / b) + a mod b) by congruence.
-        exact (Nat.div_mod a b H_b_ne_0).
-      + lia.
-    - assert (claim2 : b > 0) by lia.
-      exact (proj2 (Nat.mod_bound_pos a b (le_intro_0_le_n a) claim2)).
-  Qed.
-
-  Inductive binlog_spec : nat -> nat -> Prop :=
-  | BinLogSpec_when_eq_1 :
-    binlog_spec 1 (0)
-  | BinLogSpec_when_gt_1 :
-    forall n : nat,
+  Inductive log_on_nat_spec (base : nat) : nat -> nat -> Prop :=
+  | LogOnNatSpec_when_eq_1 (H_base_gt_1 : base > 1) (n : nat) :
+    n >= 1 ->
+    n < base ->
+    log_on_nat_spec base n (0)
+  | LogOnNatSpec_when_gt_1 (H_base_gt_1 : base > 1) (n : nat) :
+    n >= base ->
     forall l_n : nat,
-    n > 1 ->
-    binlog_spec (n / 2) l_n ->
-    binlog_spec n (S l_n)
+    log_on_nat_spec base (n / base) l_n ->
+    log_on_nat_spec base n (S l_n)
   .
 
-  Definition binlog :
+  Lemma n_div_b_ge_1_if_n_ge_b_and_b_ge_1 (n : nat) (b : nat) :
+    n >= b ->
+    b >= 1 ->
+    n / b >= 1.
+  Proof with try lia.
+    intros H_n_ge_b H_b_ge_1.
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m 1 (n / b)) as [H_yes | H_no].
+    - exact H_yes.
+    - assert (claim1 : b <> 0)...
+      assert (claim2 := Nat.div_mod n b claim1).
+      assert (claim3 : b * (n / b) + n mod b >= b)...
+      assert (claim4 := Nat.mod_bound_pos n b (le_intro_0_le_n n) H_b_ge_1).
+      assert (therefore : b * (n / b) + b > b)...
+  Qed.
+
+  Definition lognat (base : nat) (H_base_gt_1 : base > 1) :
     forall n : nat,
-    {l_n : nat | n >= 1 -> binlog_spec n l_n}.
+    {l_n : nat | n >= 1 -> log_on_nat_spec base n l_n}.
   Proof.
-    assert (lemma1 : 2 <> 0) by exact (fun H_EQ : 2 = 0 => S_eq_0_elim 1 H_EQ).
-    enough (lemma2 : forall n : nat, n >= 1 -> n / 2 < n).
-    { strong_rec.
-      intros [ | [ | n]] acc.
-      - exists (0).
-        now intros H_n_ge_1; contradiction (not_n_lt_n 0 H_n_ge_1).
-      - exists (0).
-        now intros H_n_ge_1; constructor 1.
-      - assert (H_ge : S (S n) >= 1) by apply le_intro_S_n_le_S_m, le_intro_0_le_n.
-        assert (claim1 := lemma2 (S (S n)) H_ge).
-        assert (claim2 : leq (S (S n) / 2) (S (S n))).
-        { apply le_implies_leq.
-          exact (le_transitivity (le_S _ _ (le_n _)) claim1).
+    strong_rec.
+    intros [ | n'] acc.
+    - exists (0).
+      now intros H_n_ge_1; contradiction (not_n_lt_n 0 H_n_ge_1).
+    - set (n := S n').
+      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m base n) as [H_yes | H_no].
+      { assert (n_div_base_lt_n : n / base < n).
+        { apply n_div_b_lt_n_if_b_gt_1_and_n_ge_1.
+          - exact H_base_gt_1.
+          - apply le_intro_S_n_le_S_m, le_intro_0_le_n.
         }
-        assert (claim3 : (S (S n) / 2) <> (S (S n))).
-        { intros H_EQ.
-          contradiction (not_n_lt_n (S (S n))).
+        enough (claim1 : leq (n / base) n).
+        enough (claim2 : n / base <> n).
+        - set (l_n := acc (n / base) claim1 claim2).
+          exists (S (proj1_sig l_n)).
+          intros H_n_ge_1.
+          constructor 2.
+          + exact H_base_gt_1.
+          + exact H_yes.
+          + exact (proj2_sig l_n (n_div_b_ge_1_if_n_ge_b_and_b_ge_1 n base H_yes (le_transitivity (le_S 1 1 (le_n 1)) H_base_gt_1))).
+        - intros H_eq.
+          contradiction (not_n_lt_n (n / base)).
           congruence.
-        }
-        assert (claim4 : (S (S n) / 2) >= 1).
-        { replace (S (S n) / 2) with ((n / 2) + 1).
-          - rewrite Nat.add_comm.
-            apply le_intro_S_n_le_S_m, le_intro_0_le_n.
-          - symmetry.
-            replace (S (S n) / 2) with ((n + 2) / 2).
-            + exact (proj1 (div_mod_lemma1 n 2 lemma1)).
-            + rewrite (Nat.add_comm n 2).
-              reflexivity.
-        }
-        set (acc_n_div_2 := acc (S (S n) / 2) claim2 claim3).
-        set (l_n := proj1_sig acc_n_div_2).
-        exists (S l_n).
-        now intros H_n_ge_1; constructor 2; [apply lt_intro_S_m_lt_S_n, lt_intro_0_lt_S_n | exact (proj2_sig acc_n_div_2 claim4)].
-    }
-    { enough (claim5 : forall n : nat, 2 <= n -> n / 2 < n).
-      { intros n H_n_ge_1.
-        inversion H_n_ge_1; subst.
-        - apply lt_intro_0_lt_S_n.
-        - now apply claim5, le_intro_S_n_le_S_m.
+        - apply le_implies_leq.
+          exact (le_transitivity (le_S (n / base) (n / base) (le_n (n / base))) n_div_base_lt_n).
       }
-      intros n H_le.
-      destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n (n / 2)) as [H_yes | H_no].
-      - enough (claim6 : n / 2 > 0).
-        { assert (claim7 := Nat.div_mod n 2 lemma1).
-          assert (claim8 := proj2 (Nat.mod_bound_pos n 2 (le_intro_0_le_n n) (le_S 1 1 (le_n 1)))).  
-          enough (it_is_sufficient_to_show : n / 2 < 2 * (n / 2) + n mod 2) by congruence.
-          lia.
-        }
-        { do 2 (destruct n as [ | n]; [inversion H_le | apply le_elim_S_n_le_m in H_le]).
-          replace (S (S n)) with (n + 2).
-          - rewrite (proj1 (div_mod_lemma1 n 2 lemma1)).
-            rewrite Nat.add_comm.
-            apply lt_intro_0_lt_S_n.
-          - rewrite Nat.add_comm.
-            reflexivity.
-        }
-      - exact H_no.
-    }
+      { exists (0).
+        intros H_n_ge_1.
+        constructor 1.
+        - exact H_base_gt_1.
+        - exact H_n_ge_1.
+        - exact H_no.
+      }
   Defined.
 
-  (* Eval compute in (proj1_sig (binlog 64)). = 6 : nat *)
+  (* Eval compute in (proj1_sig (lognat 4 _ 4096)). = 6 : nat *)
 
-  End BINARY_LOGARITHM.
+  End LOGARITHM_ON_NAT.
 
   Definition fmapMaybe {A : Type} {B : Type} : (A -> B) -> (option A -> option B) :=
     fun f : A -> B =>
