@@ -49,6 +49,11 @@ Module FunFacts.
 
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
+  Definition isMinimalNum (phi : nat -> Prop) : nat -> Prop :=
+    fun n : nat =>
+    phi n /\ (forall m : nat, phi m -> n <= m)
+  .
+
   Definition axiom_schema_of_replacement_on (A : Type) : Type :=
     forall phi : A -> Prop,
     (exists x : A, forall y : A, phi y <-> x = y) ->
@@ -152,10 +157,8 @@ Module FunFacts.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
-  Let POW : Prop -> Prop :=
-    fun P : Prop =>
-    P ->
-    BB
+  Let POW (P : Prop) : Prop :=
+    P -> BB
   .
 
   Let RETRACT2_POW_A_POW_B (A : Prop) (B : Prop) :
@@ -167,8 +170,7 @@ Module FunFacts.
   Qed.
 
   Let UNIV : Prop :=
-    forall P : Prop,
-    POW P
+    forall P : Prop, POW P
   .
 
   Let SET_BUILDER_NOTATION : (UNIV -> BB) -> UNIV :=
@@ -200,8 +202,7 @@ Module FunFacts.
     {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}
   .
 
-  Let NOT_BB : BB -> BB :=
-    fun b : BB =>
+  Let NOT_BB (b : BB) : BB :=
     match exclusive_middle (b = TRUE_BB) return BB with
     | or_introl if_b_eq_TRUE_BB => FALSE_BB
     | or_intror if_b_ne_TRUE_BB => TRUE_BB
@@ -222,8 +223,7 @@ Module FunFacts.
     cbv; destruct (exclusive_middle (b = TRUE_BB)); tauto.
   Qed.
 
-  Let russell : UNIV -> BB :=
-    fun r : UNIV =>
+  Let russell (r : UNIV) : BB :=
     ¬ (r ∈ r)
   .
 
@@ -316,11 +316,6 @@ Module FunFacts.
   Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
-
-  Definition isMinimalNum (phi : nat -> Prop) : nat -> Prop :=
-    fun n : nat =>
-    phi n /\ (forall m : nat, phi m -> n <= m)
-  .
 
   Theorem exclusive_middle_implies_Prop_level_unrestricted_minimization (phi : nat -> Prop) :
     (~ forall n : nat, ~ phi n) ->
