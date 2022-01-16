@@ -264,8 +264,7 @@ Module FunFacts.
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
 
-  Let NOT_BB : BB -> BB :=
-    fun b : BB =>
+  Let NOT_BB (b : BB) : BB :=
     match b return BB with
     | TRUE_BB => FALSE_BB
     | FALSE_BB => TRUE_BB
