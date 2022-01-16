@@ -353,9 +353,7 @@ Module FunFacts.
     {P} + {~ P}.
   Proof.
     enough (claim1 : {b : bool | if b then P else ~ P}) by exact ((if proj1_sig claim1 as b return (if b then P else ~ P) -> ({P} + {~ P}) then left else right) (proj2_sig claim1)).
-    apply axiom_schema_of_replacement_on_bool with (phi := fun b : bool => if b then P else ~ P).
-    destruct (exclusive_middle P) as [H_yes | H_no]; [exists (true) | exists (false)].
-    all: now intros [ | ]; split.
+    apply axiom_schema_of_replacement_on_bool; destruct (exclusive_middle P) as [H_yes | H_no]; [exists (true) | exists (false)]; now intros [ | ]; split.
   Qed.
 
   End CLASSICAL_IF_THEN_ELSE.
