@@ -354,7 +354,7 @@ Module FunFacts.
     {P} + {~ P}.
   Proof.
     intros P.
-    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (if y then P else ~ P) <-> x = y).
+    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (fun b : bool => if b then P else ~ P) y <-> x = y).
     - assert (claim1 := axiom_schema_of_replacement_on_bool (fun b : bool => if b then P else ~ P) it_is_sufficient_to_show).
       assert (claim2 := proj2_sig claim1).
       revert claim2; destruct (proj1_sig claim1); eauto.
