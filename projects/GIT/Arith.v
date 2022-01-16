@@ -20,31 +20,26 @@ Module MyCategories.
     }
   .
 
-  Global Notation " m '>>=' k " := (bind m k) (at level 90, left associativity).
+  Global Infix " >>= " := bind (at level 90, left associativity) : function_scope.
 
-  Definition fcat {A : Type} {B : Type} {C : Type} : (B -> C) -> (A -> B) -> (A -> C) :=
-    fun f1 : B -> C =>
-    fun f2 : A -> B =>
+  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
+
+  Global Open Scope monad_scope.
+
+  Definition fcat {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
     fun x : A =>
     f1 (f2 x)
   .
 
-  Definition kcat {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : (B -> M C) -> (A -> M B) -> (A -> M C) :=
-    fun k1 : B -> M C =>
-    fun k2 : A -> M B =>
+  Definition kcat {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
     fun x : A =>
     k2 x >>= k1
   .
 
   Global Infix " `fcat` " := fcat (at level 25, right associativity) : function_scope.
-
   Global Infix " `kcat` " := kcat (at level 25, right associativity) : function_scope.
-
-  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
-
-  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
-
-  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Type} :=
@@ -58,15 +53,15 @@ Module MyCategories.
   .
 
   Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
-    ST -> M (prod X ST)
+    ST -> M (X * ST)%type
   .
 
   Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
-    id
+    @id (stateT ST M X)
   .
 
   Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
-    id
+    @id (stateT ST M X)
   .
 
   Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
@@ -83,7 +78,7 @@ Module MyCategories.
   Global Arguments inl1 {F1} {F2} {X}.
   Global Arguments inr1 {F1} {F2} {X}.
 
-  Global Notation " F1 '+1' F2 " := (sum1 F1 F2) (at level 60, no associativity) : type_scope.
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
   Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isFunctor : isFunctor F1} `{F2_isFunctor : isFunctor F2} : isFunctor (sum1 F1 F2) :=
     { fmap {A : Type} {B : Type} :=
@@ -94,9 +89,7 @@ Module MyCategories.
 
   Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
 
-  Local Open Scope monad_scope.
-
-  Definition lift_stateT {M : Type -> Type} `{M_isMonad : isMonad M} [ST : Type] : M -< stateT ST M :=
+  Definition lift_stateT {M : Type -> Type} `{M_isMonad : isMonad M} (ST : Type) : M -< stateT ST M :=
     fun X : Type =>
     fun m : M X =>
     StateT (fun s : ST =>
@@ -125,8 +118,6 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   Unset Primitive Projections.
 
-  Local Open Scope monad_scope.
-
   Global Arguments RetF {itree_E_R} {E} {R} (r).
   Global Arguments TauF {itree_E_R} {E} {R} (t).
   Global Arguments VisF {itree_E_R} {E} {R} (X) (e) (k).
@@ -144,7 +135,7 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   Variable from_leaf : R1 -> itree E R2.
 
-  Definition expand_leaves_aux (CIH : itree E R1 -> itree E R2) (ot : itreeF (itree E R1) E R1) : itree E R2 :=
+  Definition expand_leaves_progress (CIH : itree E R1 -> itree E R2) (ot : itreeF (itree E R1) E R1) : itree E R2 :=
     match ot with
     | RetF r => from_leaf r
     | TauF t => Tau (CIH t)
@@ -153,7 +144,7 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
   .
 
   CoFixpoint expand_leaves (t : itree E R1) : itree E R2 :=
-    expand_leaves_aux expand_leaves (observe t)
+    expand_leaves_progress expand_leaves (observe t)
   .
 
   End ITREE_BIND.
@@ -187,13 +178,10 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     expand_leaves (@sum_rect I R (fun _ => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
-  Definition itree_iter_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} {R : Type} : (itree E R -> ST -> itree E' (itree E R * ST + R * ST)) -> (itree E R -> stateT ST (itree E') R) :=
-    curry `fcat` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fcat` uncurry
-  .
-
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
     fun R : Type =>
-    itree_iter_stateT (fun t0 : itree E R => fun s : ST =>
+    let itree_iter' := curry `fcat` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fcat` uncurry in
+    itree_iter' (fun t0 : itree E R => fun s : ST =>
       match observe t0 with
       | RetF r => ret (inr (r, s));
       | TauF t => ret (inl (t, s));
@@ -210,9 +198,9 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
-  Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +1 E')) : itree (E +1 E') -< itree E' :=
+  Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
-    itree_iter (E := E') (R := R) (I := itree (E +1 E') R) (fun t0 : itree (E +1 E') R =>
+    itree_iter (E := E') (R := R) (I := itree (E +' E') R) (fun t0 : itree (E +' E') R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
@@ -225,7 +213,7 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     )
   .
 
-  Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +1 E')) : E -< itree E' :=
+  Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : E -< itree E' :=
     fun R : Type =>
     fun e : E R =>
     itree_interpret_mrec ctx R (ctx R e)
@@ -237,15 +225,15 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     Vis R e (fun x : R => Ret x)
   .
 
-  Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +1 E') :=
+  Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +' E') :=
     fun R : Type =>
     fun e : E R =>
-    itree_trigger (E := E +1 E') R (inl1 e)
+    itree_trigger (E := E +' E') R (inl1 e)
   .
 
   Local Notation endo T := (T -> T).
 
-  Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E -< itree (E +1 E'))) : E -< itree E' :=
+  Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E -< itree (E +' E'))) : E -< itree E' :=
     itree_mrec (ctx itree_trigger_inl1)
   .
 
@@ -257,17 +245,17 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
     end
   .
 
-  Definition itree_rec {E : Type -> Type} {A : Type} {B : Type} (body : A -> itree (callE A B +1 E) B) : A -> itree E B :=
+  Definition itree_rec {E : Type -> Type} {A : Type} {B : Type} (body : A -> itree (callE A B +' E) B) : A -> itree E B :=
     fun arg : A =>
     itree_mrec (calling body) B (Call arg)
   .
 
-  Definition itree_call {E : Type -> Type} {A : Type} {B : Type} : A -> itree (callE A B +1 E) B :=
+  Definition itree_call {E : Type -> Type} {A : Type} {B : Type} : A -> itree (callE A B +' E) B :=
     fun arg : A =>
     itree_trigger B (inl1 (Call arg))
   .
 
-  Definition itree_rec_fix {E : Type -> Type} {A : Type} {B : Type} (body : endo (A -> itree (callE A B +1 E) B)) : A -> itree E B :=
+  Definition itree_rec_fix {E : Type -> Type} {A : Type} {B : Type} (body : endo (A -> itree (callE A B +' E) B)) : A -> itree E B :=
     itree_rec (body itree_call)
   .
 
