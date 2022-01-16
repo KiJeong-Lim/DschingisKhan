@@ -50,9 +50,9 @@ Module FunFacts.
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
   Definition axiom_schema_of_replacement_on (A : Type) : Type :=
-    forall P : A -> Prop,
-    (exists x : A, forall y : A, P y <-> x = y) ->
-    {x : A | P x}
+    forall phi : A -> Prop,
+    (exists x : A, forall y : A, phi y <-> x = y) ->
+    {x : A | phi x}
   .
 
   Lemma derive_fixedpoint_combinator (D : Prop) :
@@ -354,13 +354,12 @@ Module FunFacts.
     {P} + {~ P}.
   Proof.
     intros P.
-    enough (it_is_sufficient_to_show : exists x : bool, forall y : bool, (fun b : bool => if b then P else ~ P) y <-> x = y).
-    - assert (claim1 := axiom_schema_of_replacement_on_bool (fun b : bool => if b then P else ~ P) it_is_sufficient_to_show).
-      assert (claim2 := proj2_sig claim1).
-      revert claim2; destruct (proj1_sig claim1); eauto.
-    - destruct (exclusive_middle P) as [H_yes | H_no].
-      + exists (true); intros [ | ]; [tauto | now split].
-      + exists (false); intros [ | ]; [now split | tauto].
+    assert (claim1 : {b : bool | if b then P else ~ P}).
+    { apply axiom_schema_of_replacement_on_bool with (phi := fun b : bool => if b then P else ~ P).
+      destruct (exclusive_middle P); [exists (true) | exists (false)].
+      all: now intros [ | ]; split.
+    }
+    exact ((if proj1_sig claim1 as b return (if b then P else ~ P) -> ({P} + {~ P}) then left else right) (proj2_sig claim1)).
   Qed.
 
   End CLASSICAL_IF_THEN_ELSE.
