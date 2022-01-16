@@ -7,6 +7,7 @@
 ```
 git clone https://github.com/KiJeong-Lim/DschingisKhan.git
 cd DschingisKhan
+eval $(opam env)
 coq_makefile -f _CoqProject -o Makefile
 make
 ```
