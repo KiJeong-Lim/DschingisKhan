@@ -213,18 +213,16 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Definition nu {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : forall f : D >=> D, {gfp : D | isGreatestFixedPoint gfp (proj1_sig f)} :=
     fun f : D >=> D =>
-    match supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f)) with
-    | exist _ gfp H => exist _ gfp (GreatestFixedPointOfMonotonicMaps (proj1_sig f) (proj2_sig f) gfp H)
-    end
+    let gfp : D := proj1_sig (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f))) in
+    let H_gfp : isSupremum gfp (postfixed_points (proj1_sig f)) := proj2_sig (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f))) in
+    exist _ gfp (GreatestFixedPointOfMonotonicMaps (proj1_sig f) (proj2_sig f) gfp H_gfp)
   .
 
   Lemma nu_isSupremum {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} :
     forall f : D >=> D,
     isSupremum (proj1_sig (nu f)) (postfixed_points (proj1_sig f)).
-  Proof with eauto with *.
-    unfold nu.
-    intros f.
-    destruct (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f))) as [gfp H]...
+  Proof.
+    exact (fun f : D >=> D => proj2_sig (supremum_always_exists_in_CompleteLattice (postfixed_points (proj1_sig f)))).
   Qed.
 
   Definition or_plus {D : Type} `{D_isPoset : isPoset D} `{D_isCompleteLattice : @isCompleteLattice D D_isPoset} : D -> D -> D :=
