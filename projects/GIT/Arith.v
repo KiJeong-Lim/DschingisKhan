@@ -831,9 +831,9 @@ Module InteractionTreeTheory.
 
   End ITREE_BIND_ASSOC.
 
-  Lemma bind_Ret_r {R : Type} :
+  Lemma bind_t0_pure_eq_t0 {R : Type} :
     forall t0 : itree E R,
-    (t0 >>= pure) == t0.
+    bind t0 pure == t0.
   Proof with eauto with *.
     set (focus := fun two_trees : itree E R * itree E R => ((fst two_trees >>= pure), snd two_trees)).
     set (focus_rel := image focus).
