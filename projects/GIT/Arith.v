@@ -1,5 +1,8 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
+Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.DomainTheory.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
@@ -108,7 +111,7 @@ Module MyCategories.
 
 End MyCategories.
 
-Module InteractionTreeDefns. (* Reference: "https://sf.snu.ac.kr/publications/itrees.pdf" *)
+Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.pdf" *)
 
   Import MyCategories.
 
@@ -268,11 +271,11 @@ Module InteractionTreeDefns. (* Reference: "https://sf.snu.ac.kr/publications/it
 
   End RECURSION.
 
-End InteractionTreeDefns.
+End InteractionTree.
 
-Module InteractionTreesTheory.
+Module InteractionTreeTheory.
 
-  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories InteractionTreeDefns.
+  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories InteractionTree.
 
   Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
@@ -404,7 +407,8 @@ Module InteractionTreesTheory.
   Qed.
 
   Definition rel_flip (REL1 : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    fun two_trees : itree E R * itree E R => member (snd two_trees, fst two_trees) REL1
+    fun two_trees : itree E R * itree E R =>
+    member (snd two_trees, fst two_trees) REL1
   .
 
   Lemma eqITree_sym :
@@ -448,16 +452,16 @@ Module InteractionTreesTheory.
     exact (eqITree_sym (t2, t1) H_t1_eq_t2).
   Qed.
 
-  Definition comp (REL1 : ensemble (itree E R * itree E R)) (REL2 : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
+  Definition rel_comp (REL1 : ensemble (itree E R * itree E R)) (REL2 : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
     fun two_trees : itree E R * itree E R =>
     exists t : itree E R, member (fst two_trees, t) REL1 /\ member (t, snd two_trees) REL2
   .
 
   Lemma eqITree_trans :
-    isSubsetOf (comp (PaCo eqITreeF bot) (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
+    isSubsetOf (rel_comp (PaCo eqITreeF bot) (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
   Proof with eauto with *.
     apply PaCo_acc...
-    set (REL := MyUnion bot (comp (PaCo eqITreeF bot) (PaCo eqITreeF bot))).
+    set (REL := MyUnion bot (rel_comp (PaCo eqITreeF bot) (PaCo eqITreeF bot))).
     assert (claim1 : isSubsetOf (eqITreeF (or_plus (PaCo eqITreeF bot) bot)) (eqITreeF (or_plus (PaCo eqITreeF REL) REL))).
     { apply (eqITreeF_isMonotonic (or_plus (PaCo eqITreeF bot) bot) (or_plus (PaCo eqITreeF REL) REL)).
       intros [t1 t2] H_in.
@@ -470,7 +474,7 @@ Module InteractionTreesTheory.
     }
     transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
     intros [lhs rhs] H_lhs_eq_rhs.
-    unfold comp, member in H_lhs_eq_rhs.
+    unfold rel_comp, member in H_lhs_eq_rhs.
     simpl in H_lhs_eq_rhs.
     destruct H_lhs_eq_rhs as [t [H_lhs_eq_t H_t_eq_rhs]].
     apply PaCo_unfold in H_lhs_eq_t...
@@ -554,8 +558,340 @@ Module InteractionTreesTheory.
     }
   .
 
-  Section INTERPRET_FACTS. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/CompCertM/theories/Interp/InterpFacts.v" *)
+  Local Hint Resolve eqITreeF_isMonotonic : core.
 
-  End INTERPRET_FACTS.
+  Lemma bot_is_empty {A : Type} :
+    forall x : A,
+    ~ member x bot.
+  Proof.
+    intros x.
+    assert (clami1 := @in_empty_iff (ensemble A)).
+    intros H_x_in.
+    apply in_unions_iff in H_x_in.
+    firstorder.
+  Qed.
 
-End InteractionTreesTheory.
+  Local Hint Resolve bot_is_empty : core.
+
+  Lemma eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type} :
+    forall lhs : itree E R,
+    forall rhs : itree E R,
+    observe lhs = observe rhs ->
+    lhs == rhs.
+  Proof with eauto.
+    intros lhs rhs H_obs_eq_obs.
+    apply PaCo_init.
+    apply PaCo_fold.
+    assert (claim1 := eqITree_Reflexive lhs).
+    apply PaCo_init in claim1.
+    apply PaCo_unfold in claim1...
+    unfold eqITreeF, member, curry, uncurry in *.
+    congruence.
+  Qed.
+
+  Lemma itree_eta {E : Type -> Type} {R : Type} :
+    forall t : itree E R,
+    go (observe t) == t.
+  Proof with eauto with *.
+    intros t.
+    assert (claim1 := eqITree_intro_obs_eq_obs t (go (observe t)))...
+  Qed.
+
+  Definition rel_image {E : Type -> Type} {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
+    image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
+  .
+
+  Lemma expand_leaves_preserves_snd_arg {E : Type -> Type} {R1 : Type} {R2 : Type} :
+    forall k : R1 -> itree E R2,
+    isSubsetOf (rel_image k (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
+  Proof with eauto with *.
+    intros k0.
+    assert (claim1 : forall t : itree E R1, observe (expand_leaves k0 t) = observe (expand_leaves_progress k0 (expand_leaves k0) (observe t))) by reflexivity.
+    apply PaCo_acc...
+    set (REL := MyUnion bot (rel_image k0 (PaCo eqITreeF bot))).
+    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    intros [k0_lhs k0_rhs] H_k0_lhs_eq_k0_rhs.
+    unfold member, rel_image in H_k0_lhs_eq_k0_rhs.
+    simpl in H_k0_lhs_eq_k0_rhs.
+    apply in_image_iff in H_k0_lhs_eq_k0_rhs.
+    destruct H_k0_lhs_eq_k0_rhs as [[lhs rhs] [H_eq H_lhs_eq_rhs]].
+    assert (H_lhs_is := eq_congruence fst _ _ H_eq).
+    assert (H_rhs_is := eq_congruence snd _ _ H_eq).
+    simpl in H_lhs_is, H_rhs_is.
+    subst k0_lhs k0_rhs.
+    apply PaCo_unfold in H_lhs_eq_rhs...
+    unfold eqITree in H_lhs_eq_rhs.
+    assert (claim5 : isSubsetOf (or_plus (PaCo eqITreeF bot) bot) (or_plus (PaCo eqITreeF REL) REL)).
+    { intros x H_x_in.
+      apply in_union_iff in H_x_in.
+      apply in_union_iff.
+      destruct H_x_in as [H_x_in | H_x_in].
+      - left.
+        apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot)...
+      - contradiction (bot_is_empty x H_x_in).
+    }
+    unfold eqITree.
+    unfold eqITreeF, member, curry, uncurry in *.
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_lhs_eq_rhs...
+    rewrite (claim1 lhs).
+    rewrite (claim1 rhs).
+    destruct H_lhs_eq_rhs as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
+    - simpl.
+      assert (claim3 : member (k0 r1, k0 r2) rel_id) by congruence.
+      assert (claim4 := @eqITree_refl E R2 (k0 r1, k0 r2) claim3).
+      apply PaCo_unfold in claim4...
+      replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2)) in claim4...
+      apply (eqITreeF_isMonotonic (or_plus (PaCo eqITreeF bot) bot) _ claim5 (k0 r1, k0 r2) claim4).
+    - simpl.
+      constructor 2.
+      apply in_union_iff; right.
+      apply in_union_iff in H_rel.
+      destruct H_rel as [H_rel | H_rel]; [ | contradiction (not_in_bot t1 t2 H_rel)].
+      right...
+    - simpl.
+      constructor 3.
+      intros x.
+      apply in_union_iff; right.
+      assert (claim2 := H_rel x).
+      apply in_union_iff in claim2.
+      destruct claim2 as [claim2 | claim2]; [ | contradiction (not_in_bot (k1 x) (k2 x) claim2)].
+      right...
+  Qed.
+
+  Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
+    bind with signature (eqITree (E := E) (R := R1) ==> eq ==> eqITree (E := E) (R := R2))
+  as itree_bind_preserves_eq_on_fst_arg.
+  Proof with eauto with *.
+    intros lhs rhs H_lhs_eq_rhs k.
+    apply PaCo_init.
+    apply PaCo_init in H_lhs_eq_rhs.
+    apply (expand_leaves_preserves_snd_arg k (lhs >>= k, rhs >>= k)).
+    unfold rel_image.
+    apply in_image_iff.
+    exists (lhs, rhs)...
+  Qed.
+
+  Section REWRITE_BIND.
+
+  Context {E : Type -> Type}.
+
+  Definition _bind {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
+    fun t0 : itree E R1 =>
+    fun k0 : R1 -> itree E R2 =>
+    match observe t0 with
+    | RetF r => k0 r
+    | TauF t => Tau (t >>= k0)
+    | VisF X e k => Vis X e (fun x : X => k x >>= k0)
+    end
+  .
+
+  Section BIND_CASES.
+
+  Context {R1 : Type} {R2 : Type}.
+
+  Variable k0 : R1 -> itree E R2.
+
+  Lemma unfold_bind (t0 : itree E R1) :
+    (t0 >>= k0) == _bind t0 k0.
+  Proof.
+    apply eqITree_intro_obs_eq_obs.
+    reflexivity.
+  Qed.
+
+  Lemma bind_Ret (r : R1) :
+    bind (Ret r) k0 == k0 r.
+  Proof.
+    apply eqITree_intro_obs_eq_obs.
+    reflexivity.
+  Qed.
+
+  Lemma bind_Tau (t : itree E R1) :
+    bind (Tau t) k0 == Tau (bind t k0).
+  Proof.
+    apply unfold_bind with (t0 := Tau t).
+  Qed.
+
+  Lemma bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
+    bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
+  Proof.
+    rewrite unfold_bind with (t0 := Vis X e k).
+    apply PaCo_init.
+    apply PaCo_fold.
+    constructor 3.
+    intros x.
+    apply in_union_iff; left.
+    apply eqITree_refl.
+    reflexivity.
+  Qed.
+
+  Lemma bind_trigger (e : E R1) :
+    bind (itree_trigger R1 e) k0 == Vis R1 e k0.
+  Proof.
+    rewrite unfold_bind with (t0 := itree_trigger R1 e).
+    apply PaCo_init.
+    apply PaCo_fold.
+    constructor 3.
+    intros r.
+    apply in_union_iff; left.
+    assert (claim1 := bind_Ret r).
+    apply PaCo_init in claim1.
+    exact claim1.
+  Qed.
+
+  End BIND_CASES.
+
+  Local Hint Resolve bind_Ret bind_Tau bind_Vis : core.
+
+  Lemma unfold_expand_leaves {R1 : Type} {R2 : Type} :
+    forall k : R1 -> itree E R2,
+    forall t : itree E R1,
+    observe (expand_leaves k t) = observe (expand_leaves_progress k (expand_leaves k) (observe t)).
+  Proof.
+    reflexivity.
+  Qed.
+
+  Section ITREE_BIND_ASSOC.
+
+  Context {R1 : Type} {R2 : Type} {R3 : Type}.
+
+  Let focus_rel (k1 : R1 -> itree E R2) (k2 : R2 -> itree E R3) : ensemble (itree E R1 * itree E R1) -> ensemble (itree E R3 * itree E R3) :=
+    image (fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= k1) >>= k2, snd two_trees >>= (fun x : R1 => k1 x >>= k2)))
+  .
+
+  Lemma bind_assoc :
+    forall t0 : itree E R1,
+    forall k1 : R1 -> itree E R2,
+    forall k2 : R2 -> itree E R3,
+    ((t0 >>= k1) >>= k2) == (t0 >>= (fun x1 : R1 => k1 x1 >>= k2)).
+  Proof with eauto with *.
+    intros t_0 k_1 k_2.
+    revert t_0.
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel k_1 k_2 (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    { intros t0.
+      apply PaCo_init.
+      assert (claim1 : t0 == t0) by reflexivity.
+      apply PaCo_init in claim1.
+      apply it_is_sufficient_to_show.
+      apply in_image_iff.
+      exists (t0, t0)...
+    }
+    apply PaCo_acc...
+    assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
+    set (REL := MyUnion bot (focus_rel k_1 k_2 (PaCo eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    { intros x H_x_in.
+      apply in_union_iff in H_x_in.
+      destruct H_x_in as [H_x_in | H_x_in].
+      - apply in_union_iff; left.
+        apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
+      - contradiction (bot_is_empty x).
+    }
+    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
+    apply in_image_iff in H_f_lhs_eq_f_rhs.
+    destruct H_f_lhs_eq_f_rhs as [[lhs rhs] [H_eq H_in]].
+    assert (f_lhs_is := eq_congruence fst _ _ H_eq).
+    assert (f_rhs_is := eq_congruence snd _ _ H_eq).
+    simpl in f_lhs_is, f_rhs_is.
+    subst f_lhs f_rhs.
+    apply PaCo_unfold in H_in...
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_in...
+    unfold eqITree in H_in.
+    unfold eqITreeF, member, uncurry, curry in *.
+    do 3 rewrite unfold_expand_leaves.
+    destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
+    - simpl.
+      rewrite <- unfold_expand_leaves.
+      subst r2.
+      assert (claim3 := eqITree_refl (expand_leaves k_2 (k_1 r1), expand_leaves k_2 (k_1 r1)) eq_refl).
+      apply PaCo_unfold in claim3...
+      replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R3)) in claim3...
+      apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
+    - simpl.
+      constructor 2.
+      apply in_union_iff; right.
+      apply in_union_iff in H_rel.
+      destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
+      replace (expand_leaves k_2 (expand_leaves k_1 t1)) with ((t1 >>= k_1) >>= k_2)...
+      replace (expand_leaves (fun x : R1 => expand_leaves k_2 (k_1 x)) t2) with (t2 >>= (fun x : R1 => k_1 x >>= k_2))...
+      right.
+      apply in_image_iff.
+      exists (t1, t2)...
+    - simpl.
+      constructor 3.
+      intros x0.
+      assert (claim4 := H_rel x0).
+      apply in_union_iff in claim4.
+      destruct claim4 as [claim4 | claim4]; [ | contradiction (bot_is_empty (k1 x0, k2 x0))].
+      apply in_union_iff; right.
+      right.
+      apply in_image_iff.
+      exists (k1 x0, k2 x0)...
+  Qed.
+
+  End ITREE_BIND_ASSOC.
+
+  Lemma bind_Ret_r {R : Type} :
+    forall t0 : itree E R,
+    (t0 >>= pure) == t0.
+  Proof with eauto with *.
+    set (focus := fun two_trees : itree E R * itree E R => ((fst two_trees >>= pure), snd two_trees)).
+    set (focus_rel := image focus).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    { intros t0.
+      apply PaCo_init.
+      assert (claim1 : t0 == t0) by reflexivity.
+      apply PaCo_init in claim1.
+      apply it_is_sufficient_to_show.
+      apply in_image_iff.
+      exists (t0, t0)...
+    }
+    apply PaCo_acc...
+    assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
+    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    { intros x H_x_in.
+      apply in_union_iff in H_x_in.
+      destruct H_x_in as [H_x_in | H_x_in].
+      - apply in_union_iff; left.
+        apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
+      - contradiction (bot_is_empty x).
+    }
+    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
+    apply in_image_iff in H_f_lhs_eq_f_rhs.
+    destruct H_f_lhs_eq_f_rhs as [[lhs rhs] [H_eq H_in]].
+    assert (f_lhs_is := eq_congruence fst _ _ H_eq).
+    assert (f_rhs_is := eq_congruence snd _ _ H_eq).
+    simpl in f_lhs_is, f_rhs_is.
+    subst f_lhs f_rhs.
+    apply PaCo_unfold in H_in...
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R)) in H_in...
+    unfold eqITree in H_in.
+    unfold eqITreeF, member, uncurry, curry in *.
+    rewrite unfold_expand_leaves.
+    destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
+    - constructor 1...
+    - constructor 2.
+      apply in_union_iff; right.
+      right.
+      apply in_union_iff in H_rel.
+      destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
+      apply in_image_iff.
+      exists (t1, t2)...
+    - constructor 3.
+      intros x0.
+      assert (claim4 := H_rel x0).
+      apply in_union_iff in claim4.
+      destruct claim4 as [claim4 | claim4]; [ | contradiction (bot_is_empty (k1 x0, k2 x0))].
+      apply in_union_iff; right.
+      right.
+      apply in_image_iff.
+      exists (k1 x0, k2 x0)...
+  Qed.
+
+  End REWRITE_BIND.
+
+  Local Notation Handler E F := (forall X : Type, E X -> itree F X).
+
+End InteractionTreeTheory.
