@@ -108,9 +108,9 @@ Module MyCategories.
 
 End MyCategories.
 
-Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees.pdf" *)
+Module InteractionTreeDefns. (* Reference: "https://sf.snu.ac.kr/publications/itrees.pdf" *)
 
-  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories.
+  Import MyCategories.
 
   Variant itreeF (itree_E_R : Type) (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF itree_E_R E R
@@ -267,6 +267,12 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
   .
 
   End RECURSION.
+
+End InteractionTreeDefns.
+
+Module InteractionTreesTheory.
+
+  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories InteractionTreeDefns.
 
   Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
@@ -552,4 +558,4 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   End INTERPRET_FACTS.
 
-End InteractionTrees.
+End InteractionTreesTheory.

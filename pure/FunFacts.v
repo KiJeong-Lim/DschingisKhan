@@ -54,7 +54,7 @@ Module FunFacts.
     phi n /\ (forall m : nat, phi m -> n <= m)
   .
 
-  Definition axiom_schema_of_replacement_on (A : Type) : Type :=
+  Polymorphic Definition axiom_schema_of_replacement_on (A : Type) : Type :=
     forall phi : A -> Prop,
     (exists x : A, forall y : A, phi y <-> x = y) ->
     {x : A | phi x}
@@ -92,7 +92,7 @@ Module FunFacts.
 
   Hypothesis proof_irrelevance : forall P : Prop, forall p1 : P, forall p2 : P, p1 = p2.
 
-  Theorem proof_irrelevance_implies_eq_rect_eq (A : Type) (x : A) (B : A -> Type) (y : B x) (H : x = x) :
+  Polymorphic Theorem proof_irrelevance_implies_eq_rect_eq (A : Type) (x : A) (B : A -> Type) (y : B x) (H : x = x) :
     y = eq_rect x B y x H.
   Proof.
     now rewrite <- (proof_irrelevance (x = x) (eq_reflexivity x) H).
@@ -104,9 +104,9 @@ Module FunFacts.
 
   Context (A : Type) (x : A).
 
-  Hypothesis eq_rect_eq : forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Polymorphic Hypothesis eq_rect_eq : forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Theorem eq_rect_eq_implies_Streicher_K :
+  Polymorphic Theorem eq_rect_eq_implies_Streicher_K :
     forall phi : x = x -> Type,
     phi (eq_reflexivity x) ->
     forall eq_val0 : x = x,
@@ -124,11 +124,11 @@ Module FunFacts.
 
   Section EQ_RECT_EQ_implies_EXISTT_INJ2_EQ.
 
-  Context (A : Type) (x : A) (B : A -> Type).
+  Polymorphic Context (A : Type) (x : A) (B : A -> Type).
 
-  Hypothesis eq_rect_eq : forall y : B x, forall H : x = x, y = eq_rect x B y x H.
+  Polymorphic Hypothesis eq_rect_eq : forall y : B x, forall H : x = x, y = eq_rect x B y x H.
 
-  Theorem eq_rect_eq_implies_existT_inj2_eq :
+  Polymorphic Theorem eq_rect_eq_implies_existT_inj2_eq :
     forall y1 : B x,
     forall y2 : B x,
     existT B x y1 = existT B x y2 ->

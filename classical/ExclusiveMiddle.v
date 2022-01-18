@@ -10,17 +10,17 @@ Module ExclusiveMiddle.
     exclusive_middle_implies_proof_irrelevance classic
   .
 
-  Definition eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
+  Polymorphic Definition eq_rect_eq : forall A : Type, forall x : A, forall B : A -> Type, forall y : B x, forall H : x = x, y = eq_rect x B y x H :=
     proof_irrelevance_implies_eq_rect_eq proof_irrelevance
   .
 
-  Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi (@eq_refl A x) -> forall eq_val0 : x = x, phi eq_val0 :=
+  Polymorphic Definition Streicher_K : forall A : Type, forall x : A, forall phi : x = x -> Type, phi (@eq_refl A x) -> forall eq_val0 : x = x, phi eq_val0 :=
     fun A : Type =>
     fun x : A =>
     eq_rect_eq_implies_Streicher_K A x (eq_rect_eq A x)
   .
 
-  Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
+  Polymorphic Definition existT_inj2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, existT B x y1 = existT B x y2 -> y1 = y2 :=
     fun A : Type =>
     fun B : A -> Type =>
     fun x : A =>
