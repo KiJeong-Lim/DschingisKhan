@@ -11,12 +11,7 @@ Module MyCategories.
 
   Global Declare Scope monad_scope.
 
-  Class isFunctor (F : Type -> Type) : Type :=
-    { fmap {A : Type} {B : Type} : (A -> B) -> F A -> F B
-    }
-  .
-
-  Class isMonad (M : Type -> Type) : Type :=
+  Polymorphic Class isMonad (M : Type -> Type) : Type :=
     { pure {A : Type} : A -> M A
     ; bind {A : Type} {B : Type} : M A -> (A -> M B) -> M B
     }
@@ -30,12 +25,26 @@ Module MyCategories.
 
   Global Open Scope monad_scope.
 
-  Definition fcat {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
+  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
+    { fmap {A : Type} {B : Type} : (A -> B) -> F A -> F B
+    }
+  .
+
+  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A -> B =>
+      fun m : M A =>
+      \do x <- m;
+      ret (f x);
+    }
+  .
+
+  Polymorphic Definition fcat {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
     fun x : A =>
     f1 (f2 x)
   .
 
-  Definition kcat {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
+  Polymorphic Definition kcat {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
     fun x : A =>
     k2 x >>= k1
   .
@@ -54,25 +63,25 @@ Module MyCategories.
     }
   .
 
-  Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
     ST -> M (X * ST)%type
   .
 
-  Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
+  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
     @id (stateT ST M X)
   .
 
-  Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
+  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
     @id (stateT ST M X)
   .
 
-  Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
     { pure _ := StateT `fcat` curry pure
     ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcat` k) `kcat` runStateT m)
     }
   .
 
-  Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
   | inl1 : F1 X -> sum1 F1 F2 X
   | inr1 : F2 X -> sum1 F1 F2 X
   .
@@ -82,7 +91,7 @@ Module MyCategories.
 
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
-  Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
+  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
     { fmap {A : Type} {B : Type} :=
       fun f : A -> B =>
       sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
@@ -91,19 +100,17 @@ Module MyCategories.
 
   Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
 
-  Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+  Polymorphic Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
     fun X : Type =>
     fun e : E X =>
     StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
   .
 
-  Global Notation endo T := (T -> T).
-
 End MyCategories.
 
 Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees.pdf" *)
 
-  Import ListNotations MyCategories ConstructiveCoLaTheory.
+  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories.
 
   Variant itreeF (itree_E_R : Type) (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF itree_E_R E R
@@ -205,6 +212,8 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
+  Local Notation endo X := (X -> X).
+
   Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
     let iter := itree_iter (E := E') (R := R) (I := itree (E +' E') R) in
@@ -259,28 +268,20 @@ Module InteractionTrees. (* Reference: "https://sf.snu.ac.kr/publications/itrees
 
   End RECURSION.
 
-End InteractionTrees.
-
-Module InteractionTreesFacts.
-
-  Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories InteractionTrees.
-
   Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
   Context {E : Type -> Type} {R : Type}.
 
-  Definition VisF_eq_elim :
-    forall X1 : Type,
-    forall X2 : Type,
-    forall e1 : E X1,
-    forall e2 : E X2,
-    forall k1 : X1 -> itree E R,
-    forall k2 : X2 -> itree E R,
-    @eq (itreeF (itree E R) E R) (VisF X1 e1 k1) (VisF X2 e2 k2) ->
-    X1 = X2.
-  Proof.
-    congruence.
-  Qed.
+  Definition VisF_eq_elim (X1 : Type) (X2 : Type) (e1 : E X1) (e2 : E X2) (k1 : X1 -> itree E R) (k2 : X2 -> itree E R) : @eq (itreeF (itree E R) E R) (VisF X1 e1 k1) (VisF X2 e2 k2) -> X1 = X2 :=
+    let pop_X_in_VisF (ot : itreeF (itree E R) E R) : Type :=
+      match ot return Type with
+      | RetF r => X1
+      | TauF t => X1
+      | VisF X e k => X
+      end
+    in
+    eq_congruence pop_X_in_VisF (VisF X1 e1 k1) (VisF X2 e2 k2)
+  .
 
   Variant eq_itreeF (sim : itree E R -> itree E R -> Prop) : itreeF (itree E R) E R -> itreeF (itree E R) E R -> Prop :=
   | EqRet (r1 : R) (r2 : R) (H_rel : r1 = r2) :
@@ -350,16 +351,20 @@ Module InteractionTreesFacts.
 
   Local Hint Resolve or_plus_eq_MyUnion : core.
 
+  Definition rel_id : ensemble (itree E R * itree E R) :=
+    uncurry eq
+  .
+
   Lemma eqITree_refl :
-    isSubsetOf (uncurry eq) (PaCo eqITreeF bot).
+    isSubsetOf rel_id (PaCo eqITreeF bot).
   Proof with eauto with *.
     apply PaCo_acc...
-    set (REL := or_plus bot (uncurry eq)).
+    set (REL := or_plus bot rel_id).
     transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)).
     - intros [lhs rhs] H_lhs_eq_rhs.
       unfold eqITreeF, member.
       unfold uncurry at 1.
-      unfold member, uncurry in H_lhs_eq_rhs.
+      unfold member, rel_id, uncurry in H_lhs_eq_rhs.
       destruct (observe lhs) as [r1 | t1 | X1 e1 k1] eqn: H_lhs_obs;
       destruct (observe rhs) as [r2 | t2 | X2 e2 k2] eqn: H_rhs_obs;
       try congruence.
@@ -378,7 +383,7 @@ Module InteractionTreesFacts.
         apply in_union_iff; right.
         apply in_union_iff; right.
         congruence.
-    - fold (MyUnion bot (uncurry eq)).
+    - fold (MyUnion bot rel_id).
       transitivity (PaCo eqITreeF (or_plus bot (uncurry eq))).
       + apply PaCo_fold.
       + apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic)...
@@ -392,40 +397,39 @@ Module InteractionTreesFacts.
     exact (eqITree_refl (t1, t1) eq_refl).
   Qed.
 
-  Definition flip (REL1 : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
+  Definition rel_flip (REL1 : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
     fun two_trees : itree E R * itree E R => member (snd two_trees, fst two_trees) REL1
   .
 
   Lemma eqITree_sym :
-    isSubsetOf (flip (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
+    isSubsetOf (rel_flip (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
   Proof with eauto with *.
     apply PaCo_acc...
-    set (REL := MyUnion bot (flip (PaCo eqITreeF bot))).
-    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)).
-    - intros [lhs rhs] H_lhs_eq_rhs.
-      unfold member, flip in H_lhs_eq_rhs.
-      simpl in H_lhs_eq_rhs.
-      apply PaCo_unfold in H_lhs_eq_rhs...
-      replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_lhs_eq_rhs...
-      unfold eqITreeF in H_lhs_eq_rhs.
-      unfold eqITreeF.
-      unfold uncurry, curry, member in *.
-      destruct H_lhs_eq_rhs as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
-      + constructor 1.
-        congruence.
-      + apply in_union_iff in H_rel.
-        destruct H_rel as [H_rel | H_rel]; [ | contradiction (not_in_bot t1 t2 H_rel)].
-        constructor 2.
-        apply in_union_iff; right.
-        right...
-      + constructor 3.
-        intros x.
-        assert (claim1 := H_rel x).
-        apply in_union_iff in claim1.
-        destruct claim1 as [claim1 | claim1]; [ | contradiction (not_in_bot (k1 x) (k2 x) claim1)].
-        apply in_union_iff; right.
-        right...
-    - apply PaCo_fold.
+    set (REL := MyUnion bot (rel_flip (PaCo eqITreeF bot))).
+    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    intros [lhs rhs] H_lhs_eq_rhs.
+    unfold member, rel_flip in H_lhs_eq_rhs.
+    simpl in H_lhs_eq_rhs.
+    apply PaCo_unfold in H_lhs_eq_rhs...
+    replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_lhs_eq_rhs...
+    unfold eqITreeF in H_lhs_eq_rhs.
+    unfold eqITreeF.
+    unfold uncurry, curry, member in *.
+    destruct H_lhs_eq_rhs as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
+    - constructor 1.
+      congruence.
+    - apply in_union_iff in H_rel.
+      destruct H_rel as [H_rel | H_rel]; [ | contradiction (not_in_bot t1 t2 H_rel)].
+      constructor 2.
+      apply in_union_iff; right.
+      right...
+    - constructor 3.
+      intros x.
+      assert (claim1 := H_rel x).
+      apply in_union_iff in claim1.
+      destruct claim1 as [claim1 | claim1]; [ | contradiction (not_in_bot (k1 x) (k2 x) claim1)].
+      apply in_union_iff; right.
+      right...
   Qed.
 
   Local Instance eqITree_Symmetric :
@@ -458,49 +462,49 @@ Module InteractionTreesFacts.
         apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
       - contradiction (not_in_bot t1 t2 H_in).
     }
-    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)).
-    - intros [lhs rhs] H_lhs_eq_rhs.
-      unfold comp, member in H_lhs_eq_rhs.
-      simpl in H_lhs_eq_rhs.
-      destruct H_lhs_eq_rhs as [t [H_lhs_eq_t H_t_eq_rhs]].
-      apply PaCo_unfold in H_lhs_eq_t...
-      replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_lhs_eq_t...
-      apply PaCo_unfold in H_t_eq_rhs...
-      replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_t_eq_rhs...
-      unfold eqITreeF in H_lhs_eq_t, H_t_eq_rhs.
-      unfold eqITreeF.
-      unfold uncurry, curry, member in *.
-      destruct (observe t) as [r3 | t3 | X3 e3 k3] eqn: H_t_obs.
-      + inversion H_lhs_eq_t; subst.
-        inversion H_t_eq_rhs; subst.
-        rename H0 into H_lhs_obs, H into H_rhs_obs.
-        constructor 1.
-        congruence.
-      + inversion H_lhs_eq_t; subst.
-        rename H_rel into H_rel1.
-        inversion H_t_eq_rhs; subst.
-        rename H_rel into H_rel2.
-        apply in_union_iff in H_rel1, H_rel2.
-        destruct H_rel1 as [H_rel1 | H_rel1]; [ | contradiction (not_in_bot t1 t3 H_rel1)].
-        destruct H_rel2 as [H_rel2 | H_rel2]; [ | contradiction (not_in_bot t3 t2 H_rel2)].
-        rename H0 into H_lhs_obs, H into H_rhs_obs.
-        constructor 2.
-        apply in_union_iff; right.
-        right.
-        exists t3.
-        split; unfold eqITreeF, member; simpl...
-      + rewrite <- H_t_obs in H_lhs_eq_t, H_t_eq_rhs.
-        revert H_t_obs.
-        destruct H_t_eq_rhs as [r2' r2 H_rel2 | t2' t2 H_rel2 | X2 e2 k2' k2 H_rel2]; try congruence.
-        intros H_t_obs.
-        rewrite H_t_obs in H_lhs_eq_t.
-        destruct H_lhs_eq_t as [r1 r1' H_rel1 | t1 t1' H_rel1 | X1 e1 k1 k1' H_rel1]; try congruence.
-        assert (X1_eq_X2 := VisF_eq_elim X2 X1 e2 e1 k2' k1' H_t_obs).
-        subst X2.
-        rename X1 into X.
-        enough (H_e_eq : e1 = e2).
-        enough (H_k_eq : k1' = k2').
-        subst e2.
+    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    intros [lhs rhs] H_lhs_eq_rhs.
+    unfold comp, member in H_lhs_eq_rhs.
+    simpl in H_lhs_eq_rhs.
+    destruct H_lhs_eq_rhs as [t [H_lhs_eq_t H_t_eq_rhs]].
+    apply PaCo_unfold in H_lhs_eq_t...
+    replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_lhs_eq_t...
+    apply PaCo_unfold in H_t_eq_rhs...
+    replace (ConstructiveCoLaTheory.or_plus) with or_plus in H_t_eq_rhs...
+    unfold eqITreeF in H_lhs_eq_t, H_t_eq_rhs.
+    unfold eqITreeF.
+    unfold uncurry, curry, member in *.
+    destruct (observe t) as [r3 | t3 | X3 e3 k3] eqn: H_t_obs.
+    - inversion H_lhs_eq_t; subst.
+      inversion H_t_eq_rhs; subst.
+      rename H0 into H_lhs_obs, H into H_rhs_obs.
+      constructor 1.
+      congruence.
+    - inversion H_lhs_eq_t; subst.
+      rename H_rel into H_rel1.
+      inversion H_t_eq_rhs; subst.
+      rename H_rel into H_rel2.
+      apply in_union_iff in H_rel1, H_rel2.
+      destruct H_rel1 as [H_rel1 | H_rel1]; [ | contradiction (not_in_bot t1 t3 H_rel1)].
+      destruct H_rel2 as [H_rel2 | H_rel2]; [ | contradiction (not_in_bot t3 t2 H_rel2)].
+      rename H0 into H_lhs_obs, H into H_rhs_obs.
+      constructor 2.
+      apply in_union_iff; right.
+      right.
+      exists t3.
+      split; unfold eqITreeF, member; simpl...
+    - rewrite <- H_t_obs in H_lhs_eq_t, H_t_eq_rhs.
+      revert H_t_obs.
+      destruct H_t_eq_rhs as [r2' r2 H_rel2 | t2' t2 H_rel2 | X2 e2 k2' k2 H_rel2]; try congruence.
+      intros H_t_obs.
+      rewrite H_t_obs in H_lhs_eq_t.
+      destruct H_lhs_eq_t as [r1 r1' H_rel1 | t1 t1' H_rel1 | X1 e1 k1 k1' H_rel1]; try congruence.
+      assert (X1_eq_X2 := VisF_eq_elim X2 X1 e2 e1 k2' k1' H_t_obs).
+      subst X2.
+      rename X1 into X.
+      enough (H_e_eq_e : e1 = e2).
+      enough (H_k_eq_k : k1' = k2').
+      { subst e2.
         rename e1 into e.
         subst k2'.
         rename k1' into k.
@@ -515,10 +519,10 @@ Module InteractionTreesFacts.
         right.
         exists (k x).
         split; unfold eqITreeF, member; simpl...
-        all: inversion H_t_obs; symmetry.
-        apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k1')...
-        apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e2 e1)...
-    - apply PaCo_fold.
+      }
+      all: inversion H_t_obs; symmetry.
+      apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k1')...
+      apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e2 e1)...
   Qed.
 
   Local Instance eqITree_Transitive :
@@ -533,9 +537,9 @@ Module InteractionTreesFacts.
   End ITREE_EQUALITY.
 
   Add Parametric Relation {E : Type -> Type} {R : Type} : (itree E R) (eqITree (E := E) (R := R))
-    reflexivity proved by eqITree_Reflexive
-    symmetry proved by eqITree_Symmetric
-    transitivity proved by eqITree_Transitive
+    reflexivity proved by (eqITree_Reflexive (E := E) (R := R))
+    symmetry proved by (eqITree_Symmetric (E := E) (R := R))
+    transitivity proved by (eqITree_Transitive (E := E) (R := R))
   as eqITree_Equivalence.
 
   Global Instance itree_isSetoid {E : Type -> Type} {R : Type} : isSetoid (itree E R) :=
@@ -548,4 +552,4 @@ Module InteractionTreesFacts.
 
   End INTERPRET_FACTS.
 
-End InteractionTreesFacts.
+End InteractionTrees.
