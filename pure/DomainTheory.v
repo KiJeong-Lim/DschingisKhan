@@ -982,31 +982,12 @@ Module PowerSetCoLa.
       enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y) claim2)...
   Qed.
 
-  Lemma bot_is_empty :
-    @bot (ensemble A) ensemble_isPoset ensemble_isCompleteLattice == \emptyset.
-  Proof with eauto with *.
-    unfold bot.
-    destruct (supremum_always_exists_in_CompleteLattice \emptyset) as [BOT H_BOT]; simpl.
-    intros x; split; intros H_in.
-    - apply H_BOT.
-      + intros X X_in; inversion X_in; subst; contradiction.
-      + exact H_in.
-    - inversion H_in; subst; contradiction.
-  Qed.
-
-  Theorem paco_conclusion (P : ensemble A) (F : ensemble A >=> ensemble A) (nu_F_le_P : isSubsetOf (proj1_sig (paco F) bot) P) :
+  Theorem paco_conclusion (P : ensemble A) (F : ensemble A >=> ensemble A) (nu_F_le_P : isSubsetOf (proj1_sig (nu F)) P) :
     forall X : ensemble A,
     isSubsetOf X (proj1_sig F X) ->
     isSubsetOf X P.
   Proof with eauto with *.
-    assert (claim1 := PaCo_preserves_monotonicity (proj1_sig F) (proj2_sig F)).
-    assert (claim2 : proj1_sig (nu F) == proj1_sig (paco F) bot).
-    { transitivity (PaCo (proj1_sig F) bot).
-      - exact (PaCo_init (proj1_sig F) (proj2_sig F)).
-      - apply MonotonicMap_preservesSetoid...
-    }
-    apply (proj1 (nu_isSupremum F P)).
-    transitivity (proj1_sig (paco F) bot)...
+    apply (proj1 (nu_isSupremum F P))...
   Qed.
 
   End PACO.
