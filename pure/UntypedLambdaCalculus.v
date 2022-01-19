@@ -767,7 +767,6 @@ Module UntypedLamdbdaCalculus.
       | OccursLam0 _ y_2 Q_2 poss_2 X0_2 => _
       end (eq_reflexivity my_poss) (eq_reflexivity my_M)
     );
-    (try discriminate);
     unfold my_poss, my_M, my_X;
     intros H_eq_my_poss H_eq_my_M;
     inversion H_eq_my_poss; subst;
