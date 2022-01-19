@@ -777,17 +777,13 @@ Module UntypedLamdbdaCalculus.
       | OccursLam0 _ y_2 Q_2 poss_2 X0_2 => _
       end (eq_reflexivity my_poss) (eq_reflexivity my_M)
     );
-    try discriminate;
+    (try discriminate);
     intros H_eq1 H_eq2;
     inversion H_eq1; subst;
     inversion H_eq2; subst;
     (replace H_eq2 with (eq_reflexivity my_M); [simpl | apply claim2]);
     (replace H_eq1 with (eq_reflexivity my_poss); [simpl | apply claim1]);
-    [ reflexivity
-    | apply eq_congruence; exact (pirrel_fix _ _ X1_1 X1_2)
-    | apply eq_congruence; exact (pirrel_fix _ _ X2_1 X2_2)
-    | apply eq_congruence; exact (pirrel_fix _ _ X0_1 X0_2)
-    ].
+    now (reflexivity || apply eq_congruence).
   Qed.
 
   Definition isSubtermOf : tm -> tm -> Prop :=
