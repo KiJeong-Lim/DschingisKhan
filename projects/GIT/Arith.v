@@ -30,7 +30,9 @@ Module MyCategories.
     forall _ : A, B
   .
 
-  Local Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (from_to_ A B) :=
+  Local Infix " '\to' " := from_to_ (at level 100, right associativity) : type_scope.
+
+  Local Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (A \to B) :=
     { eqProp :=
       fun f1 : from_to_ A B =>
       fun f2 : from_to_ A B =>
@@ -42,8 +44,6 @@ Module MyCategories.
   Next Obligation with eauto with *.
     split...
   Qed.
-
-  Local Infix " '\to' " := from_to_ (at level 100, right associativity) : type_scope.
 
   Polymorphic Definition fmult {A : Type} {B : Type} {C : Type} (f1 : B \to C) (f2 : A \to B) : A \to C :=
     fun x : A => f1 (f2 x)
@@ -97,13 +97,13 @@ Module MyCategories.
     ; bind_pure_r {A : Type} :
       forall m : M A,
       bind m pure == m
-    ; bind_preserves_eq_on_fst {A : Type} {B : Type} :
+    ; bind_preserves_eq_on_fst_arg {A : Type} {B : Type} :
       forall m1 : M A,
       forall m2 : M A,
       m1 == m2 ->
       forall k : A \to M B,
       (m1 >>= k) == (m2 >>= k)
-    ; bind_preserves_eq_on_snd {A : Type} {B : Type} :
+    ; bind_preserves_eq_on_snd_arg {A : Type} {B : Type} :
       forall k1 : A \to M B,
       forall k2 : A \to M B,
       k1 == k2 ->
@@ -122,7 +122,7 @@ Module MyCategories.
 
   Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) (M_obeysMonadLaws : obeysMonadLaws (eq1 := eq1) M_isMonad) :
     obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
-  Proof with eauto. (* Thanks to Soonwon Moon *)
+  Proof with eauto with *. (* Thanks to Soonwon Moon *)
     enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
     enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fmult` f2) e == (fmap f1 `fmult` fmap f2) e).
     - constructor...
@@ -141,20 +141,17 @@ Module MyCategories.
       unfold fmult at 1.
       transitivity (m >>= (fun x : A => pure (g x) >>= pure `fmult` f)).
       { rewrite bind_assoc.
-        apply bind_preserves_eq_on_snd.
-        reflexivity.
+        apply bind_preserves_eq_on_snd_arg...
       }
       transitivity (m >>= (fun x : A => (pure `fmult` f) (g x))).
-      { apply bind_preserves_eq_on_snd.
+      { apply bind_preserves_eq_on_snd_arg.
         intros x.
-        rewrite bind_pure_l.
-        reflexivity.
+        rewrite bind_pure_l...
       }
       reflexivity.
     - intros A e.
-      transitivity (bind e (fun x : A => pure x)).
-      + reflexivity.
-      + apply bind_pure_r.
+      transitivity (bind e (fun x : A => pure x))...
+      apply bind_pure_r.
   Qed.
 
   Global Instance option_isMonad : isMonad option :=
@@ -1068,13 +1065,13 @@ Module InteractionTreeTheory.
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
     ; bind_pure_l {R1 : Type} {R2 : Type} := itree_bind_pure_l (E := E) (R1 := R1) (R2 := R2)
     ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R1 := R1)
-    ; bind_preserves_eq_on_fst {R1 : Type} {R2 : Type} :=
+    ; bind_preserves_eq_on_fst_arg {R1 : Type} {R2 : Type} :=
       fun m1 : itree E R1 =>
       fun m2 : itree E R1 =>
       fun H_m1_eq_m2 : m1 == m2 =>
       fun k : R1 -> itree E R2 =>
       @itree_bind_preserves_eq_on_fst_arg E R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
-    ; bind_preserves_eq_on_snd {R1 : Type} {R2 : Type} :=
+    ; bind_preserves_eq_on_snd_arg {R1 : Type} {R2 : Type} :=
       fun k1 : R1 -> itree E R2 =>
       fun k2 : R1 -> itree E R2 =>
       fun H_k1_eq_k2 : forall x : R1, k1 x == k2 x =>
