@@ -738,6 +738,58 @@ Module UntypedLamdbdaCalculus.
 
   Local Hint Resolve isSuper_reflexivity isSuper_transitivity : core.
 
+  Lemma occurs_pirrel (CON_eq_dec : forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) :
+    forall N : tm,
+    forall M : tm,
+    forall poss : list position,
+    forall X1 : occurs N poss M,
+    forall X2 : occurs N poss M,
+    X1 = X2.
+  Proof with eauto.
+    assert (claim1 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2) by apply list_position_eq_pirrel.
+    assert (claim2 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
+    { intros M1.
+      apply eq_em_implies_eq_pirrel.
+      intros M2.
+      destruct (tm_eq_dec CON_eq_dec M1 M2)...
+    }
+    refine (
+      fun N : tm =>
+      fix pirrel_fix (M : tm) (poss : list position) (X1 : occurs N poss M) {struct X1} : forall X2 : occurs N poss M, X1 = X2 :=
+      match X1 as X' in occurs _ poss' M' return forall X2 : occurs N poss' M', X' = X2 with
+      | OccursRefl _ => _
+      | OccursApp1 _ P1_1 P2_1 poss_1 X1_1 => _
+      | OccursApp2 _ P1_1 P2_1 poss_1 X2_1 => _
+      | OccursLam0 _ y_1 Q_1 poss_1 X0_1 => _
+      end
+    );
+    [ set (my_poss := []); set (my_M := N); set (my_X := OccursRefl N)
+    | set (my_poss := POS1 :: poss_1); set (my_M := App P1_1 P2_1); set (my_X := OccursApp1 N P1_1 P2_1 poss_1 X1_1)
+    | set (my_poss := POS2 :: poss_1); set (my_M := App P1_1 P2_1); set (my_X := OccursApp2 N P1_1 P2_1 poss_1 X2_1)
+    | set (my_poss := POS0 :: poss_1); set (my_M := Lam y_1 Q_1); set (my_X := OccursLam0 N y_1 Q_1 poss_1 X0_1)
+    ];
+    refine (
+      fun X2 =>
+      match X2 as X' in occurs _ poss' M' return forall H_eq1 : poss' = my_poss, forall H_eq2 : M' = my_M, my_X = (eq_rec M' (occurs N my_poss) (eq_rec poss' (fun poss : list position => occurs N poss M') X' my_poss H_eq1) my_M H_eq2) with
+      | OccursRefl _ => _
+      | OccursApp1 _ P1_2 P2_2 poss_2 X1_2 => _
+      | OccursApp2 _ P1_2 P2_2 poss_2 X2_2 => _
+      | OccursLam0 _ y_2 Q_2 poss_2 X0_2 => _
+      end (eq_reflexivity my_poss) (eq_reflexivity my_M)
+    );
+    try discriminate;
+    intros H_eq1 H_eq2;
+    inversion H_eq1; subst;
+    inversion H_eq2; subst;
+    (replace H_eq2 with (eq_reflexivity my_M); [simpl | apply claim2]);
+    (replace H_eq1 with (eq_reflexivity my_poss); [simpl | apply claim1]);
+    [ reflexivity
+    | apply eq_congruence; exact (pirrel_fix _ _ X1_1 X1_2)
+    | apply eq_congruence; exact (pirrel_fix _ _ X2_1 X2_2)
+    | apply eq_congruence; exact (pirrel_fix _ _ X0_1 X0_2)
+    ].
+  Qed.
+
   Definition isSubtermOf : tm -> tm -> Prop :=
     fun N : tm =>
     fun M : tm =>
