@@ -661,17 +661,6 @@ Module UntypedLamdbdaCalculus.
     exact (FinSet_eq_dec 3).
   Defined.
 
-  Lemma list_position_eq_pirrel :
-    forall poss1 : list position,
-    forall poss2 : list position,
-    forall H_EQ1 : poss1 = poss2,
-    forall H_EQ2 : poss1 = poss2,
-    H_EQ1 = H_EQ2.
-  Proof.
-    intros poss1; apply (eq_em_implies_eq_pirrel poss1).
-    intros poss2; destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right]; assumption.
-  Defined.
-
   Definition POS0 : position :=
     (FZ 2)
   .
@@ -746,12 +735,13 @@ Module UntypedLamdbdaCalculus.
     forall X2 : occurs N poss M,
     X1 = X2.
   Proof.
-    assert (claim1 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2) by apply list_position_eq_pirrel.
-    assert (claim2 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
-    { intros M1.
-      apply eq_em_implies_eq_pirrel.
-      intros M2.
-      now destruct (tm_eq_dec CON_eq_dec M1 M2); [left | right].
+    assert (claim1 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
+    { intros M1; apply eq_em_implies_eq_pirrel.
+      now intros M2; destruct (tm_eq_dec CON_eq_dec M1 M2); [left | right].
+    }
+    assert (claim2 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2).
+    { intros poss1; apply (eq_em_implies_eq_pirrel poss1).
+      now intros poss2; destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right].
     }
     refine (
       fun N : tm =>
@@ -778,11 +768,11 @@ Module UntypedLamdbdaCalculus.
       end (eq_reflexivity my_poss) (eq_reflexivity my_M)
     );
     (try discriminate);
-    intros H_eq1 H_eq2;
+    intros H_eq2 H_eq1;
     inversion H_eq1; subst;
     inversion H_eq2; subst;
-    (replace H_eq2 with (eq_reflexivity my_M); [simpl | apply claim2]);
-    (replace H_eq1 with (eq_reflexivity my_poss); [simpl | apply claim1]);
+    (replace H_eq1 with (eq_reflexivity my_M); [simpl | apply claim1]);
+    (replace H_eq2 with (eq_reflexivity my_poss); [simpl | apply claim2]);
     now (reflexivity || apply eq_congruence).
   Qed.
 
