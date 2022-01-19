@@ -281,17 +281,6 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type} {R : Type}.
 
-  Definition VisF_eq_elim (X1 : Type) (X2 : Type) (e1 : E X1) (e2 : E X2) (k1 : X1 -> itree E R) (k2 : X2 -> itree E R) : @eq (itreeF (itree E R) E R) (VisF X1 e1 k1) (VisF X2 e2 k2) -> X1 = X2 :=
-    let pop_X_in_VisF (ot : itreeF (itree E R) E R) : Type :=
-      match ot return Type with
-      | RetF r => X1
-      | TauF t => X1
-      | VisF X e k => X
-      end
-    in
-    eq_congruence pop_X_in_VisF (VisF X1 e1 k1) (VisF X2 e2 k2)
-  .
-
   Variant eq_itreeF (sim : itree E R -> itree E R -> Prop) : itreeF (itree E R) E R -> itreeF (itree E R) E R -> Prop :=
   | EqRet (r1 : R) (r2 : R) (H_rel : r1 = r2) :
     eq_itreeF sim (RetF r1) (RetF r2)
@@ -509,30 +498,32 @@ Module InteractionTreeTheory.
       intros H_t_obs.
       rewrite H_t_obs in H_lhs_eq_t.
       destruct H_lhs_eq_t as [r1 r1' H_rel1 | t1 t1' H_rel1 | X1 e1 k1 k1' H_rel1]; try congruence.
-      assert (X1_eq_X2 := VisF_eq_elim X2 X1 e2 e1 k2' k1' H_t_obs).
+      assert (H_X_eq_X : X1 = X2) by now symmetry; apply (eq_congruence (fun ot : itreeF (itree E R) E R => match ot with | VisF X e k => X | _ => X1 end) _ _ H_t_obs).
       subst X2.
       rename X1 into X.
       enough (H_e_eq_e : e1 = e2).
       enough (H_k_eq_k : k1' = k2').
-      { subst e2.
-        rename e1 into e.
-        subst k2'.
-        rename k1' into k.
-        constructor 3.
-        intros x.
-        assert (claim2 := H_rel1 x).
-        assert (claim3 := H_rel2 x).
-        apply in_union_iff in claim2, claim3.
-        destruct claim2 as [claim2 | claim2]; [ | contradiction (not_in_bot (k1 x) (k x) claim2)].
-        destruct claim3 as [claim3 | claim3]; [ | contradiction (not_in_bot (k x) (k2 x) claim3)].
-        apply in_union_iff; right.
-        right.
-        exists (k x).
-        split; unfold eqITreeF, member; simpl...
+      subst e2.
+      rename e1 into e.
+      subst k2'.
+      rename k1' into k.
+      constructor 3.
+      intros x.
+      assert (claim2 := H_rel1 x).
+      assert (claim3 := H_rel2 x).
+      apply in_union_iff in claim2, claim3.
+      destruct claim2 as [claim2 | claim2]; [ | contradiction (not_in_bot (k1 x) (k x) claim2)].
+      destruct claim3 as [claim3 | claim3]; [ | contradiction (not_in_bot (k x) (k2 x) claim3)].
+      apply in_union_iff; right.
+      right.
+      exists (k x).
+      split; unfold eqITreeF, member; simpl...
+      { inversion H_t_obs; symmetry.
+        apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k1')...
       }
-      all: inversion H_t_obs; symmetry.
-      apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k1')...
-      apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e2 e1)...
+      { inversion H_t_obs; symmetry.
+        apply (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e2 e1)...
+      }
   Qed.
 
   Local Instance eqITree_Transitive :
@@ -675,7 +666,7 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Definition _bind {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
+  Let _bind {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
     fun t0 : itree E R1 =>
     fun k0 : R1 -> itree E R2 =>
     match observe t0 with
@@ -691,30 +682,30 @@ Module InteractionTreeTheory.
 
   Variable k0 : R1 -> itree E R2.
 
-  Lemma unfold_bind (t0 : itree E R1) :
+  Lemma unfold_itree_bind (t0 : itree E R1) :
     (t0 >>= k0) == _bind t0 k0.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Lemma bind_Ret (r : R1) :
+  Lemma itree_bind_Ret (r : R1) :
     bind (Ret r) k0 == k0 r.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Lemma bind_Tau (t : itree E R1) :
+  Lemma itree_bind_Tau (t : itree E R1) :
     bind (Tau t) k0 == Tau (bind t k0).
   Proof.
-    apply unfold_bind with (t0 := Tau t).
+    apply unfold_itree_bind with (t0 := Tau t).
   Qed.
 
-  Lemma bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
+  Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
     bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
   Proof.
-    rewrite unfold_bind with (t0 := Vis X e k).
+    rewrite unfold_itree_bind with (t0 := Vis X e k).
     apply PaCo_init.
     apply PaCo_fold.
     constructor 3.
@@ -724,23 +715,21 @@ Module InteractionTreeTheory.
     reflexivity.
   Qed.
 
-  Lemma bind_trigger (e : E R1) :
+  Lemma itree_bind_trigger (e : E R1) :
     bind (itree_trigger R1 e) k0 == Vis R1 e k0.
   Proof.
-    rewrite unfold_bind with (t0 := itree_trigger R1 e).
+    rewrite unfold_itree_bind with (t0 := itree_trigger R1 e).
     apply PaCo_init.
     apply PaCo_fold.
     constructor 3.
     intros r.
     apply in_union_iff; left.
-    assert (claim1 := bind_Ret r).
+    assert (claim1 := itree_bind_Ret r).
     apply PaCo_init in claim1.
     exact claim1.
   Qed.
 
   End BIND_CASES.
-
-  Local Hint Resolve bind_Ret bind_Tau bind_Vis : core.
 
   Lemma unfold_expand_leaves {R1 : Type} {R2 : Type} :
     forall k : R1 -> itree E R2,
@@ -750,15 +739,7 @@ Module InteractionTreeTheory.
     reflexivity.
   Qed.
 
-  Section ITREE_BIND_ASSOC.
-
-  Context {R1 : Type} {R2 : Type} {R3 : Type}.
-
-  Let focus_rel (k1 : R1 -> itree E R2) (k2 : R2 -> itree E R3) : ensemble (itree E R1 * itree E R1) -> ensemble (itree E R3 * itree E R3) :=
-    image (fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= k1) >>= k2, snd two_trees >>= (fun x : R1 => k1 x >>= k2)))
-  .
-
-  Lemma bind_assoc :
+  Lemma bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} :
     forall t0 : itree E R1,
     forall k1 : R1 -> itree E R2,
     forall k2 : R2 -> itree E R3,
@@ -766,7 +747,8 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     intros t_0 k_1 k_2.
     revert t_0.
-    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel k_1 k_2 (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    set (focus_rel := image (fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= k_1) >>= k_2, snd two_trees >>= (fun x : R1 => k_1 x >>= k_2)))).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
     { intros t0.
       apply PaCo_init.
       assert (claim1 : t0 == t0) by reflexivity.
@@ -777,7 +759,7 @@ Module InteractionTreeTheory.
     }
     apply PaCo_acc...
     assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
-    set (REL := MyUnion bot (focus_rel k_1 k_2 (PaCo eqITreeF bot))).
+    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
     assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
     { intros x H_x_in.
       apply in_union_iff in H_x_in.
@@ -828,8 +810,6 @@ Module InteractionTreeTheory.
       apply in_image_iff.
       exists (k1 x0, k2 x0)...
   Qed.
-
-  End ITREE_BIND_ASSOC.
 
   Lemma bind_t0_pure_eq_t0 {R : Type} :
     forall t0 : itree E R,
