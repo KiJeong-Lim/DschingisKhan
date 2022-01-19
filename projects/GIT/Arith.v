@@ -26,19 +26,8 @@ Module MyCategories.
   Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
   Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
-  Global Open Scope monad_scope.
-
   Polymorphic Class isFunctor (F : Type -> Type) : Type :=
     { fmap {A : Type} {B : Type} : (A -> B) -> (F A -> F B)
-    }
-  .
-
-  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A -> B =>
-      fun m : M A =>
-      \do x <- m;
-      ret (f x);
     }
   .
 
@@ -47,13 +36,31 @@ Module MyCategories.
     f1 (f2 x)
   .
 
+  Polymorphic Definition funit {A : Type} : A -> A :=
+    fun x : A =>
+    x
+  .
+
   Polymorphic Definition kcomp {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
     fun x : A =>
     k2 x >>= k1
   .
 
+  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : (A -> M A) :=
+    fun x : A =>
+    pure x
+  .
+
   Global Infix " `fcomp` " := fcomp (at level 25, right associativity) : function_scope.
   Global Infix " `kcomp` " := kcomp (at level 25, right associativity) : function_scope.
+
+  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A -> B =>
+      fun m : M A =>
+      bind m (pure `fcomp` f)
+    }
+  .
 
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Type} :=
@@ -114,27 +121,28 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Type :=
+  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
     { fmap_fcomp_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B -> C,
       forall f2 : A -> B,
       forall e : F A,
-      fmap (fun x : A => f1 (f2 x)) e == fmap f1 (fmap f2 e)
+      fmap (f1 `fcomp` f2) e == (fmap f1 `fcomp` fmap f2) e
     ; fmap_id_comm {A : Type} :
       forall e : F A,
-      fmap (fun x : A => x) e == e
+      fmap funit e == funit e
     }
   .
 
-  Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) : Type :=
+  Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) : Prop :=
     { bind_assoc {A : Type} {B : Type} {C : Type} :
       forall m : M A,
       forall k1 : A -> M B,
       forall k2 : B -> M C,
       ((m >>= k1) >>= k2) == (m >>= (fun x : A => k1 x >>= k2))
-    ; bind_pure_l {A : Type} :
-      forall m : M A,
-      bind (pure m) id == m
+    ; bind_pure_l {A : Type} {B : Type} :
+      forall k : A -> M B,
+      forall x : A,
+      bind (pure x) k == k x
     ; bind_pure_r {A : Type} :
       forall m : M A,
       bind m pure == m
@@ -152,6 +160,47 @@ Module MyCategories.
       (m >>= k1) == (m >>= k2)
     }
   .
+
+  Polymorphic Lemma MonadLaws_implies_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) :
+    obeysMonadLaws (eq1 := eq1) M_isMonad ->
+    obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
+  Proof with eauto. (* Thanks to Soonwon Moon *)
+    intros H_monad_laws.
+    enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
+    enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fcomp` f2) e == (fmap f1 `fcomp` fmap f2) e).
+    - constructor...
+    - intros A B C f g m.
+      symmetry.
+      (* Soonwon's Advice:
+        (map f . map g) m
+        m >>= pure . g >>= pure . f
+        m >>= \x -> pure (g x) >>= pure . f
+        m >>= \x -> (pure . f) (g x)
+        m >>= \x -> pure (f (g x))
+        m >>= pure . (f . g)
+        map (f . g) m
+      *)
+      simpl.
+      unfold fcomp at 1.
+      transitivity (m >>= (fun x : A => pure (g x) >>= pure `fcomp` f)).
+      { rewrite bind_assoc.
+        apply bind_preserves_eq_on_snd.
+        reflexivity.
+      }
+      transitivity (m >>= (fun x : A => (pure `fcomp` f) (g x))).
+      { apply bind_preserves_eq_on_snd.
+        intros x.
+        rewrite bind_pure_l.
+        reflexivity.
+      }
+      reflexivity.
+    - intros A e.
+      transitivity (bind e (fun x : A => pure x)).
+      + reflexivity.
+      + apply bind_pure_r.
+  Qed.
+
+  Global Open Scope monad_scope.
 
 End MyCategories.
 
@@ -855,18 +904,20 @@ Module InteractionTreeTheory.
       exists (k1 x0, k2 x0)...
   Qed.
 
-  Lemma itree_bind_pure_l {R : Type} :
-    forall m : itree E R,
-    bind (pure m) id == m.
+  Lemma itree_bind_pure_l {R1 : Type} {R2 : Type} :
+    forall k : R1 -> itree E R2,
+    forall x : R1,
+    bind (pure x) k == k x.
   Proof.
-    exact (fun m : itree E R => itree_bind_Ret id m).
+    intros k x.
+    exact (itree_bind_Ret k x).
   Qed.
 
-  Lemma itree_bind_pure_r {R : Type} :
-    forall m : itree E R,
+  Lemma itree_bind_pure_r {R1 : Type} :
+    forall m : itree E R1,
     bind m pure == m.
   Proof with eauto with *.
-    set (focus := fun two_trees : itree E R * itree E R => ((fst two_trees >>= pure), snd two_trees)).
+    set (focus := fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= pure), snd two_trees)).
     set (focus_rel := image focus).
     enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
     { intros t0.
@@ -897,7 +948,7 @@ Module InteractionTreeTheory.
     simpl in f_lhs_is, f_rhs_is.
     subst f_lhs f_rhs.
     apply PaCo_unfold in H_in...
-    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R)) in H_in...
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_in...
     unfold eqITree in H_in.
     unfold eqITreeF, member, uncurry, curry in *.
     rewrite unfold_expand_leaves.
@@ -975,7 +1026,6 @@ Module InteractionTreeTheory.
       apply PaCo_unfold in claim3...
       replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2)) in claim3...
       apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
-    
     - simpl.
       constructor 2.
       apply in_union_iff; right.
@@ -1003,10 +1053,10 @@ Module InteractionTreeTheory.
     }
   .
 
-  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : obeysMonadLaws (itree_E_isMonad E) :=
+  Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree_E_isMonad E) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
-    ; bind_pure_l {R1 : Type} := itree_bind_pure_l (E := E) (R := R1)
-    ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R := R1)
+    ; bind_pure_l {R1 : Type} {R2 : Type} := itree_bind_pure_l (E := E) (R1 := R1) (R2 := R2)
+    ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R1 := R1)
     ; bind_preserves_eq_on_fst {R1 : Type} {R2 : Type} :=
       fun m1 : itree E R1 =>
       fun m2 : itree E R1 =>
