@@ -745,13 +745,13 @@ Module UntypedLamdbdaCalculus.
     forall X1 : occurs N poss M,
     forall X2 : occurs N poss M,
     X1 = X2.
-  Proof with eauto.
+  Proof.
     assert (claim1 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2) by apply list_position_eq_pirrel.
     assert (claim2 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
     { intros M1.
       apply eq_em_implies_eq_pirrel.
       intros M2.
-      destruct (tm_eq_dec CON_eq_dec M1 M2)...
+      now destruct (tm_eq_dec CON_eq_dec M1 M2); [left | right].
     }
     refine (
       fun N : tm =>
