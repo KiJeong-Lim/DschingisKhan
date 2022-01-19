@@ -10,7 +10,7 @@ Require Import DschingisKhan.classical.ExclusiveMiddle.
 
 Module MyCategories.
 
-  Import MyUtilities.
+  Import MyUtilities BasicSetoidTheory.
 
   Global Declare Scope monad_scope.
 
@@ -29,7 +29,7 @@ Module MyCategories.
   Global Open Scope monad_scope.
 
   Polymorphic Class isFunctor (F : Type -> Type) : Type :=
-    { fmap {A : Type} {B : Type} : (A -> B) -> F A -> F B
+    { fmap {A : Type} {B : Type} : (A -> B) -> (F A -> F B)
     }
   .
 
@@ -42,7 +42,7 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
+  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : A -> C :=
     fun x : A =>
     f1 (f2 x)
   .
@@ -107,6 +107,50 @@ Module MyCategories.
     fun X : Type =>
     fun e : E X =>
     StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
+  .
+
+  Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
+    { eqProp1 {X : Type} :> isSetoid (F X)
+    }
+  .
+
+  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Type :=
+    { fmap_fcomp_comm {A : Type} {B : Type} {C : Type} :
+      forall f1 : B -> C,
+      forall f2 : A -> B,
+      forall e : F A,
+      fmap (fun x : A => f1 (f2 x)) e == fmap f1 (fmap f2 e)
+    ; fmap_id_comm {A : Type} :
+      forall e : F A,
+      fmap (fun x : A => x) e == e
+    }
+  .
+
+  Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) : Type :=
+    { bind_assoc {A : Type} {B : Type} {C : Type} :
+      forall m : M A,
+      forall k1 : A -> M B,
+      forall k2 : B -> M C,
+      ((m >>= k1) >>= k2) == (m >>= (fun x : A => k1 x >>= k2))
+    ; bind_pure_l {A : Type} :
+      forall m : M A,
+      bind (pure m) id == m
+    ; bind_pure_r {A : Type} :
+      forall m : M A,
+      bind m pure == m
+    ; bind_preserves_eq_on_fst {A : Type} {B : Type} :
+      forall m1 : M A,
+      forall m2 : M A,
+      m1 == m2 ->
+      forall k : A -> M B,
+      (m1 >>= k) == (m2 >>= k)
+    ; bind_preserves_eq_on_snd {A : Type} {B : Type} :
+      forall k1 : A -> M B,
+      forall k2 : A -> M B,
+      (forall x : A, k1 x == k2 x) ->
+      forall m : M A,
+      (m >>= k1) == (m >>= k2)
+    }
   .
 
 End MyCategories.
@@ -537,13 +581,13 @@ Module InteractionTreeTheory.
 
   End ITREE_EQUALITY.
 
-  Add Parametric Relation {E : Type -> Type} {R : Type} : (itree E R) (eqITree (E := E) (R := R))
+  Global Add Parametric Relation {E : Type -> Type} {R : Type} : (itree E R) (eqITree (E := E) (R := R))
     reflexivity proved by (eqITree_Reflexive (E := E) (R := R))
     symmetry proved by (eqITree_Symmetric (E := E) (R := R))
     transitivity proved by (eqITree_Transitive (E := E) (R := R))
   as eqITree_Equivalence.
 
-  Global Instance itree_isSetoid {E : Type -> Type} {R : Type} : isSetoid (itree E R) :=
+  Global Instance itree_E_R_isSetoid {E : Type -> Type} {R : Type} : isSetoid (itree E R) :=
     { eqProp := eqITree (E := E) (R := R)
     ; Setoid_requiresEquivalence := eqITree_Equivalence (E := E) (R := R)
     }
@@ -649,7 +693,7 @@ Module InteractionTreeTheory.
       right...
   Qed.
 
-  Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
+  Global Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
     bind with signature (eqITree (E := E) (R := R1) ==> eq ==> eqITree (E := E) (R := R2))
   as itree_bind_preserves_eq_on_fst_arg.
   Proof with eauto with *.
@@ -878,6 +922,105 @@ Module InteractionTreeTheory.
   Qed.
 
   End REWRITE_BIND.
+
+  Global Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
+    bind with signature (eq ==> @arrow_eqProp (R1) (itree E R2) (itree_E_R_isSetoid (E := E) (R := R2)) ==> eqITree (E := E) (R := R2))
+  as itree_bind_preserves_eq_on_snd_arg.
+  Proof with eauto with *.
+    intros t_0 k_1 k_2 H_k_1_eq_k_2.
+    unfold arrow_eqProp in H_k_1_eq_k_2.
+    revert t_0.
+    set (focus := fun two_trees : itree E R1 * itree E R1 => (bind (fst two_trees) k_1, bind (snd two_trees) k_2)).
+    set (focus_rel := image focus).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    { intros t0.
+      apply PaCo_init.
+      assert (claim1 : t0 == t0) by reflexivity.
+      apply PaCo_init in claim1.
+      apply it_is_sufficient_to_show.
+      apply in_image_iff.
+      exists (t0, t0)...
+    }
+    apply PaCo_acc...
+    assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
+    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    { intros x H_x_in.
+      apply in_union_iff in H_x_in.
+      destruct H_x_in as [H_x_in | H_x_in].
+      - apply in_union_iff; left.
+        apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
+      - contradiction (bot_is_empty x).
+    }
+    replace ((fun a : itree E R2 * itree E R2 => member a bot \/ member a (focus_rel (PaCo eqITreeF bot)))) with REL...
+    intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
+    apply PaCo_fold.
+    apply in_image_iff in H_f_lhs_eq_f_rhs.
+    destruct H_f_lhs_eq_f_rhs as [[lhs rhs] [H_eq H_in]].
+    assert (f_lhs_is := eq_congruence fst _ _ H_eq).
+    assert (f_rhs_is := eq_congruence snd _ _ H_eq).
+    simpl in f_lhs_is, f_rhs_is.
+    subst f_lhs f_rhs.
+    apply PaCo_unfold in H_in...
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_in...
+    replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2))...
+    unfold eqITree.
+    unfold eqITreeF, member, uncurry, curry in *.
+    do 2 rewrite unfold_expand_leaves.
+    destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
+    - subst r2.
+      rename r1 into r.
+      assert (claim3 := H_k_1_eq_k_2 r).
+      apply PaCo_init in claim3.
+      apply PaCo_unfold in claim3...
+      replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2)) in claim3...
+      apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
+    
+    - simpl.
+      constructor 2.
+      apply in_union_iff; right.
+      apply in_union_iff in H_rel.
+      destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
+      replace (expand_leaves k_2 t2) with (bind t2 k_2)...
+      replace (expand_leaves k_1 t1) with (bind t1 k_1)...
+      right.
+      apply in_image_iff.
+      exists (t1, t2)...
+    - simpl.
+      constructor 3.
+      intros x0.
+      assert (claim4 := H_rel x0).
+      apply in_union_iff in claim4.
+      destruct claim4 as [claim4 | claim4]; [ | contradiction (bot_is_empty (k1 x0, k2 x0))].
+      apply in_union_iff; right.
+      right.
+      apply in_image_iff.
+      exists (k1 x0, k2 x0)...
+  Qed.
+
+  Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
+    { eqProp1 {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
+    }
+  .
+
+  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : obeysMonadLaws (itree_E_isMonad E) :=
+    { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
+    ; bind_pure_l {R1 : Type} := itree_bind_pure_l (E := E) (R := R1)
+    ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R := R1)
+    ; bind_preserves_eq_on_fst {R1 : Type} {R2 : Type} :=
+      fun m1 : itree E R1 =>
+      fun m2 : itree E R1 =>
+      fun H_m1_eq_m2 : m1 == m2 =>
+      fun k : R1 -> itree E R2 =>
+      @itree_bind_preserves_eq_on_fst_arg E R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
+    ; bind_preserves_eq_on_snd {R1 : Type} {R2 : Type} :=
+      fun k1 : R1 -> itree E R2 =>
+      fun k2 : R1 -> itree E R2 =>
+      fun H_k1_eq_k2 : forall x : R1, k1 x == k2 x =>
+      fun m : itree E R1 => 
+      @itree_bind_preserves_eq_on_snd_arg E R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
+    }
+  .
 
   Local Notation Handler E F := (forall X : Type, E X -> itree F X).
 
