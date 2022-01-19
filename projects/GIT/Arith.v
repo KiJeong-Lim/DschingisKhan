@@ -27,7 +27,7 @@ Module MyCategories.
   Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
   Polymorphic Definition from_to_ (A : Type) (B : Type) : Type :=
-    A -> B
+    forall _ : A, B
   .
 
   Local Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (from_to_ A B) :=
@@ -70,7 +70,7 @@ Module MyCategories.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
   Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
-    { eqProp1 {X : Type} :> isSetoid (F X)
+    { liftSetoid1 {X : Type} :> isSetoid (F X)
     }
   .
 
@@ -986,7 +986,7 @@ Module InteractionTreeTheory.
   End REWRITE_BIND.
 
   Global Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
-    bind with signature (eq ==> @arrow_eqProp (R1) (itree E R2) (itree_E_R_isSetoid (E := E) (R := R2)) ==> eqITree (E := E) (R := R2))
+    bind with signature (eq ==> @eqProp (R1 -> itree E R2) (lift_eqProp R1 (itree E R2)) ==> eqITree (E := E) (R := R2))
   as itree_bind_preserves_eq_on_snd_arg.
   Proof with eauto with *.
     intros t_0 k_1 k_2 H_k_1_eq_k_2.
@@ -1060,11 +1060,11 @@ Module InteractionTreeTheory.
   Qed.
 
   Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
-    { eqProp1 {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
+    { liftSetoid1 {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
     }
   .
 
-  Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree_E_isMonad E) :=
+  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : obeysMonadLaws (itree_E_isMonad E) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
     ; bind_pure_l {R1 : Type} {R2 : Type} := itree_bind_pure_l (E := E) (R1 := R1) (R2 := R2)
     ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R1 := R1)
