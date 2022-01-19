@@ -120,7 +120,7 @@ Module MyCategories.
     }
   .
 
-  Global Polymorphic Instance MonadLaws_implies_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) (M_obeysMonadLaws : obeysMonadLaws (eq1 := eq1) M_isMonad) :
+  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) (M_obeysMonadLaws : obeysMonadLaws (eq1 := eq1) M_isMonad) :
     obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
   Proof with eauto. (* Thanks to Soonwon Moon *)
     enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
