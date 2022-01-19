@@ -882,16 +882,14 @@ Module InteractionTreeTheory.
     unfold eqITree in H_in.
     unfold eqITreeF, member, uncurry, curry in *.
     do 3 rewrite unfold_expand_leaves.
-    destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
-    - simpl.
-      rewrite <- unfold_expand_leaves.
+    destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
+    - rewrite <- unfold_expand_leaves.
       subst r2.
       assert (claim3 := eqITree_refl (expand_leaves k_2 (k_1 r1), expand_leaves k_2 (k_1 r1)) eq_refl).
       apply PaCo_unfold in claim3...
       replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R3)) in claim3...
       apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
-    - simpl.
-      constructor 2.
+    - constructor 2.
       apply in_union_iff; right.
       apply in_union_iff in H_rel.
       destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
@@ -900,8 +898,7 @@ Module InteractionTreeTheory.
       right.
       apply in_image_iff.
       exists (t1, t2)...
-    - simpl.
-      constructor 3.
+    - constructor 3.
       intros x0.
       assert (claim4 := H_rel x0).
       apply in_union_iff in claim4.
