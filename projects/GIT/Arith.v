@@ -12,27 +12,13 @@ Module MyCategories.
 
   Import MyUtilities BasicSetoidTheory.
 
-  Global Declare Scope monad_scope.
-
-  Polymorphic Class isMonad (M : Type -> Type) : Type :=
-    { pure {A : Type} : A -> M A
-    ; bind {A : Type} {B : Type} : M A -> (A -> M B) -> M B
-    }
-  .
-
-  Global Infix " >>= " := bind (at level 90, left associativity) : function_scope.
-
-  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
-  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
-  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
-
   Polymorphic Definition from_to_ (A : Type) (B : Type) : Type :=
     forall _ : A, B
   .
 
-  Local Infix " '\to' " := from_to_ (at level 100, right associativity) : type_scope.
+  Global Infix " '\to' " := from_to_ (at level 60, right associativity) : type_scope.
 
-  Local Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (A \to B) :=
+  Global Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (A \to B) :=
     { eqProp :=
       fun f1 : from_to_ A B =>
       fun f2 : from_to_ A B =>
@@ -44,6 +30,20 @@ Module MyCategories.
   Next Obligation with eauto with *.
     split...
   Qed.
+
+  Polymorphic Class isMonad (M : Type -> Type) : Type :=
+    { pure {A : Type} : A \to M A
+    ; bind {A : Type} {B : Type} : M A -> A \to M B -> M B
+    }
+  .
+
+  Global Declare Scope monad_scope.
+
+  Global Infix " >>= " := bind (at level 90, left associativity) : function_scope.
+
+  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
   Polymorphic Definition fmult {A : Type} {B : Type} {C : Type} (f1 : B \to C) (f2 : A \to B) : A \to C :=
     fun x : A => f1 (f2 x)
@@ -750,7 +750,7 @@ Module InteractionTreeTheory.
       right...
   Qed.
 
-  Global Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
+  Global Add Parametric Morphism (E : Type -> Type) (R1 : Type) (R2 : Type) :
     bind with signature (eqITree (E := E) (R := R1) ==> eq ==> eqITree (E := E) (R := R2))
   as itree_bind_preserves_eq_on_fst_arg.
   Proof with eauto with *.
@@ -982,12 +982,12 @@ Module InteractionTreeTheory.
 
   End REWRITE_BIND.
 
-  Global Add Parametric Morphism {E : Type -> Type} {R1 : Type} {R2 : Type} :
-    bind with signature (eq ==> @eqProp (R1 -> itree E R2) (lift_eqProp R1 (itree E R2)) ==> eqITree (E := E) (R := R2))
+  Global Add Parametric Morphism (E : Type -> Type) (R1 : Type) (R2 : Type) :
+    bind with signature (@eq (itree E R1) ==> eqProp ==> eqITree (E := E) (R := R2))
   as itree_bind_preserves_eq_on_snd_arg.
   Proof with eauto with *.
     intros t_0 k_1 k_2 H_k_1_eq_k_2.
-    unfold arrow_eqProp in H_k_1_eq_k_2.
+    simpl in H_k_1_eq_k_2.
     revert t_0.
     set (focus := fun two_trees : itree E R1 * itree E R1 => (bind (fst two_trees) k_1, bind (snd two_trees) k_2)).
     set (focus_rel := image focus).
@@ -1070,13 +1070,13 @@ Module InteractionTreeTheory.
       fun m2 : itree E R1 =>
       fun H_m1_eq_m2 : m1 == m2 =>
       fun k : R1 -> itree E R2 =>
-      @itree_bind_preserves_eq_on_fst_arg E R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
+      itree_bind_preserves_eq_on_fst_arg E R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
     ; bind_preserves_eq_on_snd_arg {R1 : Type} {R2 : Type} :=
       fun k1 : R1 -> itree E R2 =>
       fun k2 : R1 -> itree E R2 =>
       fun H_k1_eq_k2 : forall x : R1, k1 x == k2 x =>
       fun m : itree E R1 => 
-      @itree_bind_preserves_eq_on_snd_arg E R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
+      itree_bind_preserves_eq_on_snd_arg E R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
     }
   .
 
