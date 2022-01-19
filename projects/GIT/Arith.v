@@ -26,95 +26,50 @@ Module MyCategories.
   Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
   Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
-  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
-    { fmap {A : Type} {B : Type} : (A -> B) -> (F A -> F B)
+  Polymorphic Definition from_to_ (A : Type) (B : Type) : Type :=
+    A -> B
+  .
+
+  Local Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (from_to_ A B) :=
+    { eqProp :=
+      fun f1 : from_to_ A B =>
+      fun f2 : from_to_ A B =>
+      forall x : A,
+      f1 x == f2 x
     }
   .
 
-  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : A -> C :=
+  Next Obligation with eauto with *.
+    split...
+  Qed.
+
+  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : from_to_ B C) (f2 : from_to_ A B) : from_to_ A C :=
     fun x : A =>
     f1 (f2 x)
   .
 
-  Polymorphic Definition funit {A : Type} : A -> A :=
+  Polymorphic Definition funit {A : Type} : from_to_ A A :=
     fun x : A =>
     x
   .
 
-  Polymorphic Definition kcomp {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
+  Polymorphic Definition kcomp {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : from_to_ B (M C)) (k2 : from_to_ A (M B)) : from_to_ A (M C) :=
     fun x : A =>
     k2 x >>= k1
   .
 
-  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : (A -> M A) :=
+  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : from_to_ A (M A) :=
     fun x : A =>
     pure x
   .
 
+  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
+    { fmap {_from : Type} {_to : Type} : from_to_ _from _to -> from_to_ (F _from) (F _to)
+    }
+  .
+
   Global Infix " `fcomp` " := fcomp (at level 25, right associativity) : function_scope.
   Global Infix " `kcomp` " := kcomp (at level 25, right associativity) : function_scope.
-
-  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A -> B =>
-      fun m : M A =>
-      bind m (pure `fcomp` f)
-    }
-  .
-
-  Global Instance option_isMonad : isMonad option :=
-    { pure {A : Type} :=
-      fun x : A =>
-      Some x
-    ; bind {A : Type} {B : Type} :=
-      fun m : option A =>
-      fun k : A -> option B =>
-      maybe None k m
-    }
-  .
-
-  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
-    ST -> M (X * ST)%type
-  .
-
-  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
-    @id (stateT ST M X)
-  .
-
-  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
-    @id (stateT ST M X)
-  .
-
-  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
-    { pure _ := StateT `fcomp` curry pure
-    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcomp` k) `kcomp` runStateT m)
-    }
-  .
-
-  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
-  | inl1 : F1 X -> sum1 F1 F2 X
-  | inr1 : F2 X -> sum1 F1 F2 X
-  .
-
-  Global Arguments inl1 {F1} {F2} {X}.
-  Global Arguments inr1 {F1} {F2} {X}.
-
-  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
-
-  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A -> B =>
-      sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
-    }
-  .
-
-  Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
-
-  Polymorphic Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
-    fun X : Type =>
-    fun e : E X =>
-    StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
-  .
 
   Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
     { eqProp1 {X : Type} :> isSetoid (F X)
@@ -123,13 +78,11 @@ Module MyCategories.
 
   Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
     { fmap_fcomp_comm {A : Type} {B : Type} {C : Type} :
-      forall f1 : B -> C,
-      forall f2 : A -> B,
-      forall e : F A,
-      fmap (f1 `fcomp` f2) e == (fmap f1 `fcomp` fmap f2) e
-    ; fmap_id_comm {A : Type} :
-      forall e : F A,
-      fmap funit e == funit e
+      forall f1 : from_to_ B C,
+      forall f2 : from_to_ A B,
+      fmap (_from := A) (_to := C) (f1 `fcomp` f2) == (fmap (_from := B) (_to := C) f1 `fcomp` fmap (_from := A) (_to := B) f2)
+    ; fmap_funit_comm {A : Type} :
+      fmap (_from := A) (_to := A) funit == funit
     }
   .
 
@@ -150,22 +103,28 @@ Module MyCategories.
       forall m1 : M A,
       forall m2 : M A,
       m1 == m2 ->
-      forall k : A -> M B,
+      forall k : from_to_ A (M B),
       (m1 >>= k) == (m2 >>= k)
     ; bind_preserves_eq_on_snd {A : Type} {B : Type} :
-      forall k1 : A -> M B,
-      forall k2 : A -> M B,
-      (forall x : A, k1 x == k2 x) ->
+      forall k1 : from_to_ A (M B),
+      forall k2 : from_to_ A (M B),
+      k1 == k2 ->
       forall m : M A,
       (m >>= k1) == (m >>= k2)
     }
   .
 
-  Polymorphic Lemma MonadLaws_implies_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) :
-    obeysMonadLaws (eq1 := eq1) M_isMonad ->
+  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A -> B =>
+      fun m : M A =>
+      bind m (pure `fcomp` f)
+    }
+  .
+
+  Global Polymorphic Instance MonadLaws_implies_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) (M_obeysMonadLaws : obeysMonadLaws (eq1 := eq1) M_isMonad) :
     obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
   Proof with eauto. (* Thanks to Soonwon Moon *)
-    intros H_monad_laws.
     enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
     enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fcomp` f2) e == (fmap f1 `fcomp` fmap f2) e).
     - constructor...
@@ -199,6 +158,60 @@ Module MyCategories.
       + reflexivity.
       + apply bind_pure_r.
   Qed.
+
+  Global Instance option_isMonad : isMonad option :=
+    { pure {A : Type} :=
+      fun x : A =>
+      Some x
+    ; bind {A : Type} {B : Type} :=
+      fun m : option A =>
+      fun k : A -> option B =>
+      maybe None k m
+    }
+  .
+
+  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+    ST -> M (X * ST)%type
+  .
+
+  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
+    @id (stateT ST M X)
+  .
+
+  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
+    @id (stateT ST M X)
+  .
+
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+    { pure _ := StateT `fcomp` curry pure
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcomp` k) `kcomp` runStateT m)
+    }
+  .
+
+  Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
+
+  Polymorphic Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+    fun X : Type =>
+    fun e : E X =>
+    StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
+  .
+
+  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  | inl1 : F1 X -> sum1 F1 F2 X
+  | inr1 : F2 X -> sum1 F1 F2 X
+  .
+
+  Global Arguments inl1 {F1} {F2} {X}.
+  Global Arguments inr1 {F1} {F2} {X}.
+
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
+
+  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : from_to_ A B =>
+      sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
+    }
+  .
 
   Global Open Scope monad_scope.
 
