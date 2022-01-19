@@ -43,33 +43,31 @@ Module MyCategories.
     split...
   Qed.
 
-  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : from_to_ B C) (f2 : from_to_ A B) : from_to_ A C :=
-    fun x : A =>
-    f1 (f2 x)
+  Local Infix " '\to' " := from_to_ (at level 100, right associativity) : type_scope.
+
+  Polymorphic Definition fmult {A : Type} {B : Type} {C : Type} (f1 : B \to C) (f2 : A \to B) : A \to C :=
+    fun x : A => f1 (f2 x)
   .
 
-  Polymorphic Definition funit {A : Type} : from_to_ A A :=
-    fun x : A =>
-    x
+  Polymorphic Definition funit {A : Type} : A \to A :=
+    fun x : A => x
   .
 
-  Polymorphic Definition kcomp {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : from_to_ B (M C)) (k2 : from_to_ A (M B)) : from_to_ A (M C) :=
-    fun x : A =>
-    k2 x >>= k1
+  Polymorphic Definition kmult {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B \to M C) (k2 : A \to M B) : A \to M C :=
+    fun x : A => k2 x >>= k1
   .
 
-  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : from_to_ A (M A) :=
-    fun x : A =>
-    pure x
+  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : A \to M A :=
+    fun x : A => pure x
   .
 
   Polymorphic Class isFunctor (F : Type -> Type) : Type :=
-    { fmap {_from : Type} {_to : Type} : from_to_ _from _to -> from_to_ (F _from) (F _to)
+    { fmap {_from : Type} {_to : Type} : (_from \to _to) -> (F _from \to F _to)
     }
   .
 
-  Global Infix " `fcomp` " := fcomp (at level 25, right associativity) : function_scope.
-  Global Infix " `kcomp` " := kcomp (at level 25, right associativity) : function_scope.
+  Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
+  Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
   Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
     { eqProp1 {X : Type} :> isSetoid (F X)
@@ -77,10 +75,10 @@ Module MyCategories.
   .
 
   Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
-    { fmap_fcomp_comm {A : Type} {B : Type} {C : Type} :
-      forall f1 : from_to_ B C,
-      forall f2 : from_to_ A B,
-      fmap (_from := A) (_to := C) (f1 `fcomp` f2) == (fmap (_from := B) (_to := C) f1 `fcomp` fmap (_from := A) (_to := B) f2)
+    { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
+      forall f1 : B \to C,
+      forall f2 : A \to B,
+      fmap (_from := A) (_to := C) (f1 `fmult` f2) == (fmap (_from := B) (_to := C) f1 `fmult` fmap (_from := A) (_to := B) f2)
     ; fmap_funit_comm {A : Type} :
       fmap (_from := A) (_to := A) funit == funit
     }
@@ -103,11 +101,11 @@ Module MyCategories.
       forall m1 : M A,
       forall m2 : M A,
       m1 == m2 ->
-      forall k : from_to_ A (M B),
+      forall k : A \to M B,
       (m1 >>= k) == (m2 >>= k)
     ; bind_preserves_eq_on_snd {A : Type} {B : Type} :
-      forall k1 : from_to_ A (M B),
-      forall k2 : from_to_ A (M B),
+      forall k1 : A \to M B,
+      forall k2 : A \to M B,
       k1 == k2 ->
       forall m : M A,
       (m >>= k1) == (m >>= k2)
@@ -118,7 +116,7 @@ Module MyCategories.
     { fmap {A : Type} {B : Type} :=
       fun f : A -> B =>
       fun m : M A =>
-      bind m (pure `fcomp` f)
+      bind m (pure `fmult` f)
     }
   .
 
@@ -126,7 +124,7 @@ Module MyCategories.
     obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
   Proof with eauto. (* Thanks to Soonwon Moon *)
     enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
-    enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fcomp` f2) e == (fmap f1 `fcomp` fmap f2) e).
+    enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fmult` f2) e == (fmap f1 `fmult` fmap f2) e).
     - constructor...
     - intros A B C f g m.
       symmetry.
@@ -140,13 +138,13 @@ Module MyCategories.
         map (f . g) m
       *)
       simpl.
-      unfold fcomp at 1.
-      transitivity (m >>= (fun x : A => pure (g x) >>= pure `fcomp` f)).
+      unfold fmult at 1.
+      transitivity (m >>= (fun x : A => pure (g x) >>= pure `fmult` f)).
       { rewrite bind_assoc.
         apply bind_preserves_eq_on_snd.
         reflexivity.
       }
-      transitivity (m >>= (fun x : A => (pure `fcomp` f) (g x))).
+      transitivity (m >>= (fun x : A => (pure `fmult` f) (g x))).
       { apply bind_preserves_eq_on_snd.
         intros x.
         rewrite bind_pure_l.
@@ -174,17 +172,17 @@ Module MyCategories.
     ST -> M (X * ST)%type
   .
 
-  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST -> M (prod X ST)) -> stateT ST M X :=
-    @id (stateT ST M X)
+  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
+    @funit (stateT ST M X)
   .
 
-  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST -> M (prod X ST)) :=
-    @id (stateT ST M X)
+  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
+    @funit (stateT ST M X)
   .
 
   Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
-    { pure _ := StateT `fcomp` curry pure
-    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcomp` k) `kcomp` runStateT m)
+    { pure _ := StateT `fmult` curry pure
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
     }
   .
 
@@ -303,7 +301,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
     fun R : Type =>
-    let iter := curry `fcomp` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fcomp` uncurry in
+    let iter := curry `fmult` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fmult` uncurry in
     iter (fun t0 : itree E R => fun s : ST =>
       match observe t0 with
       | RetF r => ret (inr (r, s));
