@@ -746,7 +746,10 @@ Module UntypedLamdbdaCalculus.
     refine (
       fun N : tm =>
       fix pirrel_fix (M : tm) (poss : list position) (X1 : occurs N poss M) {struct X1} : forall X2 : occurs N poss M, X1 = X2 :=
-      match X1 as X' in occurs _ poss' M' return forall X2 : occurs N poss' M', X' = X2 with
+      match X1 as X' in occurs _ poss' M' return
+        forall X2 : occurs N poss' M',
+        X' = X2
+      with
       | OccursRefl _ => _
       | OccursApp1 _ P1_1 P2_1 poss_1 X1_1 => _
       | OccursApp2 _ P1_1 P2_1 poss_1 X2_1 => _
@@ -760,7 +763,11 @@ Module UntypedLamdbdaCalculus.
     ];
     refine (
       fun X2 : occurs N my_poss my_M =>
-      match X2 as X' in occurs _ poss' M' return forall H_eq1 : poss' = my_poss, forall H_eq2 : M' = my_M, my_X = (eq_rec M' (occurs N my_poss) (eq_rec poss' (fun _poss' : list position => occurs N _poss' M') X' my_poss H_eq1) my_M H_eq2) with
+      match X2 as X' in occurs _ poss' M' return
+        forall H_eq1 : poss' = my_poss,
+        forall H_eq2 : M' = my_M,
+        my_X = (eq_rec M' (occurs N my_poss) (eq_rec poss' (fun _poss' : list position => occurs N _poss' M') X' my_poss H_eq1) my_M H_eq2)
+      with
       | OccursRefl _ => _
       | OccursApp1 _ P1_2 P2_2 poss_2 X1_2 => _
       | OccursApp2 _ P1_2 P2_2 poss_2 X2_2 => _
@@ -769,8 +776,8 @@ Module UntypedLamdbdaCalculus.
     );
     unfold my_poss, my_M, my_X;
     intros H_eq_my_poss H_eq_my_M;
-    inversion H_eq_my_poss; subst;
-    inversion H_eq_my_M; subst;
+    (inversion H_eq_my_poss; subst);
+    (inversion H_eq_my_M; subst);
     (replace H_eq_my_poss with (eq_reflexivity my_poss); [simpl | apply claim1]);
     (replace H_eq_my_M with (eq_reflexivity my_M); [simpl | apply claim2]);
     now (reflexivity || apply eq_congruence).
