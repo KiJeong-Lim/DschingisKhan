@@ -760,7 +760,7 @@ Module UntypedLamdbdaCalculus.
     ];
     refine (
       fun X2 : occurs N my_poss my_M =>
-      match X2 as X' in occurs _ poss' M' return forall H_eq1 : poss' = my_poss, forall H_eq2 : M' = my_M, my_X = (eq_rec M' (occurs N my_poss) (eq_rec poss' (fun poss : list position => occurs N poss M') X' my_poss H_eq1) my_M H_eq2) with
+      match X2 as X' in occurs _ poss' M' return forall H_eq1 : poss' = my_poss, forall H_eq2 : M' = my_M, my_X = (eq_rec M' (occurs N my_poss) (eq_rec poss' (fun _poss' : list position => occurs N _poss' M') X' my_poss H_eq1) my_M H_eq2) with
       | OccursRefl _ => _
       | OccursApp1 _ P1_2 P2_2 poss_2 X1_2 => _
       | OccursApp2 _ P1_2 P2_2 poss_2 X2_2 => _
