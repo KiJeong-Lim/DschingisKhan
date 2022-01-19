@@ -982,12 +982,10 @@ Module PowerSetCoLa.
       enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y) claim2)...
   Qed.
 
-  Theorem paco_conclusion (P : ensemble A) (F : ensemble A >=> ensemble A) (nu_F_le_P : isSubsetOf (proj1_sig (nu F)) P) :
-    forall X : ensemble A,
-    isSubsetOf X (proj1_sig F X) ->
-    isSubsetOf X P.
+  Theorem paco_conclusion (P : ensemble A) (F : ensemble A >=> ensemble A) :
+    isSubsetOf (proj1_sig (nu F)) P <-> (forall X : ensemble A, isSubsetOf X (proj1_sig F X) -> isSubsetOf X P).
   Proof with eauto with *.
-    apply (proj1 (nu_isSupremum F P))...
+    apply (nu_isSupremum F P)...
   Qed.
 
   End PACO.
