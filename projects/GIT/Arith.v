@@ -42,18 +42,18 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Definition fcat {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
+  Polymorphic Definition fcomp {A : Type} {B : Type} {C : Type} (f1 : B -> C) (f2 : A -> B) : (A -> C) :=
     fun x : A =>
     f1 (f2 x)
   .
 
-  Polymorphic Definition kcat {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
+  Polymorphic Definition kcomp {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B -> M C) (k2 : A -> M B) : (A -> M C) :=
     fun x : A =>
     k2 x >>= k1
   .
 
-  Global Infix " `fcat` " := fcat (at level 25, right associativity) : function_scope.
-  Global Infix " `kcat` " := kcat (at level 25, right associativity) : function_scope.
+  Global Infix " `fcomp` " := fcomp (at level 25, right associativity) : function_scope.
+  Global Infix " `kcomp` " := kcomp (at level 25, right associativity) : function_scope.
 
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Type} :=
@@ -79,8 +79,8 @@ Module MyCategories.
   .
 
   Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
-    { pure _ := StateT `fcat` curry pure
-    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcat` k) `kcat` runStateT m)
+    { pure _ := StateT `fcomp` curry pure
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fcomp` k) `kcomp` runStateT m)
     }
   .
 
@@ -197,7 +197,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
     fun R : Type =>
-    let iter := curry `fcat` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fcat` uncurry in
+    let iter := curry `fcomp` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fcomp` uncurry in
     iter (fun t0 : itree E R => fun s : ST =>
       match observe t0 with
       | RetF r => ret (inr (r, s));
