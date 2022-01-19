@@ -678,31 +678,31 @@ Module InteractionTreeTheory.
 
   Section BIND_CASES.
 
-  Context {R1 : Type} {R2 : Type}.
+  Polymorphic Context {R1 : Type} {R2 : Type}.
 
-  Variable k0 : R1 -> itree E R2.
+  Polymorphic Variable k0 : R1 -> itree E R2.
 
-  Lemma unfold_itree_bind (t0 : itree E R1) :
+  Polymorphic Lemma unfold_itree_bind (t0 : itree E R1) :
     (t0 >>= k0) == _bind t0 k0.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Lemma itree_bind_Ret (r : R1) :
+  Polymorphic Lemma itree_bind_Ret (r : R1) :
     bind (Ret r) k0 == k0 r.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Lemma itree_bind_Tau (t : itree E R1) :
+  Polymorphic Lemma itree_bind_Tau (t : itree E R1) :
     bind (Tau t) k0 == Tau (bind t k0).
   Proof.
     apply unfold_itree_bind with (t0 := Tau t).
   Qed.
 
-  Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
+  Polymorphic Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
     bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
   Proof.
     rewrite unfold_itree_bind with (t0 := Vis X e k).
@@ -715,7 +715,7 @@ Module InteractionTreeTheory.
     reflexivity.
   Qed.
 
-  Lemma itree_bind_trigger (e : E R1) :
+  Polymorphic Lemma itree_bind_trigger (e : E R1) :
     bind (itree_trigger R1 e) k0 == Vis R1 e k0.
   Proof.
     rewrite unfold_itree_bind with (t0 := itree_trigger R1 e).
@@ -739,11 +739,11 @@ Module InteractionTreeTheory.
     reflexivity.
   Qed.
 
-  Lemma bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} :
-    forall t0 : itree E R1,
+  Lemma itree_bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} :
+    forall m : itree E R1,
     forall k1 : R1 -> itree E R2,
     forall k2 : R2 -> itree E R3,
-    ((t0 >>= k1) >>= k2) == (t0 >>= (fun x1 : R1 => k1 x1 >>= k2)).
+    ((m >>= k1) >>= k2) == (m >>= (fun x1 : R1 => k1 x1 >>= k2)).
   Proof with eauto with *.
     intros t_0 k_1 k_2.
     revert t_0.
@@ -811,9 +811,16 @@ Module InteractionTreeTheory.
       exists (k1 x0, k2 x0)...
   Qed.
 
-  Lemma bind_t0_pure_eq_t0 {R : Type} :
-    forall t0 : itree E R,
-    bind t0 pure == t0.
+  Lemma itree_bind_pure_l {R : Type} :
+    forall m : itree E R,
+    bind (pure m) id == m.
+  Proof.
+    exact (fun m : itree E R => itree_bind_Ret id m).
+  Qed.
+
+  Lemma itree_bind_pure_r {R : Type} :
+    forall m : itree E R,
+    bind m pure == m.
   Proof with eauto with *.
     set (focus := fun two_trees : itree E R * itree E R => ((fst two_trees >>= pure), snd two_trees)).
     set (focus_rel := image focus).
