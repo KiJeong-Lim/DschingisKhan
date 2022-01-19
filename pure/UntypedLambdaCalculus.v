@@ -736,7 +736,7 @@ Module UntypedLamdbdaCalculus.
     X1 = X2.
   Proof.
     assert (claim1 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2).
-    { intros poss1; apply (eq_em_implies_eq_pirrel poss1).
+    { intros poss1; apply eq_em_implies_eq_pirrel.
       now intros poss2; destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right].
     }
     assert (claim2 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
