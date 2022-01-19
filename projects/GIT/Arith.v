@@ -16,12 +16,12 @@ Module MyCategories.
     forall _ : A, B
   .
 
-  Global Infix " '\to' " := from_to_ (at level 60, right associativity) : type_scope.
+  Global Infix " \to " := from_to_ (at level 60, right associativity) : type_scope.
 
   Global Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (A \to B) :=
     { eqProp :=
-      fun f1 : from_to_ A B =>
-      fun f2 : from_to_ A B =>
+      fun f1 : A \to B =>
+      fun f2 : A \to B =>
       forall x : A,
       f1 x == f2 x
     }
@@ -37,13 +37,7 @@ Module MyCategories.
     }
   .
 
-  Global Declare Scope monad_scope.
-
   Global Infix " >>= " := bind (at level 90, left associativity) : function_scope.
-
-  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
-  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
-  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
   Polymorphic Definition fmult {A : Type} {B : Type} {C : Type} (f1 : B \to C) (f2 : A \to B) : A \to C :=
     fun x : A => f1 (f2 x)
@@ -78,7 +72,7 @@ Module MyCategories.
     { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B \to C,
       forall f2 : A \to B,
-      fmap (_from := A) (_to := C) (f1 `fmult` f2) == (fmap (_from := B) (_to := C) f1 `fmult` fmap (_from := A) (_to := B) f2)
+      fmap (_from := A) (_to := C) (f1 `fmult` f2) == fmap (_from := B) (_to := C) f1 `fmult` fmap (_from := A) (_to := B) f2
     ; fmap_funit_comm {A : Type} :
       fmap (_from := A) (_to := A) funit == funit
     }
@@ -89,7 +83,7 @@ Module MyCategories.
       forall m : M A,
       forall k1 : A -> M B,
       forall k2 : B -> M C,
-      ((m >>= k1) >>= k2) == (m >>= (fun x : A => k1 x >>= k2))
+      bind (bind m k1) k2 == bind m (fun x : A => bind (k1 x) k2)
     ; bind_pure_l {A : Type} {B : Type} :
       forall k : A -> M B,
       forall x : A,
@@ -102,13 +96,13 @@ Module MyCategories.
       forall m2 : M A,
       m1 == m2 ->
       forall k : A \to M B,
-      (m1 >>= k) == (m2 >>= k)
+      bind m1 k == bind m2 k
     ; bind_preserves_eq_on_snd_arg {A : Type} {B : Type} :
       forall k1 : A \to M B,
       forall k2 : A \to M B,
       k1 == k2 ->
       forall m : M A,
-      (m >>= k1) == (m >>= k2)
+      bind m k1 == bind m k2
     }
   .
 
@@ -207,6 +201,12 @@ Module MyCategories.
       sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
     }
   .
+
+  Global Declare Scope monad_scope.
+
+  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
 
   Global Open Scope monad_scope.
 
