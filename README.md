@@ -7,14 +7,14 @@
 ```
 git clone https://github.com/KiJeong-Lim/DschingisKhan.git
 cd DschingisKhan
-eval $(opam env)
+eval `opam env`
 coq_makefile -f _CoqProject -o Makefile
 make
 ```
 
 ## COMPATIBLE COQ VERSIONS
 
-- With `The Coq Proof Assistant, version 8.14.1 compiled with OCaml 4.13.1`, everything works fine in `WSL Ubuntu-20.04 2`.
+- With `The Coq Proof Assistant, version 8.15.0 compiled with OCaml 4.13.1`, everything works fine in `WSL Ubuntu-20.04 2`.
 
 ## THANKS TO
 
