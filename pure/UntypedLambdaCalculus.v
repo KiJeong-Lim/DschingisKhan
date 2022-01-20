@@ -64,16 +64,14 @@ Module UntypedLamdbdaCalculus.
   | Lam (y : ivar) (Q : tm) : tm
   .
 
-  Lemma tm_eq_dec :
-    (forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) ->
+  Lemma tm_eq_dec (CON_eq_dec : forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) :
     (forall t1 : tm, forall t2 : tm, {t1 = t2} + {t1 <> t2}).
   Proof with ((left; congruence) || (right; congruence)) || eauto.
-    intros CON_eq_dec.
-    induction t1 as [x1 | c1 | P1_1 IH1 P2_1 IH2 | y1 Q1 IH1]; destruct t2 as [x2 | c2 | P1_2 P2_2 | y2 Q2]...
-    - destruct (ivar_eq_dec x1 x2)...
-    - destruct (CON_eq_dec c1 c2)...
-    - destruct (IH1 P1_2); destruct (IH2 P2_2)...
-    - destruct (ivar_eq_dec y1 y2); destruct (IH1 Q2)...
+    induction t1 as [x_1 | c_1 | P1_1 IHP1 P2_1 IHP2 | y_1 Q_1 IHQ]; destruct t2 as [x_2 | c_2 | P1_2 P2_2 | y_2 Q_2]...
+    - destruct (ivar_eq_dec x_1 x_2)...
+    - destruct (CON_eq_dec c_1 c_2)...
+    - destruct (IHP1 P1_2); destruct (IHP2 P2_2)...
+    - destruct (ivar_eq_dec y_1 y_2); destruct (IHQ Q_2)...
   Defined.
 
   Fixpoint getFVs (M : tm) {struct M} : list ivar :=
@@ -688,9 +686,9 @@ Module UntypedLamdbdaCalculus.
 
   Inductive occurs (M : tm) : list position -> tm -> Set :=
   | OccursRefl : occurs M [] M
-  | OccursApp1 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P1 -> occurs M (POS1 :: poss) (App P1 P2)
-  | OccursApp2 (P1 : tm) (P2 : tm) : forall poss : list position, occurs M poss P2 -> occurs M (POS2 :: poss) (App P1 P2)
-  | OccursLam0 (y : ivar) (Q : tm) : forall poss : list position, occurs M poss Q -> occurs M (POS0 :: poss) (Lam y Q)
+  | OccursApp1 (P1 : tm) (P2 : tm) (poss : list position) (X1 : occurs M poss P1) : occurs M (POS1 :: poss) (App P1 P2)
+  | OccursApp2 (P1 : tm) (P2 : tm) (poss : list position) (X2 : occurs M poss P2) : occurs M (POS2 :: poss) (App P1 P2)
+  | OccursLam0 (y : ivar) (Q : tm) (poss : list position) (X0 : occurs M poss Q) : occurs M (POS0 :: poss) (Lam y Q)
   .
 
   Definition isSuper : tm -> list position -> tm -> Set :=
@@ -726,6 +724,54 @@ Module UntypedLamdbdaCalculus.
   Defined.
 
   Local Hint Resolve isSuper_reflexivity isSuper_transitivity : core.
+
+  Definition isSubtermOf (N : tm) (M : tm) : Prop :=
+    exists poss : list position, inhabited (isSuper M poss N)
+  .
+
+  Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
+    { leProp := isSubtermOf
+    ; Poset_requiresSetoid :=
+      {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros N; exists ([])...
+    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]]; exists (poss2 ++ poss1)...
+  Qed.
+
+  Next Obligation with eauto with *.
+    set (getRank :=
+      fix getRank_fix (M : tm) {struct M} : nat :=
+      match M with
+      | Var x => O
+      | Con c => O
+      | App P1 P2 => S (max (getRank_fix P1) (getRank_fix P2))
+      | Lam y Q => S (getRank_fix Q)
+      end
+    ).
+    assert (lemma1 := n1_le_max_n1_n2).
+    assert (lemma2 := n2_le_max_n1_n2).
+    assert (lemma3 := @le_asymmetry).
+    assert (lemma4 := le_intro_S_n_le_S_m).
+    enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
+    enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
+    - intros N M; split; [intros []; split; exists ([]) | intros [? ?]]...
+    - intros N M [poss [X]]; induction X; simpl; intros H_EQ; [tauto | ..]; contradiction (not_n_lt_n (getRank N)).
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
+        transitivity (getRank P1); [apply claim1; exists poss | ..]...
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
+        transitivity (getRank P2); [apply claim1; exists poss | ..]...
+      + enough (H_false : getRank N < S (getRank Q)) by congruence; apply lemma4.
+        transitivity (getRank Q); [apply claim1; exists poss | ..]...
+    - intros N M [poss [X]]; induction X; simpl.
+      + reflexivity.
+      + transitivity (getRank P1)...
+      + transitivity (getRank P2)...
+      + transitivity (getRank Q)...
+  Qed.
 
   Lemma occurs_pirrel (CON_eq_dec : forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) :
     forall N : tm,
@@ -774,63 +820,13 @@ Module UntypedLamdbdaCalculus.
       | OccursLam0 _ y_2 Q_2 poss_2 X0_2 => _
       end (eq_reflexivity my_poss) (eq_reflexivity my_M)
     );
-    unfold my_poss, my_M, my_X;
+    unfold my_X, my_M, my_poss;
     intros H_eq_my_poss H_eq_my_M;
     (inversion H_eq_my_poss; subst);
     (inversion H_eq_my_M; subst);
     (replace H_eq_my_poss with (eq_reflexivity my_poss); [simpl | apply claim1]);
-    (replace H_eq_my_M with (eq_reflexivity my_M); [simpl | apply claim2]);
-    now (reflexivity || apply eq_congruence).
-  Qed.
-
-  Definition isSubtermOf : tm -> tm -> Prop :=
-    fun N : tm =>
-    fun M : tm =>
-    exists poss : list position, inhabited (isSuper M poss N)
-  .
-
-  Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
-    { leProp := isSubtermOf
-    ; Poset_requiresSetoid :=
-      {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split.
-    - intros N; exists []...
-    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]]; exists (poss2 ++ poss1)...
-  Qed.
-
-  Next Obligation with eauto with *.
-    set (getRank :=
-      fix getRank_fix (M : tm) {struct M} : nat :=
-      match M with
-      | Var x => O
-      | Con c => O
-      | App P1 P2 => S (max (getRank_fix P1) (getRank_fix P2))
-      | Lam y Q => S (getRank_fix Q)
-      end
-    ).
-    assert (lemma1 := n1_le_max_n1_n2).
-    assert (lemma2 := n2_le_max_n1_n2).
-    assert (lemma3 := @le_asymmetry).
-    assert (lemma4 := le_intro_S_n_le_S_m).
-    enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
-    enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
-    - intros N M; split; [intros []; split; exists [] | intros [? ?]]...
-    - intros N M [poss [X]]; induction X; simpl; intros H_EQ; [tauto | ..]; contradiction (not_n_lt_n (getRank N)).
-      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
-        transitivity (getRank P1); [apply claim1; exists poss | ..]...
-      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
-        transitivity (getRank P2); [apply claim1; exists poss | ..]...
-      + enough (H_false : getRank N < S (getRank Q)) by congruence; apply lemma4.
-        transitivity (getRank Q); [apply claim1; exists poss | ..]...
-    - intros N M [poss [X]]; induction X; simpl.
-      + reflexivity.
-      + transitivity (getRank P1)...
-      + transitivity (getRank P2)...
-      + transitivity (getRank Q)...
+    (replace H_eq_my_M with (eq_reflexivity my_M); [simpl | apply claim2]).
+    all: now (reflexivity || apply eq_congruence).
   Qed.
 
   End SUBTERM.
