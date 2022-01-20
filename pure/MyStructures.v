@@ -74,7 +74,13 @@ Module BasicSetoidTheory.
     }
   .
 
-  Definition arrow_eqProp : forall A : Type, forall B : Type, isSetoid B -> arrow A B -> arrow A B -> Prop :=
+  Polymorphic Definition from_to_ (A : Type) (B : Type) : Type :=
+    forall _ : A, B
+  .
+
+  Global Infix " \to " := from_to_ (at level 60, right associativity) : type_scope.
+
+  Polymorphic Definition arrow_eqProp : forall A : Type, forall B : Type, isSetoid B -> A \to B -> A \to B -> Prop :=
     fun A : Type =>
     fun B : Type =>
     fun B_requiresSetoid : isSetoid B =>
@@ -84,14 +90,14 @@ Module BasicSetoidTheory.
     @eqProp B B_requiresSetoid (f1 x) (f2 x)
   .
 
-  Global Instance arrow_Equivalence {A : Type} {B : Type} `{B_isSetoid : isSetoid B} :
+  Global Polymorphic Instance arrow_Equivalence {A : Type} {B : Type} `{B_isSetoid : isSetoid B} :
     Equivalence (arrow_eqProp A B B_isSetoid).
   Proof with eauto with *.
     unfold arrow_eqProp.
     split...
   Qed.
 
-  Global Program Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (arrow A B) :=
+  Global Polymorphic Instance arrow_isSetoid {A : Type} {B : Type} (B_requiresSetoid : isSetoid B) : isSetoid (A \to B) :=
     { eqProp := arrow_eqProp A B B_requiresSetoid
     ; Setoid_requiresEquivalence := @arrow_Equivalence A B B_requiresSetoid
     }
@@ -125,9 +131,9 @@ Module MyEnsemble.
 
   Import MyUtilities BasicSetoidTheory.
 
-  Definition ensemble : Type -> Type :=
+  Polymorphic Definition ensemble : Type -> Type :=
     fun A : Type =>
-    arrow A Prop
+    A \to Prop
   .
 
   Definition member {A : Type} : A -> ensemble A -> Prop :=
@@ -386,13 +392,13 @@ Module MyEnsemble.
   Global Hint Unfold isSubsetOf : my_hints.
 
   Global Instance isSubsetOf_PreOrder {A : Type} :
-    PreOrder (@isSubsetOf A).
+    @PreOrder (A \to Prop) (@isSubsetOf A).
   Proof with eauto with *.
     split...
   Qed.
 
   Global Instance isSubsetOf_PartialOrder {A : Type} :
-    PartialOrder (@eqProp (ensemble A) (arrow_isSetoid Prop_isSetoid)) (@isSubsetOf A).
+    PartialOrder (@eqProp (A \to Prop) (@arrow_isSetoid A Prop Prop_isSetoid)) (@isSubsetOf A).
   Proof with firstorder.
     intros X1 X2...
   Qed.
@@ -504,7 +510,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve MonotonicMap_preservesSetoid : my_hints.
 
-  Global Notation " D1 '>=>' D2 " := (@sig (arrow D1 D2) isMonotonicMap) (at level 100, right associativity) : type_scope.
+  Global Notation " D1 '>=>' D2 " := (@sig (D1 \to D2) isMonotonicMap) (at level 100, right associativity) : type_scope.
 
   Add Parametric Morphism {A : Type} {B : Type} (A_requiresPoset : isPoset A) (B_requiresPoset : isPoset B) (f : A -> B) (f_monotonic : isMonotonicMap f) : 
     f with signature (@eqProp A (@Poset_requiresSetoid A A_requiresPoset) ==> @eqProp B (@Poset_requiresSetoid B B_requiresPoset))
@@ -551,7 +557,7 @@ Module BasicPosetTheory.
     }
   .
 
-  Definition arrow_leProp : forall A : Type, forall B : Type, isPoset B -> arrow A B -> arrow A B -> Prop :=
+  Polymorphic Definition arrow_leProp : forall A : Type, forall B : Type, isPoset B -> A \to B -> A \to B -> Prop :=
     fun A : Type =>
     fun B : Type =>
     fun B_requiresPoset : isPoset B =>
@@ -561,20 +567,20 @@ Module BasicPosetTheory.
     @leProp B B_requiresPoset (f1 x) (f2 x)
   .
 
-  Global Instance arrow_leProp_PreOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
+  Global Polymorphic Instance arrow_leProp_PreOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
     PreOrder (arrow_leProp A B B_isPoset).
   Proof with eauto with *.
     unfold arrow_leProp.
     split...
   Qed.
 
-  Global Instance arrow_leProp_PartialOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
+  Global Polymorphic Instance arrow_leProp_PartialOrder {A : Type} {B : Type} `{B_isPoset : isPoset B} :
     PartialOrder (arrow_eqProp A B (@Poset_requiresSetoid B B_isPoset)) (arrow_leProp A B B_isPoset).
   Proof with firstorder with my_hints.
     unfold arrow_eqProp, arrow_leProp...
   Qed.
 
-  Global Program Instance arrow_isPoset {A : Type} {B : Type} (B_requiresPoset : isPoset B) : isPoset (arrow A B) :=
+  Global Polymorphic Instance arrow_isPoset {A : Type} {B : Type} (B_requiresPoset : isPoset B) : isPoset (A \to B) :=
     { leProp := arrow_leProp A B B_requiresPoset
     ; Poset_requiresSetoid := arrow_isSetoid (@Poset_requiresSetoid B B_requiresPoset)
     ; Poset_requiresPreOrder := @arrow_leProp_PreOrder A B B_requiresPoset

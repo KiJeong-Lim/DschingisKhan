@@ -2,7 +2,6 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
-Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
@@ -15,8 +14,8 @@ Module UntypedLamdbdaCalculus.
   Import ListNotations EqFacts MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
   Class isPreLambdaStructure (DOM : Type) `{DOM_isSetoid : isSetoid DOM} : Type :=
-    { runApp : DOM -> arrow DOM DOM
-    ; runLam : arrow DOM DOM -> DOM
+    { runApp : DOM -> DOM \to DOM
+    ; runLam : DOM \to DOM -> DOM
     ; runApp_preserves_eqProp :
       forall x1 : DOM,
       forall y1 : DOM,
@@ -26,8 +25,8 @@ Module UntypedLamdbdaCalculus.
       y1 == y2 ->
       runApp x1 y1 == runApp x2 y2
     ; runLam_preserves_eqProp :
-      forall f1 : arrow DOM DOM,
-      forall f2 : arrow DOM DOM,
+      forall f1 : DOM \to DOM,
+      forall f2 : DOM \to DOM,
       f1 == f2 ->
       runLam f1 == runLam f2
     }
@@ -36,7 +35,7 @@ Module UntypedLamdbdaCalculus.
   Class isUntypedLambdaStructure (DOM : Type) `{DOM_isSetoid : isSetoid DOM} : Type :=
     { UntypedLambdaStructure_requiresPreLambdaStructure :> @isPreLambdaStructure DOM DOM_isSetoid
     ; satisfiesBetaAxiom :
-      forall f : arrow DOM DOM,
+      forall f : DOM \to DOM,
       runApp (runLam f) == f
     }
   .

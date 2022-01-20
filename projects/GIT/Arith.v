@@ -1,6 +1,5 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
-Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.DomainTheory.
@@ -12,24 +11,7 @@ Module MyCategories.
 
   Import MyUtilities BasicSetoidTheory.
 
-  Polymorphic Definition from_to_ (A : Type) (B : Type) : Type :=
-    forall _ : A, B
-  .
-
-  Global Infix " \to " := from_to_ (at level 60, right associativity) : type_scope.
-
-  Global Polymorphic Program Instance lift_eqProp (A : Type) (B : Type) `{B_isSetoid : isSetoid B} : isSetoid (A \to B) :=
-    { eqProp :=
-      fun f1 : A \to B =>
-      fun f2 : A \to B =>
-      forall x : A,
-      f1 x == f2 x
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split...
-  Qed.
+  Global Existing Instance arrow_isSetoid.
 
   Polymorphic Class isMonad (M : Type -> Type) : Type :=
     { pure {A : Type} : A \to M A
@@ -68,7 +50,7 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
+  Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
     { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B \to C,
       forall f2 : A \to B,
