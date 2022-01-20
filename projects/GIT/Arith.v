@@ -81,11 +81,11 @@ Module MyCategories.
   Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) : Prop :=
     { bind_assoc {A : Type} {B : Type} {C : Type} :
       forall m : M A,
-      forall k1 : A -> M B,
-      forall k2 : B -> M C,
+      forall k1 : A \to M B,
+      forall k2 : B \to M C,
       bind (bind m k1) k2 == bind m (fun x : A => bind (k1 x) k2)
     ; bind_pure_l {A : Type} {B : Type} :
-      forall k : A -> M B,
+      forall k : A \to M B,
       forall x : A,
       bind (pure x) k == k x
     ; bind_pure_r {A : Type} :
@@ -160,7 +160,7 @@ Module MyCategories.
   .
 
   Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
-    ST -> M (X * ST)%type
+    ST \to M (prod X ST)
   .
 
   Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
