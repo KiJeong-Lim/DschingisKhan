@@ -365,15 +365,26 @@ Module InteractionTreeTheory.
   Context {E : Type -> Type} {R : Type}.
 
   Variant eq_itreeF (sim : itree E R -> itree E R -> Prop) : itreeF (itree E R) E R -> itreeF (itree E R) E R -> Prop :=
-  | EqRet (r1 : R) (r2 : R) (H_rel : r1 = r2) :
-    eq_itreeF sim (RetF r1) (RetF r2)
-  | EqTau (t1 : itree E R) (t2 : itree E R) (H_rel : sim t1 t2) :
-    eq_itreeF sim (TauF t1) (TauF t2)
-  | EqVis (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R) (H_rel : forall x : X, sim (k1 x) (k2 x)) :
-    eq_itreeF sim (VisF X e k1) (VisF X e k2)
+  | EqRetF (r1 : R) (r2 : R)
+    (H_rel : r1 = r2)
+    : eq_itreeF sim (RetF r1) (RetF r2)
+  | EqTauF (t1 : itree E R) (t2 : itree E R)
+    (H_rel : sim t1 t2)
+    : eq_itreeF sim (TauF t1) (TauF t2)
+  | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
+    (H_rel : forall x : X, sim (k1 x) (k2 x))
+    : eq_itreeF sim (VisF X e k1) (VisF X e k2)
   .
 
   Local Hint Constructors eq_itreeF : core.
+
+  Set Primitive Projections.
+
+  CoInductive eq_itree (lhs : itree E R) (rhs : itree E R) : Prop :=
+    Fold_eq_itree { unfold_eq_itree : eq_itreeF eq_itree (observe lhs) (observe rhs) }
+  .
+
+  Unset Primitive Projections.
 
   Definition eqITreeF (sim : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
     uncurry (fun t1 : itree E R => fun t2 : itree E R => eq_itreeF (curry sim) (observe t1) (observe t2))
@@ -392,6 +403,52 @@ Module InteractionTreeTheory.
   Definition eqITree (t1 : itree E R) (t2 : itree E R) : Prop :=
     member (t1, t2) (proj1_sig (nu (exist isMonotonicMap eqITreeF eqITreeF_isMonotonic)))
   .
+
+  Lemma eq_itree_iff :
+    forall lhs : itree E R,
+    forall rhs : itree E R,
+    eq_itree lhs rhs <-> eqITree lhs rhs.
+  Proof.
+    set (F := exist isMonotonicMap eqITreeF eqITreeF_isMonotonic).
+    assert (claim1 : isSubsetOf (uncurry eq_itree) (proj1_sig F (uncurry eq_itree))).
+    { intros [lhs rhs] H_in.
+      apply unfold_eq_itree in H_in.
+      exact H_in.
+    }
+    enough (claim2 : isSupremum (uncurry eq_itree) (postfixed_points (proj1_sig F))).
+    enough (claim3 : uncurry eq_itree == (proj1_sig (nu F))).
+    { intros lhs rhs.
+      exact (claim3 (lhs, rhs)).
+    }
+    { apply (proj1 (isSupremum_unique (postfixed_points (proj1_sig F)) (uncurry eq_itree) claim2 (proj1_sig (nu F)))).
+      apply nu_isSupremum.
+    }
+    intros P; split.
+    { intros H_le Y H_postfixed.
+      transitivity (uncurry eq_itree); [ | exact H_le].
+      intros [lhs rhs] H_in.
+      unfold uncurry.
+      revert lhs rhs H_in.
+      cofix CIH.
+      intros lhs rhs H_in.
+      constructor.
+      destruct (H_postfixed (lhs, rhs) H_in) as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
+      - subst r2.
+        constructor 1.
+        reflexivity.
+      - constructor 2.
+        apply CIH.
+        exact H_rel.
+      - constructor 3.
+        intros x.
+        apply CIH.
+        exact (H_rel x).
+    }
+    { intros H_upperbound.
+      apply (H_upperbound (uncurry eq_itree)).
+      exact claim1.
+    }
+  Qed.
 
   Lemma not_in_bot :
     forall t1 : itree E R,
