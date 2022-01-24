@@ -724,11 +724,11 @@ Module UntypedLamdbdaCalculus.
   Proof.
     assert (claim1 : forall poss1 : list position, forall poss2 : list position, forall H_EQ1 : poss1 = poss2, forall H_EQ2 : poss1 = poss2, H_EQ1 = H_EQ2).
     { intros poss1; apply eq_em_implies_eq_pirrel.
-      now intros poss2; destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right].
+      intros poss2; now destruct (list_eq_dec position_eq_dec poss1 poss2); [left | right].
     }
     assert (claim2 : forall M1 : tm, forall M2 : tm, forall H_EQ1 : M1 = M2, forall H_EQ2 : M1 = M2, H_EQ1 = H_EQ2).
     { intros M1; apply eq_em_implies_eq_pirrel.
-      now intros M2; destruct (tm_eq_dec CON_eq_dec M1 M2); [left | right].
+      intros M2; now destruct (tm_eq_dec CON_eq_dec M1 M2); [left | right].
     }
     refine (
       fun N : tm =>
@@ -743,11 +743,9 @@ Module UntypedLamdbdaCalculus.
       | OccursLam0 _ y_1 Q_1 poss_1 X0_1 => _
       end
     );
-    [ set (my_poss := []); set (my_M := N); set (my_X := OccursRefl N)
-    | set (my_poss := POS1 :: poss_1); set (my_M := App P1_1 P2_1); set (my_X := OccursApp1 N P1_1 P2_1 poss_1 X1_1)
-    | set (my_poss := POS2 :: poss_1); set (my_M := App P1_1 P2_1); set (my_X := OccursApp2 N P1_1 P2_1 poss_1 X2_1)
-    | set (my_poss := POS0 :: poss_1); set (my_M := Lam y_1 Q_1); set (my_X := OccursLam0 N y_1 Q_1 poss_1 X0_1)
-    ];
+    match goal with
+    | [ |- forall X2 : occurs _ ?poss ?M, ?X = X2 ] => set (my_poss := poss); set (my_M := M); set (my_X := X)
+    end;
     refine (
       fun X2 : occurs N my_poss my_M =>
       match X2 as X' in occurs _ poss' M' return
@@ -784,12 +782,11 @@ Module UntypedLamdbdaCalculus.
   Lemma isSubtermOf_iff :
     forall N : tm,
     forall M : tm,
-    isSubtermOf N M <-> exists poss : list position, inhabited (occurs N poss M).
+    isSubtermOf N M <-> (exists poss : list position, inhabited (occurs N poss M)).
   Proof with eauto with *.
     intros N M.
     split.
-    - intros H_sub.
-      induction H_sub as [ | P1 P2 H_sub1 [poss [X]] | P1 P2 H_sub2 [poss [X]] | y Q H_sub0 [poss [X]]]; simpl.
+    - intros H_sub; induction H_sub as [ | P1 P2 H_sub1 [poss [X]] | P1 P2 H_sub2 [poss [X]] | y Q H_sub0 [poss [X]]]; simpl.
       + exists ([])...
       + exists (POS1 :: poss)...
       + exists (POS2 :: poss)...
@@ -856,8 +853,17 @@ Module UntypedLamdbdaCalculus.
     forall M : tm,
     FunFacts.acc isProperSubtermOf M.
   Proof with (congruence || eauto).
-    assert (claim1 : forall M N1 N2, isSubtermOf N1 M -> isSubtermOf N2 N1 -> isSubtermOf N2 M).
-    { intros M N1 N2. transitivity (N1)... }
+    assert (claim1 :
+      forall M : tm,
+      forall N1 : tm,
+      forall N2 : tm,
+      isSubtermOf N1 M ->
+      isSubtermOf N2 N1 ->
+      isSubtermOf N2 M
+    ).
+    { intros M N1 N2.
+      transitivity (N1)...
+    }
     assert (claim2 :
       forall phi : tm -> Prop,
       (forall M : tm, (forall N : tm, isSubtermOf N M -> N <> M -> phi N) -> phi M) ->
@@ -868,7 +874,10 @@ Module UntypedLamdbdaCalculus.
       induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
       all: inversion leq_m_n; subst...
     }
-    apply claim2. intros M acc_hyp. constructor. intros N [H_LT H_EQ]...
+    apply claim2.
+    intros M acc_hyp.
+    constructor.
+    intros N [H_LT H_EQ]...
   Defined.
 
   End SUBTERM.

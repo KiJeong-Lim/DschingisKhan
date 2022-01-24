@@ -109,7 +109,7 @@ Module FunFacts.
     exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB TRUE_BB_eq_FALSE_BB).
   Qed.
 
-  Lemma lt_wf :
+  Lemma nat_well_founded :
     forall n : nat,
     acc lt n.
   Proof.
