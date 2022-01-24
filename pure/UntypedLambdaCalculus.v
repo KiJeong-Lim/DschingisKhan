@@ -6,6 +6,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.DomainTheory.
+Require Import DschingisKhan.pure.FunFacts.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
@@ -690,30 +691,21 @@ Module UntypedLamdbdaCalculus.
   | OccursLam0 (y : ivar) (Q : tm) (poss : list position) (X0 : occurs M poss Q) : occurs M (POS0 :: poss) (Lam y Q)
   .
 
-  Definition isSuper : tm -> list position -> tm -> Set :=
-    fun N : tm =>
-    fun poss : list position =>
-    fun M : tm =>
-    occurs M poss N
-  .
-
-  Definition isSuper_reflexivity (N : tm) :
-    isSuper N [] N.
+  Definition occurs_reflexivity (N : tm) :
+    occurs N [] N.
   Proof.
-    unfold isSuper.
     constructor 1.
   Defined.
 
-  Definition isSuper_transitivity (N : tm) :
+  Definition occurs_transitivity (N : tm) :
     forall poss1 : list position,
     forall M1 : tm,
-    isSuper N poss1 M1 ->
+    occurs M1 poss1 N ->
     forall poss2 : list position,
     forall M2 : tm,
-    isSuper M1 poss2 M2 ->
-    isSuper N (poss1 ++ poss2) M2.
+    occurs M2 poss2 M1 ->
+    occurs M2 (poss1 ++ poss2) N.
   Proof.
-    unfold isSuper.
     intros poss1 M1 X1.
     induction X1; intros poss2 M2 X2; simpl.
     - exact X2.
@@ -721,56 +713,6 @@ Module UntypedLamdbdaCalculus.
     - constructor 3; apply IHX1; exact X2.
     - constructor 4; apply IHX1; exact X2.
   Defined.
-
-  Local Hint Resolve isSuper_reflexivity isSuper_transitivity : core.
-
-  Definition isSubtermOf (N : tm) (M : tm) : Prop :=
-    exists poss : list position, inhabited (isSuper M poss N)
-  .
-
-  Local Program Instance isSubtermOf_isPartialOrder : isPoset tm :=
-    { leProp := isSubtermOf
-    ; Poset_requiresSetoid :=
-      {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split.
-    - intros N; exists ([])...
-    - intros N M1 M2 [poss1 [X1]] [poss2 [X2]]; exists (poss2 ++ poss1)...
-  Qed.
-
-  Next Obligation with eauto with *.
-    set (getRank :=
-      fix getRank_fix (M : tm) {struct M} : nat :=
-      match M with
-      | Var x => O
-      | Con c => O
-      | App P1 P2 => S (max (getRank_fix P1) (getRank_fix P2))
-      | Lam y Q => S (getRank_fix Q)
-      end
-    ).
-    assert (lemma1 := n1_le_max_n1_n2).
-    assert (lemma2 := n2_le_max_n1_n2).
-    assert (lemma3 := @le_asymmetry).
-    assert (lemma4 := le_intro_S_n_le_S_m).
-    enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
-    enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
-    - intros N M; split; [intros []; split; exists ([]) | intros [? ?]]...
-    - intros N M [poss [X]]; induction X; simpl; intros H_EQ; [tauto | ..]; contradiction (not_n_lt_n (getRank N)).
-      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
-        transitivity (getRank P1); [apply claim1; exists poss | ..]...
-      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
-        transitivity (getRank P2); [apply claim1; exists poss | ..]...
-      + enough (H_false : getRank N < S (getRank Q)) by congruence; apply lemma4.
-        transitivity (getRank Q); [apply claim1; exists poss | ..]...
-    - intros N M [poss [X]]; induction X; simpl.
-      + reflexivity.
-      + transitivity (getRank P1)...
-      + transitivity (getRank P2)...
-      + transitivity (getRank Q)...
-  Qed.
 
   Lemma occurs_pirrel (CON_eq_dec : forall c1 : CON, forall c2 : CON, {c1 = c2} + {c1 <> c2}) :
     forall N : tm,
@@ -827,6 +769,107 @@ Module UntypedLamdbdaCalculus.
     (replace H_eq_my_M with (eq_reflexivity my_M); [simpl | apply claim2]).
     all: now (reflexivity || apply eq_congruence).
   Qed.
+
+  Local Hint Constructors occurs : core.
+
+  Inductive isSubtermOf (N : tm) : tm -> Prop :=
+  | Refl_isSubtermOf : isSubtermOf N N
+  | App1_isSubtermOf (P1 : tm) (P2 : tm) (X1 : isSubtermOf N P1) : isSubtermOf N (App P1 P2)
+  | App2_isSubtermOf (P1 : tm) (P2 : tm) (X2 : isSubtermOf N P2) : isSubtermOf N (App P1 P2)
+  | Lam0_isSubtermOf (y : ivar) (Q : tm) (X0 : isSubtermOf N Q) : isSubtermOf N (Lam y Q)
+  .
+
+  Local Hint Constructors isSubtermOf : core.
+
+  Lemma isSubtermOf_iff :
+    forall N : tm,
+    forall M : tm,
+    isSubtermOf N M <-> exists poss : list position, inhabited (occurs N poss M).
+  Proof with eauto with *.
+    intros N M.
+    split.
+    - intros H_sub.
+      induction H_sub as [ | P1 P2 H_sub1 [poss [X]] | P1 P2 H_sub2 [poss [X]] | y Q H_sub0 [poss [X]]]; simpl.
+      + exists ([])...
+      + exists (POS1 :: poss)...
+      + exists (POS2 :: poss)...
+      + exists (POS0 :: poss)...
+    - intros [poss [X]]; induction X...
+  Qed.
+
+  Local Instance isSubtermOf_PreOrder :
+    PreOrder isSubtermOf.
+  Proof with eauto with *.
+    split.
+    - intros N...
+    - intros N M1 M2 H_sub X; induction X...
+  Qed.
+
+  Local Instance isSubtermOf_PartialOrder :
+    PartialOrder eq isSubtermOf.
+  Proof with eauto with *.
+    set (getRank :=
+      fix getRank_fix (M : tm) {struct M} : nat :=
+      match M with
+      | Var x => O
+      | Con c => O
+      | App P1 P2 => S (max (getRank_fix P1) (getRank_fix P2))
+      | Lam y Q => S (getRank_fix Q)
+      end
+    ).
+    assert (lemma1 := n1_le_max_n1_n2).
+    assert (lemma2 := n2_le_max_n1_n2).
+    assert (lemma3 := @le_asymmetry).
+    assert (lemma4 := le_intro_S_n_le_S_m).
+    enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
+    enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).
+    - intros N M; split; [intros []; split | intros [? ?]]...
+    - intros N M X; induction X; simpl; intros H_EQ; [tauto | ..]; contradiction (not_n_lt_n (getRank N)).
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
+        transitivity (getRank P1); [apply claim1 | ..]...
+      + enough (H_false : getRank N < S (max (getRank P1) (getRank P2))) by congruence; apply lemma4.
+        transitivity (getRank P2); [apply claim1 | ..]...
+      + enough (H_false : getRank N < S (getRank Q)) by congruence; apply lemma4.
+        transitivity (getRank Q); [apply claim1 | ..]...
+    - intros N M X; induction X; simpl.
+      + reflexivity.
+      + transitivity (getRank P1)...
+      + transitivity (getRank P2)...
+      + transitivity (getRank Q)...
+  Qed.
+
+  Local Program Instance isSubtermOf_isPoset : isPoset tm :=
+    { leProp := isSubtermOf
+    ; Poset_requiresSetoid := {| eqProp := @eq tm; Setoid_requiresEquivalence := @eq_equivalence tm |}
+    ; Poset_requiresPreOrder := isSubtermOf_PreOrder
+    ; Poset_requiresPartialOrder := isSubtermOf_PartialOrder
+    }
+  .
+
+  Definition isProperSubtermOf : tm -> tm -> Prop :=
+    fun N : tm =>
+    fun M : tm =>
+    isSubtermOf N M /\ N <> M
+  .
+
+  Lemma isProperSubtermOf_well_founded :
+    forall M : tm,
+    FunFacts.acc isProperSubtermOf M.
+  Proof with (congruence || eauto).
+    assert (claim1 : forall M N1 N2, isSubtermOf N1 M -> isSubtermOf N2 N1 -> isSubtermOf N2 M).
+    { intros M N1 N2. transitivity (N1)... }
+    assert (claim2 :
+      forall phi : tm -> Prop,
+      (forall M : tm, (forall N : tm, isSubtermOf N M -> N <> M -> phi N) -> phi M) ->
+      (forall M : tm, phi M)
+    ).
+    { intros phi acc_hyp.
+      enough (it_is_sufficient_to_show : forall n i, isSubtermOf i n -> phi i)...
+      induction n; intros m leq_m_n; apply acc_hyp; intros i leq_i_m H_ne; inversion leq_i_m; subst...
+      all: inversion leq_m_n; subst...
+    }
+    apply claim2. intros M acc_hyp. constructor. intros N [H_LT H_EQ]...
+  Defined.
 
   End SUBTERM.
 

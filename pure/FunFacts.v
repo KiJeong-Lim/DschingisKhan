@@ -1,3 +1,5 @@
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Classes.RelationClasses.
 Require Import DschingisKhan.pure.MyUtilities.
 
 Module FunFacts.
@@ -17,6 +19,20 @@ Module FunFacts.
     ; _inv2 : RETRACT A B -> forall x : A, _j2 (_i2 x) = x
     }
   .
+
+  Inductive BB : Prop :=
+  | TRUE_BB : BB
+  | FALSE_BB : BB
+  .
+
+  Polymorphic Inductive acc (A : Type) (LT : A -> A -> Prop) (tree : A) : Prop :=
+    Mk_acc
+      (runAcc : forall subtree : A, LT subtree tree -> acc A LT subtree)
+    : acc A LT tree
+  .
+
+  Global Arguments acc {A} (LT) (tree).
+  Global Arguments Mk_acc {A} {LT} (tree).
 
   Definition get_i {A : Prop} {B : Prop} : RETRACT A B -> A -> B :=
     _i A B
@@ -47,8 +63,6 @@ Module FunFacts.
     {| _i := fun x : A => x; _j := fun x : A => x; _inv := @eq_refl A |}
   .
 
-  Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
-
   Definition isMinimalNum (phi : nat -> Prop) : nat -> Prop :=
     fun n : nat =>
     phi n /\ (forall m : nat, phi m -> n <= m)
@@ -59,6 +73,18 @@ Module FunFacts.
     (exists x : A, forall y : A, phi y <-> x = y) ->
     {x : A | phi x}
   .
+
+  Polymorphic Definition runAcc_iff {A : Type} {LT : A -> A -> Prop} (tree : A) :
+    acc LT tree ->
+    forall subtree : A,
+    LT subtree tree ->
+    acc LT subtree.
+  Proof.
+    intros [runAcc].
+    exact runAcc.
+  Defined.
+
+  Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
   Lemma derive_fixedpoint_combinator (D : Prop) :
     RETRACT (D -> D) D ->
@@ -72,11 +98,6 @@ Module FunFacts.
     now replace (app_D (lam_D (fun x : D => f (app_D x x)))) with (fun x : D => f (app_D x x)).
   Qed.
 
-  Inductive BB : Prop :=
-  | TRUE_BB : BB
-  | FALSE_BB : BB
-  .
-
   Lemma TRUE_BB_eq_FALSE_BB_implies_proof_irrelevance :
     TRUE_BB = FALSE_BB ->
     forall BOOL : Prop,
@@ -87,6 +108,15 @@ Module FunFacts.
     intros TRUE_BB_eq_FALSE_BB BOOL TRUE FALSE.
     exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB TRUE_BB_eq_FALSE_BB).
   Qed.
+
+  Lemma lt_wf :
+    forall n : nat,
+    acc lt n.
+  Proof.
+    strong_rec. intros n acc_hyp. constructor. intros i H_lt. apply acc_hyp.
+    - apply le_implies_leq. apply (le_transitivity (le_S i i (le_n i)) H_lt).
+    - intros H_eq. contradiction (not_n_lt_n n). congruence.
+  Defined.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -312,6 +342,21 @@ Module FunFacts.
 
   End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
 
+  Lemma propositional_extensionality_implies_proof_irrelevance_beautiful_ver :
+    (forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) -> (P1 = P2)) ->
+    forall P : Prop,
+    forall p1 : P,
+    forall p2 : P,
+    p1 = p2.
+  Proof. (* Thanks to Minki Cho *)
+    intros pext.
+    intros P p.
+    assert (P_is_True : P = True) by now apply pext; tauto.
+    revert p.
+    subst P.
+    now intros [] [].
+  Qed.
+
   Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
@@ -349,5 +394,33 @@ Module FunFacts.
   Qed.
 
   End CLASSICAL_IF_THEN_ELSE.
+
+  Section WELL_FOUNDED_RECURSION.
+
+  Polymorphic Context {A : Type}.
+
+  Variable LT : A -> A -> Prop.
+
+  Hypothesis LT_wf : forall tree : A, acc LT tree.
+
+  Local Polymorphic Instance LT_Irreflexive :
+    Irreflexive LT.
+  Proof with eauto with *.
+    intros tree.
+    unfold complement.
+    induction (LT_wf tree) as [tree H_acc IH].
+    now assert (claim1 := IH tree); firstorder.
+  Qed.
+
+  Polymorphic Theorem noetherian_recursion (phi : A -> Type)
+    (ACC_HYP : forall tree : A, (forall subtree : A, LT subtree tree -> phi subtree) -> phi tree)
+    (root : A)
+    : phi root.
+  Proof.
+    induction (LT_wf root) as [tree H_acc IH].
+    exact (ACC_HYP tree IH).
+  Defined.
+
+  End WELL_FOUNDED_RECURSION.
 
 End FunFacts.
