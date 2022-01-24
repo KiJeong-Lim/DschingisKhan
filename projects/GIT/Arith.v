@@ -394,9 +394,8 @@ Module InteractionTreeTheory.
     isMonotonicMap eqITreeF.
   Proof with eauto.
     unfold eqITreeF, uncurry.
-    intros R1 R2 H_R1_le_R2.
-    intros [? ?] [r1 r2 REL | t1 t2 REL | X e k1 k2 REL]; [pose (REL) | pose (H_R1_le_R2 (t1, t2) REL) | pose (fun x : X => H_R1_le_R2 (k1 x, k2 x) (REL x))]...
-  Qed.
+    intros R1 R2 H_R1_le_R2 [? ?] [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; [pose (H_rel) | pose (H_R1_le_R2 (t1, t2) H_rel) | pose (fun x : X => H_R1_le_R2 (k1 x, k2 x) (H_rel x))]...
+  Defined.
 
   Local Hint Resolve eqITreeF_isMonotonic : core.
 
@@ -404,50 +403,30 @@ Module InteractionTreeTheory.
     member (t1, t2) (proj1_sig (nu (exist isMonotonicMap eqITreeF eqITreeF_isMonotonic)))
   .
 
-  Lemma eq_itree_iff :
+  Lemma eq_itree_iff_eqITree :
     forall lhs : itree E R,
     forall rhs : itree E R,
     eq_itree lhs rhs <-> eqITree lhs rhs.
   Proof.
     set (F := exist isMonotonicMap eqITreeF eqITreeF_isMonotonic).
-    assert (claim1 : isSubsetOf (uncurry eq_itree) (proj1_sig F (uncurry eq_itree))).
-    { intros [lhs rhs] H_in.
-      apply unfold_eq_itree in H_in.
-      exact H_in.
-    }
+    enough (claim1 : isSubsetOf (uncurry eq_itree) (proj1_sig F (uncurry eq_itree))).
     enough (claim2 : isSupremum (uncurry eq_itree) (postfixed_points (proj1_sig F))).
     enough (claim3 : uncurry eq_itree == (proj1_sig (nu F))).
-    { intros lhs rhs.
-      exact (claim3 (lhs, rhs)).
-    }
-    { apply (proj1 (isSupremum_unique (postfixed_points (proj1_sig F)) (uncurry eq_itree) claim2 (proj1_sig (nu F)))).
-      apply nu_isSupremum.
-    }
-    intros P; split.
-    { intros H_le Y H_postfixed.
-      transitivity (uncurry eq_itree); [ | exact H_le].
-      intros [lhs rhs] H_in.
-      unfold uncurry.
-      revert lhs rhs H_in.
-      cofix CIH.
-      intros lhs rhs H_in.
-      constructor.
-      destruct (H_postfixed (lhs, rhs) H_in) as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
-      - subst r2.
-        constructor 1.
-        reflexivity.
-      - constructor 2.
-        apply CIH.
-        exact H_rel.
-      - constructor 3.
-        intros x.
-        apply CIH.
-        exact (H_rel x).
-    }
-    { intros H_upperbound.
-      apply (H_upperbound (uncurry eq_itree)).
-      exact claim1.
-    }
+    - intros lhs rhs; exact (claim3 (lhs, rhs)).
+    - exact (proj1 (isSupremum_unique (postfixed_points (proj1_sig F)) (uncurry eq_itree) claim2 (proj1_sig (nu F))) (nu_isSupremum F)).
+    - intros P; split.
+      { intros H_le X H_postfixed.
+        transitivity (uncurry eq_itree); [unfold uncurry | exact H_le].
+        intros [lhs rhs] H_in; revert lhs rhs H_in; cofix CIH.
+        intros lhs rhs H_in; constructor.
+        enough (to_show : X =< uncurry eq_itree) by exact (eqITreeF_isMonotonic X (uncurry eq_itree) to_show (lhs, rhs) (H_postfixed (lhs, rhs) H_in)).
+        intros [t1 t2] H_in_X; apply CIH; exact H_in_X.
+      }
+      { intros H_upperbound.
+        apply (H_upperbound (uncurry eq_itree)).
+        exact claim1.
+      }
+    - intros [lhs rhs] H_in; exact (unfold_eq_itree lhs rhs H_in).
   Qed.
 
   Lemma not_in_bot :
