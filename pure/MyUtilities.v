@@ -1450,6 +1450,111 @@ Module MyUtilities.
     assert (claim2 := in_in_remove A_eq_dec)...
   Qed.
 
+  Lemma fold_left_unfold {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) :
+    forall xs : list A,
+    fold_left f xs z0 =
+    match xs with
+    | [] => z0
+    | hd_xs :: tl_xs => fold_left f tl_xs (f z0 hd_xs)
+    end.
+  Proof with eauto.
+    induction xs...
+  Qed.
+
+  Lemma fold_right_unfold {A : Type} {B : Type} (f : A -> B -> B) (z0 : B) :
+    forall xs : list A,
+    fold_right f z0 xs =
+    match xs with
+    | [] => z0
+    | hd_xs :: tl_xs => f hd_xs (fold_right f z0 tl_xs)
+    end.
+  Proof with eauto.
+    induction xs...
+  Qed.
+
+  Definition addIndices_aux {A : Type} : list A -> nat -> list (A * nat) :=
+    fold_right (fun x : A => fun acc : nat -> list (A * nat) => fun n : nat => (x, n) :: acc (1 + n)) (fun n : nat => [])
+  .
+
+  Lemma addIndices_aux_unfold {A : Type} :
+    forall xs : list A,
+    forall n : nat,
+    addIndices_aux xs n =
+    match xs with
+    | [] => []
+    | hd_xs :: tl_xs => (hd_xs, n) :: addIndices_aux tl_xs (S n)
+    end.
+  Proof with eauto.
+    induction xs as [ | x xs IH]; simpl...
+  Qed.
+
+  Definition addIndices {A : Type} (xs : list A) : list (A * nat) :=
+    addIndices_aux xs 0
+  .
+
+  Lemma addIndices_unfold {A : Type} :
+    forall xs : list A,
+    addIndices xs =
+    match xs with
+    | [] => []
+    | hd_xs :: tl_xs => (hd_xs, 0) :: map (fun it => (fst it, 1 + snd it)) (addIndices tl_xs)
+    end.
+  Proof with eauto.
+    unfold addIndices; cbn.
+    intros xs1; generalize 0 as n; intros n.
+    rewrite addIndices_aux_unfold at 1.
+    destruct xs1 as [ | x1 xs1]...
+    apply eq_congruence.
+    clear x1; revert n; induction xs1 as [ | x1 xs1 IH]; simpl...
+    intros n; apply eq_congruence; exact (IH (S n)).
+  Qed.
+
+  Lemma addIndices_length {A : Type} :
+    forall xs : list A,
+    length (addIndices xs) = length xs.
+  Proof with eauto.
+    induction xs as [ | x xs IH]...
+    rewrite addIndices_unfold; simpl...
+    apply eq_congruence; rewrite map_length...
+  Qed.
+
+  Lemma addIndices_map_fst {A : Type} :
+    forall xs : list A,
+    map fst (addIndices xs) = xs.
+  Proof with eauto.
+    induction xs as [ | x xs IH]...
+    rewrite addIndices_unfold; simpl.
+    apply eq_congruence.
+    rewrite <- IH at 2.
+    generalize (addIndices xs) as its.
+    clear x xs IH.
+    induction its; simpl...
+    apply eq_congruence...
+  Qed.
+
+  Lemma addIndices_map_snd {A : Type} :
+    forall xs : list A,
+    forall idx : nat,
+    idx < length xs <-> nth_error (map snd (addIndices xs)) idx = Some idx.
+  Proof with eauto.
+    intros xs idx; split.
+    { unfold addIndices; replace idx with (0 + idx) at 3...
+      generalize 0 as n; revert idx; induction xs as [ | x xs IH]; simpl; intros i n H_lt.
+      - exact (lt_elim_n_lt_0 i H_lt).
+      - destruct i as [ | i']; simpl.
+        + apply eq_congruence; lia.
+        + apply lt_elim_S_n_lt_S_m in H_lt.
+          rewrite (IH i' (S n) H_lt).
+          apply eq_congruence; lia.
+    }
+    { intros H_Some.
+      rewrite <- addIndices_length, <- (map_length snd).
+      apply nth_error_Some.
+      rewrite H_Some.
+      discriminate.
+    }
+  Qed.
+
   Section ACKERMANN.
 
   Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
