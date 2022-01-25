@@ -787,13 +787,20 @@ Module PowerSetCoLa.
       destruct H as [H | H]; [left | right]...
   Qed.
 
-  CoInductive PaCo (F : ensemble A -> ensemble A) : ensemble A -> ensemble A :=
-  | MkPaCo :
-    forall X : ensemble A,
-    forall Y : ensemble A,
-    isSubsetOf X (MyUnion (PaCo F Y) Y) ->
-    isSubsetOf (F X) (PaCo F Y)
+  Variant PaCoF (PaCo_F : ensemble A -> ensemble A) (F : ensemble A -> ensemble A) (X : ensemble A) : ensemble A :=
+  | FoldPaCoF
+    (witness : ensemble A)
+    (H_INCL : isSubsetOf witness (MyUnion (PaCo_F X) X))
+    : isSubsetOf (F witness) (PaCoF PaCo_F F X)
   .
+
+  Set Primitive Projections.
+
+  CoInductive PaCo (F : ensemble A -> ensemble A) (X : ensemble A) (x : A) : Prop :=
+    FoldPaCo { unfoldPaCo : member x (PaCoF (PaCo F) F X) }
+  .
+
+  Unset Primitive Projections.
 
   Section ParameterizedCoInduction.
 
@@ -803,18 +810,21 @@ Module PowerSetCoLa.
     forall Y : ensemble A,
     isSubsetOf (F (or_plus (PaCo F Y) Y)) (PaCo F Y).
   Proof with eauto with *.
-    intros Y.
-    apply MkPaCo.
-    intros a H0.
-    apply in_union_iff in H0...
+    intros Y x H_in.
+    apply FoldPaCo.
+    revert x H_in.
+    apply FoldPaCoF.
+    exact (fun x => proj2 (MyUnion_eq_or_plus (PaCo F Y) Y x)).
   Qed.
 
   Lemma PaCo_unfold (F_mon : isMonotonicMap F) :
     forall Y : ensemble A,
     isSubsetOf (PaCo F Y) (F (or_plus (PaCo F Y) Y)).
   Proof with eauto with *.
-    intros Y a H.
-    inversion H; subst.
+    intros Y x H_in.
+    apply unfoldPaCo in H_in.
+    inversion H_in; subst.
+    rename witness into X.
     assert (claim1 : isSubsetOf (F X) (F (MyUnion (PaCo F Y) Y))) by now apply (F_mon X (MyUnion (PaCo F Y) Y)).
     assert (claim2 : isSubsetOf (MyUnion (PaCo F Y) Y) (or_plus (PaCo F Y) Y)).
     { intros a' H'.
@@ -830,12 +840,15 @@ Module PowerSetCoLa.
     assert (claim1 := PaCo_unfold F_mon X1).
     cofix CIH.
     intros a H0.
-    apply (MkPaCo F (MyUnion (PaCo F X1) X1) X2).
-    - intros a' [H0' | H0']; [left; apply CIH | right; apply H]...
-    - apply (F_mon (or_plus (PaCo F X1) X1)).
-      + apply or_plus_le_iff.
-        split; intros a' H0'; [left | right]...
-      + apply claim1...
+    apply FoldPaCo.
+    apply (claim1 a) in H0.
+    revert a H0.
+    apply FoldPaCoF.
+    intros a H0.
+    apply in_union_iff in H0.
+    destruct H0 as [H0 | H0].
+    - left; apply CIH...
+    - right; apply H...
   Qed.
 
   Lemma PaCo_init (F_mon : isMonotonicMap F) :
@@ -856,7 +869,10 @@ Module PowerSetCoLa.
     destruct (GreatestFixedPointOfMonotonicMaps F F_mon (proj1_sig (nu (exist _ F F_mon))) claim4) as [claim5 claim6].
     assert (claim7 : F (proj1_sig (nu (exist _ F F_mon))) =< PaCo F bot).
     { cofix CIH.
-      apply MkPaCo.
+      intros a H.
+      apply FoldPaCo.
+      revert a H.
+      apply FoldPaCoF.
       intros a H.
       left.
       apply CIH, claim5...
@@ -917,7 +933,10 @@ Module PowerSetCoLa.
       assert (claim12 : nu0 =< F (MyUnion X nu0)) by now apply Poset_refl1.
       assert (claim13 : F (MyUnion X nu0) =< PaCo F X).
       { cofix CIH.
-        apply MkPaCo.
+        intros a H.
+        apply FoldPaCo.
+        revert a H.
+        apply FoldPaCoF.
         intros a [H | H]; [right | left; apply CIH, claim12]...
       }
       assert (claim14 : Y =< PaCo F (MyUnion X Y)) by apply H_star.
