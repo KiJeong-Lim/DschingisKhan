@@ -1472,89 +1472,6 @@ Module MyUtilities.
     induction xs...
   Qed.
 
-  Definition addIndices_aux {A : Type} : list A -> nat -> list (A * nat) :=
-    fold_right (fun x : A => fun acc : nat -> list (A * nat) => fun n : nat => (x, n) :: acc (1 + n)) (fun n : nat => [])
-  .
-
-  Lemma addIndices_aux_unfold {A : Type} :
-    forall xs : list A,
-    forall n : nat,
-    addIndices_aux xs n =
-    match xs with
-    | [] => []
-    | hd_xs :: tl_xs => (hd_xs, n) :: addIndices_aux tl_xs (S n)
-    end.
-  Proof with eauto.
-    induction xs as [ | x xs IH]; simpl...
-  Qed.
-
-  Definition addIndices {A : Type} (xs : list A) : list (A * nat) :=
-    addIndices_aux xs 0
-  .
-
-  Lemma addIndices_unfold {A : Type} :
-    forall xs : list A,
-    addIndices xs =
-    match xs with
-    | [] => []
-    | hd_xs :: tl_xs => (hd_xs, 0) :: map (fun it => (fst it, 1 + snd it)) (addIndices tl_xs)
-    end.
-  Proof with eauto.
-    unfold addIndices; cbn.
-    intros xs1; generalize 0 as n; intros n.
-    rewrite addIndices_aux_unfold at 1.
-    destruct xs1 as [ | x1 xs1]...
-    apply eq_congruence.
-    clear x1; revert n; induction xs1 as [ | x1 xs1 IH]; simpl...
-    intros n; apply eq_congruence; exact (IH (S n)).
-  Qed.
-
-  Lemma addIndices_length {A : Type} :
-    forall xs : list A,
-    length (addIndices xs) = length xs.
-  Proof with eauto.
-    induction xs as [ | x xs IH]...
-    rewrite addIndices_unfold; simpl...
-    apply eq_congruence; rewrite map_length...
-  Qed.
-
-  Lemma addIndices_map_fst {A : Type} :
-    forall xs : list A,
-    map fst (addIndices xs) = xs.
-  Proof with eauto.
-    induction xs as [ | x xs IH]...
-    rewrite addIndices_unfold; simpl.
-    apply eq_congruence.
-    rewrite <- IH at 2.
-    generalize (addIndices xs) as its.
-    clear x xs IH.
-    induction its; simpl...
-    apply eq_congruence...
-  Qed.
-
-  Lemma addIndices_map_snd {A : Type} :
-    forall xs : list A,
-    forall idx : nat,
-    idx < length xs <-> nth_error (map snd (addIndices xs)) idx = Some idx.
-  Proof with eauto.
-    intros xs idx; split.
-    { unfold addIndices; replace idx with (0 + idx) at 3...
-      generalize 0 as n; revert idx; induction xs as [ | x xs IH]; simpl; intros i n H_lt.
-      - exact (lt_elim_n_lt_0 i H_lt).
-      - destruct i as [ | i']; simpl.
-        + apply eq_congruence; lia.
-        + apply lt_elim_S_n_lt_S_m in H_lt.
-          rewrite (IH i' (S n) H_lt).
-          apply eq_congruence; lia.
-    }
-    { intros H_Some.
-      rewrite <- addIndices_length, <- (map_length snd).
-      apply nth_error_Some.
-      rewrite H_Some.
-      discriminate.
-    }
-  Qed.
-
   Section ACKERMANN.
 
   Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
@@ -1852,6 +1769,283 @@ Module MyUtilities.
     | x' :: xs' => if eq_dec x' then Some (FZ (length xs')) else fmapMaybe (FS (length xs')) (elemIndex_fix xs')
     end
   .
+
+  Section LIST_EXTENSION.
+
+  Fixpoint good_idx_implies_nth_error_ne_None {A : Type} (xs : list A) {struct xs} :
+    forall idx : nat,
+    idx < length xs ->
+    nth_error xs idx <> None.
+  Proof.
+    destruct xs as [ | x xs].
+    - intros idx H_lt.
+      exact (lt_elim_n_lt_0 idx H_lt).
+    - intros [ | idx'] H_lt.
+      + exact (Some_ne_None x).
+      + simpl in *.
+        apply good_idx_implies_nth_error_ne_None.
+        exact (lt_elim_S_n_lt_S_m idx' (length xs) H_lt).
+  Defined.
+
+  Definition listExt_view {A : Type} (xs : list A) : forall idx : nat, {ret : option A | idx < length xs -> ret <> None} :=
+    fun idx : nat =>
+    exist _ (nth_error xs idx) (good_idx_implies_nth_error_ne_None xs idx)
+  .
+
+  Definition list_ext_view {A : Type} (xs : list A) : nat -> option A :=
+    fun idx : nat =>
+    proj1_sig (listExt_view xs idx)
+  .
+
+  Lemma list_ext_view_eq_iff {A : Type} :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    xs1 = xs2 <-> (forall n : nat, list_ext_view xs1 n = list_ext_view xs2 n).
+  Proof with discriminate || eauto.
+    unfold list_ext_view, listExt_view; simpl.
+    induction xs1 as [ | x1 xs1 IH]; intros [ | x2 xs2]; simpl; split...
+    - intros H_false.
+      contradiction (Some_ne_None x2).
+      symmetry; exact (H_false 0).
+    - intros H_false.
+      contradiction (Some_ne_None x1).
+      exact (H_false 0).
+    - intros H_eq.
+      rewrite H_eq.
+      reflexivity.
+    - intros H_eq.
+      assert (claim1 := H_eq 0).
+      simpl in claim1; apply injSome in claim1; subst x2.
+      apply eq_congruence, IH.
+      exact (fun n => H_eq (S n)).
+  Qed.
+
+  Lemma list_ext_view_map {A : Type} {B : Type} (f : A -> B) :
+    forall xs : list A,
+    (forall n : nat, list_ext_view (map f xs) n = (fmapMaybe f) (list_ext_view xs n)).
+  Proof with discriminate || eauto.
+    unfold list_ext_view, listExt_view; simpl.
+    induction xs as [ | x xs IH]; simpl.
+    - intros [ | n']...
+    - intros [ | n']; simpl...
+  Qed.
+
+  Definition listEXT_view {A : Type} (xs : list A) : forall idx : nat, idx < length xs -> A :=
+    fun idx : nat =>
+    match listExt_view xs idx with
+    | exist _ xr H_xr => fun H_idx : idx < length xs => fromJust xr (H_xr H_idx)
+    end
+  .
+
+  End LIST_EXTENSION.
+
+  Section LIST_SWAP.
+
+  Context {A : Type}.
+
+  Definition addIndices_aux : list A -> nat -> list (A * nat) :=
+    fold_right (fun x : A => fun acc : nat -> list (A * nat) => fun n : nat => (x, n) :: acc (1 + n)) (fun n : nat => [])
+  .
+
+  Lemma addIndices_aux_unfold :
+    forall xs : list A,
+    forall n : nat,
+    addIndices_aux xs n =
+    match xs with
+    | [] => []
+    | hd_xs :: tl_xs => (hd_xs, n) :: addIndices_aux tl_xs (S n)
+    end.
+  Proof with eauto.
+    induction xs as [ | x xs IH]; simpl...
+  Qed.
+
+  Definition addIndices (xs : list A) : list (A * nat) :=
+    addIndices_aux xs 0
+  .
+
+  Lemma addIndices_unfold :
+    forall xs : list A,
+    addIndices xs =
+    match xs with
+    | [] => []
+    | hd_xs :: tl_xs => (hd_xs, 0) :: map (fun it => (fst it, 1 + snd it)) (addIndices tl_xs)
+    end.
+  Proof with eauto.
+    unfold addIndices; cbn.
+    intros xs1; generalize 0 as n; intros n.
+    rewrite addIndices_aux_unfold at 1.
+    destruct xs1 as [ | x1 xs1]...
+    apply eq_congruence.
+    clear x1; revert n; induction xs1 as [ | x1 xs1 IH]; simpl...
+    intros n; apply eq_congruence; exact (IH (S n)).
+  Qed.
+
+  Lemma addIndices_length :
+    forall xs : list A,
+    length (addIndices xs) = length xs.
+  Proof with eauto.
+    induction xs as [ | x xs IH]...
+    rewrite addIndices_unfold; simpl...
+    apply eq_congruence; rewrite map_length...
+  Qed.
+
+  Lemma addIndices_map_fst :
+    forall xs : list A,
+    map fst (addIndices xs) = xs.
+  Proof with eauto.
+    induction xs as [ | x xs IH]...
+    rewrite addIndices_unfold; simpl.
+    apply eq_congruence.
+    rewrite <- IH at 2.
+    generalize (addIndices xs) as its.
+    clear x xs IH.
+    induction its; simpl...
+    apply eq_congruence...
+  Qed.
+
+  Lemma addIndices_map_snd :
+    forall xs : list A,
+    forall idx : nat,
+    idx < length xs <-> nth_error (map snd (addIndices xs)) idx = Some idx.
+  Proof with eauto.
+    intros xs idx; split.
+    { unfold addIndices; replace idx with (0 + idx) at 3...
+      generalize 0 as n; revert idx; induction xs as [ | x xs IH]; simpl; intros i n H_lt.
+      - exact (lt_elim_n_lt_0 i H_lt).
+      - destruct i as [ | i']; simpl.
+        + apply eq_congruence; lia.
+        + apply lt_elim_S_n_lt_S_m in H_lt.
+          rewrite (IH i' (S n) H_lt).
+          apply eq_congruence; lia.
+    }
+    { intros H_Some.
+      rewrite <- addIndices_length, <- (map_length snd).
+      apply nth_error_Some.
+      rewrite H_Some.
+      discriminate.
+    }
+  Qed.
+
+  Lemma addIndices_nth_error_Some_implies :
+    forall xs : list A,
+    forall idx : nat,
+    forall n : nat,
+    forall w : A,
+    nth_error (addIndices xs) idx = Some (w, n) ->
+    nth_error xs idx = Some w /\ idx = n.
+  Proof.
+    intros xs idx n w.
+    assert (claim1 : forall n : nat, list_ext_view (map fst (addIndices xs)) n = list_ext_view (xs) n).
+    { apply list_ext_view_eq_iff.
+      exact (addIndices_map_fst xs).
+    }
+    unfold list_ext_view in claim1.
+    simpl in claim1.
+    intros H_Some.
+    assert (claim2 : idx < length xs).
+    { rewrite <- addIndices_length.
+      apply nth_error_Some.
+      rewrite H_Some.
+      discriminate.
+    }
+    assert (claim3 := proj1 (addIndices_map_snd xs idx) claim2).
+    split.
+    - rewrite <- claim1.
+      exact (map_nth_error fst idx (addIndices xs) H_Some).
+    - rewrite ((map_nth_error snd idx (addIndices xs) H_Some)) in claim3.
+      apply injSome in claim3; simpl in claim3.
+      congruence.
+  Qed.
+
+  Lemma addIndices_nth_error_None_implies :
+    forall xs : list A,
+    forall idx : nat,
+    nth_error (addIndices xs) idx = None ->
+    nth_error xs idx = None.
+  Proof.
+    intros xs idx.
+    assert (claim1 : forall n : nat, list_ext_view (map fst (addIndices xs)) n = list_ext_view (xs) n).
+    { apply list_ext_view_eq_iff.
+      exact (addIndices_map_fst xs).
+    }
+    unfold list_ext_view in claim1.
+    simpl in claim1.
+    intros H_None.
+    apply nth_error_None.
+    rewrite <- addIndices_length.
+    apply nth_error_None.
+    exact H_None.
+  Qed.
+
+  Definition list_swap_aux (xs : list A) (idx1 : nat) (idx2 : nat) (default_val : A) (idx : nat) : A :=
+    let x1 : A := maybe default_val id (nth_error xs idx1) in
+    let x2 : A := maybe default_val id (nth_error xs idx2) in
+    if eq_dec_nat idx idx1 then x2 else
+    if eq_dec_nat idx idx2 then x1 else
+    default_val
+  .
+
+  Definition list_swap (idx1 : nat) (idx2 : nat) : list A -> list A :=
+    fun xs : list A =>
+    map (uncurry (list_swap_aux xs idx1 idx2)) (addIndices xs)
+  .
+
+  Lemma list_swap_length :
+    forall idx1 : nat,
+    forall idx2 : nat,
+    forall xs : list A,
+    length (list_swap idx1 idx2 xs) = length xs.
+  Proof.
+    unfold list_swap; intros idx1 idx2 xs.
+    transitivity (length (addIndices xs)); [apply map_length | apply addIndices_length].
+  Qed.
+
+  Lemma list_swap_ext :
+    forall idx1 : nat,
+    forall idx2 : nat,
+    forall xs : list A,
+    forall idx : nat,
+    list_ext_view (list_swap idx1 idx2 xs) idx =
+    fmapMaybe (uncurry (list_swap_aux xs idx1 idx2)) (list_ext_view (addIndices xs) idx).
+  Proof.
+    intros idx1 idx2 xs idx.
+    exact (list_ext_view_map (uncurry (list_swap_aux xs idx1 idx2)) (addIndices xs) idx).
+  Qed.
+
+  Theorem list_swap_main_property :
+    forall xs : list A,
+    forall idx1 : nat,
+    forall val1 : A,
+    nth_error xs idx1 = Some val1 ->
+    forall idx2 : nat,
+    forall val2 : A,
+    nth_error xs idx2 = Some val2 ->
+    forall idx : nat,
+    forall val : A,
+    nth_error xs idx = Some val ->
+    nth_error (list_swap idx1 idx2 xs) idx =
+    if eq_dec_nat idx idx1 then Some val2 else
+    if eq_dec_nat idx idx2 then Some val1 else
+    Some val.
+  Proof with discriminate || eauto.
+    intros xs idx1 val1 H_idx1 idx2 val2 H_idx2 idx val H_idx.
+    assert (claim1 := list_swap_ext idx1 idx2 xs idx).
+    unfold list_ext_view at 1 in claim1.
+    unfold listExt_view in claim1.
+    simpl in claim1.
+    rewrite claim1.
+    unfold fmapMaybe, list_ext_view, list_swap_aux; simpl.
+    destruct (nth_error (addIndices xs) idx) as [[x n] |] eqn: H_obs; simpl.
+    - destruct (addIndices_nth_error_Some_implies xs idx n x H_obs) as [claim2 claim3]; subst n.
+      destruct (eq_dec_nat idx idx1) as [H_yes1 | H_no1].
+      { subst idx. rewrite H_idx2... }
+      destruct (eq_dec_nat idx idx2) as [H_yes2 | H_no2].
+      { subst idx. rewrite H_idx1... }
+      congruence.
+    - rewrite (addIndices_nth_error_None_implies xs idx H_obs) in H_idx...
+  Qed.
+
+  End LIST_SWAP.
 
   Global Ltac repeat_rewrite :=
     simpl in *;
