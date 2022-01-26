@@ -1787,22 +1787,22 @@ Module MyUtilities.
         exact (lt_elim_S_n_lt_S_m idx' (length xs) H_lt).
   Defined.
 
-  Definition listExt_view {A : Type} (xs : list A) : forall idx : nat, {ret : option A | idx < length xs -> ret <> None} :=
+  Definition listEXT_view {A : Type} (xs : list A) : forall idx : nat, {ret : option A | idx < length xs -> ret <> None} :=
     fun idx : nat =>
     exist _ (nth_error xs idx) (good_idx_implies_nth_error_ne_None xs idx)
   .
 
-  Definition list_ext_view {A : Type} (xs : list A) : nat -> option A :=
+  Definition listExt_view {A : Type} (xs : list A) : nat -> option A :=
     fun idx : nat =>
-    proj1_sig (listExt_view xs idx)
+    proj1_sig (listEXT_view xs idx)
   .
 
-  Lemma list_ext_view_eq_iff {A : Type} :
+  Lemma list_extensionality {A : Type} :
     forall xs1 : list A,
     forall xs2 : list A,
-    xs1 = xs2 <-> (forall n : nat, list_ext_view xs1 n = list_ext_view xs2 n).
+    xs1 = xs2 <-> (forall n : nat, listExt_view xs1 n = listExt_view xs2 n).
   Proof with discriminate || eauto.
-    unfold list_ext_view, listExt_view; simpl.
+    cbn.
     induction xs1 as [ | x1 xs1 IH]; intros [ | x2 xs2]; simpl; split...
     - intros H_false.
       contradiction (Some_ne_None x2).
@@ -1820,22 +1820,35 @@ Module MyUtilities.
       exact (fun n => H_eq (S n)).
   Qed.
 
-  Lemma list_ext_view_map {A : Type} {B : Type} (f : A -> B) :
-    forall xs : list A,
-    (forall n : nat, list_ext_view (map f xs) n = (fmapMaybe f) (list_ext_view xs n)).
+  Lemma listExt_map {A : Type} {B : Type} (f : A -> B) (xs : list A) :
+    (forall n : nat, listExt_view (map f xs) n = (fmapMaybe f) (listExt_view xs n)).
   Proof with discriminate || eauto.
-    unfold list_ext_view, listExt_view; simpl.
+    cbn.
     induction xs as [ | x xs IH]; simpl.
     - intros [ | n']...
     - intros [ | n']; simpl...
   Qed.
 
-  Definition listEXT_view {A : Type} (xs : list A) : forall idx : nat, idx < length xs -> A :=
+  Definition safeLookat {A : Type} (xs : list A) : forall idx : nat, idx < length xs -> A :=
     fun idx : nat =>
-    match listExt_view xs idx with
+    match listEXT_view xs idx with
     | exist _ xr H_xr => fun H_idx : idx < length xs => fromJust xr (H_xr H_idx)
     end
   .
+
+  Lemma listExt_safeLookat {A : Type} (xs : list A) :
+    forall n : nat,
+    listExt_view xs n =
+    match n_le_m_or_m_lt_n_holds_for_any_n_and_any_m (length xs) n with
+    | left H_le => None
+    | right H_lt => Some (safeLookat xs n H_lt)
+    end.
+  Proof with eauto.
+    intros n; cbn.
+    destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m (length xs)) as [H_le | H_lt].
+    - apply nth_error_None...
+    - apply (proj2 (fromJust_spec (nth_error xs n) (fromJust (nth_error xs n) (good_idx_implies_nth_error_ne_None xs n H_lt))))...
+  Qed.
 
   End LIST_EXTENSIONALITY.
 
@@ -1935,12 +1948,11 @@ Module MyUtilities.
     nth_error xs idx = Some w /\ idx = n.
   Proof.
     intros xs idx n w.
-    assert (claim1 : forall n : nat, list_ext_view (map fst (addIndices xs)) n = list_ext_view (xs) n).
-    { apply list_ext_view_eq_iff.
+    assert (claim1 : forall n : nat, listExt_view (map fst (addIndices xs)) n = listExt_view (xs) n).
+    { apply list_extensionality.
       exact (addIndices_map_fst xs).
     }
-    unfold list_ext_view in claim1.
-    simpl in claim1.
+    cbn in claim1.
     intros H_Some.
     assert (claim2 : idx < length xs).
     { rewrite <- addIndices_length.
@@ -1964,12 +1976,11 @@ Module MyUtilities.
     nth_error xs idx = None.
   Proof.
     intros xs idx.
-    assert (claim1 : forall n : nat, list_ext_view (map fst (addIndices xs)) n = list_ext_view (xs) n).
-    { apply list_ext_view_eq_iff.
+    assert (claim1 : forall n : nat, listExt_view (map fst (addIndices xs)) n = listExt_view (xs) n).
+    { apply list_extensionality.
       exact (addIndices_map_fst xs).
     }
-    unfold list_ext_view in claim1.
-    simpl in claim1.
+    cbn in claim1.
     intros H_None.
     apply nth_error_None.
     rewrite <- addIndices_length.
@@ -1977,7 +1988,7 @@ Module MyUtilities.
     exact H_None.
   Qed.
 
-  Definition list_swap_aux (xs : list A) (idx1 : nat) (idx2 : nat) (default_val : A) (idx : nat) : A :=
+  Definition listSwap_aux (xs : list A) (idx1 : nat) (idx2 : nat) (default_val : A) (idx : nat) : A :=
     let x1 : A := maybe default_val id (nth_error xs idx1) in
     let x2 : A := maybe default_val id (nth_error xs idx2) in
     if eq_dec_nat idx idx1 then x2 else
@@ -1985,34 +1996,34 @@ Module MyUtilities.
     default_val
   .
 
-  Definition list_swap (idx1 : nat) (idx2 : nat) : list A -> list A :=
+  Definition listSwap (idx1 : nat) (idx2 : nat) : list A -> list A :=
     fun xs : list A =>
-    map (uncurry (list_swap_aux xs idx1 idx2)) (addIndices xs)
+    map (uncurry (listSwap_aux xs idx1 idx2)) (addIndices xs)
   .
 
-  Lemma list_swap_length :
+  Lemma listSwap_length :
     forall idx1 : nat,
     forall idx2 : nat,
     forall xs : list A,
-    length (list_swap idx1 idx2 xs) = length xs.
+    length (listSwap idx1 idx2 xs) = length xs.
   Proof.
-    unfold list_swap; intros idx1 idx2 xs.
+    unfold listSwap; intros idx1 idx2 xs.
     transitivity (length (addIndices xs)); [apply map_length | apply addIndices_length].
   Qed.
 
-  Lemma list_swap_ext :
+  Lemma listExt_swap :
     forall idx1 : nat,
     forall idx2 : nat,
     forall xs : list A,
     forall idx : nat,
-    list_ext_view (list_swap idx1 idx2 xs) idx =
-    fmapMaybe (uncurry (list_swap_aux xs idx1 idx2)) (list_ext_view (addIndices xs) idx).
+    listExt_view (listSwap idx1 idx2 xs) idx =
+    fmapMaybe (uncurry (listSwap_aux xs idx1 idx2)) (listExt_view (addIndices xs) idx).
   Proof.
     intros idx1 idx2 xs idx.
-    exact (list_ext_view_map (uncurry (list_swap_aux xs idx1 idx2)) (addIndices xs) idx).
+    exact (listExt_map (uncurry (listSwap_aux xs idx1 idx2)) (addIndices xs) idx).
   Qed.
 
-  Theorem list_swap_main_property :
+  Theorem listSwap_main_property :
     forall xs : list A,
     forall idx1 : nat,
     forall val1 : A,
@@ -2023,18 +2034,16 @@ Module MyUtilities.
     forall idx : nat,
     forall val : A,
     nth_error xs idx = Some val ->
-    nth_error (list_swap idx1 idx2 xs) idx =
+    nth_error (listSwap idx1 idx2 xs) idx =
     if eq_dec_nat idx idx1 then Some val2 else
     if eq_dec_nat idx idx2 then Some val1 else
     Some val.
   Proof with discriminate || eauto.
     intros xs idx1 val1 H_idx1 idx2 val2 H_idx2 idx val H_idx.
-    assert (claim1 := list_swap_ext idx1 idx2 xs idx).
-    unfold list_ext_view at 1 in claim1.
-    unfold listExt_view in claim1.
-    simpl in claim1.
+    assert (claim1 := listExt_swap idx1 idx2 xs idx).
+    cbn in claim1.
     rewrite claim1.
-    unfold fmapMaybe, list_ext_view, list_swap_aux; simpl.
+    unfold fmapMaybe, listExt_view, listSwap_aux; simpl.
     destruct (nth_error (addIndices xs) idx) as [[x n] |] eqn: H_obs; simpl.
     - destruct (addIndices_nth_error_Some_implies xs idx n x H_obs) as [claim2 claim3]; subst n.
       destruct (eq_dec_nat idx idx1) as [H_yes1 | H_no1].
