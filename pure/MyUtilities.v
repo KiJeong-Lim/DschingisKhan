@@ -1770,7 +1770,7 @@ Module MyUtilities.
     end
   .
 
-  Section LIST_EXTENSION.
+  Section LIST_EXTENSIONALITY.
 
   Fixpoint good_idx_implies_nth_error_ne_None {A : Type} (xs : list A) {struct xs} :
     forall idx : nat,
@@ -1837,7 +1837,7 @@ Module MyUtilities.
     end
   .
 
-  End LIST_EXTENSION.
+  End LIST_EXTENSIONALITY.
 
   Section LIST_SWAP.
 

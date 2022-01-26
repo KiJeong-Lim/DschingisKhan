@@ -50,7 +50,7 @@ Module MyCategories.
     }
   .
 
-  Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
+  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
     { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B \to C,
       forall f2 : A \to B,
