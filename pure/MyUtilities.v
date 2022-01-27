@@ -1939,53 +1939,27 @@ Module MyUtilities.
     }
   Qed.
 
-  Lemma addIndices_nth_error_Some_implies :
-    forall xs : list A,
+  Lemma listExt_addIndices (xs : list A) :
     forall idx : nat,
-    forall n : nat,
-    forall w : A,
-    nth_error (addIndices xs) idx = Some (w, n) ->
-    nth_error xs idx = Some w /\ idx = n.
-  Proof.
-    intros xs idx n w.
-    assert (claim1 : forall n : nat, listExt_view (map fst (addIndices xs)) n = listExt_view (xs) n).
-    { apply list_extensionality.
-      exact (addIndices_map_fst xs).
-    }
-    cbn in claim1.
-    intros H_Some.
-    assert (claim2 : idx < length xs).
-    { rewrite <- addIndices_length.
-      apply nth_error_Some.
-      rewrite H_Some.
-      discriminate.
-    }
-    assert (claim3 := proj1 (addIndices_map_snd xs idx) claim2).
-    split.
-    - rewrite <- claim1.
-      exact (map_nth_error fst idx (addIndices xs) H_Some).
-    - rewrite ((map_nth_error snd idx (addIndices xs) H_Some)) in claim3.
-      apply injSome in claim3; simpl in claim3.
-      congruence.
-  Qed.
-
-  Lemma addIndices_nth_error_None_implies :
-    forall xs : list A,
-    forall idx : nat,
-    nth_error (addIndices xs) idx = None ->
-    nth_error xs idx = None.
-  Proof.
-    intros xs idx.
-    assert (claim1 : forall n : nat, listExt_view (map fst (addIndices xs)) n = listExt_view (xs) n).
-    { apply list_extensionality.
-      exact (addIndices_map_fst xs).
-    }
-    cbn in claim1.
-    intros H_None.
-    apply nth_error_None.
-    rewrite <- addIndices_length.
-    apply nth_error_None.
-    exact H_None.
+    match listExt_view (addIndices xs) idx with
+    | None => idx >= length xs
+    | Some (x, n) => listExt_view xs idx = Some x /\ idx = n
+    end.
+  Proof with discriminate || eauto.
+    intros idx; cbn.
+    destruct (nth_error (addIndices xs) idx) as [[x n] | ] eqn: H_obs_addIndices.
+    - assert (H_nth : nth idx (addIndices xs) (x, n) = (x, n)) by now apply nth_error_nth.
+      assert (claim1 := (map_nth fst (addIndices xs) (x, n) idx)).
+      assert (claim2 := (map_nth snd (addIndices xs) (x, n) idx)).
+      rewrite H_nth in claim1, claim2; cbn in claim1, claim2.
+      rewrite addIndices_map_fst in claim1.
+      assert (H_length : idx < length xs).
+      { rewrite <- addIndices_length. apply nth_error_Some. rewrite H_obs_addIndices... }
+      assert (H_n_eq_idx := proj1 (addIndices_map_snd xs idx) H_length).
+      apply nth_error_nth with (d := n) in H_n_eq_idx.
+      rewrite claim2 in H_n_eq_idx.
+      split... rewrite <- claim1; apply nth_error_nth'...
+    - rewrite <- addIndices_length; apply nth_error_None...
   Qed.
 
   Definition listSwap_aux (xs : list A) (idx1 : nat) (idx2 : nat) (default_val : A) (idx : nat) : A :=
@@ -2023,35 +1997,38 @@ Module MyUtilities.
     exact (listExt_map (uncurry (listSwap_aux xs idx1 idx2)) (addIndices xs) idx).
   Qed.
 
-  Theorem listSwap_main_property :
+  Theorem listSwap_main_spec :
     forall xs : list A,
     forall idx1 : nat,
     forall val1 : A,
-    nth_error xs idx1 = Some val1 ->
+    listExt_view xs idx1 = Some val1 ->
     forall idx2 : nat,
     forall val2 : A,
-    nth_error xs idx2 = Some val2 ->
+    listExt_view xs idx2 = Some val2 ->
     forall idx : nat,
     forall val : A,
-    nth_error xs idx = Some val ->
-    nth_error (listSwap idx1 idx2 xs) idx =
-    if eq_dec_nat idx idx1 then Some val2 else
-    if eq_dec_nat idx idx2 then Some val1 else
-    Some val.
+    listExt_view xs idx = Some val ->
+    match listExt_view (listSwap idx1 idx2 xs) idx with
+    | None => False
+    | Some x => x =
+      if eq_dec_nat idx idx1 then val2 else
+      if eq_dec_nat idx idx2 then val1 else
+      val
+    end.
   Proof with discriminate || eauto.
-    intros xs idx1 val1 H_idx1 idx2 val2 H_idx2 idx val H_idx.
+    cbn; intros xs idx1 val1 H_idx1 idx2 val2 H_idx2 idx val H_idx.
     assert (claim1 := listExt_swap idx1 idx2 xs idx).
-    cbn in claim1.
-    rewrite claim1.
+    assert (claim2 := listExt_addIndices xs idx).
+    cbn in claim1, claim2; rewrite claim1.
     unfold fmapMaybe, listExt_view, listSwap_aux; simpl.
-    destruct (nth_error (addIndices xs) idx) as [[x n] |] eqn: H_obs; simpl.
-    - destruct (addIndices_nth_error_Some_implies xs idx n x H_obs) as [claim2 claim3]; subst n.
+    destruct (nth_error (addIndices xs) idx) as [[x n] |] eqn: H_obs_addIndices; simpl in *.
+    - destruct claim2 as [H_obs_xs H_obs_idx]; subst n.
       destruct (eq_dec_nat idx idx1) as [H_yes1 | H_no1].
       { subst idx. rewrite H_idx2... }
       destruct (eq_dec_nat idx idx2) as [H_yes2 | H_no2].
       { subst idx. rewrite H_idx1... }
       congruence.
-    - rewrite (addIndices_nth_error_None_implies xs idx H_obs) in H_idx...
+    - apply nth_error_None in claim2; rewrite claim2 in H_idx...
   Qed.
 
   End LIST_SWAP.
