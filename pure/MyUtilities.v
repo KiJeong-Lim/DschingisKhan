@@ -2096,6 +2096,12 @@ Module MyUtilities.
       congruence.
   Qed.
 
+  Lemma fold_left_last {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) (xs : list A) (x0 : A) :
+    fold_left f (xs ++ [x0]) z0 = f (fold_left f xs z0) x0.
+  Proof with eauto.
+    revert z0 x0; induction xs as [ | x xs IH]; simpl...
+  Qed.
+
   Global Ltac repeat_rewrite :=
     simpl in *;
     first
