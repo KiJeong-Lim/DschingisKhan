@@ -2033,6 +2033,69 @@ Module MyUtilities.
 
   End LIST_SWAP.
 
+  Polymorphic Lemma list_rev_cons {A : Type} :
+    forall xs : list A,
+    forall x : A,
+    rev (xs ++ [x]) = x :: rev xs.
+  Proof.
+    induction xs as [ | x xs IH]; intros y; simpl.
+    - exact (eq_reflexivity [y]).
+    - exact (eq_congruence (fun l : list A => l ++ [x]) (rev (xs ++ [y])) (y :: rev xs) (IH y)).
+  Defined.
+
+  Polymorphic Definition list_rev_idempotent {A : Type} (xs : list A) :
+    rev (rev xs) = xs.
+  Proof.
+    induction xs as [ | x xs IH]; simpl.
+    - exact (eq_reflexivity []).
+    - exact (eq_transitivity (rev (rev xs ++ [x])) (x :: rev (rev xs)) (x :: xs) (list_rev_cons (rev xs) x) (eq_congruence (fun l : list A => x :: l) (rev (rev xs)) xs IH)).
+  Defined.
+
+  Polymorphic Definition list_reversed_induction {A : Type} {phi : list A -> Type}
+    (H_init : phi [])
+    (H_step : forall xs : list A, forall x : A, phi xs -> phi (xs ++ [x]))
+    : forall xs : list A, phi xs.
+  Proof.
+    intros xs.
+    apply (@eq_rect (list A) (rev (rev xs)) phi).
+    - exact (@list_rect A (fun rs : list A => phi (rev rs)) H_init (fun r : A => fun rs : list A => fun IH : phi (rev rs) => H_step (rev rs) r IH) (rev xs)).
+    - exact (@list_rev_idempotent A xs).
+  Defined.
+
+  Polymorphic Definition list_rev_inj {A : Type} (lhs : list A) (rhs : list A)
+    (H_rev_eq : rev lhs = rev rhs)
+    : lhs = rhs.
+  Proof.
+    rewrite <- list_rev_idempotent with (xs := lhs).
+    rewrite <- list_rev_idempotent with (xs := rhs).
+    apply eq_congruence; exact H_rev_eq.
+  Qed.
+
+  Polymorphic Lemma last_inj {A : Type} :
+    forall xs1 : list A,
+    forall xs2 : list A,
+    forall x1 : A,
+    forall x2 : A,
+    xs1 ++ [x1] = xs2 ++ [x2] ->
+    xs1 = xs2 /\ x1 = x2.
+  Proof.
+    intros xs1 xs2 x1 x2 H_eq.
+    enough (to_show : x1 :: rev xs1 = x2 :: rev xs2).
+    - split.
+      { apply eq_congruence with (f := fun xs : list A => tail xs) in to_show.
+        apply list_rev_inj; exact to_show.
+      }
+      { apply eq_congruence with (f := fun xs : list A => head xs) in to_show.
+        apply injSome; exact to_show.
+      }
+    - rewrite <- list_rev_idempotent with (xs := x1 :: rev xs1).
+      rewrite <- list_rev_idempotent with (xs := x2 :: rev xs2).
+      simpl.
+      rewrite list_rev_idempotent with (xs := xs1).
+      rewrite list_rev_idempotent with (xs := xs2).
+      congruence.
+  Qed.
+
   Global Ltac repeat_rewrite :=
     simpl in *;
     first

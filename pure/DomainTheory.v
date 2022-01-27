@@ -767,6 +767,12 @@ Module PowerSetCoLa.
 
   Context {A : Type}.
 
+  Corollary nu_elim_iff (P : ensemble A) (F : ensemble A >=> ensemble A) :
+    isSubsetOf (proj1_sig (nu F)) P <-> (forall X : ensemble A, isSubsetOf X (proj1_sig F X) -> isSubsetOf X P).
+  Proof with eauto with *.
+    apply (nu_isSupremum F P)...
+  Qed.
+
   Let MyUnion : ensemble A -> ensemble A -> ensemble A :=
     fun X : ensemble A =>
     fun Y : ensemble A =>
@@ -1001,11 +1007,17 @@ Module PowerSetCoLa.
       enough (claim2 : Y =< PaCo (proj1_sig F) (MyUnion X Y)) by apply (proj2 (PaCo_acc (proj1_sig F) (proj2_sig F) X Y) claim2)...
   Qed.
 
-  Theorem nu_elim_iff (P : ensemble A) (F : ensemble A >=> ensemble A) :
-    isSubsetOf (proj1_sig (nu F)) P <-> (forall X : ensemble A, isSubsetOf X (proj1_sig F X) -> isSubsetOf X P).
-  Proof with eauto with *.
-    apply (nu_isSupremum F P)...
+  Lemma paco_isMonotonic :
+    isMonotonicMap paco.
+  Proof.
+    assert (claim1 := ParameterizedGreatestFixedpoint_isMonotonic (D := ensemble A)).
+    intros f1 f2 H_le.
+    do 2 rewrite paco_spec; exact (claim1 f1 f2 H_le).
   Qed.
+
+  Definition paco' : (ensemble A >=> ensemble A) >=> (ensemble A >=> ensemble A) :=
+    exist isMonotonicMap paco paco_isMonotonic
+  .
 
   End PACO.
 
