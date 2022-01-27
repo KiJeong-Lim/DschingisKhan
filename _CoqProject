@@ -7,6 +7,7 @@ pure/DomainTheory.v #
 pure/UntypedLambdaCalculus.v #
 pure/AczelSet.v #
 pure/CBA.v #
+pure/Data.v #
 #
 classical/ExclusiveMiddle.v #
 classical/DomainTheory.v #
