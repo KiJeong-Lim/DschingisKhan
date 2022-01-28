@@ -262,11 +262,12 @@ Module BinTree.
     - constructor 3; apply IHX1; exact X2.
   Defined.
 
-  Fixpoint run_hole {Elem : Type} (c : btctx Elem) (sub_t : bintree Elem) : bintree Elem :=
+  Definition run_hole {Elem : Type} (sub_t : bintree Elem) : btctx Elem -> bintree Elem :=
+    fix run_hole_fix (c : btctx Elem) : bintree Elem :=
     match c with
     | Ctx_hole => sub_t
-    | Ctx_left c_l e t_r => BT_node (run_hole c_l sub_t) e t_r
-    | Ctx_right t_l e c_r => BT_node t_l e (run_hole c_r sub_t)
+    | Ctx_left c_l e t_r => BT_node (run_hole_fix c_l) e t_r
+    | Ctx_right t_l e c_r => BT_node t_l e (run_hole_fix c_r)
     end
   .
 
@@ -274,7 +275,7 @@ Module BinTree.
     forall root : bintree Elem,
     forall c : btctx Elem,
     forall sub_t : bintree Elem,
-    btctx_spec sub_t c root <-> run_hole c sub_t = root.
+    btctx_spec sub_t c root <-> run_hole sub_t c = root.
   Proof.
     intros root c sub_t; split.
     - intros X; induction X; simpl.
