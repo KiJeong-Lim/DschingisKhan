@@ -169,13 +169,10 @@ Module BinTree.
   Global Arguments BT_node {Elem}.
 
   Definition bintreeExt_view {Elem : Type} : bintree Elem -> index_t -> option Elem :=
-    fix bintreeExt_view_fix (t : bintree Elem) {struct t} : index_t -> option Elem :=
+    fix bintreeExt_view_fix (t : bintree Elem) (idx : index_t) {struct t} : option Elem :=
     match t with
-    | BT_null =>
-      fun idx : list dir_t =>
-      None
+    | BT_null => None
     | BT_node t_l e t_r =>
-      fun idx : list dir_t =>
       match idx with
       | [] => Some e
       | Dir_left :: idx' => bintreeExt_view_fix t_l idx'
@@ -183,5 +180,112 @@ Module BinTree.
       end
     end
   .
+
+  Inductive btctx (Elem : Type) : Type :=
+  | Ctx_hole : btctx Elem
+  | Ctx_left (c_l : btctx Elem) (e : Elem) (t_r : bintree Elem) : btctx Elem
+  | Ctx_right (t_l : bintree Elem) (e : Elem) (c_r : btctx Elem) : btctx Elem
+  .
+
+  Global Arguments Ctx_hole {Elem}.
+  Global Arguments Ctx_left {Elem}.
+  Global Arguments Ctx_right {Elem}.
+
+  Definition combine_ctx {Elem : Type} : btctx Elem -> btctx Elem -> btctx Elem :=
+    fix combine_ctx_fix (c : btctx Elem) (c' : btctx Elem) : btctx Elem :=
+    match c with
+    | Ctx_hole => c'
+    | Ctx_left c_l e t_r => Ctx_left (combine_ctx_fix c_l c') e t_r
+    | Ctx_right t_l e c_r => Ctx_right t_l e (combine_ctx_fix c_r c')
+    end
+  .
+
+  Lemma combine_ctx_hole_l {Elem : Type} :
+    forall c1 : btctx Elem,
+    combine_ctx Ctx_hole c1 = c1.
+  Proof with eauto.
+    reflexivity.
+  Qed.
+
+  Lemma combine_ctx_hole_r {Elem : Type} :
+    forall c1 : btctx Elem,
+    combine_ctx c1 Ctx_hole = c1.
+  Proof with eauto.
+    induction c1 as [ | c_l IH e t_r | t_l e c_r IH]; simpl...
+    all: rewrite IH...
+  Qed.
+
+  Lemma combine_ctx_assoc {Elem : Type} :
+    forall c1 : btctx Elem,
+    forall c2 : btctx Elem,
+    forall c3 : btctx Elem,
+    combine_ctx c1 (combine_ctx c2 c3) = combine_ctx (combine_ctx c1 c2) c3.
+  Proof with eauto.
+    induction c1 as [ | c_l IH e t_r | t_l e c_r IH]; simpl...
+    - intros c2 c3.
+      enough (to_show : (combine_ctx c_l (combine_ctx c2 c3)) = (combine_ctx (combine_ctx c_l c2) c3))...
+      rewrite to_show...
+    - intros c2 c3.
+      enough (to_show : (combine_ctx c_r (combine_ctx c2 c3)) = (combine_ctx (combine_ctx c_r c2) c3))...
+      rewrite to_show...
+  Qed.
+
+  Inductive btctx_spec {Elem : Type} (sub_t : bintree Elem) : btctx Elem -> bintree Elem -> Prop :=
+  | CtxSpec_hole
+    : btctx_spec sub_t (Ctx_hole) sub_t
+  | CtxSpec_left c_l t_l e t_r
+    (H_btctx_spec_l : btctx_spec sub_t c_l t_l)
+    : btctx_spec sub_t (Ctx_left c_l e t_r) (BT_node t_l e t_r)
+  | CtxSpec_right c_r t_l e t_r
+    (H_btctx_spec_r : btctx_spec sub_t c_r t_r)
+    : btctx_spec sub_t (Ctx_right t_l e c_r) (BT_node t_l e t_r)
+  .
+
+  Lemma btctx_spec_refl {Elem : Type} (root : bintree Elem) :
+    btctx_spec root (Ctx_hole) root.
+  Proof.
+    constructor 1.
+  Defined.
+
+  Lemma btctx_spec_trans {Elem : Type} (root : bintree Elem) :
+    forall t1 : bintree Elem,
+    forall c1 : btctx Elem,
+    btctx_spec t1 c1 root ->
+    forall t2 : bintree Elem,
+    forall c2 : btctx Elem,
+    btctx_spec t2 c2 t1 ->
+    btctx_spec t2 (combine_ctx c1 c2) root.
+  Proof.
+    intros t1 c1 X1; induction X1; intros t2 c2 X2; simpl.
+    - exact X2.
+    - constructor 2; apply IHX1; exact X2.
+    - constructor 3; apply IHX1; exact X2.
+  Defined.
+
+  Fixpoint run_hole {Elem : Type} (c : btctx Elem) (sub_t : bintree Elem) : bintree Elem :=
+    match c with
+    | Ctx_hole => sub_t
+    | Ctx_left c_l e t_r => BT_node (run_hole c_l sub_t) e t_r
+    | Ctx_right t_l e c_r => BT_node t_l e (run_hole c_r sub_t)
+    end
+  .
+
+  Lemma btctx_spec_run_hole {Elem : Type} :
+    forall root : bintree Elem,
+    forall c : btctx Elem,
+    forall sub_t : bintree Elem,
+    btctx_spec sub_t c root <-> run_hole c sub_t = root.
+  Proof.
+    intros root c sub_t; split.
+    - intros X; induction X; simpl.
+      + reflexivity.
+      + rewrite IHX; reflexivity.
+      + rewrite IHX; reflexivity.
+    - intros H_eq; subst root; revert sub_t.
+      induction c as [ | c_l IH e t_r | t_l e c_r IH]; simpl; intros sub_t.
+      + constructor 1.
+      + constructor 2; exact (IH sub_t).
+      + constructor 3; exact (IH sub_t).
+  Qed.
 
 End BinTree.
