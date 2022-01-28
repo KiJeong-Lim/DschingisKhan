@@ -38,11 +38,10 @@ Module BinTree.
 
   Lemma decoding_index :
     forall code : nat,
-    code <> 0 ->
-    {idx : index_t | encoding_index idx = code}.
+    {idx : index_t | code <> 0 -> encoding_index idx = code}.
   Proof with lia || eauto.
-    strong_rec. intros [ | n']; [contradiction | set (n := S n')].
-    destruct n' as [ | n'']; intros acc_hyp H_n_ne_0.
+    strong_rec. intros [ | n']; [exists ([]); contradiction | set (n := S n')].
+    destruct n' as [ | n'']; intros acc_hyp.
     - exists ([])...
     - assert (claim1 := Nat.div_mod n 2 (S_eq_0_elim 1)).
       destruct (Nat.mod_bound_pos n 2 (le_intro_0_le_n n) (le_S 1 1 (le_n 1))) as [claim2 claim3].
@@ -50,7 +49,7 @@ Module BinTree.
       { apply le_implies_leq... }
       assert (claim5 : n / 2 <> n)...
       assert (claim6 : n / 2 <> 0)...
-      destruct (acc_hyp (n / 2) claim4 claim5 claim6) as [idx H_idx].
+      destruct (acc_hyp (n / 2) claim4 claim5) as [idx H_idx].
       destruct (n mod 2) as [ | [ | n_mod_2]] eqn: H_obs...
       { exists (Dir_left :: idx); rewrite encoding_index_unfold... }
       { exists (Dir_right :: idx); rewrite encoding_index_unfold... }
@@ -150,8 +149,8 @@ Module BinTree.
     recover sub_t c =
     match c with
     | [] => sub_t
-    | (Dir_left, (e, t_r)) :: c' => recover (BT_node sub_t e t_r) c'
-    | (Dir_right, (e, t_l)) :: c' => recover (BT_node t_l e sub_t) c'
+    | (Dir_left, (e, t_r)) :: c_l => recover (BT_node sub_t e t_r) c_l
+    | (Dir_right, (e, t_l)) :: c_r => recover (BT_node t_l e sub_t) c_r
     end.
   Proof with eauto.
     unfold recover at 1; rewrite fold_left_rev_right with (f := recover_step).
