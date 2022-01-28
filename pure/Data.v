@@ -93,7 +93,7 @@ Module BinTree.
   .
 
   Definition encoding_index (idx : index_t) : nat :=
-    fold_right (dir_t_rec (fun _ => nat -> nat) (fun acc : nat => 2 * acc) (fun acc : nat => 2 * acc + 1)) 1 (rev idx)
+    fold_left (fun acc : nat => dir_t_rec (fun _ => nat) (2 * acc) (2 * acc + 1)) idx 1
   .
 
   Lemma encoding_index_last (idx : index_t) (d : dir_t) :
@@ -104,7 +104,7 @@ Module BinTree.
     end.
   Proof.
     unfold encoding_index.
-    rewrite list_rev_cons.
+    rewrite fold_left_last.
     destruct d; reflexivity.
   Qed.
 
@@ -160,17 +160,28 @@ Module BinTree.
 
   End INDICES_OF_BINARY_TREES.
 
-  Section BINARY_TREES.
-
-  Variable Elem : Set.
-
-  Inductive bintree : Set :=
-  | BT_null : bintree
-  | BT_node (lchild : bintree) (element : Elem) (rchild : bintree) : bintree
+  Inductive bintree (Elem : Type) : Type :=
+  | BT_null : bintree Elem
+  | BT_node (lchild : bintree Elem) (element : Elem) (rchild : bintree Elem) : bintree Elem
   .
 
-  End BINARY_TREES.
+  Global Arguments BT_null {Elem}.
+  Global Arguments BT_node {Elem}.
 
-  Global Arguments bintree {Elem}.
+  Definition bintreeExt_view {Elem : Type} : bintree Elem -> index_t -> option Elem :=
+    fix bintreeExt_view_fix (t : bintree Elem) {struct t} : index_t -> option Elem :=
+    match t with
+    | BT_null =>
+      fun idx : list dir_t =>
+      None
+    | BT_node t_l e t_r =>
+      fun idx : list dir_t =>
+      match idx with
+      | [] => Some e
+      | Dir_left :: idx' => bintreeExt_view_fix t_l idx'
+      | Dir_right :: idx' => bintreeExt_view_fix t_r idx'
+      end
+    end
+  .
 
 End BinTree.
