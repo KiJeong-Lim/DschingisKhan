@@ -423,22 +423,24 @@ Module FunFacts.
 
   End WELL_FOUNDED_RECURSION.
 
-  Polymorphic Lemma well_founded_intro_by_lt {A : Type} (f : A -> nat) (R : A -> A -> Prop) :
-    (forall x y : A, R x y -> f x < f y) ->
-    (forall x : A, acc R x).
+  Polymorphic Definition well_founded_recursion_with_nat_lt {A : Type}
+    (f : A -> nat)
+    (R : A -> A -> Prop)
+    (R_spec : forall tree1 : A, forall tree2 : A, R tree1 tree2 -> f tree1 < f tree2)
+    (phi : A -> Prop)
+    (ACC_HYP : forall tree : A, (forall subtree : A, R subtree tree -> phi subtree) -> phi tree)
+    : forall root : A, phi root.
   Proof.
-    intros R_spec.
-    enough (to_show : forall rank : nat, forall x : A, f x < rank -> acc R x).
+    revert phi ACC_HYP.
+    enough (it_is_sufficient_to_show : forall rank : nat, forall x : A, f x < rank -> acc R x).
+    enough (R_well_founded : forall root : A, acc R root).
+    - exact (noetherian_recursion R R_well_founded).
     - intros root.
-      apply to_show with (rank := 1 + f root).
+      apply it_is_sufficient_to_show with (rank := 1 + f root).
       exact (le_reflexivity).
-    - induction rank as [ | rank IH].
-      + intros tree H_lt.
-        exact (lt_elim_n_lt_0 (f tree) H_lt).
-      + intros tree H_lt.
-        constructor.
-        intros subtree H_R.
-        apply IH.
+    - induction rank as [ | rank IH]; intros tree H_lt.
+      + exact (lt_elim_n_lt_0 (f tree) H_lt).
+      + constructor; intros subtree H_R; apply IH.
         exact (le_transitivity (R_spec subtree tree H_R) (le_elim_S_n_le_m (f tree) (1 + rank) H_lt)).
   Defined.
 
