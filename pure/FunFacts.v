@@ -405,10 +405,10 @@ Module FunFacts.
 
   Local Polymorphic Instance LT_Irreflexive :
     Irreflexive LT.
-  Proof with eauto with *.
-    intros tree.
+  Proof.
+    intros root.
     unfold complement.
-    induction (LT_wf tree) as [tree H_acc IH].
+    induction (LT_wf root) as [tree H_acc IH].
     now assert (claim1 := IH tree); firstorder.
   Qed.
 
@@ -422,5 +422,24 @@ Module FunFacts.
   Defined.
 
   End WELL_FOUNDED_RECURSION.
+
+  Polymorphic Lemma well_founded_intro_by_lt {A : Type} (f : A -> nat) (R : A -> A -> Prop) :
+    (forall x y : A, R x y -> f x < f y) ->
+    (forall x : A, acc R x).
+  Proof.
+    intros R_spec.
+    enough (to_show : forall rank : nat, forall x : A, f x < rank -> acc R x).
+    - intros root.
+      apply to_show with (rank := 1 + f root).
+      exact (le_reflexivity).
+    - induction rank as [ | rank IH].
+      + intros tree H_lt.
+        exact (lt_elim_n_lt_0 (f tree) H_lt).
+      + intros tree H_lt.
+        constructor.
+        intros subtree H_R.
+        apply IH.
+        exact (le_transitivity (R_spec subtree tree H_R) (le_elim_S_n_le_m (f tree) (1 + rank) H_lt)).
+  Defined.
 
 End FunFacts.
