@@ -527,7 +527,7 @@ Module BasicPosetTheory.
   Definition le_PartialOrder : @PartialOrder nat (@eq nat) (@eq_equivalence nat) le le_PreOrder :=
     fun n1 : nat =>
     fun n2 : nat =>
-    conj (eq_ind n1 (relation_conjunction le (flip le) n1) (conj (@le_reflexivity n1) (@le_reflexivity n1)) n2) (fun H : relation_conjunction le (flip le) n1 n2 => @le_asymmetry n1 n2 (proj1 H) (proj2 H))
+    conj (eq_ind n1 (relation_conjunction le (flip le) n1) (conj (@le_reflexivity n1) (@le_reflexivity n1)) n2) (fun H : relation_conjunction le (flip le) n1 n2 => @le_antisymmetry n1 n2 (proj1 H) (proj2 H))
   .
 
   Global Instance nat_isPoset : isPoset nat :=

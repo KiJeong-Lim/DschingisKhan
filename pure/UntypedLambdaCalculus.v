@@ -816,7 +816,7 @@ Module UntypedLamdbdaCalculus.
     ).
     assert (lemma1 := n1_le_max_n1_n2).
     assert (lemma2 := n2_le_max_n1_n2).
-    assert (lemma3 := @le_asymmetry).
+    assert (lemma3 := @le_antisymmetry).
     assert (lemma4 := le_intro_S_n_le_S_m).
     enough (claim1 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N <= getRank M).
     enough (claim2 : forall N : tm, forall M : tm, isSubtermOf N M -> getRank N = getRank M -> N = M).

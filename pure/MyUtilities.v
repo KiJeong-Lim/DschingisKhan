@@ -410,7 +410,7 @@ Module MyUtilities.
     end
   .
 
-  Definition le_asymmetry {n1 : nat} {n2 : nat} : n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
+  Definition le_antisymmetry {n1 : nat} {n2 : nat} : n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
     fun Hle1 : n1 <= n2 =>
     match Hle1 in le _ m return m <= n1 -> n1 = m with
     | le_n _ =>
@@ -1045,7 +1045,7 @@ Module MyUtilities.
     n1 = n2.
   Proof.
     intros n1 n2 Hleq1 Hleq2.
-    apply le_asymmetry.
+    apply le_antisymmetry.
     - exact (leq_implies_le n1 n2 Hleq1).
     - exact (leq_implies_le n2 n1 Hleq2).
   Defined.
