@@ -1205,6 +1205,42 @@ Module MyUtilities.
       apply Nat.div_unique with (r := 0)...
   Qed.
 
+  Lemma positive_odd (n_odd : nat) n :
+    n_odd = 2 * n + 1 <->
+    (n = (n_odd - 1) / 2 /\ n_odd mod 2 = 1 /\ n_odd > 0).
+  Proof with lia || eauto.
+    assert (claim1 := divmod_unique n_odd 2 n 1)...
+  Qed.
+
+  Lemma positive_even (n_even : nat) n :
+    n_even = 2 * n + 2 <->
+    (n = (n_even - 2) / 2 /\ n_even mod 2 = 0 /\ n_even > 0).
+  Proof with lia || eauto.
+    assert (claim1 := divmod_unique (n_even - 2) 2 n 0).
+    split.
+    - intros ?; subst.
+      assert (claim2 : n = (2 * n + 2 - 2 - 0) / 2 /\ 0 = (2 * n + 2 - 2) mod 2)...
+      split.
+      { rewrite (proj1 claim2) at 1. replace (2 * n + 2 - 2 - 0) with (2 * n + 2 - 2)... }
+      split...
+      replace (2 * n + 2) with (2 + n * 2)...
+      rewrite Nat.mod_add...
+    - intros [H_n [H_r H_gt_0]].
+      assert (claim2 : n_even >= 2).
+      { destruct n_even as [ | [ | n_even]]... inversion H_r. }
+      assert (claim3 : n_even = 2 * (n_even / 2) + n_even mod 2).
+      { apply Nat.div_mod... }
+      rewrite H_r, Nat.add_0_r in claim3.
+      assert (claim4 : (n_even - 2) mod 2 = 0).
+      { transitivity (n_even mod 2)...
+        symmetry; replace (n_even) with ((n_even - 2) + 1 * 2) at 1...
+        apply Nat.mod_add... 
+      }
+      assert (claim5 : n_even - 2 = 2 * n + 0 /\ 0 < 2)...
+      apply claim1...
+      replace (n_even - 2 - 0) with (n_even - 2)...
+  Qed.
+
   Lemma plus_a_b_divmod_b :
     forall a : nat,
     forall b : nat,
