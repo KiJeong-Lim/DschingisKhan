@@ -62,7 +62,7 @@ Module BinaryTrees.
   (* = [Dir_left; Dir_left; Dir_left; Dir_right] *)
 *)
 
-  Lemma encodex_inj :
+  Lemma encode_inj :
     forall ds1 : list dir_t,
     forall ds2 : list dir_t,
     encode ds1 = encode ds2 ->
@@ -71,7 +71,7 @@ Module BinaryTrees.
     unfold encode; intros ds1 ds2. do 2 rewrite <- fold_left_rev_right.
     intros H_eq; apply list_rev_inj; revert H_eq.
     generalize (rev ds2) as xs2. generalize (rev ds1) as xs1. clear ds1 ds2.
-    set (myF := fold_right (fun (y : dir_t) (x : nat) => dir_t_rect (fun _ : dir_t => nat) (2 * x + 1) (2 * x + 2) y) 0).
+    set (myF := fold_right (fun y : dir_t => fun x : nat => dir_t_rect (fun _ : dir_t => nat) (2 * x + 1) (2 * x + 2) y) 0).
     induction xs1 as [ | x1 xs1 IH]; destruct xs2 as [ | x2 xs2]; simpl...
     - destruct x2; simpl dir_t_rect...
     - destruct x1; simpl dir_t_rect...
@@ -82,7 +82,7 @@ Module BinaryTrees.
 
   End INDICES_OF_BINARY_TREES.
 
-  Fixpoint option_subtree {A : Type} (ds : list dir_t) (t : bintree A) : option (bintree A) :=
+  Fixpoint option_subtree {A : Type} (ds : list dir_t) (t : bintree A) {struct ds} : option (bintree A) :=
     match ds with
     | [] => Some t
     | d :: ds' =>
