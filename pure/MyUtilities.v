@@ -2133,12 +2133,10 @@ Module MyUtilities.
     intros xs1 xs2 x1 x2 H_eq.
     enough (to_show : x1 :: rev xs1 = x2 :: rev xs2).
     - split.
-      { apply eq_congruence with (f := fun xs : list A => tail xs) in to_show.
+      + apply eq_congruence with (f := fun xs : list A => tail xs) in to_show.
         apply list_rev_inj; exact to_show.
-      }
-      { apply eq_congruence with (f := fun xs : list A => head xs) in to_show.
+      + apply eq_congruence with (f := fun xs : list A => head xs) in to_show.
         apply injSome; exact to_show.
-      }
     - rewrite <- list_rev_idempotent with (xs := x1 :: rev xs1).
       rewrite <- list_rev_idempotent with (xs := x2 :: rev xs2).
       simpl.
