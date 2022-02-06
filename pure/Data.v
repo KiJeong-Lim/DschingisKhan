@@ -30,10 +30,10 @@ Module BinaryTrees.
     encode ds1 = encode ds2 ->
     ds1 = ds2.
   Proof with lia || eauto.
-    unfold encode; intros ds1 ds2. do 2 rewrite <- fold_left_rev_right.
-    intros H_eq; apply list_rev_inj; revert H_eq.
+    unfold encode. intros ds1 ds2. do 2 rewrite <- fold_left_rev_right.
+    intros H_eq. apply list_rev_inj. revert H_eq.
     generalize (rev ds2) as xs2. generalize (rev ds1) as xs1. clear ds1 ds2.
-    set (myF := fold_right (fun y : dir_t => fun x : nat => @dir_t_rect (fun _ : dir_t => nat) (2 * x + 1) (2 * x + 2) y) 0).
+    set (myF := fold_right (fun d : dir_t => fun i : nat => @dir_t_rect (fun _ : dir_t => nat) (2 * i + 1) (2 * i + 2) d) 0).
     induction xs1 as [ | x1 xs1 IH]; destruct xs2 as [ | x2 xs2]; simpl...
     - destruct x2; simpl dir_t_rect...
     - destruct x1; simpl dir_t_rect...
@@ -46,9 +46,9 @@ Module BinaryTrees.
     forall code : nat,
     {ds : list dir_t | encode ds = code}.
   Proof with lia || eauto.
-    induction code as [[ | n'] IH] using Wf_nat.lt_wf_rect1.
+    induction code as [[ | code'] IH] using Wf_nat.lt_wf_rect1.
     - exists ([])...
-    - set (code := S n').
+    - set (code := S code').
       destruct (code mod 2) as [ | [ | code_mod_2]] eqn: H_obs.
       + assert (claim1 : code = 2 * ((code - 2) / 2) + 2).
         { apply (positive_even code ((code - 2) / 2))... }
@@ -94,8 +94,7 @@ Module BinaryTrees.
     forall ds : list dir_t,
     decode (encode ds) = ds.
   Proof.
-    intro ds.
-    apply encode_inj.
+    intro ds. apply encode_inj.
     now rewrite encode_decode with (code := encode ds).
   Qed.
 
@@ -137,11 +136,11 @@ Module BinaryTrees.
 
   Section BINARY_TREE_TO_LIST.
 
-  Definition option2list {A : Type} : option A -> list A :=
+  Polymorphic Definition option2list {A : Type} : option A -> list A :=
     @option_rect A (fun _ => list A) (fun x : A => [x]) []
   .
 
-  Definition pair2list {A : Type} : A * A -> list A :=
+  Polymorphic Definition pair2list {A : Type} : A * A -> list A :=
     fun pr : A * A =>
     [fst pr; snd pr]
   .
@@ -195,10 +194,6 @@ Module BinaryTrees.
     flat_map (option2list ∘ option_elem)
   .
 
-  Definition extract_children : list (bintree Elem) -> list (bintree Elem) :=
-    flat_map (@concat (bintree Elem) ∘ option2list ∘ option_map pair2list ∘ option_children_pair)
-  .
-
   Lemma extract_elements_unfold :
     forall ts : list (bintree Elem),
     extract_elements ts =
@@ -210,6 +205,10 @@ Module BinaryTrees.
   Proof.
     destruct ts as [ | [ | ? ? ?] ?]; reflexivity.
   Qed.
+
+  Definition extract_children : list (bintree Elem) -> list (bintree Elem) :=
+    flat_map (@concat (bintree Elem) ∘ option2list ∘ option_map pair2list ∘ option_children_pair)
+  .
 
   Lemma extract_children_unfold :
     forall ts : list (bintree Elem),
@@ -240,8 +239,7 @@ Module BinaryTrees.
     toList_step ts =
     extract_elements ts ++ toList_step (extract_children ts).
   Proof.
-    intros ts.
-    replace (ts) with (ts ++ []) at 1.
+    intros ts. replace (ts) with (ts ++ []) at 1.
     - exact (toList_step_app ts []).
     - apply app_nil_r.
   Qed.
