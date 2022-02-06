@@ -72,7 +72,7 @@ Module BinaryTrees.
     proj1_sig (decodable code)
   .
 
-(*
+(* (* Example "decode" *)
   Compute (decode 14).
   (* = [Dir_right; Dir_right; Dir_right] *)
   Compute (decode 15).
