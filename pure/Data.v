@@ -46,7 +46,7 @@ Module BinaryTrees.
     forall code : nat,
     {idx : list dir_t | encode idx = code}.
   Proof with lia || eauto.
-    induction code as [[ | code'] IH] using Wf_nat.lt_wf_rect1.
+    induction code as [[ | code'] IH] using Wf_nat.lt_wf_rec.
     - exists ([])...
     - set (code := S code').
       destruct (code mod 2) as [ | [ | code_mod_2]] eqn: H_obs.
