@@ -108,14 +108,16 @@ Module BinaryTrees.
   Global Arguments BT_null {Elem}.
   Global Arguments BT_node {Elem}.
 
-  Definition option_elem {Elem : Type} (t : bintree Elem) : option Elem :=
+  Definition option_elem {Elem : Type} : bintree Elem -> option Elem =
+    fun t : bintree Elem =>
     match t with
     | BT_null => None
     | BT_node t_l t_e t_r => Some t_e
     end
   .
 
-  Definition option_children_pair {Elem : Type} (t : bintree Elem) : option (bintree Elem * bintree Elem) :=
+  Definition option_children_pair {Elem : Type} : bintree Elem -> option (bintree Elem * bintree Elem) :=
+    fun t : bintree Elem =>
     match t with
     | BT_null => None
     | BT_node t_l t_e t_r => Some (t_l, t_r)
