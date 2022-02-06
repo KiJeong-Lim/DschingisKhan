@@ -20,31 +20,31 @@ Module BinaryTrees.
   .
 
   Definition encode : list dir_t -> nat :=
-    fun ds : list dir_t =>
-    fold_left (fun code : nat => @dir_t_rect (fun _ : dir_t => nat) (2 * code + 1) (2 * code + 2)) ds 0
+    fun idx : list dir_t =>
+    fold_left (fun code : nat => @dir_t_rec (fun _ : dir_t => nat) (2 * code + 1) (2 * code + 2)) idx 0
   .
 
   Lemma encode_inj :
-    forall ds1 : list dir_t,
-    forall ds2 : list dir_t,
-    encode ds1 = encode ds2 ->
-    ds1 = ds2.
+    forall idx1 : list dir_t,
+    forall idx2 : list dir_t,
+    encode idx1 = encode idx2 ->
+    idx1 = idx2.
   Proof with lia || eauto.
-    unfold encode. intros ds1 ds2. do 2 rewrite <- fold_left_rev_right.
+    unfold encode. intros idx1 idx2. do 2 rewrite <- fold_left_rev_right.
     intros H_eq. apply list_rev_inj. revert H_eq.
-    generalize (rev ds2) as xs2. generalize (rev ds1) as xs1. clear ds1 ds2.
-    set (myF := fold_right (fun d : dir_t => fun i : nat => @dir_t_rect (fun _ : dir_t => nat) (2 * i + 1) (2 * i + 2) d) 0).
-    induction xs1 as [ | x1 xs1 IH]; destruct xs2 as [ | x2 xs2]; simpl...
-    - destruct x2; simpl dir_t_rect...
-    - destruct x1; simpl dir_t_rect...
-    - destruct x1; destruct x2; simpl dir_t_rect...
-      all: intros H_eq; assert (claim1 : myF xs1 = myF xs2)...
+    generalize (rev idx2) as ds2. generalize (rev idx1) as ds1. clear idx1 idx2.
+    set (myF := fold_right (fun d : dir_t => fun code : nat => @dir_t_rec (fun _ : dir_t => nat) (2 * code + 1) (2 * code + 2) d) 0).
+    induction ds1 as [ | d1 ds1 IH]; destruct ds2 as [ | d2 ds2]; simpl...
+    - destruct d2; simpl dir_t_rec...
+    - destruct d1; simpl dir_t_rec...
+    - destruct d1; destruct d2; simpl dir_t_rec...
+      all: intros H_eq; assert (claim1 : myF ds1 = myF ds2)...
       all: apply eq_congruence...
   Qed.
 
   Lemma decodable :
     forall code : nat,
-    {ds : list dir_t | encode ds = code}.
+    {idx : list dir_t | encode idx = code}.
   Proof with lia || eauto.
     induction code as [[ | code'] IH] using Wf_nat.lt_wf_rect1.
     - exists ([])...
@@ -53,17 +53,17 @@ Module BinaryTrees.
       + assert (claim1 : code = 2 * ((code - 2) / 2) + 2).
         { apply (positive_even code ((code - 2) / 2))... }
         assert (claim2 : (code - 2) / 2 < code)...
-        destruct (IH ((code - 2) / 2) claim2) as [ds H_ds].
-        exists (ds ++ [Dir_right]).
-        unfold encode. rewrite fold_left_last. unfold dir_t_rect at 1.
-        unfold encode in H_ds. rewrite H_ds...
+        destruct (IH ((code - 2) / 2) claim2) as [idx H_idx].
+        exists (idx ++ [Dir_right]).
+        unfold encode. rewrite fold_left_last. unfold dir_t_rec at 1.
+        unfold encode in H_idx. rewrite H_idx...
       + assert (claim1 : code = 2 * ((code - 1) / 2) + 1).
         { apply (positive_odd code ((code - 1) / 2))... }
         assert (claim2 : (code - 1) / 2 < code)...
-        destruct (IH ((code - 1) / 2) claim2) as [ds H_ds].
-        exists (ds ++ [Dir_left]).
-        unfold encode. rewrite fold_left_last. unfold dir_t_rect at 1.
-        unfold encode in H_ds. rewrite H_ds...
+        destruct (IH ((code - 1) / 2) claim2) as [idx H_idx].
+        exists (idx ++ [Dir_left]).
+        unfold encode. rewrite fold_left_last. unfold dir_t_rec at 1.
+        unfold encode in H_idx. rewrite H_idx...
       + pose (Nat.mod_bound_pos code 2)...
   Defined.
 
@@ -91,11 +91,11 @@ Module BinaryTrees.
   Global Opaque decode.
 
   Lemma decode_encode :
-    forall ds : list dir_t,
-    decode (encode ds) = ds.
+    forall idx : list dir_t,
+    decode (encode idx) = idx.
   Proof.
-    intro ds. apply encode_inj.
-    now rewrite encode_decode with (code := encode ds).
+    intro idx. apply encode_inj.
+    now rewrite encode_decode with (code := encode idx).
   Qed.
 
   End INDICES_OF_BINARY_TREES.
@@ -108,7 +108,7 @@ Module BinaryTrees.
   Global Arguments BT_null {Elem}.
   Global Arguments BT_node {Elem}.
 
-  Definition option_elem {Elem : Type} : bintree Elem -> option Elem =
+  Definition option_elem {Elem : Type} : bintree Elem -> option Elem :=
     fun t : bintree Elem =>
     match t with
     | BT_null => None
@@ -125,13 +125,13 @@ Module BinaryTrees.
   .
 
   Definition option_subtree {Elem : Type} : list dir_t -> bintree Elem -> option (bintree Elem) :=
-    fix option_subtree_fix (ds : list dir_t) (t : bintree Elem) {struct ds} : option (bintree Elem) :=
-    match ds with
+    fix option_subtree_fix (idx : list dir_t) (t : bintree Elem) {struct idx} : option (bintree Elem) :=
+    match idx with
     | [] => Some t
-    | d :: ds =>
+    | d :: idx =>
       match t with
       | BT_null => None
-      | BT_node t_l t_e t_r => option_subtree_fix ds (@dir_t_rect (fun _ : dir_t => bintree Elem) t_l t_r d)
+      | BT_node t_l t_e t_r => option_subtree_fix idx (@dir_t_rect (fun _ : dir_t => bintree Elem) t_l t_r d)
       end
     end
   .
