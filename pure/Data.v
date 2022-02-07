@@ -4,7 +4,7 @@ Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 Require Import Coq.Program.Basics.
-Require Import Coq.Program.Wf.
+Require Import DschingisKhan.pure.FunFacts.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
@@ -124,19 +124,7 @@ Module BinaryTrees.
     end
   .
 
-  Definition option_subtree {Elem : Type} : list dir_t -> bintree Elem -> option (bintree Elem) :=
-    fix option_subtree_fix (idx : list dir_t) (t : bintree Elem) {struct idx} : option (bintree Elem) :=
-    match idx with
-    | [] => Some t
-    | d :: idx =>
-      match t with
-      | BT_null => None
-      | BT_node t_l t_e t_r => option_subtree_fix idx (@dir_t_rect (fun _ : dir_t => bintree Elem) t_l t_r d)
-      end
-    end
-  .
-
-  Section BINARY_TREE_TO_LIST.
+  Section BINARY_TREE_ACCESSORIES.
 
   Polymorphic Definition option2list {A : Type} : option A -> list A :=
     @option_rect A (fun _ => list A) (fun x : A => [x]) []
@@ -149,29 +137,137 @@ Module BinaryTrees.
 
   Context {Elem : Type}.
 
-  Let cnt : bintree Elem -> nat :=
-    fix cnt_fix (t : bintree Elem) {struct t} : nat :=
+  Definition option_subtree_init : ((bintree Elem) -> option (bintree Elem)) :=
+    fun t => Some t
+  .
+
+  Definition option_subtree_step : dir_t -> ((bintree Elem) -> option (bintree Elem)) -> ((bintree Elem) -> option (bintree Elem)) :=
+    fun d acc t =>
     match t with
-    | BT_null => 1
-    | BT_node t_l t_e t_r => 1 + cnt_fix t_l + cnt_fix t_r
+    | BT_null => None
+    | BT_node t_l t_e t_r => acc (@dir_t_rect (fun _ => bintree Elem) t_l t_r d)
     end
   .
 
-  Program Fixpoint toList_step (ts : list (bintree Elem)) {measure (list_sum (map cnt ts))} : list Elem :=
-    match ts with
-    | [] => []
-    | BT_null :: ts_tail => toList_step ts_tail
-    | BT_node t_l t_e t_r :: ts_tail => t_e :: toList_step ((ts_tail ++ [t_l]) ++ [t_r])
+  Definition option_subtree : list dir_t -> (bintree Elem -> option (bintree Elem)) :=
+    fold_right option_subtree_step option_subtree_init
+  .
+
+  Lemma option_subtree_unfold idx t :
+    option_subtree idx t =
+    match idx with
+    | [] => Some t
+    | d :: idx =>
+      match t with
+      | BT_null => None
+      | BT_node t_l t_e t_r => option_subtree idx (@dir_t_rect (fun _ => bintree Elem) t_l t_r d)
+      end
     end.
-  Next Obligation.
-    unfold Peano.lt.
-    do 2 rewrite map_last. do 2 rewrite list_sum_app; cbn.
-    do 2 rewrite Nat.add_0_r. rewrite <- Nat.add_assoc at 1.
-    rewrite Nat.add_comm; constructor.
+  Proof. induction idx; eauto. Qed.
+
+  Inductive occurs (t : bintree Elem) : list dir_t -> bintree Elem -> Prop :=
+  | Occurs_0 :
+    occurs t [] t
+  | Occurs_l :
+    forall idx : list dir_t,
+    forall l : bintree Elem,
+    forall e : Elem,
+    forall r : bintree Elem,
+    occurs t idx l ->
+    occurs t (Dir_left :: idx) (BT_node l e r)
+  | Occurs_r :
+    forall idx : list dir_t,
+    forall l : bintree Elem,
+    forall e : Elem,
+    forall r : bintree Elem,
+    occurs t idx r ->
+    occurs t (Dir_right :: idx) (BT_node l e r)
+  .
+
+  Local Hint Constructors occurs : core.
+
+  Theorem option_subtree_occurs :
+    forall t : bintree Elem,
+    forall idx : list dir_t,
+    forall root : bintree Elem,
+    occurs t idx root <-> option_subtree idx root = Some t.
+  Proof with discriminate || eauto.
+    unfold option_subtree. intros t idx root. split.
+    - intros X; induction X...
+    - revert t root. induction idx as [ | [ | ] idx IH]; simpl; intros t root H_eq.
+      { apply injSome in H_eq; subst root... }
+      all: destruct root as [ | l e r]...
+  Qed.
+
+  Inductive qtrav_spec : list (bintree Elem) -> list Elem -> Prop :=
+  | qtrav_spec1
+    : qtrav_spec [] []
+  | qtrav_spec2 ts es
+    (IH_spec : qtrav_spec ts es)
+    : qtrav_spec (BT_null :: ts) es
+  | qtrav_spec3 t_l t_e t_r ts es
+    (IH_spec : qtrav_spec ((ts ++ [t_l]) ++ [t_r]) es)
+    : qtrav_spec (BT_node t_l t_e t_r :: ts) (t_e :: es)
+  .
+
+  Local Hint Constructors qtrav_spec : core.
+
+  Definition qtrav :
+    { qtrav_body : list (bintree Elem) -> list Elem
+    | forall ts : list (bintree Elem), forall xs : list Elem, qtrav_spec ts xs <-> qtrav_body ts = xs
+    }.
+  Proof with eauto.
+    set (cnt :=
+      fix cnt_fix (t : bintree Elem) {struct t} : nat :=
+      match t with
+      | BT_null => 1
+      | BT_node t_l t_e t_r => 1 + cnt_fix t_l + cnt_fix t_r
+      end
+    ).
+    set (f := fun ts => list_sum (map cnt ts)).
+    set (R := fun ts1 ts2 => f ts1 < f ts2).
+    enough (to_show : forall ts, {rslt : list Elem | forall xs, qtrav_spec ts xs <-> rslt = xs}).
+    { exists (fun ts => proj1_sig (to_show ts)). exact (fun ts => proj2_sig (to_show ts)). }
+    intros ts; pattern ts; revert ts.
+    apply FunFacts.well_founded_recursion_with_nat_lt with (get_rank := f) (LT := R)...
+    intros [ | [ | t_l t_e t_r] ts] IH.
+    - exists ([]); intros xs; split; intros H_spec.
+      + inversion H_spec; subst...
+      + subst...
+    - assert (IH_arg : R ts (BT_null :: ts)).
+      { unfold R, f. cbn; constructor. }
+      destruct (IH ts IH_arg) as [rslt H_rslt].
+      exists (rslt); intros xs; split; intros H_spec.
+      + inversion H_spec; subst. apply H_rslt...
+      + subst. constructor; apply H_rslt...
+    - assert (IH_arg : R ((ts ++ [t_l]) ++ [t_r]) (BT_node t_l t_e t_r :: ts)).
+      { unfold R, f. cbn; unfold Peano.lt.
+        do 2 rewrite map_last. do 2 rewrite list_sum_app; cbn.
+        do 2 rewrite Nat.add_0_r. rewrite <- Nat.add_assoc at 1.
+        rewrite Nat.add_comm; constructor.
+      }
+      destruct (IH ((ts ++ [t_l]) ++ [t_r]) IH_arg) as [rslt H_rslt].
+      exists (t_e :: rslt); intros xs; split; intros H_spec.
+      + inversion H_spec; subst. apply f_equal, H_rslt...
+      + subst. constructor; apply H_rslt...
   Defined.
 
-  Lemma toList_step_unfold :
-    forall ts : list (bintree Elem),
+  Lemma qtrav_unfold queue :
+    proj1_sig qtrav queue =
+    match queue with
+    | [] => []
+    | BT_null :: queue_tail => proj1_sig qtrav queue_tail
+    | BT_node t_l t_e t_r :: queue_tail => t_e :: proj1_sig qtrav ((queue_tail ++ [t_l]) ++ [t_r])
+    end.
+  Proof with eauto.
+    destruct qtrav as [qtrav_body H_qtrav_body]; simpl.
+    destruct queue as [ | [ | t_l t_e t_r] queue_tail]; simpl; apply H_qtrav_body...
+    all: constructor; apply H_qtrav_body...
+  Qed.
+
+  Definition toList_step := proj1_sig qtrav.
+
+  Lemma toList_step_unfold ts :
     toList_step ts =
     match ts with
     | [] => []
@@ -179,13 +275,9 @@ Module BinaryTrees.
     | BT_node t_l t_e t_r :: ts_tail => t_e :: toList_step (ts_tail ++ [t_l; t_r])
     end.
   Proof with eauto.
-    intros ts. unfold toList_step at 1; rewrite fix_sub_eq.
-    - destruct ts as [ | [ | t_l t_e t_r] ts_tail]...
-      simpl; apply f_equal.
-      replace ((ts_tail ++ [t_l]) ++ [t_r]) with (ts_tail ++ [t_l; t_r]) at 1...
-      rewrite <- app_assoc...
-    - intros [ | [ | ? ? ?] ?] ? ? ?...
-      apply f_equal...
+    unfold toList_step; rewrite qtrav_unfold with (queue := ts) at 1.
+    destruct ts as [ | [ | t_l t_e t_r] ts_tail]...
+    rewrite <- app_assoc at 1; replace ([t_l] ++ [t_r]) with ([t_l; t_r])...
   Qed.
 
   Global Opaque toList_step.
@@ -250,6 +342,6 @@ Module BinaryTrees.
     toList_step [root]
   .
 
-  End BINARY_TREE_TO_LIST.
+  End BINARY_TREE_ACCESSORIES.
 
 End BinaryTrees.

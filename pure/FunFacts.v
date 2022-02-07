@@ -427,7 +427,7 @@ Module FunFacts.
     (get_rank : A -> nat)
     (LT : A -> A -> Prop)
     (LT_spec : forall tree1 : A, forall tree2 : A, LT tree1 tree2 -> get_rank tree1 < get_rank tree2)
-    (phi : A -> Prop)
+    (phi : A -> Type)
     (ACC_HYP : forall tree : A, (forall subtree : A, LT subtree tree -> phi subtree) -> phi tree)
     : forall root : A, phi root.
   Proof.

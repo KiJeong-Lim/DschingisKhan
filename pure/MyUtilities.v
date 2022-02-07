@@ -2151,6 +2151,14 @@ Module MyUtilities.
     revert z0 x0; induction xs as [ | x xs IH]; simpl...
   Qed.
 
+  Lemma fold_right_last {A : Type} {B : Type} (f : A -> B -> B) (z0 : B) (xs : list A) (x0 : A) :
+    fold_right f z0 (xs ++ [x0]) =
+    fold_right f (f x0 z0) xs.
+  Proof with eauto.
+    induction xs as [ | x xs IH]; simpl...
+    rewrite IH...
+  Qed.
+
   Global Ltac repeat_rewrite :=
     simpl in *;
     first
