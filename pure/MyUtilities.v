@@ -1882,19 +1882,34 @@ Module MyUtilities.
       congruence.
   Qed.
 
-  Lemma fold_left_last {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) (xs : list A) (x0 : A) :
-    fold_left f (xs ++ [x0]) z0 = f (fold_left f xs z0) x0.
+  Lemma fold_left_last {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) (xs : list A) (x0 : A)
+    : fold_left f (xs ++ [x0]) z0 = f (fold_left f xs z0) x0.
   Proof with eauto.
     revert z0 x0; induction xs as [ | x xs IH]; simpl...
   Qed.
 
-  Lemma fold_right_last {A : Type} {B : Type} (f : A -> B -> B) (z0 : B) (xs : list A) (x0 : A) :
-    fold_right f z0 (xs ++ [x0]) =
-    fold_right f (f x0 z0) xs.
+  Lemma fold_right_last {A : Type} {B : Type} (f : A -> B -> B) (z0 : B) (xs : list A) (x0 : A)
+    : fold_right f z0 (xs ++ [x0]) = fold_right f (f x0 z0) xs.
   Proof with eauto.
     induction xs as [ | x xs IH]; simpl...
     rewrite IH...
   Qed.
+
+  Definition isSome {A : Type} : option A -> Prop :=
+    fun m => m <> None
+  .
+
+  Definition isNone {A : Type} : option A -> Prop :=
+    fun m => m = None
+  .
+
+  Lemma isSome_intro {A : Type} (Some_x : option A) (x : A)
+    : Some_x = Some x -> isSome Some_x.
+  Proof. congruence. Qed.
+
+  Lemma Some_or_None {A : Type}
+    : forall m : option A, {isSome m} + {isNone m}.
+  Proof. destruct m; [left | right]; congruence. Defined.
 
   Global Ltac repeat_rewrite :=
     simpl in *;
