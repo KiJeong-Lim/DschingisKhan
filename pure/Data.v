@@ -449,4 +449,18 @@ Module MyVectors.
 
   End VectorIsMonad.
 
+  Definition vector_zip {A : Type} {B : Type} {n : nat} : vector A n -> vector B n -> vector (A * B) n :=
+    fun xs : vec_n n A =>
+    fun ys : vec_n n B =>
+    \do x <- xs;
+    \do y <- ys;
+    ret (x, y);
+  .
+
+  Lemma vector_zip_spec {A : Type} {B : Type} {n : nat} (xs : vector A n) (ys : vector B n)
+    : forall i : FinSet n, (xs !! i, ys !! i) = vector_zip xs ys !! i.
+  Proof.
+    cbn. intros i. now repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
+  Qed.
+
 End MyVectors.
