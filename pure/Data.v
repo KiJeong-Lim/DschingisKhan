@@ -313,8 +313,8 @@ Module MyVectors.
     : x1 = x2 /\ xs1 = xs2.
   Proof.
     split.
-    - eapply eq_congruence with (f := vector_head) (x1 := x1 :: xs1) (x2 := x2 :: xs2). exact H_cons_eq.
-    - eapply eq_congruence with (f := vector_tail) (x1 := x1 :: xs1) (x2 := x2 :: xs2). exact H_cons_eq.
+    - exact (eq_congruence vector_head (x1 :: xs1) (x2 :: xs2) H_cons_eq).
+    - exact (eq_congruence vector_tail (x1 :: xs1) (x2 :: xs2) H_cons_eq).
   Qed.
 
   Lemma Vcons_eta {A : Type} {n' : nat} :
@@ -395,9 +395,9 @@ Module MyVectors.
     revert xss; induction n as [ | n IH].
     - isVnil. eapply FinSet_case0.
     - isVcons xs xss. eapply FinSet_caseS.
-      + rewrite vector_indexing_unfold. reflexivity.
+      + now rewrite vector_indexing_unfold.
       + intros i. rewrite vector_indexing_unfold. simpl. rewrite <- IH.
-        rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i). reflexivity.
+        now rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i).
   Qed.
 
   Fixpoint replicate {A : Type} {n : nat} {struct n} : A -> vector A n :=
@@ -439,7 +439,7 @@ Module MyVectors.
     }
   .
 
-  Global Instance vec_ObeysMonadLaws :
+  Global Instance vec_obeysMonadLaws :
     obeysMonadLaws vec_isMonad.
   Proof.
     split; cbn; intros; eapply vector_ext_eq; intros i.
