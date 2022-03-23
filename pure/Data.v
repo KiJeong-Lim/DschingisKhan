@@ -341,22 +341,6 @@ Module MyVectors.
 
   Global Infix " !! " := vector_indexing (at level 65, no associativity).
 
-  Definition vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
-    (H_ext_eq : forall i : FinSet n, xs1 !! i = xs2 !! i)
-    : xs1 = xs2.
-  Proof.
-    revert xs1 xs2 H_ext_eq.
-    induction xs1 as [ | n x1 xs1 IH].
-    - isVnil. intros H_ext_eq.
-      reflexivity.
-    - isVcons x2 xs2. intros H_ext_eq.
-      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
-      { exact (H_ext_eq (@FZ n)). }
-      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
-      { apply IH. exact (fun i : FinSet n => H_ext_eq (@FS n i)). }
-      simpl in *; congruence.
-  Qed.
-
   Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
     forall i : FinSet n,
     xs !! i =
@@ -370,6 +354,22 @@ Module MyVectors.
     - eapply FinSet_caseS.
       + exact (eq_reflexivity x).
       + exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
+  Qed.
+
+  Lemma vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
+    (H_ext_eq : forall i : FinSet n, xs1 !! i = xs2 !! i)
+    : xs1 = xs2.
+  Proof.
+    revert xs1 xs2 H_ext_eq.
+    induction xs1 as [ | n x1 xs1 IH].
+    - isVnil. intros H_ext_eq.
+      reflexivity.
+    - isVcons x2 xs2. intros H_ext_eq.
+      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
+      { exact (H_ext_eq (@FZ n)). }
+      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
+      { apply IH. exact (fun i : FinSet n => H_ext_eq (@FS n i)). }
+      simpl in *; congruence.
   Qed.
 
   Definition vector_map {A : Type} {B : Type} {n : nat} : (A -> B) -> vector A n -> vector B n :=
@@ -390,43 +390,35 @@ Module MyVectors.
         exact (IH i').
   Qed.
 
-  Fixpoint vector_diag {A : Type} {n : nat} {struct n} : vector (vector A n) n -> vector A n :=
+  Fixpoint diagonal {A : Type} {n : nat} {struct n} : vector (vector A n) n -> vector A n :=
     match n with
-    | O =>
-      fun xss : vector (vector A O) O =>
-      []
-    | S n' =>
-      fun xss : vector (vector A (S n')) (S n') =>
-      vector_head (vector_head xss) :: vector_diag (vector_map (fun xs : vector A (S n') => vector_tail xs) (vector_tail xss))
+    | O => fun xss : vector (vector A O) O => []
+    | S n' => fun xss : vector (vector A (S n')) (S n') => vector_head (vector_head xss) :: diagonal (vector_map vector_tail (vector_tail xss))
     end
   .
 
-  Global Arguments vector_diag {A} {n}.
-
-  Lemma vector_diag_spec {A : Type} {n : nat} (xss : vector (vector A n) n) :
+  Lemma diagonal_spec {A : Type} {n : nat} (xss : vector (vector A n) n) :
     forall i : FinSet n,
-    (xss !! i) !! i = vector_diag xss !! i.
+    (xss !! i) !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
     - intros xss. eapply FinSet_case0.
     - isVcons xs xss. eapply FinSet_caseS.
       + rewrite vector_indexing_unfold. reflexivity.
       + intros i. rewrite vector_indexing_unfold. simpl. rewrite <- IH.
-        rewrite vector_map_spec with (f := fun xs : vector A (S n) => vector_tail xs) (xs := xss) (i := i). reflexivity.
+        rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i). reflexivity.
   Qed.
 
-  Fixpoint vector_const {A : Type} {n : nat} {struct n} : A -> vector A n :=
+  Fixpoint replicate {A : Type} {n : nat} {struct n} : A -> vector A n :=
     match n with
     | O => fun x : A => []
-    | S n' => fun x : A => x :: @vector_const A n' x
+    | S n' => fun x : A => x :: replicate x
     end
   .
 
-  Global Arguments vector_const {A} {n}.
-
-  Lemma vector_const_spec {A : Type} {n : nat} (x : A) :
+  Lemma replicate_spec {A : Type} {n : nat} (x : A) :
     forall i : FinSet n,
-    x = vector_const x !! i.
+    x = replicate x !! i.
   Proof.
     induction n as [ | n IH].
     - eapply FinSet_case0.
@@ -435,37 +427,40 @@ Module MyVectors.
       + exact (IH).
   Qed.
 
-  Definition vec (n : nat) : Type -> Type :=
+  Section VectorIsMonad.
+
+  Variable n : nat.
+
+  Definition vec_n : Type -> Type :=
     fun A : Type =>
     vector A n
   .
 
-  Global Instance vector_isMonad (n : nat) : isMonad (vec n) :=
+  Global Instance vector_isMonad : isMonad vec_n :=
     { pure {A : Type} :=
       fun x : A =>
-      vector_const x
+      replicate x
     ; bind {A : Type} {B : Type} :=
-      fun m : vec n A =>
-      fun k : A -> vec n B =>
-      vector_diag (vector_map k m)
+      fun m : vec_n A =>
+      fun k : A -> vec_n B =>
+      diagonal (vector_map k m)
     }
   .
 
-  Local Instance vector_isSetoid1 (n : nat) : isSetoid1 (vec n) :=
-    { liftSetoid1 {X : Type} :=
-      {| eqProp := @eq (vec n X); Setoid_requiresEquivalence := eq_equivalence |}
+  Local Instance vector_isSetoid1 : isSetoid1 vec_n :=
+    { liftSetoid1 {A : Type} :=
+      {| eqProp := @eq (vec_n A); Setoid_requiresEquivalence := @eq_equivalence (vec_n A) |}
     }
   .
 
-  Global Instance vectorObeysMonadLaws (n : nat) :
-    obeysMonadLaws (vector_isMonad n).
-  Proof with repeat (rewrite <- vector_diag_spec || rewrite <- vector_map_spec || rewrite <- vector_const_spec); eauto.
-    split; cbn.
-    - intros A B C m k1 k2. eapply vector_ext_eq. intros i...
-    - intros A B k x. eapply vector_ext_eq. intros i...
-    - intros A m. eapply vector_ext_eq. intros i...
-    - intros A B m1 m2 m1_eq_m2 k. subst m1. eapply vector_ext_eq. intros i...
-    - intros A B k1 k2 k1_eq_l2 m. eapply vector_ext_eq. intros i... rewrite (k1_eq_l2 (m !! i))...
+  Local Instance vectorObeysMonadLaws :
+    obeysMonadLaws vector_isMonad.
+  Proof.
+    split; cbn; (repeat intro); eapply vector_ext_eq; intros i.
+    all: repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
+    all: congruence || eauto.
   Qed.
+
+  End VectorIsMonad.
 
 End MyVectors.
