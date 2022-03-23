@@ -214,12 +214,235 @@ End MyCategories.
 
 Module MyVectors.
 
-  Polymorphic Inductive vector (A : Type) : nat -> Type :=
+  Import EqFacts MyUtilities MyCategories.
+
+  Inductive vector (A : Type) : nat -> Type :=
   | Vnil : vector A (O)
-  | Vcons {n : nat} (x : A) (xs : vector A n) : vector A (S n)
+  | Vcons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
   .
 
   Global Arguments Vnil {A}.
-  Global Arguments Vcons {A} {n} (x) (xs).
+  Global Arguments Vcons {A}.
+
+  Local Notation " '[]' " := (@Vnil _).
+  Local Notation " x '::' xs " := (@Vcons _ _ x xs).
+
+  Section VectorAccessories.
+
+  Context {A : Type}.
+
+  Definition castVec {n : nat} : forall n' : nat, n = n' -> vector A n -> vector A n' :=
+    fun n' : nat =>
+    fun n_eq_n' : n = n' =>
+    match n_eq_n' in eq _ m return vector A n -> vector A m with
+    | eq_refl => fun xs : vector A n => xs
+    end
+  .
+
+  Definition case_Vnil {phi : vector A 0 -> Type}
+    (H_nil : phi Vnil)
+    (v_nil : vector A (O))
+    : phi v_nil.
+  Proof.
+    refine (
+      match v_nil as v in vector _ ze return forall H : ze = 0, phi (castVec 0 H v) with
+      | Vnil => fun ze_is_O : O = 0 => _
+      | Vcons n' x xs' => fun H_false : S n' = 0 => S_eq_0_elim n' H_false
+      end (eq_reflexivity 0)
+    ).
+    replace (ze_is_O) with (eq_reflexivity 0).
+    - exact (H_nil).
+    - exact (eqnat_proof_irrelevance 0 0 (eq_reflexivity O) ze_is_O).
+  Defined.
+
+  Definition case_Vcons {n : nat} {phi : vector A (S n) -> Type}
+    (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
+    (v_cons : vector A (S n))
+    : phi v_cons.
+  Proof.
+    refine (
+      match v_cons as v in vector _ sc return forall H : sc = S n, phi (castVec (S n) H v) with
+      | Vnil => fun H_false : 0 = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
+      | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
+      end (eq_reflexivity (S n))
+    ).
+    pose proof (S_eq_S_elim n n' (eq_symmetry (S n') (S n) sc_is_S_n)) as n_eq_n'; subst n'.
+    replace (sc_is_S_n) with (eq_reflexivity (S n)).
+    - exact (H_cons x xs').
+    - exact (eqnat_proof_irrelevance (S n) (S n) (eq_reflexivity (S n)) sc_is_S_n).
+  Defined.
+
+  Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
+    fix vidx_fix (n : nat) (xs : vector A n) {struct xs} : FinSet n -> A :=
+    match xs with
+    | Vnil => FinSet_case0
+    | Vcons n' x xs' => FinSet_caseS x (vidx_fix n' xs')
+    end
+  .
+
+  Context {B : Type}.
+
+  Definition vmap (f : A -> B) : forall n : nat, vector A n -> vector B n :=
+    fix vmap_fix (n : nat) (xs : vector A n) {struct xs} : vector B n :=
+    match xs with
+    | Vnil => Vnil
+    | Vcons n' x xs' => Vcons n' (f x) (vmap_fix n' xs')
+    end
+  .
+
+  End VectorAccessories.
+
+  Global Ltac isVnil :=
+    let xs' := fresh "xs" in
+    intros xs'; pattern xs'; revert xs'; eapply case_Vnil
+  .
+
+  Global Ltac isVcons x xs :=
+    let xs' := fresh "xs" in
+    intros xs'; pattern xs'; revert xs'; eapply case_Vcons; intros x xs
+  .
+
+  Definition vector_head {A : Type} {n' : nat} : vector A (S n') -> A :=
+    fun xs : vector A (S n') =>
+    match xs in vector _ S_n' return S n' = S_n' -> A with
+    | [] => S_eq_0_elim n'
+    | x :: xs' => fun _ => x
+    end (eq_reflexivity (S n'))
+  .
+
+  Definition vector_tail {A : Type} {n' : nat} : vector A (S n') -> vector A n' :=
+    fun xs : vector A (S n') =>
+    match xs in vector _ S_n' return S n' = S_n' -> vector A (pred S_n') with
+    | [] => S_eq_0_elim n'
+    | x :: xs' => fun _ => xs'
+    end (eq_reflexivity (S n'))
+  .
+
+  Lemma Vcons_inj1 {A : Type} {n' : nat} :
+    forall x : A,
+    forall xs : vector A n',
+    vector_head (x :: xs) = x.
+  Proof. reflexivity. Defined.
+
+  Lemma Vcons_inj2 {A : Type} {n' : nat} :
+    forall x : A,
+    forall xs : vector A n',
+    vector_tail (x :: xs) = xs.
+  Proof. reflexivity. Defined.
+
+  Lemma Vcons_surj {A : Type} {n' : nat} :
+    forall v_cons : vector A (S n'),
+    vector_head v_cons :: vector_tail v_cons = v_cons.
+  Proof. isVcons x xs. reflexivity. Defined.
+
+  Definition vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
+    (H_nil : psi (O) [] [])
+    (H_cons : forall n' : nat, forall x : A, forall y : B, forall xs' : vector A n', forall ys' : vector B n', psi n' xs' ys' -> psi (S n') (x :: xs') (y :: ys'))
+    : forall n : nat, forall xs : vector A n, forall ys : vector B n, psi n xs ys.
+  Proof.
+    induction xs as [ | n x xs IH].
+    - isVnil. exact (H_nil).
+    - isVcons y ys. exact (H_cons n x y xs ys (IH ys)).
+  Defined.
+
+  Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
+    vidx n
+  .
+
+  Global Infix " !! " := vector_indexing (at level 65, no associativity).
+
+  Definition vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
+    (H_ext_eq : forall i : FinSet n, xs1 !! i = xs2 !! i)
+    : xs1 = xs2.
+  Proof.
+    revert xs1 xs2 H_ext_eq.
+    induction xs1 as [ | n x1 xs1 IH].
+    - isVnil. intros H_ext_eq.
+      reflexivity.
+    - isVcons x2 xs2. intros H_ext_eq.
+      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
+      { exact (H_ext_eq (@FZ n)). }
+      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
+      { apply IH. exact (fun i : FinSet n => H_ext_eq (@FS n i)). }
+      simpl in *; congruence.
+  Qed.
+
+  Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
+    forall i : FinSet n,
+    xs !! i =
+    match i in FinSet S_n' return vector A S_n' -> A with
+    | FZ n' => fun xs' : vector A (S n') => vector_head xs'
+    | FS n' i' => fun xs' : vector A (S n') => vector_tail xs' !! i'
+    end xs.
+  Proof.
+    destruct xs as [ | n' x xs'].
+    - eapply FinSet_case0.
+    - eapply FinSet_caseS.
+      + exact (eq_reflexivity x).
+      + exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
+  Qed.
+
+  Definition vector_map {A : Type} {B : Type} {n : nat} : (A -> B) -> vector A n -> vector B n :=
+    fun f : A -> B =>
+    vmap f n
+  .
+
+  Lemma vector_map_spec {A : Type} {B : Type} {n : nat} (f : A -> B) (xs : vector A n) :
+    forall i : FinSet n,
+    f (xs !! i) = vector_map f xs !! i.
+  Proof.
+    induction xs as [ | n x xs IH].
+    - eapply FinSet_case0.
+    - eapply FinSet_caseS.
+      + rewrite vector_indexing_unfold.
+        reflexivity.
+      + intros i'. rewrite vector_indexing_unfold.
+        exact (IH i').
+  Qed.
+
+  Fixpoint vector_diag {A : Type} {n : nat} {struct n} : vector (vector A n) n -> vector A n :=
+    match n with
+    | O =>
+      fun xss : vector (vector A O) O =>
+      []
+    | S n' =>
+      fun xss : vector (vector A (S n')) (S n') =>
+      vector_head (vector_head xss) :: vector_diag (vmap (fun xs : vector A (S n') => vector_tail xs) n' (vector_tail xss))
+    end
+  .
+
+  Global Arguments vector_diag {A} {n}.
+
+  Lemma vector_diag_spec {A : Type} {n : nat} (xss : vector (vector A n) n) :
+    forall i : FinSet n,
+    (xss !! i) !! i = vector_diag xss !! i.
+  Proof.
+    revert xss; induction n as [ | n IH].
+    - intros xss. eapply FinSet_case0.
+    - isVcons xs xss. eapply FinSet_caseS.
+      + rewrite vector_indexing_unfold. reflexivity.
+      + intros i. rewrite vector_indexing_unfold. simpl. rewrite <- IH.
+        rewrite vector_map_spec with (f := fun xs : vector A (S n) => vector_tail xs) (xs := xss) (i := i). reflexivity.
+  Qed.
+
+  Fixpoint vector_const {A : Type} {n : nat} {struct n} : A -> vector A n :=
+    match n with
+    | O => fun x : A => []
+    | S n' => fun x : A => x :: @vector_const A n' x
+    end
+  .
+
+  Global Arguments vector_const {A} {n}.
+
+  Lemma vector_const_spec {A : Type} {n : nat} (x : A) :
+    forall i : FinSet n,
+    x = vector_const x !! i.
+  Proof.
+    induction n as [ | n IH].
+    - eapply FinSet_case0.
+    - eapply FinSet_caseS.
+      + reflexivity.
+      + exact (IH).
+  Qed.
 
 End MyVectors.
