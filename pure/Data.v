@@ -229,7 +229,7 @@ Module MyVectors.
     end
   .
 
-  Definition case_Vnil {phi : vector A 0 -> Type}
+  Lemma caseVnil {phi : vector A (O) -> Type}
     (H_nil : phi Vnil)
     (v_nil : vector A (O))
     : phi v_nil.
@@ -242,10 +242,10 @@ Module MyVectors.
     ).
     replace (ze_is_O) with (eq_reflexivity 0).
     - exact (H_nil).
-    - exact (eqnat_proof_irrelevance 0 0 (eq_reflexivity O) ze_is_O).
+    - apply eqnat_proof_irrelevance.
   Defined.
 
-  Definition case_Vcons {n : nat} {phi : vector A (S n) -> Type}
+  Lemma caseVcons {n : nat} {phi : vector A (S n) -> Type}
     (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
     (v_cons : vector A (S n))
     : phi v_cons.
@@ -259,7 +259,7 @@ Module MyVectors.
     pose proof (S_eq_S_elim n n' (eq_symmetry (S n') (S n) sc_is_S_n)) as n_eq_n'; subst n'.
     replace (sc_is_S_n) with (eq_reflexivity (S n)).
     - exact (H_cons x xs').
-    - exact (eqnat_proof_irrelevance (S n) (S n) (eq_reflexivity (S n)) sc_is_S_n).
+    - apply eqnat_proof_irrelevance.
   Defined.
 
   Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
@@ -284,12 +284,12 @@ Module MyVectors.
 
   Global Ltac isVnil :=
     let xs' := fresh "xs" in
-    intros xs'; pattern xs'; revert xs'; eapply case_Vnil
+    intros xs'; pattern xs'; revert xs'; eapply caseVnil
   .
 
   Global Ltac isVcons x xs :=
     let xs' := fresh "xs" in
-    intros xs'; pattern xs'; revert xs'; eapply case_Vcons; intros x xs
+    intros xs'; pattern xs'; revert xs'; eapply caseVcons; intros x xs
   .
 
   Definition vector_head {A : Type} {n' : nat} : vector A (S n') -> A :=
@@ -325,7 +325,7 @@ Module MyVectors.
     vector_head v_cons :: vector_tail v_cons = v_cons.
   Proof. isVcons x xs. reflexivity. Defined.
 
-  Definition vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
+  Lemma vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
     (H_nil : psi (O) [] [])
     (H_cons : forall n' : nat, forall x : A, forall y : B, forall xs' : vector A n', forall ys' : vector B n', psi n' xs' ys' -> psi (S n') (x :: xs') (y :: ys'))
     : forall n : nat, forall xs : vector A n, forall ys : vector B n, psi n xs ys.
