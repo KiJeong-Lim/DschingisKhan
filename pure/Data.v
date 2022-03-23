@@ -175,16 +175,6 @@ Module MyCategories.
 
   End StateTIsMonadTrans.
 
-  Section VectorIsMonad.
-
-  Local Polymorphic Instance reader_isMonad (R : Type) : isMonad (from_to_ R) :=
-    { pure {A : Type} := fun x : A => fun r : R => x
-    ; bind {A : Type} {B : Type} := fun m : R \to A => fun k : A \to (R \to B) => fun r : R => k (m r) r
-    }
-  .
-
-  End VectorIsMonad.
-
   Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
   | inl1 : F1 X -> sum1 F1 F2 X
   | inr1 : F2 X -> sum1 F1 F2 X
@@ -214,7 +204,7 @@ End MyCategories.
 
 Module MyVectors.
 
-  Import EqFacts MyUtilities MyCategories.
+  Import EqFacts MyUtilities BasicSetoidTheory MyCategories.
 
   Inductive vector (A : Type) : nat -> Type :=
   | Vnil : vector A (O)
@@ -407,7 +397,7 @@ Module MyVectors.
       []
     | S n' =>
       fun xss : vector (vector A (S n')) (S n') =>
-      vector_head (vector_head xss) :: vector_diag (vmap (fun xs : vector A (S n') => vector_tail xs) n' (vector_tail xss))
+      vector_head (vector_head xss) :: vector_diag (vector_map (fun xs : vector A (S n') => vector_tail xs) (vector_tail xss))
     end
   .
 
@@ -443,6 +433,39 @@ Module MyVectors.
     - eapply FinSet_caseS.
       + reflexivity.
       + exact (IH).
+  Qed.
+
+  Definition vec (n : nat) : Type -> Type :=
+    fun A : Type =>
+    vector A n
+  .
+
+  Global Instance vector_isMonad (n : nat) : isMonad (vec n) :=
+    { pure {A : Type} :=
+      fun x : A =>
+      vector_const x
+    ; bind {A : Type} {B : Type} :=
+      fun m : vec n A =>
+      fun k : A -> vec n B =>
+      vector_diag (vector_map k m)
+    }
+  .
+
+  Local Instance vector_isSetoid1 (n : nat) : isSetoid1 (vec n) :=
+    { liftSetoid1 {X : Type} :=
+      {| eqProp := @eq (vec n X); Setoid_requiresEquivalence := eq_equivalence |}
+    }
+  .
+
+  Global Instance vectorObeysMonadLaws (n : nat) :
+    obeysMonadLaws (vector_isMonad n).
+  Proof with repeat (rewrite <- vector_diag_spec || rewrite <- vector_map_spec || rewrite <- vector_const_spec); eauto.
+    split; cbn.
+    - intros A B C m k1 k2. eapply vector_ext_eq. intros i...
+    - intros A B k x. eapply vector_ext_eq. intros i...
+    - intros A m. eapply vector_ext_eq. intros i...
+    - intros A B m1 m2 m1_eq_m2 k. subst m1. eapply vector_ext_eq. intros i...
+    - intros A B k1 k2 k1_eq_l2 m. eapply vector_ext_eq. intros i... rewrite (k1_eq_l2 (m !! i))...
   Qed.
 
 End MyVectors.
