@@ -354,10 +354,10 @@ Module MyVectors.
   Qed.
 
   Lemma vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
-    (H_ext_eq : forall i : FinSet n, xs1 !! i = xs2 !! i)
+    (H_EXT_EQ : forall i : FinSet n, xs1 !! i = xs2 !! i)
     : xs1 = xs2.
   Proof.
-    revert xs1 xs2 H_ext_eq.
+    revert xs1 xs2 H_EXT_EQ.
     induction xs1 as [ | n x1 xs1 IH].
     - isVnil. intros H_ext_eq.
       reflexivity.
@@ -374,9 +374,8 @@ Module MyVectors.
     vmap f n
   .
 
-  Lemma vector_map_spec {A : Type} {B : Type} {n : nat} (f : A -> B) (xs : vector A n) :
-    forall i : FinSet n,
-    f (xs !! i) = vector_map f xs !! i.
+  Lemma vector_map_spec {A : Type} {B : Type} {n : nat} (f : A -> B) (xs : vector A n)
+    : forall i : FinSet n, f (xs !! i) = vector_map f xs !! i.
   Proof.
     induction xs as [ | n x xs IH]; [eapply FinSet_case0 | eapply FinSet_caseS].
     - rewrite vector_indexing_unfold. reflexivity.
@@ -390,9 +389,8 @@ Module MyVectors.
     end
   .
 
-  Lemma diagonal_spec {A : Type} {n : nat} (xss : vector (vector A n) n) :
-    forall i : FinSet n,
-    (xss !! i) !! i = diagonal xss !! i.
+  Lemma diagonal_spec {A : Type} {n : nat} (xss : vector (vector A n) n)
+    : forall i : FinSet n, (xss !! i) !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
     - isVnil. eapply FinSet_case0.
@@ -409,9 +407,8 @@ Module MyVectors.
     end
   .
 
-  Lemma replicate_spec {A : Type} {n : nat} (x : A) :
-    forall i : FinSet n,
-    x = replicate x !! i.
+  Lemma replicate_spec {A : Type} {n : nat} (x : A)
+    : forall i : FinSet n, x = replicate x !! i.
   Proof.
     induction n as [ | n IH]; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
   Qed.
