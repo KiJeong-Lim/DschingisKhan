@@ -308,22 +308,21 @@ Module MyVectors.
     end (eq_reflexivity (S n'))
   .
 
-  Lemma Vcons_inj1 {A : Type} {n' : nat} :
-    forall x : A,
-    forall xs : vector A n',
-    vector_head (x :: xs) = x.
-  Proof. reflexivity. Defined.
+  Lemma Vcons_inj {A : Type} {n' : nat} (x1 : A) (x2 : A) (xs1 : vector A n') (xs2 : vector A n')
+    (H_cons_eq : x1 :: xs1 = x2 :: xs2)
+    : x1 = x2 /\ xs1 = xs2.
+  Proof.
+    split.
+    - eapply eq_congruence with (f := vector_head) (x1 := x1 :: xs1) (x2 := x2 :: xs2). exact H_cons_eq.
+    - eapply eq_congruence with (f := vector_tail) (x1 := x1 :: xs1) (x2 := x2 :: xs2). exact H_cons_eq.
+  Qed.
 
-  Lemma Vcons_inj2 {A : Type} {n' : nat} :
-    forall x : A,
-    forall xs : vector A n',
-    vector_tail (x :: xs) = xs.
-  Proof. reflexivity. Defined.
-
-  Lemma Vcons_surj {A : Type} {n' : nat} :
+  Lemma Vcons_eta {A : Type} {n' : nat} :
     forall v_cons : vector A (S n'),
     vector_head v_cons :: vector_tail v_cons = v_cons.
-  Proof. isVcons x xs. reflexivity. Defined.
+  Proof.
+    isVcons x xs. exact (eq_reflexivity (x :: xs)).
+  Qed.
 
   Lemma vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
     (H_nil : psi (O) [] [])
@@ -349,11 +348,9 @@ Module MyVectors.
     | FS n' i' => fun xs' : vector A (S n') => vector_tail xs' !! i'
     end xs.
   Proof.
-    destruct xs as [ | n' x xs'].
-    - eapply FinSet_case0.
-    - eapply FinSet_caseS.
-      + exact (eq_reflexivity x).
-      + exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
+    destruct xs as [ | n' x xs']; [eapply FinSet_case0 | eapply FinSet_caseS].
+    - exact (eq_reflexivity x).
+    - exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
   Qed.
 
   Lemma vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
@@ -381,19 +378,15 @@ Module MyVectors.
     forall i : FinSet n,
     f (xs !! i) = vector_map f xs !! i.
   Proof.
-    induction xs as [ | n x xs IH].
-    - eapply FinSet_case0.
-    - eapply FinSet_caseS.
-      + rewrite vector_indexing_unfold.
-        reflexivity.
-      + intros i'. rewrite vector_indexing_unfold.
-        exact (IH i').
+    induction xs as [ | n x xs IH]; [eapply FinSet_case0 | eapply FinSet_caseS].
+    - rewrite vector_indexing_unfold. reflexivity.
+    - intros i'. rewrite vector_indexing_unfold. exact (IH i').
   Qed.
 
   Fixpoint diagonal {A : Type} {n : nat} {struct n} : vector (vector A n) n -> vector A n :=
     match n with
     | O => fun xss : vector (vector A O) O => []
-    | S n' => fun xss : vector (vector A (S n')) (S n') => vector_head (vector_head xss) :: diagonal (vector_map vector_tail (vector_tail xss))
+    | S n' => fun xss : vector (vector A (S n')) (S n') => vector_head (vector_head xss) :: diagonal (n := n') (vector_map vector_tail (vector_tail xss))
     end
   .
 
@@ -402,7 +395,7 @@ Module MyVectors.
     (xss !! i) !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
-    - intros xss. eapply FinSet_case0.
+    - isVnil. eapply FinSet_case0.
     - isVcons xs xss. eapply FinSet_caseS.
       + rewrite vector_indexing_unfold. reflexivity.
       + intros i. rewrite vector_indexing_unfold. simpl. rewrite <- IH.
@@ -412,7 +405,7 @@ Module MyVectors.
   Fixpoint replicate {A : Type} {n : nat} {struct n} : A -> vector A n :=
     match n with
     | O => fun x : A => []
-    | S n' => fun x : A => x :: replicate x
+    | S n' => fun x : A => x :: replicate (n := n') x
     end
   .
 
@@ -420,11 +413,7 @@ Module MyVectors.
     forall i : FinSet n,
     x = replicate x !! i.
   Proof.
-    induction n as [ | n IH].
-    - eapply FinSet_case0.
-    - eapply FinSet_caseS.
-      + reflexivity.
-      + exact (IH).
+    induction n as [ | n IH]; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
   Qed.
 
   Section VectorIsMonad.
@@ -436,7 +425,7 @@ Module MyVectors.
     vector A n
   .
 
-  Global Instance vector_isMonad : isMonad vec_n :=
+  Global Instance vec_isMonad : isMonad vec_n :=
     { pure {A : Type} :=
       fun x : A =>
       replicate x
@@ -447,16 +436,16 @@ Module MyVectors.
     }
   .
 
-  Local Instance vector_isSetoid1 : isSetoid1 vec_n :=
+  Global Instance vec_isSetoid1 : isSetoid1 vec_n :=
     { liftSetoid1 {A : Type} :=
       {| eqProp := @eq (vec_n A); Setoid_requiresEquivalence := @eq_equivalence (vec_n A) |}
     }
   .
 
-  Local Instance vectorObeysMonadLaws :
-    obeysMonadLaws vector_isMonad.
+  Global Instance vec_ObeysMonadLaws :
+    obeysMonadLaws vec_isMonad.
   Proof.
-    split; cbn; (repeat intro); eapply vector_ext_eq; intros i.
+    split; cbn; intros; eapply vector_ext_eq; intros i.
     all: repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
     all: congruence || eauto.
   Qed.
