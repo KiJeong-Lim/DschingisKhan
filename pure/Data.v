@@ -7,124 +7,219 @@ Require Import Coq.Program.Basics.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
-Module LinkedLists.
+Module MyCategories.
 
-  Import ListNotations EqFacts MyUtilities BasicSetoidTheory BasicPosetTheory.
+  Import MyUtilities BasicSetoidTheory.
 
-  Section ListAccessories.
+  Global Existing Instance arrow_isSetoid.
 
-  Definition addIndices_aux {A : Type} : list A -> nat -> list (A * nat) :=
-    fold_right (fun x acc n => (x, n) :: acc (1 + n)) (fun n => [])
+  Polymorphic Class isMonad (M : Type -> Type) : Type :=
+    { pure {A : Type} : A \to M A
+    ; bind {A : Type} {B : Type} : M A -> A \to M B -> M B
+    }
   .
 
-  Definition addIndices {A : Type} (xs : list A) : list (A * nat) :=
-    addIndices_aux xs 0
+  Global Infix " >>= " := bind (at level 90, left associativity) : function_scope.
+
+  Polymorphic Definition fmult {A : Type} {B : Type} {C : Type} (f1 : B \to C) (f2 : A \to B) : A \to C :=
+    fun x : A => f1 (f2 x)
   .
 
-  Definition update {A : Type} (xs : list A) (i0 : nat) (x0 : A) : list A :=
-    map (fun it => if Nat.eq_dec (snd it) i0 then x0 else fst it) (addIndices xs)
+  Polymorphic Definition funit {A : Type} : A \to A :=
+    fun x : A => x
   .
 
-  Definition swap_aux {A : Type} (xs : list A) (i1 : nat) (i2 : nat) (x : A) (i : nat) : A :=
-    (if Nat.eq_dec i i1 then nth i2 xs x else (if Nat.eq_dec i i2 then nth i1 xs x else (x)))
+  Polymorphic Definition kmult {A : Type} {B : Type} {C : Type} {M : Type -> Type} `{M_isMonad : isMonad M} (k1 : B \to M C) (k2 : A \to M B) : A \to M C :=
+    fun x : A => bind (k2 x) k1
   .
 
-  Definition swap {A : Type} (xs : list A) (i1 : nat) (i2 : nat) : list A :=
-    map (uncurry (swap_aux xs i1 i2)) (addIndices xs)
+  Polymorphic Definition kunit {A : Type} {M : Type -> Type} `{M_isMonad : isMonad M} : A \to M A :=
+    fun x : A => pure x
   .
 
-  End ListAccessories.
+  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
+    { fmap {_from : Type} {_to : Type} : (_from \to _to) -> (F _from \to F _to)
+    }
+  .
 
-  Section ListTheory.
+  Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
+  Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
-  Theorem list_extensionality {A : Type} (xs1 : list A) (xs2 : list A)
-    : xs1 = xs2 <-> (forall i x, nth_error xs1 i = Some x <-> nth_error xs2 i = Some x).
-  Proof with discriminate || eauto.
-    split.
-    - intros ?; subst xs2. reflexivity.
-    - revert xs2; induction xs1 as [ | x1 xs1 IH]; destruct xs2 as [ | x2 xs2]; intros H_ext_eq...
-      + pose proof (proj2 (H_ext_eq 0 x2) (eq_reflexivity (Some x2)))...
-      + pose proof (proj1 (H_ext_eq 0 x1) (eq_reflexivity (Some x1)))...
-      + apply eq_congruence2.
-        { pose proof (proj2 (H_ext_eq 0 x2) (eq_reflexivity (Some x2))); apply Some_inj... }
-        { apply IH. intros i x; exact (H_ext_eq (S i) x). }
-  Qed.
+  Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
+    { liftSetoid1 {X : Type} :> isSetoid (F X)
+    }
+  .
 
-  Lemma addIndices_aux_unfold {A : Type} (xs : list A) (n : nat) :
-    addIndices_aux xs n =
-    match xs with
-    | [] => []
-    | hd_xs :: tl_xs => (hd_xs, n) :: addIndices_aux tl_xs (S n)
-    end.
-  Proof. induction xs as [ | x xs IH]; simpl; eauto. Qed.
+  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} `(F_isFunctor : isFunctor F) : Prop :=
+    { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
+      forall f1 : B \to C,
+      forall f2 : A \to B,
+      fmap (_from := A) (_to := C) (f1 `fmult` f2) == fmap (_from := B) (_to := C) f1 `fmult` fmap (_from := A) (_to := B) f2
+    ; fmap_funit_comm {A : Type} :
+      fmap (_from := A) (_to := A) funit == funit
+    }
+  .
 
-  Lemma addIndices_unfold {A : Type} (xs : list A) :
-    addIndices xs =
-    match xs with
-    | [] => []
-    | hd_xs :: tl_xs => (hd_xs, 0) :: map (fun it => (fst it, 1 + snd it)) (addIndices tl_xs)
-    end.
-  Proof with eauto.
-    unfold addIndices; cbn. rename xs into xs1. generalize 0 as n; intros n.
-    rewrite addIndices_aux_unfold at 1. destruct xs1 as [ | x1 xs1]...
-    apply eq_congruence. clear x1; revert n; induction xs1 as [ | x1 xs1 IH]; simpl...
-    intros n; apply eq_congruence; exact (IH (S n)).
-  Qed.
+  Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `(M_isMonad : isMonad M) : Prop :=
+    { bind_assoc {A : Type} {B : Type} {C : Type} :
+      forall m : M A,
+      forall k1 : A \to M B,
+      forall k2 : B \to M C,
+      bind (bind m k1) k2 == bind m (fun x : A => bind (k1 x) k2)
+    ; bind_pure_l {A : Type} {B : Type} :
+      forall k : A \to M B,
+      forall x : A,
+      bind (pure x) k == k x
+    ; bind_pure_r {A : Type} :
+      forall m : M A,
+      bind m pure == m
+    ; bind_preserves_eq_on_fst_arg {A : Type} {B : Type} :
+      forall m1 : M A,
+      forall m2 : M A,
+      m1 == m2 ->
+      forall k : A \to M B,
+      bind m1 k == bind m2 k
+    ; bind_preserves_eq_on_snd_arg {A : Type} {B : Type} :
+      forall k1 : A \to M B,
+      forall k2 : A \to M B,
+      k1 == k2 ->
+      forall m : M A,
+      bind m k1 == bind m k2
+    }
+  .
 
-  Lemma map_listExt {A : Type} {B : Type} (xs : list A) (f : A -> B)
-    : forall i y, nth_error (map f xs) i = Some y <-> (exists x, nth_error xs i = Some x /\ y = f x).
-  Proof with lia || eauto.
-    intros i y. split; [intros y_is | intros [x [x_is y_eq_f_x]]].
-    - assert (x_exists : exists x : A, nth_error xs i = Some x).
-      { apply isSome_intro, nth_error_Some in y_is; rewrite map_length in y_is.
-        destruct (nth_error xs i) as [x | ] eqn: H_obs; [exists (x) | apply nth_error_None in H_obs]...
+  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A -> B =>
+      fun m : M A =>
+      bind m (pure `fmult` f)
+    }
+  .
+
+  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `{M_isMonad : isMonad M} `(M_obeysMonadLaws : @obeysMonadLaws M eq1 M_isMonad) :
+    obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
+  Proof with eauto with *. (* Thanks to Soonwon Moon *)
+    enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
+    enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fmult` f2) e == (fmap f1 `fmult` fmap f2) e).
+    - constructor...
+    - intros A B C f g m.
+      symmetry.
+      (* Soonwon's Advice:
+        (map f . map g) m
+        m >>= pure . g >>= pure . f
+        m >>= \x -> pure (g x) >>= pure . f
+        m >>= \x -> (pure . f) (g x)
+        m >>= \x -> pure (f (g x))
+        m >>= pure . (f . g)
+        map (f . g) m
+      *)
+      simpl.
+      unfold fmult at 1.
+      transitivity (m >>= (fun x : A => pure (g x) >>= pure `fmult` f)).
+      { rewrite bind_assoc.
+        apply bind_preserves_eq_on_snd_arg...
       }
-      destruct x_exists as [x x_is]. exists x; split...
-      rewrite map_nth_error with (d := x) in y_is... apply Some_inj in y_is...
-    - rewrite map_nth_error with (d := x)... apply eq_congruence...
+      transitivity (m >>= (fun x : A => (pure `fmult` f) (g x))).
+      { apply bind_preserves_eq_on_snd_arg.
+        intros x.
+        rewrite bind_pure_l...
+      }
+      reflexivity.
+    - intros A e.
+      transitivity (bind e (fun x : A => pure x))...
+      apply bind_pure_r.
   Qed.
 
-  Lemma addIndices_listExt {A : Type} (xs : list A)
-    : forall i x n, nth_error (addIndices xs) i = Some (x, n) <-> (nth_error xs i = Some x /\ i = n).
-  Proof with eauto.
-    induction xs as [ | x1 xs1 IH]; rewrite addIndices_unfold; simpl.
-    - intros [ | i'] x n; now split.
-    - intros [ | i'] x n; split; simpl.
-      + intros H_eq. now split; congruence.
-      + intros [x_is n_is]; congruence.
-      + intros H_obs. apply map_listExt in H_obs. destruct H_obs as [[_x _n] [H_obs _obs_is]].
-        pose proof (eq_congruence fst _ _ _obs_is) as _x_is.
-        pose proof (eq_congruence snd _ _ _obs_is) as _n_is.
-        simpl in *; subst x n. destruct (proj1 (IH i' _x _n) H_obs) as [H_fst H_snd]...
-      + intros [H_fst H_snd]. apply map_listExt. exists (x, i'); split... apply IH...
-  Qed.
+  Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
 
-  End ListTheory.
+  Section OptionIsMonad.
 
-End LinkedLists.
-
-Module BinaryTrees.
-
-  Import ListNotations EqFacts MyUtilities BasicSetoidTheory BasicPosetTheory LinkedLists.
-
-  Inductive bintree (Elem : Type) : Type :=
-  | BT_null : bintree Elem
-  | BT_node (lchild : bintree Elem) (elements : Elem) (rchild : bintree Elem) : bintree Elem
+  Global Instance option_isMonad : isMonad option :=
+    { pure {A : Type} :=
+      fun x : A =>
+      Some x
+    ; bind {A : Type} {B : Type} :=
+      fun m : option A =>
+      fun k : A -> option B =>
+      maybe None k m
+    }
   .
 
-  Global Arguments BT_null {Elem}.
-  Global Arguments BT_node {Elem}.
+  End OptionIsMonad.
 
-  Section BinaryTreeAccessories.
+  Section StateTIsMonadTrans.
 
-  Definition option2list {A : Type} : option A -> list A :=
-    maybe [] (fun x => [x])
+  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+    ST \to M (prod X ST)
   .
 
-  Definition pair2list {A : Type} : A * A -> list A :=
-    uncurry (fun x1 x2 => [x1; x2])
+  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
+    @funit (stateT ST M X)
   .
 
-  End BinaryTreeAccessories.
+  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
+    @funit (stateT ST M X)
+  .
 
-End BinaryTrees.
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+    { pure _ := StateT `fmult` curry pure
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
+    }
+  .
+
+  Polymorphic Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+    fun X : Type =>
+    fun e : E X =>
+    StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
+  .
+
+  End StateTIsMonadTrans.
+
+  Section VectorIsMonad.
+
+  Local Polymorphic Instance reader_isMonad (R : Type) : isMonad (from_to_ R) :=
+    { pure {A : Type} := fun x : A => fun r : R => x
+    ; bind {A : Type} {B : Type} := fun m : R \to A => fun k : A \to (R \to B) => fun r : R => k (m r) r
+    }
+  .
+
+  End VectorIsMonad.
+
+  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  | inl1 : F1 X -> sum1 F1 F2 X
+  | inr1 : F2 X -> sum1 F1 F2 X
+  .
+
+  Global Arguments inl1 {F1} {F2} {X}.
+  Global Arguments inr1 {F1} {F2} {X}.
+
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
+
+  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A \to B =>
+      sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
+    }
+  .
+
+  Global Declare Scope monad_scope.
+
+  Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
+  Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
+
+  Global Open Scope monad_scope.
+
+End MyCategories.
+
+Module MyVectors.
+
+  Polymorphic Inductive vector (A : Type) : nat -> Type :=
+  | Vnil : vector A (O)
+  | Vcons {n : nat} (x : A) (xs : vector A n) : vector A (S n)
+  .
+
+  Global Arguments Vnil {A}.
+  Global Arguments Vcons {A} {n} (x) (xs).
+
+End MyVectors.
