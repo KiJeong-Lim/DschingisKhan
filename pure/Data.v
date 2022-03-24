@@ -229,19 +229,19 @@ Module MyVectors.
 
   Context {A : Type}.
 
-  Definition castVec {n : nat} {m : nat} (H_EQ : n = m) : vector A n -> vector A m :=
+  Definition cast_vec {n : nat} {m : nat} (H_EQ : n = m) : vector A n -> vector A m :=
     match H_EQ in eq _ n0 return vector A n -> vector A n0 with
     | eq_refl => fun xs : vector A n => xs
     end
   .
 
-  Lemma caseVnil {phi : vector A (O) -> Type}
+  Lemma case_Vnil {phi : vector A (O) -> Type}
     (H_nil : phi Vnil)
     (v_nil : vector A (O))
     : phi v_nil.
   Proof.
     refine (
-      match v_nil as v in vector _ ze return forall H_EQ : ze = 0, phi (castVec H_EQ v) with
+      match v_nil as v in vector _ ze return forall H_EQ : ze = 0, phi (cast_vec H_EQ v) with
       | Vnil => fun ze_is_O : O = 0 => _
       | Vcons n' x xs' => fun H_false : S n' = 0 => S_eq_0_elim n' H_false
       end (eq_reflexivity 0)
@@ -251,13 +251,13 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Lemma caseVcons {n : nat} {phi : vector A (S n) -> Type}
+  Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
     (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
     (v_cons : vector A (S n))
     : phi v_cons.
   Proof.
     refine (
-      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (castVec H_EQ v) with
+      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (cast_vec H_EQ v) with
       | Vnil => fun H_false : 0 = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
       | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
@@ -270,20 +270,20 @@ Module MyVectors.
 
   Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : n = n -> Type :=
     match n as n0 return n0 = n -> Type with
-    | O => fun H_EQ : O = n => xs = castVec H_EQ [] -> phi xs
-    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = castVec H_EQ (x' :: xs') -> phi xs
+    | O => fun H_EQ : O = n => xs = cast_vec H_EQ [] -> phi xs
+    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = cast_vec H_EQ (x' :: xs') -> phi xs
     end
   .
 
-  Corollary dep_des_vector {n : nat} :
+  Corollary vector_dep_des {n : nat} :
     forall phi : vector A n -> Type,
     forall xs : vector A n,
     vector_refined_matching phi xs eq_refl ->
     phi xs.
   Proof.
     destruct n as [ | n']; simpl; intros ? xs; pattern xs; revert xs.
-    - eapply caseVnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
-    - eapply caseVcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
+    - eapply case_Vnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
+    - eapply case_Vcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
   Defined.
 
   Definition vector_head {n : nat} : vector A (S n) -> A :=
@@ -324,12 +324,12 @@ Module MyVectors.
 
   Global Ltac introVnil :=
     let v_nil := fresh "v_nil" in
-    intros v_nil; pattern v_nil; revert v_nil; eapply caseVnil
+    intros v_nil; pattern v_nil; revert v_nil; eapply case_Vnil
   .
 
   Global Ltac introVcons x xs :=
     let v_cons := fresh "v_cons" in
-    intros v_cons; pattern v_cons; revert v_cons; eapply caseVcons; intros x xs
+    intros v_cons; pattern v_cons; revert v_cons; eapply case_Vcons; intros x xs
   .
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
@@ -409,11 +409,7 @@ Module MyVectors.
   Qed.
 
   Global Tactic Notation " reduce_monad_methods_of_vector " :=
-    first
-    [ rewrite <- diagonal_spec
-    | rewrite <- vector_map_spec
-    | rewrite <- replicate_spec
-    ]
+    first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]
   .
 
   Section VectorIsMonad.
