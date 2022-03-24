@@ -294,6 +294,29 @@ Module MyVectors.
     end (eq_reflexivity (S n))
   .
 
+  Polymorphic Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
+    match n as n0 return n0 = n -> Type with
+    | O =>
+      fun n_is_O : O = n =>
+      xs = castVec n n_is_O Vnil ->
+      phi xs
+    | S n' =>
+      fun n_eq_S_n' : S n' = n =>
+      forall x' : A,
+      forall xs' : vector A n',
+      xs = castVec n n_eq_S_n' (Vcons n' x' xs') ->
+      phi xs
+    end (eq_reflexivity n)
+  .
+
+  Polymorphic Lemma des_vector {n : nat} (phi : vector A n -> Type)
+    : forall xs : vector A n, vector_refined_matching phi xs -> phi xs.
+  Proof.
+    destruct n as [ | n']; simpl; intros xs; pattern xs; revert xs.
+    - eapply caseVnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
+    - eapply caseVcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
+  Defined.
+
   Context {B : Type}.
 
   Definition vmap (f : A -> B) : forall n : nat, vector A n -> vector B n :=
@@ -370,9 +393,9 @@ Module MyVectors.
       reflexivity.
     - introVcons x2 xs2. intros H_ext_eq.
       assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
-      { exact (H_ext_eq (@FZ n)). }
+      { exact (H_ext_eq (FZ n)). }
       assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
-      { apply IH. exact (fun i : FinSet n => H_ext_eq (@FS n i)). }
+      { apply IH. exact (fun i : FinSet n => H_ext_eq (FS n i)). }
       simpl in *; congruence.
   Qed.
 
