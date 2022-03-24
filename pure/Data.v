@@ -345,7 +345,7 @@ Module MyVectors.
     vidx n
   .
 
-  Global Infix " !! " := vector_indexing (at level 65, no associativity) : data_scope.
+  Global Infix " !! " := vector_indexing (at level 65, no associativity).
 
   Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
     forall i : FinSet n,
