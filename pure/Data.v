@@ -359,9 +359,9 @@ Module MyVectors.
     - introVnil. intros H_ext_eq.
       reflexivity.
     - introVcons x2 xs2. intros H_ext_eq.
-      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)) by exact (H_ext_eq (FZ n)).
-      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)) by exact (IH xs2 (fun i : FinSet n => H_ext_eq (FS n i))).
-      simpl in *; congruence.
+      assert (x1_eq_x2 : x1 = x2) by exact (H_ext_eq (FZ n)).
+      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH _ (fun i : FinSet n => H_ext_eq (FS n i))).
+      congruence.
   Qed.
 
   Definition vector_map {A : Type} {B : Type} {n : nat} : (A -> B) -> vector A n -> vector B n :=
