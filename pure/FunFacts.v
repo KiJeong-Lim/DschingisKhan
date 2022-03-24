@@ -25,15 +25,6 @@ Module FunFacts.
   | FALSE_BB : BB
   .
 
-  Polymorphic Inductive acc (A : Type) (LT : A -> A -> Prop) (tree : A) : Prop :=
-    Mk_acc
-      (runAcc : forall subtree : A, LT subtree tree -> acc A LT subtree)
-    : acc A LT tree
-  .
-
-  Global Arguments acc {A} (LT) (tree).
-  Global Arguments Mk_acc {A} {LT} (tree).
-
   Definition get_i {A : Prop} {B : Prop} : RETRACT A B -> A -> B :=
     _i A B
   .
@@ -74,16 +65,6 @@ Module FunFacts.
     {x : A | phi x}
   .
 
-  Polymorphic Definition runAcc_iff {A : Type} {LT : A -> A -> Prop} (tree : A) :
-    acc LT tree ->
-    forall subtree : A,
-    LT subtree tree ->
-    acc LT subtree.
-  Proof.
-    intros [runAcc].
-    exact runAcc.
-  Defined.
-
   Local Hint Resolve get_inv get_inv2 RETRACT_A_A : core.
 
   Lemma derive_fixedpoint_combinator (D : Prop) :
@@ -108,15 +89,6 @@ Module FunFacts.
     intros TRUE_BB_eq_FALSE_BB BOOL TRUE FALSE.
     exact (eq_congruence (fun b : BB => if b then TRUE else FALSE) TRUE_BB FALSE_BB TRUE_BB_eq_FALSE_BB).
   Qed.
-
-  Lemma nat_well_founded :
-    forall n : nat,
-    acc lt n.
-  Proof.
-    strong_rec. intros n acc_hyp. constructor. intros i H_lt. apply acc_hyp.
-    - apply le_implies_leq. apply (le_transitivity (le_S i i (le_n i)) H_lt).
-    - intros H_eq. contradiction (not_n_lt_n n). congruence.
-  Defined.
 
   Section PROOF_IRRELEVANCE_implies_EQ_RECT_EQ.
 
@@ -401,7 +373,23 @@ Module FunFacts.
 
   Variable LT : A -> A -> Prop.
 
-  Hypothesis LT_wf : forall tree : A, acc LT tree.
+  Polymorphic Inductive acc (tree : A) : Prop :=
+  | Mk_acc
+    (runAcc : forall subtree : A, LT subtree tree -> acc subtree)
+    : acc tree
+  .
+
+  Polymorphic Definition runAcc_iff (tree : A) :
+    acc tree ->
+    forall subtree : A,
+    LT subtree tree ->
+    acc subtree.
+  Proof.
+    intros [runAcc].
+    exact runAcc.
+  Defined.
+
+  Hypothesis LT_wf : forall tree : A, acc tree.
 
   Local Polymorphic Instance LT_Irreflexive :
     Irreflexive LT.
@@ -442,6 +430,15 @@ Module FunFacts.
       + exact (lt_elim_n_lt_0 (get_rank tree) H_lt).
       + constructor; intros subtree H_R; apply IH.
         exact (le_transitivity (LT_spec subtree tree H_R) (le_elim_S_n_le_m (get_rank tree) (1 + rank) H_lt)).
+  Defined.
+
+  Lemma nat_well_founded :
+    forall n : nat,
+    acc lt n.
+  Proof.
+    strong_rec. intros n acc_hyp. constructor. intros i H_lt. apply acc_hyp.
+    - apply le_implies_leq. apply (le_transitivity (le_S i i (le_n i)) H_lt).
+    - intros H_eq. contradiction (not_n_lt_n n). congruence.
   Defined.
 
 End FunFacts.
