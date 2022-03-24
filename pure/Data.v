@@ -293,14 +293,21 @@ Module MyVectors.
 
   End VectorAccessories.
 
-  Global Ltac isVnil :=
-    let xs' := fresh "xs" in
-    intros xs'; pattern xs'; revert xs'; eapply caseVnil
+  Global Ltac introVnil :=
+    let v_nil := fresh "v_nil" in
+    intros v_nil;
+    pattern v_nil;
+    revert v_nil;
+    eapply caseVnil
   .
 
-  Global Ltac isVcons x xs :=
-    let xs' := fresh "xs" in
-    intros xs'; pattern xs'; revert xs'; eapply caseVcons; intros x xs
+  Global Ltac introVcons x xs :=
+    let v_cons := fresh "v_cons" in
+    intros v_cons;
+    pattern v_cons;
+    revert v_cons;
+    eapply caseVcons;
+    intros x xs
   .
 
   Definition vector_head {A : Type} {n' : nat} : vector A (S n') -> A :=
@@ -323,16 +330,15 @@ Module MyVectors.
     (H_cons_eq : x1 :: xs1 = x2 :: xs2)
     : x1 = x2 /\ xs1 = xs2.
   Proof.
-    split.
-    - exact (eq_congruence vector_head (x1 :: xs1) (x2 :: xs2) H_cons_eq).
-    - exact (eq_congruence vector_tail (x1 :: xs1) (x2 :: xs2) H_cons_eq).
+    split; [set (f := @vector_head A n') | set (f := @vector_tail A n')].
+    all: exact (eq_congruence f (x1 :: xs1) (x2 :: xs2) H_cons_eq).
   Qed.
 
   Lemma Vcons_eta {A : Type} {n' : nat} :
     forall v_cons : vector A (S n'),
     vector_head v_cons :: vector_tail v_cons = v_cons.
   Proof.
-    isVcons x xs. exact (eq_reflexivity (x :: xs)).
+    introVcons x xs. exact (eq_reflexivity (x :: xs)).
   Qed.
 
   Lemma vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
@@ -341,8 +347,8 @@ Module MyVectors.
     : forall n : nat, forall xs : vector A n, forall ys : vector B n, psi n xs ys.
   Proof.
     induction xs as [ | n x xs IH].
-    - isVnil. exact (H_nil).
-    - isVcons y ys. exact (H_cons n x y xs ys (IH ys)).
+    - introVnil. exact (H_nil).
+    - introVcons y ys. exact (H_cons n x y xs ys (IH ys)).
   Defined.
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
@@ -370,9 +376,9 @@ Module MyVectors.
   Proof.
     revert xs1 xs2 H_EXT_EQ.
     induction xs1 as [ | n x1 xs1 IH].
-    - isVnil. intros H_ext_eq.
+    - introVnil. intros H_ext_eq.
       reflexivity.
-    - isVcons x2 xs2. intros H_ext_eq.
+    - introVcons x2 xs2. intros H_ext_eq.
       assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
       { exact (H_ext_eq (@FZ n)). }
       assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
@@ -404,8 +410,8 @@ Module MyVectors.
     : forall i : FinSet n, (xss !! i) !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
-    - isVnil. eapply FinSet_case0.
-    - isVcons xs xss. eapply FinSet_caseS.
+    - introVnil. eapply FinSet_case0.
+    - introVcons xs xss. eapply FinSet_caseS.
       + now rewrite vector_indexing_unfold.
       + intros i. rewrite vector_indexing_unfold. simpl. rewrite <- IH.
         now rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i).
