@@ -240,7 +240,7 @@ Module MyVectors.
     : phi v_nil.
   Proof.
     refine (
-      match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ v) with
+      match v_nil as xs in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ xs) with
       | Vnil => fun H_EQ : O = O => _
       | Vcons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
@@ -256,7 +256,7 @@ Module MyVectors.
     : phi v_cons.
   Proof.
     refine (
-      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ v) with
+      match v_cons as xs in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ xs) with
       | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
       | Vcons n' x' xs' => fun H_EQ : S n' = S n => (fun n_eq_n' : n' = n => _) (S_eq_S_elim n' n H_EQ)
       end (eq_reflexivity (S n))
@@ -266,16 +266,14 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Definition vector_head {n : nat} : vector A (S n) -> A :=
-    fun xs : vector A (S n) =>
+  Definition vector_head {n : nat} (xs : vector A (S n)) : A :=
     match xs in vector _ S_n return S n = S_n -> A with
     | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun H_EQ : S n = S n' => x
     end eq_refl
   .
 
-  Definition vector_tail {n : nat} : vector A (S n) -> vector A n :=
-    fun xs : vector A (S n) =>
+  Definition vector_tail {n : nat} (xs : vector A (S n)) : vector A n :=
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
     | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun H_EQ : S n = S n' => xs'
@@ -406,9 +404,8 @@ Module MyVectors.
 
   Variable n : nat.
 
-  Definition vec_n : Type -> Type :=
-    fun A : Type =>
-    vector A n
+  Definition vec_n (X : Type) : Type :=
+    vector X n
   .
 
   Global Instance vec_isMonad : isMonad vec_n :=
@@ -418,7 +415,7 @@ Module MyVectors.
   .
 
   Global Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {A : Type} := {| eqProp := @eq (vec_n A); Setoid_requiresEquivalence := @eq_equivalence (vec_n A) |}
+    { liftSetoid1 {X : Type} := {| eqProp := @eq (vec_n X); Setoid_requiresEquivalence := eq_equivalence |}
     }
   .
 
