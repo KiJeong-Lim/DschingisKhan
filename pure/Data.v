@@ -345,15 +345,15 @@ Module MyVectors.
   Proof.
     revert xs1 xs2 H_EXT_EQ; induction n as [ | n IH].
     - introVnil; introVnil; intros H_EXT_EQ.
-      reflexivity.
+      exact (eq_reflexivity (@Vnil A)).
     - introVcons x1 xs1; introVcons x2 xs2; intros H_EXT_EQ.
       assert (x1_eq_x2 : x1 = x2) by exact (H_EXT_EQ (FZ n)).
       assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : FinSet n => H_EXT_EQ (FS n i))).
-      congruence.
+      exact (eq_congruence2 (@Vcons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
   Qed.
 
-  Definition vector_map {A : Type} {B : Type} {n : nat} : (A -> B) -> vector A n -> vector B n :=
-    fun f : A -> B => vmap f n
+  Definition vector_map {A : Type} {B : Type} {n : nat} (f : A -> B) : vector A n -> vector B n :=
+    vmap f n
   .
 
   Lemma vector_map_spec {A : Type} {B : Type} {n : nat} (f : A -> B) (xs : vector A n)
