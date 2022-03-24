@@ -442,7 +442,7 @@ Module MyVectors.
   Global Instance vec_obeysMonadLaws :
     obeysMonadLaws vec_isMonad.
   Proof.
-    split; cbn; intros; eapply vector_ext_eq; intros i.
+    split; cbn; intros; eapply vector_ext_eq; intros ?.
     all: repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
     all: congruence || eauto.
   Qed.
