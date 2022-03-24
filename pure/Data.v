@@ -278,6 +278,22 @@ Module MyVectors.
     end
   .
 
+  Definition vector_head {A : Type} {n : nat} : vector A (S n) -> A :=
+    fun xs : vector A (S n) =>
+    match xs in vector _ S_n return S n = S_n -> A with
+    | Vnil => S_eq_0_elim n
+    | Vcons n' x xs' => fun _ : S n = S n' => x
+    end (eq_reflexivity (S n))
+  .
+
+  Definition vector_tail {A : Type} {n : nat} : vector A (S n) -> vector A n :=
+    fun xs : vector A (S n) =>
+    match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
+    | [] => S_eq_0_elim n
+    | Vcons n' x xs' => fun _ : S n = S n' => xs'
+    end (eq_reflexivity (S n))
+  .
+
   Context {B : Type}.
 
   Definition vmap (f : A -> B) : forall n : nat, vector A n -> vector B n :=
@@ -292,35 +308,12 @@ Module MyVectors.
 
   Global Ltac introVnil :=
     let v_nil := fresh "v_nil" in
-    intros v_nil;
-    pattern v_nil;
-    revert v_nil;
-    eapply caseVnil
+    intros v_nil; pattern v_nil; revert v_nil; eapply caseVnil
   .
 
   Global Ltac introVcons x xs :=
     let v_cons := fresh "v_cons" in
-    intros v_cons;
-    pattern v_cons;
-    revert v_cons;
-    eapply caseVcons;
-    intros x xs
-  .
-
-  Definition vector_head {A : Type} {n' : nat} : vector A (S n') -> A :=
-    fun xs : vector A (S n') =>
-    match xs in vector _ S_n' return S n' = S_n' -> A with
-    | [] => S_eq_0_elim n'
-    | x :: xs' => fun _ => x
-    end (eq_reflexivity (S n'))
-  .
-
-  Definition vector_tail {A : Type} {n' : nat} : vector A (S n') -> vector A n' :=
-    fun xs : vector A (S n') =>
-    match xs in vector _ S_n' return S n' = S_n' -> vector A (pred S_n') with
-    | [] => S_eq_0_elim n'
-    | x :: xs' => fun _ => xs'
-    end (eq_reflexivity (S n'))
+    intros v_cons; pattern v_cons; revert v_cons; eapply caseVcons; intros x xs
   .
 
   Lemma Vcons_inj {A : Type} {n' : nat} (x1 : A) (x2 : A) (xs1 : vector A n') (xs2 : vector A n')
@@ -352,7 +345,7 @@ Module MyVectors.
     vidx n
   .
 
-  Global Infix " !! " := vector_indexing (at level 65, no associativity).
+  Global Infix " !! " := vector_indexing (at level 65, no associativity) : data_scope.
 
   Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
     forall i : FinSet n,
@@ -427,6 +420,10 @@ Module MyVectors.
     induction n as [ | n IH]; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
   Qed.
 
+  Local Tactic Notation " reduce_vector " :=
+    first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]
+  .
+
   Section VectorIsMonad.
 
   Variable n : nat.
@@ -457,8 +454,7 @@ Module MyVectors.
     obeysMonadLaws vec_isMonad.
   Proof.
     split; cbn; intros; eapply vector_ext_eq; intros ?.
-    all: repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
-    all: congruence || eauto.
+    all: repeat reduce_vector; congruence.
   Qed.
 
   End VectorIsMonad.
@@ -474,25 +470,23 @@ Module MyVectors.
   Lemma vector_zip_spec {A : Type} {B : Type} {n : nat} (xs : vector A n) (ys : vector B n)
     : forall i : FinSet n, (xs !! i, ys !! i) = vector_zip xs ys !! i.
   Proof.
-    cbn. intros i.
-    repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
-    exact (eq_reflexivity (xs !! i, ys !! i)).
+    cbn. intros i. repeat reduce_vector. exact (eq_reflexivity (xs !! i, ys !! i)).
   Qed.
 
-  Fixpoint vector_range (start : nat) (n : nat) {struct n} : vector nat n :=
+  Fixpoint vector_range {n : nat} {struct n} : nat -> vector nat n :=
     match n with
-    | O => []
-    | S n' => start :: vector_range (S start) n'
+    | O => fun m : nat => []
+    | S n' => fun m : nat => m :: vector_range (n := n') (S m)
     end
   .
 
-  Lemma vector_range_spec (start : nat) (n : nat)
-    : forall i : FinSet n, evalFinSet i + start = vector_range start n !! i.
+  Lemma vector_range_spec {n : nat} (m : nat)
+    : forall i : FinSet n, evalFinSet i + m = vector_range m !! i.
   Proof.
-    revert start; induction n as [ | n IH]; intros start; [eapply FinSet_case0 | eapply FinSet_caseS].
-    - exact (eq_reflexivity start).
+    revert m; induction n as [ | n IH]; intros m; [eapply FinSet_case0 | eapply FinSet_caseS].
+    - reflexivity.
     - intros i. rewrite evalFinSet_caseFS.
-      simpl; rewrite <- IH with (start := S start) (i := i).
+      simpl; rewrite <- IH with (m := S m) (i := i).
       apply Nat.add_succ_comm.
   Qed.
 
