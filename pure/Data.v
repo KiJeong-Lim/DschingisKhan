@@ -241,11 +241,11 @@ Module MyVectors.
   Proof.
     refine (
       match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ v) with
-      | Vnil => fun ze_is_O : O = O => _
+      | Vnil => fun H_EQ : O = O => _
       | Vcons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
     ).
-    replace (ze_is_O) with (eq_reflexivity O).
+    replace (H_EQ) with (eq_reflexivity O).
     - exact (H_nil).
     - apply eqnat_proof_irrelevance.
   Defined.
@@ -258,11 +258,10 @@ Module MyVectors.
     refine (
       match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ v) with
       | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
-      | Vcons n' x' xs' => fun sc_is_S_n : S n' = S n => _
+      | Vcons n' x' xs' => fun H_EQ : S n' = S n => (fun n_eq_n' : n' = n => _) (S_eq_S_elim n' n H_EQ)
       end (eq_reflexivity (S n))
     ).
-    pose proof (S_eq_S_elim n' n sc_is_S_n); subst n'.
-    replace (sc_is_S_n) with (eq_reflexivity (S n)).
+    subst n'; replace (H_EQ) with (eq_reflexivity (S n)).
     - exact (H_cons x' xs').
     - apply eqnat_proof_irrelevance.
   Defined.
