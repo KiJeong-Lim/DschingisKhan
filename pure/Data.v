@@ -300,7 +300,7 @@ Module MyVectors.
 
   End VectorAccessories.
 
-  Global Tactic Notation "introVnil" :=
+  Global Tactic Notation "introVNil" :=
     let v_nil := fresh "v_nil" in
     intros v_nil;
     pattern v_nil;
@@ -308,7 +308,7 @@ Module MyVectors.
     eapply case_VNil
   .
 
-  Global Tactic Notation "introVcons" ident(x) ident(xs) :=
+  Global Tactic Notation "introVCons" ident(x) ident(xs) :=
     let v_cons := fresh "v_cons" in
     intros v_cons;
     pattern v_cons;
@@ -341,9 +341,9 @@ Module MyVectors.
     : xs1 = xs2.
   Proof.
     revert xs1 xs2 H_EXT_EQ; induction n as [ | n IH].
-    - introVnil; introVnil; intros H_EXT_EQ.
+    - introVNil; introVNil; intros H_EXT_EQ.
       exact (eq_reflexivity (@VNil A)).
-    - introVcons x1 xs1; introVcons x2 xs2; intros H_EXT_EQ.
+    - introVCons x1 xs1; introVCons x2 xs2; intros H_EXT_EQ.
       assert (x1_eq_x2 : x1 = x2) by exact (H_EXT_EQ (FZ n)).
       assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : FinSet n => H_EXT_EQ (FS n i))).
       exact (eq_congruence2 (@VCons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
@@ -372,8 +372,8 @@ Module MyVectors.
     : forall i : FinSet n, xss !! i !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
-    - introVnil. eapply FinSet_case0.
-    - introVcons xs xss. eapply FinSet_caseS; simpl.
+    - introVNil. eapply FinSet_case0.
+    - introVCons xs xss. eapply FinSet_caseS; simpl.
       + now rewrite vector_indexing_unfold.
       + intros i. rewrite vector_indexing_unfold, <- IH.
         now rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i).
