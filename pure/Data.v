@@ -476,7 +476,7 @@ End MyVectors.
 
 Module MyBinaryTrees.
 
-  Import EqFacts MyUtilities BasicSetoidTheory MyCategories DataStructures.
+  Import EqFacts MyUtilities DataStructures.
 
   Inductive bintree (A : Type) : Type :=
   | BTnil : bintree A
