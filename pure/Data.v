@@ -486,8 +486,8 @@ Module MyBinaryTrees.
   Global Arguments BTnil {A}.
   Global Arguments BTnode {A}.
 
-  Global Notation " '[^]' " := (@BTnil _) (at level 0, no associativity) : my_data_structrue_scope.
-  Global Notation " '[^'  lchild ']++<' key '>++[' rchild  '^]' " := (@BTnode _ lchild key rchild) (lchild at level 60, rchild at level 60, key at level 65, at level 60) : my_data_structrue_scope.
+  Global Notation " '[^]' " := (@BTnil _) (at level 0) : my_data_structrue_scope.
+  Global Notation " '[^'  lchild ']++<' key '>++[' rchild  '^]' " := (@BTnode _ lchild key rchild) (lchild at level 60, key at level 65, rchild at level 60, at level 60) : my_data_structrue_scope.
   Bind Scope my_data_structrue_scope with bintree.
 
 End MyBinaryTrees.
