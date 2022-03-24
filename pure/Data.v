@@ -341,12 +341,12 @@ Module MyVectors.
     forall i : FinSet n,
     xs !! i =
     match i in FinSet S_n' return vector A S_n' -> A with
-    | FZ n' => fun xs' : vector A (S n') => vector_head xs'
-    | FS n' i' => fun xs' : vector A (S n') => vector_tail xs' !! i'
+    | FZ n' => fun xs0 : vector A (S n') => vector_head xs0
+    | FS n' i' => fun xs0 : vector A (S n') => vector_tail xs0 !! i'
     end xs.
   Proof.
-    destruct xs as [ | n' x xs']; [eapply FinSet_case0 | eapply FinSet_caseS].
-    - exact (eq_reflexivity x).
+    destruct xs as [ | n' x' xs']; [eapply FinSet_case0 | eapply FinSet_caseS].
+    - exact (eq_reflexivity x').
     - exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
   Qed.
 
