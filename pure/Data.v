@@ -304,8 +304,8 @@ Module MyVectors.
     intro_pattern_revert; eapply caseOfVNil
   .
 
-  Global Tactic Notation " introVCons " ident(x) ident(xs) :=
-    intro_pattern_revert; eapply caseOfVCons; intros x xs
+  Global Tactic Notation " introVCons " ident( _hd ) ident( _tl ) :=
+    intro_pattern_revert; eapply caseOfVCons; intros _hd _tl
   .
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
