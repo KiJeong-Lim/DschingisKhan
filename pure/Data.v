@@ -275,7 +275,7 @@ Module MyVectors.
     end
   .
 
-  Lemma dep_des_vector {n : nat} (phi : vector A n -> Type)
+  Corollary dep_des_vector {n : nat} (phi : vector A n -> Type)
     : forall xs : vector A n, vector_refined_matching phi xs eq_refl -> phi xs.
   Proof.
     revert phi; destruct n as [ | n']; simpl; intros phi xs; pattern xs; revert xs.
@@ -283,7 +283,7 @@ Module MyVectors.
     - eapply caseVcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
   Defined.
 
-  Definition vector_head {A : Type} {n : nat} : vector A (S n) -> A :=
+  Definition vector_head {n : nat} : vector A (S n) -> A :=
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> A with
     | Vnil => S_eq_0_elim n
@@ -291,7 +291,7 @@ Module MyVectors.
     end (eq_reflexivity (S n))
   .
 
-  Definition vector_tail {A : Type} {n : nat} : vector A (S n) -> vector A n :=
+  Definition vector_tail {n : nat} : vector A (S n) -> vector A n :=
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
     | Vnil => S_eq_0_elim n
@@ -348,7 +348,7 @@ Module MyVectors.
     - exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
   Qed.
 
-  Lemma vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
+  Theorem vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
     (H_EXT_EQ : forall i : FinSet n, xs1 !! i = xs2 !! i)
     : xs1 = xs2.
   Proof.
@@ -371,7 +371,7 @@ Module MyVectors.
   Proof.
     induction xs as [ | n x xs IH]; [eapply FinSet_case0 | eapply FinSet_caseS].
     - rewrite vector_indexing_unfold. exact (eq_reflexivity (f x)).
-    - intros i'. rewrite vector_indexing_unfold. exact (IH i').
+    - intros i. rewrite vector_indexing_unfold. exact (IH i).
   Qed.
 
   Fixpoint diagonal {A : Type} {n : nat} {struct n} : vector (vector A n) n -> vector A n :=
@@ -402,7 +402,7 @@ Module MyVectors.
   Lemma replicate_spec {A : Type} {n : nat} (x : A)
     : forall i : FinSet n, x = replicate x !! i.
   Proof.
-    induction n as [ | n IH]; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
+    induction n; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
   Qed.
 
   Global Tactic Notation " reduce_monad_methods_of_vector " :=
