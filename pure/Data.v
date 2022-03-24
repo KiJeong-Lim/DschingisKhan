@@ -202,9 +202,17 @@ Module MyCategories.
 
 End MyCategories.
 
+Module DataStructures.
+
+  Global Declare Scope data_scope.
+
+  Global Open Scope data_scope.
+
+End DataStructures.
+
 Module MyVectors.
 
-  Import EqFacts MyUtilities BasicSetoidTheory MyCategories.
+  Import EqFacts MyUtilities BasicSetoidTheory MyCategories DataStructures.
 
   Inductive vector (A : Type) : nat -> Type :=
   | Vnil : vector A (O)
@@ -214,8 +222,11 @@ Module MyVectors.
   Global Arguments Vnil {A}.
   Global Arguments Vcons {A}.
 
-  Local Notation " '[]' " := (@Vnil _).
-  Local Notation " x '::' xs " := (@Vcons _ _ x xs).
+  Global Notation " '[]' " := (@Vnil _) (at level 0, no associativity) : data_scope.
+
+  Global Notation " x '::' xs " := (@Vcons _ _ x xs) (at level 60, right associativity) : data_scope.
+
+  Global Bind Scope data_scope with vector.
 
   Section VectorAccessories.
 
@@ -256,7 +267,7 @@ Module MyVectors.
       | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
     ).
-    pose proof (S_eq_S_elim n n' (eq_symmetry (S n') (S n) sc_is_S_n)) as n_eq_n'; subst n'.
+    pose proof (S_eq_S_elim n' n sc_is_S_n); subst n'.
     replace (sc_is_S_n) with (eq_reflexivity (S n)).
     - exact (H_cons x xs').
     - apply eqnat_proof_irrelevance.
