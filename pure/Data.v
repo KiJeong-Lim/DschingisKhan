@@ -193,12 +193,11 @@ Module MyCategories.
   .
 
   Global Declare Scope monad_scope.
+  Open Scope monad_scope.
 
   Global Notation " '\do' x '<-' m1 ';' m2 " := (bind m1 (fun x => m2)) (at level 90, left associativity) : monad_scope.
   Global Notation " '\do' m1 ';' m2 " := (bind m1 (fun _ => m2)) (at level 90, left associativity) : monad_scope.
   Global Notation " 'ret' x ';' " := (pure x) (at level 0, x at level 0, no associativity) : monad_scope.
-
-  Global Open Scope monad_scope.
 
 End MyCategories.
 
@@ -241,12 +240,12 @@ Module MyVectors.
     : phi v_nil.
   Proof.
     refine (
-      match v_nil as v in vector _ ze return forall H_EQ : ze = 0, phi (cast_vec H_EQ v) with
-      | Vnil => fun ze_is_O : O = 0 => _
-      | Vcons n' x xs' => fun H_false : S n' = 0 => S_eq_0_elim n' H_false
-      end (eq_reflexivity 0)
+      match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (cast_vec H_EQ v) with
+      | Vnil => fun ze_is_O : O = O => _
+      | Vcons n' x xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
+      end (eq_reflexivity O)
     ).
-    replace (ze_is_O) with (eq_reflexivity 0).
+    replace (ze_is_O) with (eq_reflexivity O).
     - exact (H_nil).
     - apply eqnat_proof_irrelevance.
   Defined.
@@ -258,7 +257,7 @@ Module MyVectors.
   Proof.
     refine (
       match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (cast_vec H_EQ v) with
-      | Vnil => fun H_false : 0 = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
+      | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
       | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
     ).
