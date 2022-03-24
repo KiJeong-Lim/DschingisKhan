@@ -234,7 +234,7 @@ Module MyVectors.
     end
   .
 
-  Lemma case_Vnil {phi : vector A (O) -> Type}
+  Polymorphic Lemma case_Vnil {phi : vector A (O) -> Type}
     (H_nil : phi Vnil)
     (v_nil : vector A (O))
     : phi v_nil.
@@ -242,7 +242,7 @@ Module MyVectors.
     refine (
       match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ v) with
       | Vnil => fun ze_is_O : O = O => _
-      | Vcons n' x xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
+      | Vcons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
     ).
     replace (ze_is_O) with (eq_reflexivity O).
@@ -250,46 +250,48 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
+  Polymorphic Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
     (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
     (v_cons : vector A (S n))
     : phi v_cons.
   Proof.
     refine (
       match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ v) with
-      | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
-      | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
+      | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
+      | Vcons n' x' xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
     ).
     pose proof (S_eq_S_elim n' n sc_is_S_n); subst n'.
     replace (sc_is_S_n) with (eq_reflexivity (S n)).
-    - exact (H_cons x xs').
+    - exact (H_cons x' xs').
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
+  Polymorphic Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
     match n as n0 return n0 = n -> Type with
     | O => fun H_EQ : O = n => xs = vector_casting H_EQ [] -> phi xs
     | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = vector_casting H_EQ (x' :: xs') -> phi xs
     end eq_refl
   .
 
-  Corollary vector_dep_des {n : nat} :
+  Polymorphic Corollary vector_dep_des {n : nat} :
     forall phi : vector A n -> Type,
     forall xs : vector A n,
     vector_refined_matching phi xs ->
     phi xs.
   Proof.
-    destruct n as [ | n']; simpl; intros ? xs; pattern xs; revert xs.
-    - eapply case_Vnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
-    - eapply case_Vcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
+    destruct n as [ | n']; cbn; intros phi xs; pattern xs; revert xs.
+    - eapply case_Vnil.
+      exact (fun H_phi : [] = [] -> phi [] => H_phi (eq_reflexivity Vnil)).
+    - eapply case_Vcons; intros x xs.
+      exact (fun H_phi : forall x' : A, forall xs' : vector A n', x :: xs = x' :: xs' -> phi (x :: xs) => H_phi x xs (eq_reflexivity (Vcons n' x xs))).
   Defined.
 
   Definition vector_head {n : nat} : vector A (S n) -> A :=
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> A with
     | Vnil => S_eq_0_elim n
-    | Vcons n' x xs' => fun _ : S n = S n' => x
+    | Vcons n' x xs' => fun H_EQ : S n = S n' => x
     end eq_refl
   .
 
@@ -297,7 +299,7 @@ Module MyVectors.
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
     | Vnil => S_eq_0_elim n
-    | Vcons n' x xs' => fun _ : S n = S n' => xs'
+    | Vcons n' x xs' => fun H_EQ : S n = S n' => xs'
     end eq_refl
   .
 
@@ -363,11 +365,11 @@ Module MyVectors.
   Proof.
     revert xs1 xs2 H_EXT_EQ.
     induction xs1 as [ | n x1 xs1 IH].
-    - introVnil. intros H_ext_eq.
+    - introVnil. intros H_EXT_EQ.
       reflexivity.
-    - introVcons x2 xs2. intros H_ext_eq.
-      assert (x1_eq_x2 : x1 = x2) by exact (H_ext_eq (FZ n)).
-      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH _ (fun i : FinSet n => H_ext_eq (FS n i))).
+    - introVcons x2 xs2. intros H_EXT_EQ.
+      assert (x1_eq_x2 : x1 = x2) by exact (H_EXT_EQ (FZ n)).
+      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH _ (fun i : FinSet n => H_EXT_EQ (FS n i))).
       congruence.
   Qed.
 
