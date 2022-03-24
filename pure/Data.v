@@ -463,4 +463,21 @@ Module MyVectors.
     cbn. intros i. now repeat (first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]).
   Qed.
 
+  Fixpoint vector_range (start : nat) (n : nat) {struct n} : vector nat n :=
+    match n with
+    | O => []
+    | S n' => start :: vector_range (1 + start) n'
+    end
+  .
+
+  Lemma vector_range_spec (start : nat) (n : nat)
+    : forall i : FinSet n, evalFinSet i + start = vector_range start n !! i.
+  Proof.
+    revert start; induction n as [ | n IH]; intros start; [eapply FinSet_case0 | eapply FinSet_caseS].
+    - reflexivity.
+    - intros i'. rewrite evalFinSet_caseFS.
+      simpl; rewrite <- IH with (start := S start).
+      apply Nat.add_succ_comm.
+  Qed.
+
 End MyVectors.
