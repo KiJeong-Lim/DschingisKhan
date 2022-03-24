@@ -234,7 +234,7 @@ Module MyVectors.
     end
   .
 
-  Lemma case_VNil {phi : vector A (O) -> Type}
+  Lemma caseOfVNil {phi : vector A (O) -> Type}
     (H_VNil : phi VNil)
     : forall xs : vector A (O), phi xs.
   Proof.
@@ -250,7 +250,7 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Lemma case_VCons {n : nat} {phi : vector A (S n) -> Type}
+  Lemma caseOfVCons {n : nat} {phi : vector A (S n) -> Type}
     (H_VCons : forall x : A, forall xs : vector A n, phi (x :: xs))
     : forall xs : vector A (S n), phi xs.
   Proof.
@@ -301,11 +301,11 @@ Module MyVectors.
   End VectorAccessories.
 
   Global Tactic Notation " introVNil " :=
-    intro_pattern_revert; eapply case_VNil
+    intro_pattern_revert; eapply caseOfVNil
   .
 
   Global Tactic Notation " introVCons " ident(x) ident(xs) :=
-    intro_pattern_revert; eapply case_VCons; intros x xs
+    intro_pattern_revert; eapply caseOfVCons; intros x xs
   .
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
