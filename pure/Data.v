@@ -474,7 +474,7 @@ Module MyVectors.
 
 End MyVectors.
 
-Module MyBinTrees.
+Module MyBinaryTrees.
 
   Import EqFacts MyUtilities BasicSetoidTheory MyCategories DataStructures.
 
@@ -486,4 +486,4 @@ Module MyBinTrees.
   Global Arguments BTnil {A}.
   Global Arguments BTnode {A}.
 
-End MyBinTrees.
+End MyBinaryTrees.
