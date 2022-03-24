@@ -205,8 +205,7 @@ End MyCategories.
 Module DataStructures.
 
   Global Declare Scope data_scope.
-
-  Global Open Scope data_scope.
+  Open Scope data_scope.
 
 End DataStructures.
 
@@ -223,9 +222,7 @@ Module MyVectors.
   Global Arguments Vcons {A}.
 
   Global Notation " '[]' " := (@Vnil _) (at level 0, no associativity) : data_scope.
-
   Global Notation " x '::' xs " := (@Vcons _ _ x xs) (at level 60, right associativity) : data_scope.
-
   Global Bind Scope data_scope with vector.
 
   Section VectorAccessories.
