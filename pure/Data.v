@@ -298,18 +298,18 @@ Module MyVectors.
     match n as n0 return n0 = n -> Type with
     | O =>
       fun n_is_O : O = n =>
-      xs = castVec n n_is_O Vnil ->
+      xs = castVec n n_is_O [] ->
       phi xs
     | S n' =>
       fun n_eq_S_n' : S n' = n =>
       forall x' : A,
       forall xs' : vector A n',
-      xs = castVec n n_eq_S_n' (Vcons n' x' xs') ->
+      xs = castVec n n_eq_S_n' (x' :: xs') ->
       phi xs
     end (eq_reflexivity n)
   .
 
-  Polymorphic Lemma des_vector {n : nat} (phi : vector A n -> Type)
+  Polymorphic Lemma des_vector {n : nat} {phi : vector A n -> Type}
     : forall xs : vector A n, vector_refined_matching phi xs -> phi xs.
   Proof.
     destruct n as [ | n']; simpl; intros xs; pattern xs; revert xs.
