@@ -229,10 +229,8 @@ Module MyVectors.
 
   Context {A : Type}.
 
-  Definition castVec {n : nat} : forall n' : nat, n = n' -> vector A n -> vector A n' :=
-    fun n' : nat =>
-    fun n_eq_n' : n = n' =>
-    match n_eq_n' in eq _ m return vector A n -> vector A m with
+  Definition castVec {n : nat} {m : nat} (H_EQ : n = m) : vector A n -> vector A m :=
+    match H_EQ in eq _ n0 return vector A n -> vector A n0 with
     | eq_refl => fun xs : vector A n => xs
     end
   .
@@ -243,7 +241,7 @@ Module MyVectors.
     : phi v_nil.
   Proof.
     refine (
-      match v_nil as v in vector _ ze return forall H : ze = 0, phi (castVec 0 H v) with
+      match v_nil as v in vector _ ze return forall H_EQ : ze = 0, phi (castVec H_EQ v) with
       | Vnil => fun ze_is_O : O = 0 => _
       | Vcons n' x xs' => fun H_false : S n' = 0 => S_eq_0_elim n' H_false
       end (eq_reflexivity 0)
@@ -259,7 +257,7 @@ Module MyVectors.
     : phi v_cons.
   Proof.
     refine (
-      match v_cons as v in vector _ sc return forall H : sc = S n, phi (castVec (S n) H v) with
+      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (castVec H_EQ v) with
       | Vnil => fun H_false : 0 = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
       | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
@@ -272,26 +270,18 @@ Module MyVectors.
 
   Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : n = n -> Type :=
     match n as n0 return n0 = n -> Type with
-    | O => fun H_EQ : O = n => xs = castVec n H_EQ [] -> phi xs
-    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = castVec n H_EQ (x' :: xs') -> phi xs
+    | O => fun H_EQ : O = n => xs = castVec H_EQ [] -> phi xs
+    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = castVec H_EQ (x' :: xs') -> phi xs
     end
   .
 
   Lemma dep_des_vector {n : nat} (phi : vector A n -> Type)
     : forall xs : vector A n, vector_refined_matching phi xs eq_refl -> phi xs.
   Proof.
-    destruct n as [ | n']; simpl; intros xs; pattern xs; revert xs.
+    revert phi; destruct n as [ | n']; simpl; intros phi xs; pattern xs; revert xs.
     - eapply caseVnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
     - eapply caseVcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
   Defined.
-
-  Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
-    fix vidx_fix (n : nat) (xs : vector A n) {struct xs} : FinSet n -> A :=
-    match xs with
-    | Vnil => FinSet_case0
-    | Vcons n' x xs' => FinSet_caseS x (vidx_fix n' xs')
-    end
-  .
 
   Definition vector_head {A : Type} {n : nat} : vector A (S n) -> A :=
     fun xs : vector A (S n) =>
@@ -307,6 +297,14 @@ Module MyVectors.
     | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun _ : S n = S n' => xs'
     end (eq_reflexivity (S n))
+  .
+
+  Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
+    fix vidx_fix (n : nat) (xs : vector A n) {struct xs} : FinSet n -> A :=
+    match xs with
+    | Vnil => FinSet_case0
+    | Vcons n' x xs' => FinSet_caseS x (vidx_fix n' xs')
+    end
   .
 
   Context {B : Type}.
@@ -359,10 +357,8 @@ Module MyVectors.
     - introVnil. intros H_ext_eq.
       reflexivity.
     - introVcons x2 xs2. intros H_ext_eq.
-      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)).
-      { exact (H_ext_eq (FZ n)). }
-      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)).
-      { apply IH. exact (fun i : FinSet n => H_ext_eq (FS n i)). }
+      assert (x1_eq_x2 : vector_head (x1 :: xs1) = vector_head (x2 :: xs2)) by exact (H_ext_eq (FZ n)).
+      assert (xs1_eq_xs2 : vector_tail (x1 :: xs1) = vector_tail (x2 :: xs2)) by exact (IH xs2 (fun i : FinSet n => H_ext_eq (FS n i))).
       simpl in *; congruence.
   Qed.
 
