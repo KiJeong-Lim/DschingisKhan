@@ -324,7 +324,7 @@ Module MyVectors.
     vidx n
   .
 
-  Global Infix " !! " := vector_indexing (at level 65, no associativity).
+  Global Infix " !! " := vector_indexing (at level 65, left associativity).
 
   Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
     forall i : FinSet n,
@@ -343,13 +343,12 @@ Module MyVectors.
     (H_EXT_EQ : forall i : FinSet n, xs1 !! i = xs2 !! i)
     : xs1 = xs2.
   Proof.
-    revert xs1 xs2 H_EXT_EQ.
-    induction xs1 as [ | n x1 xs1 IH].
-    - introVnil. intros H_EXT_EQ.
+    revert xs1 xs2 H_EXT_EQ; induction n as [ | n IH].
+    - introVnil; introVnil; intros H_EXT_EQ.
       reflexivity.
-    - introVcons x2 xs2. intros H_EXT_EQ.
+    - introVcons x1 xs1; introVcons x2 xs2; intros H_EXT_EQ.
       assert (x1_eq_x2 : x1 = x2) by exact (H_EXT_EQ (FZ n)).
-      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH _ (fun i : FinSet n => H_EXT_EQ (FS n i))).
+      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : FinSet n => H_EXT_EQ (FS n i))).
       congruence.
   Qed.
 
@@ -373,7 +372,7 @@ Module MyVectors.
   .
 
   Lemma diagonal_spec {A : Type} {n : nat} (xss : vector (vector A n) n)
-    : forall i : FinSet n, (xss !! i) !! i = diagonal xss !! i.
+    : forall i : FinSet n, xss !! i !! i = diagonal xss !! i.
   Proof.
     revert xss; induction n as [ | n IH].
     - introVnil. eapply FinSet_case0.
@@ -420,8 +419,7 @@ Module MyVectors.
   .
 
   Global Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {A : Type} :=
-      {| eqProp := @eq (vec_n A); Setoid_requiresEquivalence := @eq_equivalence (vec_n A) |}
+    { liftSetoid1 {A : Type} := {| eqProp := @eq (vec_n A); Setoid_requiresEquivalence := @eq_equivalence (vec_n A) |}
     }
   .
 
