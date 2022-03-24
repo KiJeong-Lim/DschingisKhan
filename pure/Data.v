@@ -228,7 +228,7 @@ Module MyVectors.
 
   Context {A : Type}.
 
-  Definition cast_vec {n : nat} {m : nat} (H_EQ : n = m) : vector A n -> vector A m :=
+  Definition vector_casting {n : nat} {m : nat} (H_EQ : n = m) : vector A n -> vector A m :=
     match H_EQ in eq _ n0 return vector A n -> vector A n0 with
     | eq_refl => fun xs : vector A n => xs
     end
@@ -240,7 +240,7 @@ Module MyVectors.
     : phi v_nil.
   Proof.
     refine (
-      match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (cast_vec H_EQ v) with
+      match v_nil as v in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ v) with
       | Vnil => fun ze_is_O : O = O => _
       | Vcons n' x xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
@@ -256,7 +256,7 @@ Module MyVectors.
     : phi v_cons.
   Proof.
     refine (
-      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (cast_vec H_EQ v) with
+      match v_cons as v in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ v) with
       | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry 0 (S n) H_false)
       | Vcons n' x xs' => fun sc_is_S_n : S n' = S n => _
       end (eq_reflexivity (S n))
@@ -267,17 +267,17 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : n = n -> Type :=
+  Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
     match n as n0 return n0 = n -> Type with
-    | O => fun H_EQ : O = n => xs = cast_vec H_EQ [] -> phi xs
-    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = cast_vec H_EQ (x' :: xs') -> phi xs
-    end
+    | O => fun H_EQ : O = n => xs = vector_casting H_EQ [] -> phi xs
+    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = vector_casting H_EQ (x' :: xs') -> phi xs
+    end eq_refl
   .
 
   Corollary vector_dep_des {n : nat} :
     forall phi : vector A n -> Type,
     forall xs : vector A n,
-    vector_refined_matching phi xs eq_refl ->
+    vector_refined_matching phi xs ->
     phi xs.
   Proof.
     destruct n as [ | n']; simpl; intros ? xs; pattern xs; revert xs.
@@ -290,7 +290,7 @@ Module MyVectors.
     match xs in vector _ S_n return S n = S_n -> A with
     | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun _ : S n = S n' => x
-    end (eq_reflexivity (S n))
+    end eq_refl
   .
 
   Definition vector_tail {n : nat} : vector A (S n) -> vector A n :=
@@ -298,7 +298,7 @@ Module MyVectors.
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
     | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun _ : S n = S n' => xs'
-    end (eq_reflexivity (S n))
+    end eq_refl
   .
 
   Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
@@ -323,12 +323,19 @@ Module MyVectors.
 
   Global Ltac introVnil :=
     let v_nil := fresh "v_nil" in
-    intros v_nil; pattern v_nil; revert v_nil; eapply case_Vnil
+    intros v_nil;
+    pattern v_nil;
+    revert v_nil;
+    eapply case_Vnil
   .
 
   Global Ltac introVcons x xs :=
     let v_cons := fresh "v_cons" in
-    intros v_cons; pattern v_cons; revert v_cons; eapply case_Vcons; intros x xs
+    intros v_cons;
+    pattern v_cons;
+    revert v_cons;
+    eapply case_Vcons;
+    intros x xs
   .
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
@@ -408,7 +415,11 @@ Module MyVectors.
   Qed.
 
   Global Tactic Notation " reduce_monad_methods_of_vector " :=
-    first [rewrite <- diagonal_spec | rewrite <- vector_map_spec | rewrite <- replicate_spec]
+    first
+    [ rewrite <- diagonal_spec
+    | rewrite <- vector_map_spec
+    | rewrite <- replicate_spec
+    ]
   .
 
   Section VectorIsMonad.
@@ -435,8 +446,7 @@ Module MyVectors.
   Global Instance vec_obeysMonadLaws :
     obeysMonadLaws vec_isMonad.
   Proof.
-    split; cbn; intros; eapply vector_ext_eq; intros ?.
-    all: (repeat reduce_monad_methods_of_vector); congruence.
+    split; cbn; intros; eapply vector_ext_eq; intros ?; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.
 
   End VectorIsMonad.
@@ -452,7 +462,7 @@ Module MyVectors.
   Lemma vector_zip_spec {A : Type} {B : Type} {n : nat} (xs : vector A n) (ys : vector B n)
     : forall i : FinSet n, (xs !! i, ys !! i) = vector_zip xs ys !! i.
   Proof.
-    cbn; intros i. (repeat reduce_monad_methods_of_vector); exact (eq_reflexivity (xs !! i, ys !! i)).
+    cbn; intros i; (repeat reduce_monad_methods_of_vector); exact (eq_reflexivity (xs !! i, ys !! i)).
   Qed.
 
   Fixpoint vector_range {n : nat} {struct n} : nat -> vector nat n :=
