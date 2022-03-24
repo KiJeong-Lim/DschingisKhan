@@ -11,7 +11,7 @@ Module MyCategories.
 
   Import MyUtilities BasicSetoidTheory.
 
-  Global Existing Instance arrow_isSetoid.
+  Existing Instance arrow_isSetoid.
 
   Polymorphic Class isMonad (M : Type -> Type) : Type :=
     { pure {A : Type} : A \to M A
