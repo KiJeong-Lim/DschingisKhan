@@ -213,15 +213,15 @@ Module MyVectors.
   Import EqFacts MyUtilities BasicSetoidTheory MyCategories DataStructures.
 
   Inductive vector (A : Type) : nat -> Type :=
-  | Vnil : vector A (O)
-  | Vcons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
+  | VNil : vector A (O)
+  | VCons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
   .
 
-  Global Arguments Vnil {A}.
-  Global Arguments Vcons {A}.
+  Global Arguments VNil {A}.
+  Global Arguments VCons {A}.
 
-  Global Notation " '[]' " := (@Vnil _) (at level 0, no associativity) : my_data_structrue_scope.
-  Global Notation " x '::' xs " := (@Vcons _ _ x xs) (at level 60, right associativity) : my_data_structrue_scope.
+  Global Notation " '[]' " := (@VNil _) (at level 0, no associativity) : my_data_structrue_scope.
+  Global Notation " x '::' xs " := (@VCons _ _ x xs) (at level 60, right associativity) : my_data_structrue_scope.
   Bind Scope my_data_structrue_scope with vector.
 
   Section VectorAccessories.
@@ -234,15 +234,15 @@ Module MyVectors.
     end
   .
 
-  Lemma case_Vnil {phi : vector A (O) -> Type}
-    (H_nil : phi Vnil)
-    (v_nil : vector A (O))
-    : phi v_nil.
+  Lemma case_VNil {phi : vector A (O) -> Type}
+    (H_nil : phi VNil)
+    : forall xs : vector A 0, phi xs.
   Proof.
     refine (
+      fun v_nil : vector A (O) =>
       match v_nil as xs in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ xs) with
-      | Vnil => fun H_EQ : O = O => _
-      | Vcons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
+      | VNil => fun H_EQ : O = O => _
+      | VCons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
     ).
     replace (H_EQ) with (eq_reflexivity O).
@@ -250,15 +250,15 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
+  Lemma case_VCons {n : nat} {phi : vector A (S n) -> Type}
     (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
-    (v_cons : vector A (S n))
-    : phi v_cons.
+    : forall xs : vector A (1 + n), phi xs.
   Proof.
     refine (
+      fun v_cons : vector A (S n) =>
       match v_cons as xs in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ xs) with
-      | Vnil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
-      | Vcons n' x' xs' => fun H_EQ : S n' = S n => (fun n_eq_n' : n' = n => _) (S_eq_S_elim n' n H_EQ)
+      | VNil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
+      | VCons n' x' xs' => fun H_EQ : S n' = S n => (fun n_eq_n' : n' = n => _) (S_eq_S_elim n' n H_EQ)
       end (eq_reflexivity (S n))
     ).
     subst n'; replace (H_EQ) with (eq_reflexivity (S n)).
@@ -268,23 +268,23 @@ Module MyVectors.
 
   Definition vector_head {n : nat} (xs : vector A (S n)) : A :=
     match xs in vector _ S_n return S n = S_n -> A with
-    | Vnil => S_eq_0_elim n
-    | Vcons n' x xs' => fun H_EQ : S n = S n' => x
+    | VNil => S_eq_0_elim n
+    | VCons n' x xs' => fun H_EQ : S n = S n' => x
     end eq_refl
   .
 
   Definition vector_tail {n : nat} (xs : vector A (S n)) : vector A n :=
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
-    | Vnil => S_eq_0_elim n
-    | Vcons n' x xs' => fun H_EQ : S n = S n' => xs'
+    | VNil => S_eq_0_elim n
+    | VCons n' x xs' => fun H_EQ : S n = S n' => xs'
     end eq_refl
   .
 
   Definition vidx : forall n : nat, vector A n -> FinSet n -> A :=
     fix vidx_fix (n : nat) (xs : vector A n) {struct xs} : FinSet n -> A :=
     match xs with
-    | Vnil => FinSet_case0
-    | Vcons n' x xs' => FinSet_caseS x (vidx_fix n' xs')
+    | VNil => FinSet_case0
+    | VCons n' x xs' => FinSet_caseS x (vidx_fix n' xs')
     end
   .
 
@@ -293,8 +293,8 @@ Module MyVectors.
   Definition vmap (f : A -> B) : forall n : nat, vector A n -> vector B n :=
     fix vmap_fix (n : nat) (xs : vector A n) {struct xs} : vector B n :=
     match xs with
-    | Vnil => Vnil
-    | Vcons n' x xs' => Vcons n' (f x) (vmap_fix n' xs')
+    | VNil => VNil
+    | VCons n' x xs' => VCons n' (f x) (vmap_fix n' xs')
     end
   .
 
@@ -305,7 +305,7 @@ Module MyVectors.
     intros v_nil;
     pattern v_nil;
     revert v_nil;
-    eapply case_Vnil
+    eapply case_VNil
   .
 
   Global Tactic Notation "introVcons" ident(x) ident(xs) :=
@@ -313,7 +313,7 @@ Module MyVectors.
     intros v_cons;
     pattern v_cons;
     revert v_cons;
-    eapply case_Vcons;
+    eapply case_VCons;
     intros x xs
   .
 
@@ -342,11 +342,11 @@ Module MyVectors.
   Proof.
     revert xs1 xs2 H_EXT_EQ; induction n as [ | n IH].
     - introVnil; introVnil; intros H_EXT_EQ.
-      exact (eq_reflexivity (@Vnil A)).
+      exact (eq_reflexivity (@VNil A)).
     - introVcons x1 xs1; introVcons x2 xs2; intros H_EXT_EQ.
       assert (x1_eq_x2 : x1 = x2) by exact (H_EXT_EQ (FZ n)).
       assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : FinSet n => H_EXT_EQ (FS n i))).
-      exact (eq_congruence2 (@Vcons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
+      exact (eq_congruence2 (@VCons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
   Qed.
 
   Definition vector_map {A : Type} {B : Type} {n : nat} (f : A -> B) : vector A n -> vector B n :=
@@ -465,15 +465,15 @@ Module MyBinaryTrees.
   Import EqFacts MyUtilities DataStructures.
 
   Inductive bintree (A : Type) : Type :=
-  | BTnil : bintree A
-  | BTnode (lchild : bintree A) (key : A) (rchild : bintree A) : bintree A 
+  | BtNil : bintree A
+  | BtNode (lchild : bintree A) (key : A) (rchild : bintree A) : bintree A 
   .
 
-  Global Arguments BTnil {A}.
-  Global Arguments BTnode {A}.
+  Global Arguments BtNil {A}.
+  Global Arguments BtNode {A}.
 
-  Global Notation " '[^]' " := (@BTnil _) (at level 0) : my_data_structrue_scope.
-  Global Notation " '[^'  lchild ']++<' key '>++[' rchild  '^]' " := (@BTnode _ lchild key rchild) (lchild at level 60, key at level 65, rchild at level 60, at level 60) : my_data_structrue_scope.
+  Global Notation " '[^]' " := (@BtNil _) (at level 0) : my_data_structrue_scope.
+  Global Notation " '[^'  lchild ']++<' key '>++[' rchild  '^]' " := (@BtNode _ lchild key rchild) (lchild at level 60, key at level 65, rchild at level 60, at level 60) : my_data_structrue_scope.
   Bind Scope my_data_structrue_scope with bintree.
 
 End MyBinaryTrees.
