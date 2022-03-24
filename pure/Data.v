@@ -339,31 +339,6 @@ Module MyVectors.
     intros v_cons; pattern v_cons; revert v_cons; eapply caseVcons; intros x xs
   .
 
-  Lemma Vcons_inj {A : Type} {n' : nat} (x1 : A) (x2 : A) (xs1 : vector A n') (xs2 : vector A n')
-    (H_cons_eq : x1 :: xs1 = x2 :: xs2)
-    : x1 = x2 /\ xs1 = xs2.
-  Proof.
-    split; [set (f := @vector_head A n') | set (f := @vector_tail A n')].
-    all: exact (eq_congruence f (x1 :: xs1) (x2 :: xs2) H_cons_eq).
-  Qed.
-
-  Lemma Vcons_eta {A : Type} {n' : nat} :
-    forall v_cons : vector A (S n'),
-    vector_head v_cons :: vector_tail v_cons = v_cons.
-  Proof.
-    introVcons x xs. exact (eq_reflexivity (x :: xs)).
-  Qed.
-
-  Lemma vector_zip_rect {A : Type} {B : Type} {psi : forall n : nat, vector A n -> vector B n -> Type}
-    (H_nil : psi (O) [] [])
-    (H_cons : forall n' : nat, forall x : A, forall y : B, forall xs' : vector A n', forall ys' : vector B n', psi n' xs' ys' -> psi (S n') (x :: xs') (y :: ys'))
-    : forall n : nat, forall xs : vector A n, forall ys : vector B n, psi n xs ys.
-  Proof.
-    induction xs as [ | n x xs IH].
-    - introVnil. exact (H_nil).
-    - introVcons y ys. exact (H_cons n x y xs ys (IH ys)).
-  Defined.
-
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=
     vidx n
   .
