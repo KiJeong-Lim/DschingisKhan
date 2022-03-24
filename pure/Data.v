@@ -289,7 +289,7 @@ Module MyVectors.
   Definition vector_tail {A : Type} {n : nat} : vector A (S n) -> vector A n :=
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> vector A (pred S_n) with
-    | [] => S_eq_0_elim n
+    | Vnil => S_eq_0_elim n
     | Vcons n' x xs' => fun _ : S n = S n' => xs'
     end (eq_reflexivity (S n))
   .
