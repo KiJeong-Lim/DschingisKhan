@@ -234,7 +234,7 @@ Module MyVectors.
     end
   .
 
-  Polymorphic Lemma case_Vnil {phi : vector A (O) -> Type}
+  Lemma case_Vnil {phi : vector A (O) -> Type}
     (H_nil : phi Vnil)
     (v_nil : vector A (O))
     : phi v_nil.
@@ -250,7 +250,7 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Polymorphic Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
+  Lemma case_Vcons {n : nat} {phi : vector A (S n) -> Type}
     (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
     (v_cons : vector A (S n))
     : phi v_cons.
@@ -267,14 +267,14 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Polymorphic Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
+  Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
     match n as n0 return n0 = n -> Type with
     | O => fun H_EQ : O = n => xs = vector_casting H_EQ [] -> phi xs
     | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = vector_casting H_EQ (x' :: xs') -> phi xs
     end eq_refl
   .
 
-  Polymorphic Corollary vector_dep_des {n : nat} :
+  Corollary vector_dep_des {n : nat} :
     forall phi : vector A n -> Type,
     forall xs : vector A n,
     vector_refined_matching phi xs ->
