@@ -251,7 +251,7 @@ Module MyVectors.
   Defined.
 
   Lemma caseOfVCons {n : nat} {phi : vector A (S n) -> Type}
-    (H_VCons : forall x : A, forall xs : vector A n, phi (x :: xs))
+    (H_VCons : forall x : A, forall xs' : vector A n, phi (x :: xs'))
     : forall xs : vector A (S n), phi xs.
   Proof.
     refine (
