@@ -235,34 +235,34 @@ Module MyVectors.
   .
 
   Lemma case_VNil {phi : vector A (O) -> Type}
-    (H_nil : phi VNil)
-    : forall xs : vector A 0, phi xs.
+    (H_VNil : phi VNil)
+    : forall xs : vector A (O), phi xs.
   Proof.
     refine (
-      fun v_nil : vector A (O) =>
-      match v_nil as xs in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ xs) with
+      fun xs : vector A (O) =>
+      match xs as xs0 in vector _ ze return forall H_EQ : ze = O, phi (vector_casting H_EQ xs0) with
       | VNil => fun H_EQ : O = O => _
       | VCons n' x' xs' => fun H_false : S n' = O => S_eq_0_elim n' H_false
       end (eq_reflexivity O)
     ).
     replace (H_EQ) with (eq_reflexivity O).
-    - exact (H_nil).
+    - exact (H_VNil).
     - apply eqnat_proof_irrelevance.
   Defined.
 
   Lemma case_VCons {n : nat} {phi : vector A (S n) -> Type}
-    (H_cons : forall x : A, forall xs : vector A n, phi (x :: xs))
-    : forall xs : vector A (1 + n), phi xs.
+    (H_VCons : forall x : A, forall xs : vector A n, phi (x :: xs))
+    : forall xs : vector A (S n), phi xs.
   Proof.
     refine (
-      fun v_cons : vector A (S n) =>
-      match v_cons as xs in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ xs) with
+      fun xs : vector A (S n) =>
+      match xs as xs0 in vector _ sc return forall H_EQ : sc = S n, phi (vector_casting H_EQ xs0) with
       | VNil => fun H_false : O = S n => S_eq_0_elim n (eq_symmetry O (S n) H_false)
       | VCons n' x' xs' => fun H_EQ : S n' = S n => (fun n_eq_n' : n' = n => _) (S_eq_S_elim n' n H_EQ)
       end (eq_reflexivity (S n))
     ).
     subst n'; replace (H_EQ) with (eq_reflexivity (S n)).
-    - exact (H_cons x' xs').
+    - exact (H_VCons x' xs').
     - apply eqnat_proof_irrelevance.
   Defined.
 
