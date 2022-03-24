@@ -388,9 +388,9 @@ Module MyVectors.
   Proof.
     revert xss; induction n as [ | n IH].
     - introVnil. eapply FinSet_case0.
-    - introVcons xs xss. eapply FinSet_caseS.
+    - introVcons xs xss. eapply FinSet_caseS; simpl.
       + now rewrite vector_indexing_unfold.
-      + intros i. simpl. rewrite vector_indexing_unfold, <- IH.
+      + intros i. rewrite vector_indexing_unfold, <- IH.
         now rewrite vector_map_spec with (f := vector_tail) (xs := xss) (i := i).
   Qed.
 
@@ -473,3 +473,17 @@ Module MyVectors.
   Qed.
 
 End MyVectors.
+
+Module MyBinTrees.
+
+  Import EqFacts MyUtilities BasicSetoidTheory MyCategories DataStructures.
+
+  Inductive bintree (A : Type) : Type :=
+  | BTnil : bintree A
+  | BTnode (lchild : bintree A) (key : A) (rchild : bintree A) : bintree A 
+  .
+
+  Global Arguments BTnil {A}.
+  Global Arguments BTnode {A}.
+
+End MyBinTrees.
