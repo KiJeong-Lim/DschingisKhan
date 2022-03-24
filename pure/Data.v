@@ -267,26 +267,6 @@ Module MyVectors.
     - apply eqnat_proof_irrelevance.
   Defined.
 
-  Definition vector_refined_matching {n : nat} (phi : vector A n -> Type) (xs : vector A n) : Type :=
-    match n as n0 return n0 = n -> Type with
-    | O => fun H_EQ : O = n => xs = vector_casting H_EQ [] -> phi xs
-    | S n' => fun H_EQ : S n' = n => forall x' : A, forall xs' : vector A n', xs = vector_casting H_EQ (x' :: xs') -> phi xs
-    end eq_refl
-  .
-
-  Corollary vector_dep_des {n : nat} :
-    forall phi : vector A n -> Type,
-    forall xs : vector A n,
-    vector_refined_matching phi xs ->
-    phi xs.
-  Proof.
-    destruct n as [ | n']; cbn; intros phi xs; pattern xs; revert xs.
-    - eapply case_Vnil.
-      exact (fun H_phi : [] = [] -> phi [] => H_phi (eq_reflexivity Vnil)).
-    - eapply case_Vcons; intros x xs.
-      exact (fun H_phi : forall x' : A, forall xs' : vector A n', x :: xs = x' :: xs' -> phi (x :: xs) => H_phi x xs (eq_reflexivity (Vcons n' x xs))).
-  Defined.
-
   Definition vector_head {n : nat} : vector A (S n) -> A :=
     fun xs : vector A (S n) =>
     match xs in vector _ S_n return S n = S_n -> A with
