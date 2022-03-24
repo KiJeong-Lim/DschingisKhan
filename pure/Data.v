@@ -275,10 +275,13 @@ Module MyVectors.
     end
   .
 
-  Corollary dep_des_vector {n : nat} (phi : vector A n -> Type)
-    : forall xs : vector A n, vector_refined_matching phi xs eq_refl -> phi xs.
+  Corollary dep_des_vector {n : nat} :
+    forall phi : vector A n -> Type,
+    forall xs : vector A n,
+    vector_refined_matching phi xs eq_refl ->
+    phi xs.
   Proof.
-    revert phi; destruct n as [ | n']; simpl; intros phi xs; pattern xs; revert xs.
+    destruct n as [ | n']; simpl; intros ? xs; pattern xs; revert xs.
     - eapply caseVnil; intros H_phi; exact (H_phi (eq_reflexivity Vnil)).
     - eapply caseVcons; intros x xs H_phi; exact (H_phi x xs (eq_reflexivity (Vcons n' x xs))).
   Defined.
