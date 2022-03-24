@@ -303,7 +303,7 @@ Module MyVectors.
 
   End VectorAccessories.
 
-  Global Ltac introVnil :=
+  Global Tactic Notation "introVnil" :=
     let v_nil := fresh "v_nil" in
     intros v_nil;
     pattern v_nil;
@@ -311,7 +311,7 @@ Module MyVectors.
     eapply case_Vnil
   .
 
-  Global Ltac introVcons x xs :=
+  Global Tactic Notation "introVcons" ident(x) ident(xs) :=
     let v_cons := fresh "v_cons" in
     intros v_cons;
     pattern v_cons;
@@ -395,7 +395,7 @@ Module MyVectors.
     induction n; [eapply FinSet_case0 | eapply FinSet_caseS]; eauto.
   Qed.
 
-  Global Tactic Notation " reduce_monad_methods_of_vector " :=
+  Global Ltac reduce_monad_methods_of_vector :=
     first
     [ rewrite <- diagonal_spec
     | rewrite <- vector_map_spec
