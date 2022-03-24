@@ -203,8 +203,8 @@ End MyCategories.
 
 Module DataStructures.
 
-  Global Declare Scope data_scope.
-  Open Scope data_scope.
+  Global Declare Scope my_data_structrue_scope.
+  Open Scope my_data_structrue_scope.
 
 End DataStructures.
 
@@ -220,9 +220,9 @@ Module MyVectors.
   Global Arguments Vnil {A}.
   Global Arguments Vcons {A}.
 
-  Global Notation " '[]' " := (@Vnil _) (at level 0, no associativity) : data_scope.
-  Global Notation " x '::' xs " := (@Vcons _ _ x xs) (at level 60, right associativity) : data_scope.
-  Global Bind Scope data_scope with vector.
+  Global Notation " '[]' " := (@Vnil _) (at level 0, no associativity) : my_data_structrue_scope.
+  Global Notation " x '::' xs " := (@Vcons _ _ x xs) (at level 60, right associativity) : my_data_structrue_scope.
+  Bind Scope my_data_structrue_scope with vector.
 
   Section VectorAccessories.
 
@@ -485,5 +485,9 @@ Module MyBinaryTrees.
 
   Global Arguments BTnil {A}.
   Global Arguments BTnode {A}.
+
+  Global Notation " '[+]' " := (@BTnil _) (at level 0, no associativity) : my_data_structrue_scope.
+  Global Notation " '[+'  lchild ']++<' key '>++[' rchild  '+]' " := (@BTnode _ lchild key rchild) (at level 0, no associativity) : my_data_structrue_scope.
+  Bind Scope my_data_structrue_scope with bintree.
 
 End MyBinaryTrees.
