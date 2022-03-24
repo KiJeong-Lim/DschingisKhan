@@ -476,7 +476,7 @@ Module MyVectors.
     revert start; induction n as [ | n IH]; intros start; [eapply FinSet_case0 | eapply FinSet_caseS].
     - reflexivity.
     - intros i'. rewrite evalFinSet_caseFS.
-      simpl; rewrite <- IH with (start := S start).
+      simpl; rewrite <- IH with (start := S start) (i := i').
       apply Nat.add_succ_comm.
   Qed.
 
