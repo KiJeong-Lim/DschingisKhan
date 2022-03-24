@@ -300,21 +300,12 @@ Module MyVectors.
 
   End VectorAccessories.
 
-  Global Tactic Notation "introVNil" :=
-    let v_nil := fresh "v_nil" in
-    intros v_nil;
-    pattern v_nil;
-    revert v_nil;
-    eapply case_VNil
+  Global Tactic Notation " introVNil " :=
+    intro_pattern_revert; eapply case_VNil
   .
 
-  Global Tactic Notation "introVCons" ident(x) ident(xs) :=
-    let v_cons := fresh "v_cons" in
-    intros v_cons;
-    pattern v_cons;
-    revert v_cons;
-    eapply case_VCons;
-    intros x xs
+  Global Tactic Notation " introVCons " ident(x) ident(xs) :=
+    intro_pattern_revert; eapply case_VCons; intros x xs
   .
 
   Definition vector_indexing {A : Type} {n : nat} : vector A n -> FinSet n -> A :=

@@ -1936,6 +1936,11 @@ Module MyUtilities.
     repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .
 
+  Global Ltac intro_pattern_revert :=
+    let X := fresh in
+    intro X; pattern X; revert X
+  .
+
 End MyUtilities.
 
 Module MyUniverses.
