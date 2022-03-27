@@ -449,16 +449,16 @@ Module LindenbaumBooleanAlgebraOnPropositionLogic. (* Reference: "Constructive C
               rewrite in_insert_iff, in_delete_iff.
               destruct (eq_formula_dec h' p)...
           }
-        assert (claim10 : \left\{ fold_right andB trueB ps \right\} |- ImplicationF p c) by apply (proj2 (IH (delete p hs) claim8 (ImplicationF p c)) claim9).
-        apply (ImplicationE p c).
-        { apply (cut_property (fold_right andB trueB ps) (ImplicationF p c)); simpl.
-          - apply (ConjunctionE2 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
+          assert (claim10 : \left\{ fold_right andB trueB ps \right\} |- ImplicationF p c) by apply (proj2 (IH (delete p hs) claim8 (ImplicationF p c)) claim9).
+          apply (ImplicationE p c).
+          { apply (cut_property (fold_right andB trueB ps) (ImplicationF p c)); simpl.
+            - apply (ConjunctionE2 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
+              apply ByAssumption...
+            - apply (extend_infers claim10)...
+          }
+          { apply (ConjunctionE1 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
             apply ByAssumption...
-          - apply (extend_infers claim10)...
-        }
-        { apply (ConjunctionE1 p (fold_right ConjunctionF (ImplicationF ContradictionF ContradictionF) ps)).
-          apply ByAssumption...
-        }
+          }
     }
   Qed.
 
