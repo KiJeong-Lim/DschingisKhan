@@ -599,7 +599,7 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Let _bind {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
+  Definition bind_expanded_form {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
     fun t0 : itree E R1 =>
     fun k0 : R1 -> itree E R2 =>
     match observe t0 with
@@ -616,7 +616,7 @@ Module InteractionTreeTheory.
   Polymorphic Variable k0 : R1 -> itree E R2.
 
   Polymorphic Lemma unfold_itree_bind (t0 : itree E R1) :
-    (t0 >>= k0) == _bind t0 k0.
+    (t0 >>= k0) == bind_expanded_form t0 k0.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
