@@ -187,8 +187,7 @@ Module MyCategories.
 
   Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
     { fmap {A : Type} {B : Type} :=
-      fun f : A \to B =>
-      sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
+      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
     }
   .
 
