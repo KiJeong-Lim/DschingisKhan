@@ -99,7 +99,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Definition itree_interpret {M : Type -> Type} `{M_isMonadIter : isMonadIter M} {E : Type -> Type} (handle : E -< M) : itree E -< M :=
     fun R : Type =>
-    monadic_iter (fun t0 : itree E R =>
+    monadic_iter (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
       match observe t0 with
       | RetF r => ret (inr r);
       | TauF t => ret (inl t);
@@ -124,7 +124,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Polymorphic Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
-    monadic_iter (fun t0 : itree (E +' E') R =>
+    itree_iter (E := E') (I := itree (E +' E') R) (R := R) (fun t0 : itree (E +' E') R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
