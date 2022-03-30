@@ -161,7 +161,7 @@ Module MyCategories.
     @funit (stateT ST M X)
   .
 
-  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+  Global Polymorphic Instance stateT_liftMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
     { pure _ := StateT `fmult` curry pure
     ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
     }
@@ -189,6 +189,28 @@ Module MyCategories.
     { fmap {A : Type} {B : Type} :=
       fun f : A \to B =>
       sum1_rect F1 F2 A (fun _ => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap f l)) (fun r : F2 A => inr1 (fmap f r))
+    }
+  .
+
+  Polymorphic Class isMonadIter (M : Type -> Type) `{M_isMonad : isMonad M} : Type :=
+    { monadic_iter {I : Type} {R : Type} : (I \to M (sum I R)) -> (I \to M R)
+    }
+  .
+
+  Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
+    fun pr : sum A B * C =>
+    match pr with
+    | (inl x, z) => inl (x, z)
+    | (inr y, z) => inr (y, z)
+    end
+  .
+
+  Global Polymorphic Instance stateT_liftMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+    { monadic_iter {I : Type} {R : Type} :=
+      fun kont : I \to stateT ST M (sum I R) =>
+      let my_iter : prod I ST \to M (prod R ST) := monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` kont)) in
+      fun x0 : I =>
+      StateT (fun s0 : ST => my_iter (x0, s0))
     }
   .
 

@@ -87,21 +87,31 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     Vis R e (fun x : R => Ret x)
   .
 
-  Definition itree_iter {E : Type -> Type} {R : Type} {I : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
+  Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
     expand_leaves (@sum_rect I R (fun _ => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
-  Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
+  Global Polymorphic Instance itree_E_isMonadIter {E : Type -> Type} : isMonadIter (itree E) :=
+    { monadic_iter {I : Type} {R : Type} := itree_iter (I := I) (R := R)
+    }
+  .
+
+  Definition itree_interpret {M : Type -> Type} `{M_isMonadIter : isMonadIter M} {E : Type -> Type} (handle : E -< M) : itree E -< M :=
     fun R : Type =>
-    let iter := curry `fmult` itree_iter (E := E') (R := R * ST) (I := itree E R * ST) `fmult` uncurry in
-    iter (fun t0 : itree E R => fun s : ST =>
+    monadic_iter (fun t0 : itree E R =>
       match observe t0 with
-      | RetF r => ret (inr (r, s));
-      | TauF t => ret (inl (t, s));
-      | VisF X e k => \do h_res <- handle X e s; ret (inl (k (fst h_res), snd h_res));
+      | RetF r => ret (inr r);
+      | TauF t => ret (inl t);
+      | VisF X e k =>
+        \do x <- handle X e;
+        ret (inl (k x));
       end
     )
+  .
+
+  Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
+    itree_interpret (E := E) (M := stateT ST (itree E')) handle
   .
 
   Inductive callE (A : Type) (B : Type) : Type -> Type :=
@@ -112,12 +122,9 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
-  Local Notation endo X := (X -> X).
-
-  Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
+  Polymorphic Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
-    let iter := itree_iter (E := E') (R := R) (I := itree (E +' E') R) in
-    iter (fun t0 : itree (E +' E') R =>
+    monadic_iter (fun t0 : itree (E +' E') R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
@@ -129,6 +136,8 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
       end
     )
   .
+
+  Local Notation endo X := (X -> X).
 
   Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : E -< itree E' :=
     fun R : Type =>
