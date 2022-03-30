@@ -46,7 +46,7 @@ Module MyCategories.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
   Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
-    { liftSetoid1 {X : Type} :> isSetoid (F X)
+    { getFreeSetoid {X : Type} :> isSetoid (F X)
     }
   .
 
@@ -161,16 +161,28 @@ Module MyCategories.
     @funit (stateT ST M X)
   .
 
-  Global Polymorphic Instance stateT_liftMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
     { pure _ := StateT `fmult` curry pure
     ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
     }
   .
 
-  Polymorphic Definition lift_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+  Polymorphic Class isMonadTrans (T : (Type -> Type) -> (Type -> Type)) : Type :=
+    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} : M X -> T M X
+    ; MonadTrans_requiresMonadLifting (M : Type -> Type) `{M_isMonad : isMonad M} : isMonad (T M)
+    }
+  .
+
+  Polymorphic Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
     fun X : Type =>
     fun e : E X =>
     StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
+  .
+
+  Global Polymorphic Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
+    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M_isMonad) X
+    ; MonadTrans_requiresMonadLifting (M : Type -> Type) `{M_isMonad : isMonad M} := stateT_ST_M_isMonad ST M M_isMonad
+    }
   .
 
   End StateTIsMonadTrans.
@@ -424,7 +436,7 @@ Module MyVectors.
   .
 
   Global Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {X : Type} := {| eqProp := @eq (vec_n X); Setoid_requiresEquivalence := eq_equivalence |}
+    { getFreeSetoid {X : Type} := {| eqProp := @eq (vec_n X); Setoid_requiresEquivalence := eq_equivalence |}
     }
   .
 

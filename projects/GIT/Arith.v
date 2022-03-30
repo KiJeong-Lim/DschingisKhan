@@ -895,7 +895,7 @@ Module InteractionTreeTheory.
   Qed.
 
   Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
-    { liftSetoid1 {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
+    { getFreeSetoid {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
     }
   .
 
