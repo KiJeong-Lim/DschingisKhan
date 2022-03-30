@@ -206,11 +206,8 @@ Module MyCategories.
   .
 
   Global Polymorphic Instance stateT_liftMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { monadic_iter {I : Type} {R : Type} :=
-      fun kont : I \to stateT ST M (sum I R) =>
-      let my_iter : prod I ST \to M (prod R ST) := monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` kont)) in
-      fun x0 : I =>
-      StateT (fun s0 : ST => my_iter (x0, s0))
+    { monadic_iter {I : Type} {R : Type} (kont : I \to stateT ST M (sum I R)) :=
+      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` kont)) (x0, s0))
     }
   .
 
