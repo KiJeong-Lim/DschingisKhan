@@ -37,6 +37,19 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   Global Notation Tau t := (go (TauF t)).
   Global Notation Vis X e k := (go (VisF X e k)).
 
+  Definition burn_tau {E : Type -> Type} {R : Type} : nat -> itree E R -> itree E R :=
+    fix burn_tau_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
+    match n with
+    | O => t
+    | S n' =>
+      match observe t with
+      | RetF r => Ret r
+      | TauF t' => burn_tau_fix n' t'
+      | VisF X e k => Vis X e k
+      end
+    end
+  .
+
   Section ITREE_BIND. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
 
   Context {E : Type -> Type} {R1 : Type} {R2 : Type}.
@@ -68,21 +81,8 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     }
   .
 
-  Definition make_tick {E : Type -> Type} : itree E unit :=
+  Definition itree_tick {E : Type -> Type} : itree E unit :=
     Tau (Ret tt)
-  .
-
-  Definition burn_tick {E : Type -> Type} {R : Type} : nat -> itree E R -> itree E R :=
-    fix burn_tick_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
-    match n with
-    | O => t
-    | S n' =>
-      match observe t with
-      | RetF r => Ret r
-      | TauF t' => burn_tick_fix n' t'
-      | VisF X e k => Vis X e k
-      end
-    end
   .
 
   Definition itree_trigger {E : Type -> Type} : E -< itree E :=
@@ -568,15 +568,6 @@ Module InteractionTreeTheory.
     : go (observe t) == t.
   Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
-  Corollary unfold_itree_bind {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
-    bind t0 k0 ==
-    match observe t0 with
-    | RetF r => k0 r
-    | TauF t => Tau (bind t k0)
-    | VisF X e k => Vis X e (fun x : X => bind (k x) k0)
-    end.
-  Proof. now apply eqITree_intro_obs_eq_obs. Qed.
-
   Lemma bot_is_empty {A : Type} :
     forall x : A,
     ~ member x bot.
@@ -672,6 +663,19 @@ Module InteractionTreeTheory.
 
   Context {R1 : Type} {R2 : Type}.
 
+  Lemma unfold_expand_leaves (t : itree E R1) (k : R1 -> itree E R2) :
+    observe (expand_leaves k t) = observe (expand_leaves_progress k (expand_leaves k) (observe t)).
+  Proof. reflexivity. Qed.
+
+  Lemma unfold_itree_bind (t0 : itree E R1) (k0 : R1 -> itree E R2) :
+    bind t0 k0 ==
+    match observe t0 with
+    | RetF r => k0 r
+    | TauF t => Tau (bind t k0)
+    | VisF X e k => Vis X e (fun x : X => bind (k x) k0)
+    end.
+  Proof. apply eqITree_intro_obs_eq_obs. exact (unfold_expand_leaves t0 k0). Qed.
+
   Variable k0 : R1 -> itree E R2.
 
   Corollary itree_bind_Ret (r : R1) :
@@ -686,35 +690,13 @@ Module InteractionTreeTheory.
     bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
   Proof. now rewrite unfold_itree_bind. Qed.
 
-  Lemma itree_bind_trigger (e : E R1) :
-    bind (itree_trigger R1 e) k0 == Vis R1 e k0.
-  Proof.
-    rewrite unfold_itree_bind with (t0 := itree_trigger R1 e).
-    apply PaCo_init.
-    apply PaCo_fold.
-    constructor 3.
-    intros r.
-    apply in_union_iff; left.
-    assert (claim1 := itree_bind_Ret r).
-    apply PaCo_init in claim1.
-    exact claim1.
-  Qed.
-
   End BIND_CASES.
 
-  Lemma unfold_expand_leaves {R1 : Type} {R2 : Type} :
-    forall k : R1 -> itree E R2,
-    forall t : itree E R1,
-    observe (expand_leaves k t) = observe (expand_leaves_progress k (expand_leaves k) (observe t)).
-  Proof.
-    reflexivity.
-  Qed.
-
   Lemma itree_bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} :
-    forall m : itree E R1,
+    forall m0 : itree E R1,
     forall k1 : R1 -> itree E R2,
     forall k2 : R2 -> itree E R3,
-    ((m >>= k1) >>= k2) == (m >>= (fun x1 : R1 => k1 x1 >>= k2)).
+    ((m0 >>= k1) >>= k2) == (m0 >>= (fun x1 : R1 => k1 x1 >>= k2)).
   Proof with eauto with *.
     intros t_0 k_1 k_2.
     revert t_0.
@@ -947,19 +929,35 @@ Module InteractionTreeTheory.
     }
   .
 
-  Lemma itree_iter_unfold {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) :
-    forall arg : I,
+  Section REDUCTION_OF_BASIC_OPERATIONS.
+
+  Context {E : Type -> Type} {R : Type}.
+
+  Lemma reduce_itree_tick (k : unit -> itree E R) :
+    bind (itree_tick (E := E)) k == Tau (k tt).
+  Proof.
+    unfold itree_tick. rewrite itree_bind_Tau. apply Tau_eq_iff.
+    apply itree_bind_pure_l with (x := tt).
+  Qed.
+
+  Lemma reduce_itree_trigger {X : Type} (e : E X) (k : X -> itree E R) :
+    bind (itree_trigger (E := E) X e) k == Vis X e k.
+  Proof.
+    unfold itree_trigger. rewrite itree_bind_Vis. apply Vis_eq_iff.
+    intros x. apply itree_bind_pure_l with (x := x).
+  Qed.
+
+  End REDUCTION_OF_BASIC_OPERATIONS.
+
+  Lemma unfold_itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) (arg : I) :
     itree_iter step arg ==
     \do res <- step arg;
     match res with
     | inl arg' => Tau (itree_iter step arg')
     | inr res' => Ret res'
     end.
-  Proof.
-    intros arg. apply eqITree_intro_obs_eq_obs.
-    exact (@eq_refl _ (observe (itree_iter step arg))).
-  Qed.
+  Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
-  Local Notation Handler E F := (forall X : Type, E X -> itree F X).
+  Local Notation Handler E F := (E -< itree F).
 
 End InteractionTreeTheory.
