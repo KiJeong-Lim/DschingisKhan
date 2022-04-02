@@ -558,10 +558,15 @@ Module InteractionTreeTheory.
     (H_obs_eq_obs : observe lhs = observe rhs)
     : lhs == rhs.
   Proof.
-    apply eq_itree_iff_eqITree; constructor.
-    replace (observe rhs) with (observe lhs) by exact (H_obs_eq_obs).
-    apply eq_itree_iff_eqITree; reflexivity.
+    eapply eq_itree_iff_eqITree; constructor.
+    replace (observe rhs) with (observe lhs).
+    eapply eq_itree_iff_eqITree; reflexivity.
   Qed.
+
+  Corollary itree_eta {E : Type -> Type} {R : Type}
+    (t : itree E R)
+    :go (observe t) == t.
+  Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
   Corollary unfold_itree_bind {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
     bind t0 k0 ==
@@ -584,14 +589,6 @@ Module InteractionTreeTheory.
   Qed.
 
   Local Hint Resolve bot_is_empty : core.
-
-  Lemma itree_eta {E : Type -> Type} {R : Type} :
-    forall t : itree E R,
-    go (observe t) == t.
-  Proof with eauto with *.
-    intros t.
-    assert (claim1 := eqITree_intro_obs_eq_obs t (go (observe t)))...
-  Qed.
 
   Definition rel_image {E : Type -> Type} {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
     image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
