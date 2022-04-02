@@ -565,7 +565,7 @@ Module InteractionTreeTheory.
 
   Corollary itree_eta {E : Type -> Type} {R : Type}
     (t : itree E R)
-    :go (observe t) == t.
+    : go (observe t) == t.
   Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
   Corollary unfold_itree_bind {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
