@@ -4,6 +4,8 @@ Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
 Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.pure.MyStructures.
 Require Import DschingisKhan.pure.MyUtilities.
 
@@ -204,7 +206,7 @@ Module MyCategories.
   .
 
   Polymorphic Class isMonadIter (M : Type -> Type) `{M_isMonad : isMonad M} : Type :=
-    { monadic_iter {I : Type} {R : Type} : (I \to M (sum I R)) -> (I \to M R)
+    { monadic_iter {I : Type} {R : Type} (step : I \to M (sum I R)) : I \to M R
     }
   .
 
@@ -217,8 +219,8 @@ Module MyCategories.
   .
 
   Global Polymorphic Instance stateT_liftMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { monadic_iter {I : Type} {R : Type} (kont : I \to stateT ST M (sum I R)) :=
-      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` kont)) (x0, s0))
+    { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
+      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
     }
   .
 

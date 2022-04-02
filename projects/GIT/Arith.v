@@ -68,14 +68,18 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     }
   .
 
-  Definition burn_tau {E : Type -> Type} {R : Type} : nat -> itree E R -> itree E R :=
-    fix burn_tau_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
+  Definition make_tick {E : Type -> Type} : itree E unit :=
+    Tau (Ret tt)
+  .
+
+  Definition burn_tick {E : Type -> Type} {R : Type} : nat -> itree E R -> itree E R :=
+    fix burn_tick_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
     match n with
     | O => t
     | S n' =>
       match observe t with
       | RetF r => Ret r
-      | TauF t' => burn_tau_fix n' t'
+      | TauF t' => burn_tick_fix n' t'
       | VisF X e k => Vis X e k
       end
     end
@@ -92,7 +96,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     expand_leaves (@sum_rect I R (fun _ => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
-  Global Polymorphic Instance itree_E_isMonadIter {E : Type -> Type} : isMonadIter (itree E) :=
+  Global Polymorphic Instance itree_E_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
     { monadic_iter {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R)
     }
   .
@@ -495,19 +499,6 @@ Module InteractionTreeTheory.
 
   Local Hint Resolve eqITreeF_isMonotonic : core.
 
-  Lemma bot_is_empty {A : Type} :
-    forall x : A,
-    ~ member x bot.
-  Proof.
-    intros x.
-    assert (clami1 := @in_empty_iff (ensemble A)).
-    intros H_x_in.
-    apply in_unions_iff in H_x_in.
-    firstorder.
-  Qed.
-
-  Local Hint Resolve bot_is_empty : core.
-
   Lemma eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type} :
     forall lhs : itree E R,
     forall rhs : itree E R,
@@ -523,6 +514,65 @@ Module InteractionTreeTheory.
     unfold eqITreeF, member, curry, uncurry in *.
     congruence.
   Qed.
+
+  Lemma Ret_eq_iff {E : Type -> Type} {R : Type} :
+    forall x1 : R,
+    forall x2 : R,
+    eqITree (E := E) (R := R) (Ret x1) (Ret x2) <-> x1 = x2.
+  Proof.
+    intros x1 x2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      now inversion H_eq; subst.
+    - apply eq_itree_iff_eqITree; econstructor.
+      now constructor 1.
+  Qed. 
+
+  Lemma Tau_eq_iff {E : Type -> Type} {R : Type} :
+    forall t1 : itree E R,
+    forall t2 : itree E R,
+    eqITree (E := E) (R := R) (Tau t1) (Tau t2) <-> t1 == t2.
+  Proof.
+    intros t1 t2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      inversion H_eq; subst.
+      now apply eq_itree_iff_eqITree.
+    - apply eq_itree_iff_eqITree; econstructor.
+      constructor 2. now apply eq_itree_iff_eqITree.
+  Qed.
+
+  Lemma Vis_eq_iff {E : Type -> Type} {R : Type} :
+    forall X : Type,
+    forall e : E X,
+    forall k1 : X -> itree E R,
+    forall k2 : X -> itree E R,
+    eqITree (E := E) (R := R) (Vis X e k1) (Vis X e k2) <-> k1 == k2.
+  Proof.
+    intros X e k1 k2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      inversion H_eq; subst.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type E X e1 e H1) as e_eq; subst e1; clear H H1.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as k1_eq; subst k3; clear H2.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as k2_eq; subst k4; clear H4.
+      intros x. apply eq_itree_iff_eqITree. exact (H_rel x).
+    - apply eq_itree_iff_eqITree; econstructor.
+      constructor 3. intros x; apply eq_itree_iff_eqITree; exact (H_eq x).
+  Qed.
+
+  Lemma bot_is_empty {A : Type} :
+    forall x : A,
+    ~ member x bot.
+  Proof.
+    intros x.
+    assert (clami1 := @in_empty_iff (ensemble A)).
+    intros H_x_in.
+    apply in_unions_iff in H_x_in.
+    firstorder.
+  Qed.
+
+  Local Hint Resolve bot_is_empty : core.
 
   Lemma itree_eta {E : Type -> Type} {R : Type} :
     forall t : itree E R,
@@ -610,7 +660,7 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Definition bind_expanded_form {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
+  Definition bind_unfolded {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
     fun t0 : itree E R1 =>
     fun k0 : R1 -> itree E R2 =>
     match observe t0 with
@@ -622,31 +672,31 @@ Module InteractionTreeTheory.
 
   Section BIND_CASES.
 
-  Polymorphic Context {R1 : Type} {R2 : Type}.
+  Context {R1 : Type} {R2 : Type}.
 
-  Polymorphic Variable k0 : R1 -> itree E R2.
+  Variable k0 : R1 -> itree E R2.
 
-  Polymorphic Lemma unfold_itree_bind (t0 : itree E R1) :
-    (t0 >>= k0) == bind_expanded_form t0 k0.
+  Lemma unfold_itree_bind (t0 : itree E R1) :
+    bind t0 k0 == bind_unfolded t0 k0.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Polymorphic Lemma itree_bind_Ret (r : R1) :
+  Lemma itree_bind_Ret (r : R1) :
     bind (Ret r) k0 == k0 r.
   Proof.
     apply eqITree_intro_obs_eq_obs.
     reflexivity.
   Qed.
 
-  Polymorphic Lemma itree_bind_Tau (t : itree E R1) :
+  Lemma itree_bind_Tau (t : itree E R1) :
     bind (Tau t) k0 == Tau (bind t k0).
   Proof.
     apply unfold_itree_bind with (t0 := Tau t).
   Qed.
 
-  Polymorphic Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
+  Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
     bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
   Proof.
     rewrite unfold_itree_bind with (t0 := Vis X e k).
@@ -659,7 +709,7 @@ Module InteractionTreeTheory.
     reflexivity.
   Qed.
 
-  Polymorphic Lemma itree_bind_trigger (e : E R1) :
+  Lemma itree_bind_trigger (e : E R1) :
     bind (itree_trigger R1 e) k0 == Vis R1 e k0.
   Proof.
     rewrite unfold_itree_bind with (t0 := itree_trigger R1 e).
@@ -919,6 +969,36 @@ Module InteractionTreeTheory.
       itree_bind_preserves_eq_on_snd_arg E R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
     }
   .
+
+  Lemma itree_iter_unfold {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) :
+    forall arg : I,
+    itree_iter step arg ==
+    \do res <- step arg;
+    match res with
+    | inl arg' => Tau (itree_iter step arg')
+    | inr res' => Ret res'
+    end.
+  Proof.
+    intros arg. apply eqITree_intro_obs_eq_obs.
+    exact (@eq_refl _ (observe (itree_iter step arg))).
+  Qed.
+
+  Lemma itree_iter_unfold' {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) :
+    forall arg : I,
+    itree_iter step arg ==
+    \do res <- step arg;
+    match res with
+    | inl arg' => \do make_tick; itree_iter step arg'
+    | inr res' => ret res';
+    end.
+  Proof with eauto.
+    intros arg. rewrite itree_iter_unfold with (arg := arg).
+    apply itree_bind_preserves_eq_on_snd_arg...
+    intros [arg' | res'].
+    - symmetry. unfold make_tick. rewrite itree_bind_Tau. apply Tau_eq_iff.
+      apply itree_bind_pure_l with (k := fun _ : unit => itree_iter step arg').
+    - reflexivity.
+  Qed.
 
   Local Notation Handler E F := (forall X : Type, E X -> itree F X).
 
