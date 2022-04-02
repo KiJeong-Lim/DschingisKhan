@@ -552,21 +552,25 @@ Module InteractionTreeTheory.
 
   Local Hint Resolve eqITreeF_isMonotonic : core.
 
-  Lemma eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type} :
-    forall lhs : itree E R,
-    forall rhs : itree E R,
-    observe lhs = observe rhs ->
-    lhs == rhs.
-  Proof with eauto.
-    intros lhs rhs H_obs_eq_obs.
-    apply PaCo_init.
-    apply PaCo_fold.
-    assert (claim1 := eqITree_Reflexive lhs).
-    apply PaCo_init in claim1.
-    apply PaCo_unfold in claim1...
-    unfold eqITreeF, member, curry, uncurry in *.
-    congruence.
+  Theorem eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type}
+    (lhs : itree E R)
+    (rhs : itree E R)
+    (H_obs_eq_obs : observe lhs = observe rhs)
+    : lhs == rhs.
+  Proof.
+    apply eq_itree_iff_eqITree; constructor.
+    rewrite H_obs_eq_obs; apply eq_itree_iff_eqITree.
+    reflexivity.
   Qed.
+
+  Corollary unfold_itree_bind {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
+    bind t0 k0 ==
+    match observe t0 with
+    | RetF r => k0 r
+    | TauF t => Tau (bind t k0)
+    | VisF X e k => Vis X e (fun x : X => bind (k x) k0)
+    end.
+  Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
   Lemma bot_is_empty {A : Type} :
     forall x : A,
@@ -667,54 +671,23 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Definition bind_unfolded {R1 : Type} {R2 : Type} : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
-    fun t0 : itree E R1 =>
-    fun k0 : R1 -> itree E R2 =>
-    match observe t0 with
-    | RetF r => k0 r
-    | TauF t => Tau (t >>= k0)
-    | VisF X e k => Vis X e (fun x : X => k x >>= k0)
-    end
-  .
-
   Section BIND_CASES.
 
   Context {R1 : Type} {R2 : Type}.
 
   Variable k0 : R1 -> itree E R2.
 
-  Lemma unfold_itree_bind (t0 : itree E R1) :
-    bind t0 k0 == bind_unfolded t0 k0.
-  Proof.
-    apply eqITree_intro_obs_eq_obs.
-    reflexivity.
-  Qed.
-
-  Lemma itree_bind_Ret (r : R1) :
+  Corollary itree_bind_Ret (r : R1) :
     bind (Ret r) k0 == k0 r.
-  Proof.
-    apply eqITree_intro_obs_eq_obs.
-    reflexivity.
-  Qed.
+  Proof. now rewrite unfold_itree_bind. Qed.
 
-  Lemma itree_bind_Tau (t : itree E R1) :
+  Corollary itree_bind_Tau (t : itree E R1) :
     bind (Tau t) k0 == Tau (bind t k0).
-  Proof.
-    apply unfold_itree_bind with (t0 := Tau t).
-  Qed.
+  Proof. now rewrite unfold_itree_bind. Qed.
 
-  Lemma itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
+  Corollary itree_bind_Vis (X : Type) (e : E X) (k : X -> itree E R1) :
     bind (Vis X e k) k0 == Vis X e (fun x : X => bind (k x) k0).
-  Proof.
-    rewrite unfold_itree_bind with (t0 := Vis X e k).
-    apply PaCo_init.
-    apply PaCo_fold.
-    constructor 3.
-    intros x.
-    apply in_union_iff; left.
-    apply eqITree_refl.
-    reflexivity.
-  Qed.
+  Proof. now rewrite unfold_itree_bind. Qed.
 
   Lemma itree_bind_trigger (e : E R1) :
     bind (itree_trigger R1 e) k0 == Vis R1 e k0.
