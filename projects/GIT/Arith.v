@@ -940,7 +940,7 @@ Module InteractionTreeTheory.
     apply itree_bind_pure_l with (x := tt).
   Qed.
 
-  Lemma reduce_itree_trigger {X : Type} (e : E X) (k : X -> itree E R) :
+  Lemma reduce_itree_trigger (X : Type) (e : E X) (k : X -> itree E R) :
     bind (itree_trigger (E := E) X e) k == Vis X e k.
   Proof.
     unfold itree_trigger. rewrite itree_bind_Vis. apply Vis_eq_iff.
@@ -951,11 +951,12 @@ Module InteractionTreeTheory.
 
   Lemma unfold_itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) (arg : I) :
     itree_iter step arg ==
-    \do res <- step arg;
-    match res with
-    | inl arg' => Tau (itree_iter step arg')
-    | inr res' => Ret res'
-    end.
+    bind (step arg) (fun res : I + R =>
+      match res with
+      | inl arg' => Tau (itree_iter step arg')
+      | inr res' => Ret res'
+      end
+    ).
   Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
   Local Notation Handler E F := (E -< itree F).
