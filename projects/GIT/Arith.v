@@ -157,7 +157,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition calling {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R -< itree E :=
+  Definition itree_app {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R -< itree E :=
     fun X : Type =>
     fun e : callE I R X =>
     match e in callE _ _ R0 return itree E R0 with
@@ -166,7 +166,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
-    itree_mrec (E := callE I R) (E' := E) (calling body) R (Call arg)
+    itree_mrec (E := callE I R) (E' := E) (itree_app body) R (Call arg)
   .
 
   Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
