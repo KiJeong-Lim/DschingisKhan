@@ -115,25 +115,25 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     itree_interpret (M := stateT ST (itree E')) (E := E) handle
   .
 
-  Inductive callE (A : Type) (B : Type) : Type -> Type :=
-  | Call (arg : A) : callE A B B
+  Inductive callE (I : Type) (R : Type) : Type -> Type :=
+  | Call (arg : I) : callE I R R
   .
 
-  Global Arguments Call {A} {B}.
+  Global Arguments Call {I} {R}.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
-  Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
+  Definition itree_interpret_mrec {E1 : Type -> Type} {E2 : Type -> Type} (ctx : E1 -< itree (E1 +' E2)) : itree (E1 +' E2) -< itree E2 :=
     fun R : Type =>
-    monadic_iter (M := itree E') (I := itree (E +' E') R) (R := R) (
-      fun t0 : itree (E +' E') R =>
+    itree_iter (E := E2) (I := itree (E1 +' E2) R) (R := R) (
+      fun t0 : itree (E1 +' E2) R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
       | VisF X e k =>
         match e with
-        | inl1 el => Ret (inl (ctx X el >>= k))
-        | inr1 er => Vis X er (fun x : X => Ret (inl (k x)))
+        | inl1 e1 => Ret (inl (ctx X e1 >>= k))
+        | inr1 e2 => Vis X e2 (fun x : X => Ret (inl (k x)))
         end
       end
     )
@@ -144,7 +144,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : E -< itree E' :=
     fun R : Type =>
     fun e : E R =>
-    itree_interpret_mrec (E := E) (E' := E') ctx R (ctx R e)
+    itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
   .
 
   Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +' E') :=
@@ -157,24 +157,24 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition calling {E : Type -> Type} {A : Type} {B : Type} (callee : A -> itree E B) : callE A B -< itree E :=
-    fun R : Type =>
-    fun e : callE A B R =>
-    match e in callE _ _ X return itree E X with
+  Definition calling {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R -< itree E :=
+    fun X : Type =>
+    fun e : callE I R X =>
+    match e in callE _ _ R0 return itree E R0 with
     | Call arg => callee arg
     end
   .
 
-  Definition itree_rec {E : Type -> Type} {A : Type} {B : Type} (body : A -> itree (callE A B +' E) B) (arg : A) : itree E B :=
-    itree_mrec (E := callE A B) (E' := E) (calling body) B (Call arg)
+  Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
+    itree_mrec (E := callE I R) (E' := E) (calling body) R (Call arg)
   .
 
-  Definition itree_call {E : Type -> Type} {A : Type} {B : Type} (arg : A) : itree (callE A B +' E) B :=
-    itree_trigger (E := callE A B +' E) B (inl1 (Call arg))
+  Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
+    itree_trigger_inl1 (E := callE I R) (E' := E) R (Call arg)
   .
 
-  Definition itree_rec_fix {E : Type -> Type} {A : Type} {B : Type} (body : endo (A -> itree (callE A B +' E) B)) (arg : A) : itree E B :=
-    itree_rec (E := E) (A := A) (B := B) (body itree_call) arg
+  Definition itree_rec_fix {E : Type -> Type} {I : Type} {R : Type} (body : endo (I -> itree (callE I R +' E) R)) : I -> itree E R :=
+    itree_rec (E := E) (I := I) (R := R) (body itree_call)
   .
 
   End RECURSION.
