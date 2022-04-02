@@ -93,13 +93,14 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   .
 
   Global Polymorphic Instance itree_E_isMonadIter {E : Type -> Type} : isMonadIter (itree E) :=
-    { monadic_iter {I : Type} {R : Type} := itree_iter (I := I) (R := R)
+    { monadic_iter {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R)
     }
   .
 
   Definition itree_interpret {M : Type -> Type} `{M_isMonadIter : isMonadIter M} {E : Type -> Type} (handle : E -< M) : itree E -< M :=
     fun R : Type =>
-    monadic_iter (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
+    monadic_iter (M := M) (I := itree E R) (R := R) (
+      fun t0 : itree E R =>
       match observe t0 with
       | RetF r => ret (inr r);
       | TauF t => ret (inl t);
@@ -122,16 +123,17 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
-  Polymorphic Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
+  Definition itree_interpret_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E -< itree (E +' E')) : itree (E +' E') -< itree E' :=
     fun R : Type =>
-    itree_iter (E := E') (I := itree (E +' E') R) (R := R) (fun t0 : itree (E +' E') R =>
+    monadic_iter (M := itree E') (I := itree (E +' E') R) (R := R) (
+      fun t0 : itree (E +' E') R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
       | VisF X e k =>
         match e with
-        | inl1 l => Ret (inl (ctx X l >>= k))
-        | inr1 r => Vis X r (fun x : X => Ret (inl (k x)))
+        | inl1 el => Ret (inl (ctx X el >>= k))
+        | inr1 er => Vis X er (fun x : X => Ret (inl (k x)))
         end
       end
     )
