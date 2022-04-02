@@ -216,14 +216,25 @@ Module InteractionTreeTheory.
   Unset Primitive Projections.
 
   Definition eqITreeF (sim : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    uncurry (fun t1 : itree E R => fun t2 : itree E R => eq_itreeF (curry sim) (observe t1) (observe t2))
+    uncurry (fun lhs : itree E R => fun rhs : itree E R => eq_itreeF (curry sim) (observe lhs) (observe rhs))
   .
 
   Lemma eqITreeF_isMonotonic :
     isMonotonicMap eqITreeF.
-  Proof with eauto.
-    unfold eqITreeF, uncurry.
-    intros R1 R2 H_R1_le_R2 [? ?] [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; [pose (H_rel) | pose (H_R1_le_R2 (t1, t2) H_rel) | pose (fun x : X => H_R1_le_R2 (k1 x, k2 x) (H_rel x))]...
+  Proof.
+    exact (
+      fun R1 : ensemble (itree E R * itree E R) =>
+      fun R2 : ensemble (itree E R * itree E R) =>
+      fun H_R1_le_R2 : R1 =< R2 =>
+      fun lhs_rhs : itree E R * itree E R =>
+      let '(lhs, rhs) as p := lhs_rhs return eqITreeF R1 p =< eqITreeF R2 p in
+      fun H_R1 : eq_itreeF (curry R1) (observe lhs) (observe rhs) =>
+      match H_R1 in eq_itreeF _ obs_lhs obs_rhs return eq_itreeF (curry R2) obs_lhs obs_rhs with
+      | EqRetF _ r1 r2 H_rel => EqRetF (curry R2) r1 r2 H_rel
+      | EqTauF _ t1 t2 H_rel => EqTauF (curry R2) t1 t2 (H_R1_le_R2 (t1, t2) H_rel)
+      | EqVisF _ X e k1 k2 H_rel => EqVisF (curry R2) X e k1 k2 (fun x : X => H_R1_le_R2 (k1 x, k2 x) (H_rel x))
+      end
+    ).
   Defined.
 
   Local Hint Resolve eqITreeF_isMonotonic : core.
@@ -240,22 +251,66 @@ Module InteractionTreeTheory.
     set (F := exist isMonotonicMap eqITreeF eqITreeF_isMonotonic).
     enough (claim1 : isSubsetOf (uncurry eq_itree) (proj1_sig F (uncurry eq_itree))).
     enough (claim2 : isSupremum (uncurry eq_itree) (postfixed_points (proj1_sig F))).
-    enough (claim3 : uncurry eq_itree == (proj1_sig (nu F))).
+    enough (claim3 : uncurry eq_itree == proj1_sig (nu F)).
     - intros lhs rhs; exact (claim3 (lhs, rhs)).
     - exact (proj1 (isSupremum_unique (postfixed_points (proj1_sig F)) (uncurry eq_itree) claim2 (proj1_sig (nu F))) (nu_isSupremum F)).
     - intros P; split.
-      { intros H_le X H_postfixed.
+      + intros H_le X H_postfixed.
         transitivity (uncurry eq_itree); [unfold uncurry | exact H_le].
         intros [lhs rhs] H_in; revert lhs rhs H_in; cofix CIH.
         intros lhs rhs H_in; constructor.
         enough (to_show : X =< uncurry eq_itree) by exact (eqITreeF_isMonotonic X (uncurry eq_itree) to_show (lhs, rhs) (H_postfixed (lhs, rhs) H_in)).
         intros [t1 t2] H_in_X; apply CIH; exact H_in_X.
-      }
-      { intros H_upperbound.
+      + intros H_upperbound.
         apply (H_upperbound (uncurry eq_itree)).
         exact claim1.
-      }
     - intros [lhs rhs] H_in; exact (unfold_eq_itree lhs rhs H_in).
+  Qed.
+
+  Lemma Ret_eq_iff :
+    forall x1 : R,
+    forall x2 : R,
+    eqITree (Ret x1) (Ret x2) <-> (x1 = x2).
+  Proof.
+    intros x1 x2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      now inversion H_eq; subst.
+    - apply eq_itree_iff_eqITree; econstructor.
+      now constructor 1.
+  Qed. 
+
+  Lemma Tau_eq_iff :
+    forall t1 : itree E R,
+    forall t2 : itree E R,
+    eqITree (Tau t1) (Tau t2) <-> (eqITree t1 t2).
+  Proof.
+    intros t1 t2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      inversion H_eq; subst.
+      now apply eq_itree_iff_eqITree.
+    - apply eq_itree_iff_eqITree; econstructor.
+      constructor 2. now apply eq_itree_iff_eqITree.
+  Qed.
+
+  Lemma Vis_eq_iff :
+    forall X : Type,
+    forall e : E X,
+    forall k1 : X -> itree E R,
+    forall k2 : X -> itree E R,
+    eqITree (Vis X e k1) (Vis X e k2) <-> (forall x : X, eqITree (k1 x) (k2 x)).
+  Proof.
+    intros X e k1 k2. split; intros H_eq.
+    - apply eq_itree_iff_eqITree in H_eq.
+      destruct H_eq as [H_eq]. simpl in H_eq.
+      inversion H_eq as [ | | X' e' k1' k2' H_rel]; subst.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e' e H0) as e_eq; subst e'; clear H0 H2.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k1' k1 H1) as k1_eq; subst k1'; clear H1.
+      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k2 H3) as k2_eq; subst k2'; clear H3.
+      intros x. apply eq_itree_iff_eqITree. exact (H_rel x).
+    - apply eq_itree_iff_eqITree; econstructor.
+      constructor 3. intros x; apply eq_itree_iff_eqITree; exact (H_eq x).
   Qed.
 
   Lemma not_in_bot :
@@ -513,52 +568,6 @@ Module InteractionTreeTheory.
     apply PaCo_unfold in claim1...
     unfold eqITreeF, member, curry, uncurry in *.
     congruence.
-  Qed.
-
-  Lemma Ret_eq_iff {E : Type -> Type} {R : Type} :
-    forall x1 : R,
-    forall x2 : R,
-    eqITree (E := E) (R := R) (Ret x1) (Ret x2) <-> x1 = x2.
-  Proof.
-    intros x1 x2. split; intros H_eq.
-    - apply eq_itree_iff_eqITree in H_eq.
-      destruct H_eq as [H_eq]. simpl in H_eq.
-      now inversion H_eq; subst.
-    - apply eq_itree_iff_eqITree; econstructor.
-      now constructor 1.
-  Qed. 
-
-  Lemma Tau_eq_iff {E : Type -> Type} {R : Type} :
-    forall t1 : itree E R,
-    forall t2 : itree E R,
-    eqITree (E := E) (R := R) (Tau t1) (Tau t2) <-> t1 == t2.
-  Proof.
-    intros t1 t2. split; intros H_eq.
-    - apply eq_itree_iff_eqITree in H_eq.
-      destruct H_eq as [H_eq]. simpl in H_eq.
-      inversion H_eq; subst.
-      now apply eq_itree_iff_eqITree.
-    - apply eq_itree_iff_eqITree; econstructor.
-      constructor 2. now apply eq_itree_iff_eqITree.
-  Qed.
-
-  Lemma Vis_eq_iff {E : Type -> Type} {R : Type} :
-    forall X : Type,
-    forall e : E X,
-    forall k1 : X -> itree E R,
-    forall k2 : X -> itree E R,
-    eqITree (E := E) (R := R) (Vis X e k1) (Vis X e k2) <-> k1 == k2.
-  Proof.
-    intros X e k1 k2. split; intros H_eq.
-    - apply eq_itree_iff_eqITree in H_eq.
-      destruct H_eq as [H_eq]. simpl in H_eq.
-      inversion H_eq; subst.
-      pose proof (ExclusiveMiddle.existT_inj2_eq Type E X e1 e H1) as e_eq; subst e1; clear H H1.
-      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as k1_eq; subst k3; clear H2.
-      pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as k2_eq; subst k4; clear H4.
-      intros x. apply eq_itree_iff_eqITree. exact (H_rel x).
-    - apply eq_itree_iff_eqITree; econstructor.
-      constructor 3. intros x; apply eq_itree_iff_eqITree; exact (H_eq x).
   Qed.
 
   Lemma bot_is_empty {A : Type} :
@@ -981,23 +990,6 @@ Module InteractionTreeTheory.
   Proof.
     intros arg. apply eqITree_intro_obs_eq_obs.
     exact (@eq_refl _ (observe (itree_iter step arg))).
-  Qed.
-
-  Lemma itree_iter_unfold' {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) :
-    forall arg : I,
-    itree_iter step arg ==
-    \do res <- step arg;
-    match res with
-    | inl arg' => \do make_tick; itree_iter step arg'
-    | inr res' => ret res';
-    end.
-  Proof with eauto.
-    intros arg. rewrite itree_iter_unfold with (arg := arg).
-    apply itree_bind_preserves_eq_on_snd_arg...
-    intros [arg' | res'].
-    - symmetry. unfold make_tick. rewrite itree_bind_Tau. apply Tau_eq_iff.
-      apply itree_bind_pure_l with (k := fun _ : unit => itree_iter step arg').
-    - reflexivity.
   Qed.
 
   Local Notation Handler E F := (forall X : Type, E X -> itree F X).
