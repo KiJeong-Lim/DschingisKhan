@@ -559,8 +559,8 @@ Module InteractionTreeTheory.
     : lhs == rhs.
   Proof.
     apply eq_itree_iff_eqITree; constructor.
-    rewrite H_obs_eq_obs; apply eq_itree_iff_eqITree.
-    reflexivity.
+    replace (observe rhs) with (observe lhs) by exact (H_obs_eq_obs).
+    apply eq_itree_iff_eqITree; reflexivity.
   Qed.
 
   Corollary unfold_itree_bind {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
