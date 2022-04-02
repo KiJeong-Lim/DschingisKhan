@@ -225,9 +225,9 @@ Module InteractionTreeTheory.
     exact (
       fun R1 : ensemble (itree E R * itree E R) =>
       fun R2 : ensemble (itree E R * itree E R) =>
-      fun H_R1_le_R2 : R1 =< R2 =>
+      fun H_R1_le_R2 : forall p : itree E R * itree E R, R1 p -> R2 p =>
       fun lhs_rhs : itree E R * itree E R =>
-      let '(lhs, rhs) as p := lhs_rhs return eqITreeF R1 p =< eqITreeF R2 p in
+      let '(lhs, rhs) as p := lhs_rhs return eqITreeF R1 p -> eqITreeF R2 p in
       fun H_R1 : eq_itreeF (curry R1) (observe lhs) (observe rhs) =>
       match H_R1 in eq_itreeF _ obs_lhs obs_rhs return eq_itreeF (curry R2) obs_lhs obs_rhs with
       | EqRetF _ r1 r2 H_rel => EqRetF (curry R2) r1 r2 H_rel
@@ -261,9 +261,7 @@ Module InteractionTreeTheory.
         intros lhs rhs H_in; constructor.
         enough (to_show : X =< uncurry eq_itree) by exact (eqITreeF_isMonotonic X (uncurry eq_itree) to_show (lhs, rhs) (H_postfixed (lhs, rhs) H_in)).
         intros [t1 t2] H_in_X; apply CIH; exact H_in_X.
-      + intros H_upperbound.
-        apply (H_upperbound (uncurry eq_itree)).
-        exact claim1.
+      + intros H_upperbound. apply (H_upperbound (uncurry eq_itree)). exact claim1.
     - intros [lhs rhs] H_in; exact (unfold_eq_itree lhs rhs H_in).
   Qed.
 
@@ -540,7 +538,7 @@ Module InteractionTreeTheory.
 
   End ITREE_EQUALITY.
 
-  Global Add Parametric Relation {E : Type -> Type} {R : Type} : (itree E R) (eqITree (E := E) (R := R))
+  Global Add Parametric Relation (E : Type -> Type) (R : Type) : (itree E R) (eqITree (E := E) (R := R))
     reflexivity proved by (eqITree_Reflexive (E := E) (R := R))
     symmetry proved by (eqITree_Symmetric (E := E) (R := R))
     transitivity proved by (eqITree_Transitive (E := E) (R := R))
@@ -548,7 +546,7 @@ Module InteractionTreeTheory.
 
   Global Instance itree_E_R_isSetoid {E : Type -> Type} {R : Type} : isSetoid (itree E R) :=
     { eqProp := eqITree (E := E) (R := R)
-    ; Setoid_requiresEquivalence := eqITree_Equivalence (E := E) (R := R)
+    ; Setoid_requiresEquivalence := eqITree_Equivalence E R
     }
   .
 
