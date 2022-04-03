@@ -129,8 +129,7 @@ Module MyCategories.
 
   (** "MonadIter Instances" *)
 
-  Polymorphic Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
-    fun pr : sum A B * C =>
+  Polymorphic Definition sum_prod_distr_l {A : Type} {B : Type} {C : Type} (pr : (A + B) * C) : (A * C) + (B * C) :=
     match pr with
     | (inl x, z) => inl (x, z)
     | (inr y, z) => inr (y, z)
@@ -139,7 +138,7 @@ Module MyCategories.
 
   Global Polymorphic Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} (M_isMonadIter : @isMonadIter M M_isMonad) : isMonadIter (stateT ST M) :=
     { monadic_iter {I : Type} {R : Type} :=
-      fun step : I \to stateT ST M (I + R) => curry (monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry step))
+      fun step : I \to stateT ST M (I + R) => curry (monadic_iter ((pure `fmult` sum_prod_distr_l) `kmult` uncurry step))
     }
   .
 
@@ -310,12 +309,16 @@ Module MyCategories.
       exact (H_EQ x).
   Qed.
 
-  Polymorphic Definition stateT_ST_M_isSetoid1 (ST : Type) (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} : isSetoid1 (stateT ST M) :=
-    {| liftSetoid1 := fun X : Type => fun _ : isSetoid X => @arrow_isSetoid ST (M (prod X ST)) (@getFreeSetoid1 M M_isSetoid1 (prod X ST)) |}
+  Global Instance stateT_ST_M_isSetoid1 (ST : Type) (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} : isSetoid1 (stateT ST M) :=
+    { liftSetoid1 :=
+      fun X : Type =>
+      fun _ : isSetoid X =>
+      @arrow_isSetoid ST (M (prod X ST)) (@getFreeSetoid1 M M_isSetoid1 (prod X ST))
+    }
   .
 
   Lemma stateT_ST_M_obeysMonadLaws (ST : Type) (M : Type -> Type) `{ST_isSetoid : isSetoid ST} `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
-    `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
+    (M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
     : obeysMonadLaws (stateT ST M) (M_isSetoid1 := stateT_ST_M_isSetoid1 ST M) (M_isMonad := stateT_ST_M_isMonad ST M).
   Proof.
     split; cbn; unfold stateT, kmult, kunit, StateT, runStateT, fmult, funit, curry, uncurry.
