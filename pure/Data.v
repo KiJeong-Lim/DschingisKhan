@@ -13,8 +13,6 @@ Module MyCategories.
 
   Import MyUtilities BasicSetoidTheory.
 
-  Global Existing Instance arrow_isSetoid.
-
   Polymorphic Class isFunctor (F : Type -> Type) : Type :=
     { fmap {_from : Type} {_to : Type} : (_from \to _to) -> (F _from \to F _to)
     }
@@ -57,9 +55,9 @@ Module MyCategories.
   Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
-  Local Existing Instance getFreeSetoid1.
+  Local Existing Instances arrow_isSetoid getFreeSetoid1.
 
-  Polymorphic Class obeysFunctorLaws (F : Type -> Type) `{F_isSetoid1 : isSetoid1 F} `{F_isFunctor : isFunctor F} : Prop :=
+  Class obeysFunctorLaws (F : Type -> Type) `{F_isSetoid1 : isSetoid1 F} `{F_isFunctor : isFunctor F} : Prop :=
     { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B \to C,
       forall f2 : A \to B,
@@ -69,7 +67,7 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Class obeysMonadLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M} : Prop :=
+  Class obeysMonadLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M} : Prop :=
     { bind_assoc {A : Type} {B : Type} {C : Type} :
       forall m : M A,
       forall k1 : A \to M B,
@@ -105,7 +103,7 @@ Module MyCategories.
     }
   .
 
-  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
+  Global Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
     `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
     : obeysFunctorLaws M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := Monad_isFunctor M).
   Proof with eauto with *. (* Thanks to Soonwon Moon *)
@@ -142,7 +140,11 @@ Module MyCategories.
 
   Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
 
-  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  (** "Functor Instances" *)
+
+  (* sum1 *)
+
+  Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
   | inl1 : F1 X -> sum1 F1 F2 X
   | inr1 : F2 X -> sum1 F1 F2 X
   .
@@ -152,15 +154,13 @@ Module MyCategories.
 
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
-  (* Functor Instances *)
-
-  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
+  Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
     { fmap {A : Type} {B : Type} :=
       fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
     }
   .
 
-  (* Monad Instances *)
+  (** "Monad Instances" *)
 
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Type} :=
@@ -173,38 +173,38 @@ Module MyCategories.
     }
   .
 
-  (* MonadTrans Instances *)
+  (** "MonadTrans Instances" *)
 
-  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+  Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
     ST \to M (prod X ST)
   .
 
-  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
+  Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
     @funit (stateT ST M X)
   .
 
-  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
+  Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
     @funit (stateT ST M X)
   .
 
-  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
+  Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
     { pure _ := StateT `fmult` curry pure
     ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
     }
   .
 
-  Polymorphic Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+  Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
     fun X : Type =>
     fun e : E X =>
     StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
   .
 
-  Global Polymorphic Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
+  Global Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
     { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M (M_isMonad := M_isMonad)) X
     }
   .
 
-  (* MonadIter Instances *)
+  (** "MonadIter Instances" *)
 
   Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
     fun pr : sum A B * C =>
@@ -214,7 +214,7 @@ Module MyCategories.
     end
   .
 
-  Global Polymorphic Instance stateT_liftMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+  Global Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
     { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
       fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
     }

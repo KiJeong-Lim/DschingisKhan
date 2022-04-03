@@ -201,6 +201,8 @@ Module InteractionTreeTheory.
 
   Import EqFacts BasicSetoidTheory MyEnsemble BasicPosetTheory ConstructiveCoLaTheory PowerSetCoLa MyCategories InteractionTree.
 
+  Local Existing Instance arrow_isSetoid.
+
   Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
   Context {E : Type -> Type} {R : Type} `{R_isSetoid : isSetoid R}.
