@@ -67,19 +67,19 @@ Module MyCategories.
     }
   .
 
-  Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
-  | inl1 : F1 X -> sum1 F1 F2 X
-  | inr1 : F2 X -> sum1 F1 F2 X
+  Inductive sum1 (FL : Type -> Type) (FR : Type -> Type) (X : Type) : Type :=
+  | inl1 : FL X -> sum1 FL FR X
+  | inr1 : FR X -> sum1 FL FR X
   .
 
-  Global Arguments inl1 {F1} {F2} {X}.
-  Global Arguments inr1 {F1} {F2} {X}.
+  Global Arguments inl1 {FL} {FR} {X}.
+  Global Arguments inr1 {FL} {FR} {X}.
 
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
-  Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isFunctor : isFunctor F1} `{F2_isFunctor : isFunctor F2} : isFunctor (sum1 F1 F2) :=
+  Global Instance sum1_FL_FR_isFunctor (FL : Type -> Type) (FR : Type -> Type) `{FL_isFunctor : isFunctor FL} `{FR_isFunctor : isFunctor FR} : isFunctor (sum1 FL FR) :=
     { fmap {A : Type} {B : Type} :=
-      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
+      fun f : A \to B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap (F := FL) f l)) (fun r : FR A => inr1 (fmap (F := FR) f r))
     }
   .
 
@@ -222,24 +222,23 @@ Module MyCategories.
       apply bind_pure_r.
   Qed.
 
-  Definition sum1_eqProp1 {F1 : Type -> Type} {F2 : Type -> Type} `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} {X : Type} `{X_isSetoid : isSetoid X} : sum1 F1 F2 X -> sum1 F1 F2 X -> Prop :=
-    fun x1 : sum1 F1 F2 X =>
-    fun x2 : sum1 F1 F2 X =>
+  Definition sum1_eqProp1 {FL : Type -> Type} {FR : Type -> Type} {X : Type} `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} `{X_isSetoid : isSetoid X} : sum1 FL FR X -> sum1 FL FR X -> Prop :=
+    fun x1 : sum1 FL FR X =>
+    fun x2 : sum1 FL FR X =>
     match x1, x2 with
-    | inl1 l1, inl1 l2 => @eqProp _ (liftSetoid1 X_isSetoid) l1 l2
-    | inr1 r1, inr1 r2 => @eqProp _ (liftSetoid1 X_isSetoid) r1 r2
+    | inl1 l1, inl1 l2 => @eqProp (FL X) (liftSetoid1 X_isSetoid) l1 l2
+    | inr1 r1, inr1 r2 => @eqProp (FR X) (liftSetoid1 X_isSetoid) r1 r2
     | _, _ => False
     end
   .
 
-  Global Program Instance sum1_isSetoid1 (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} : isSetoid1 (sum1 F1 F2) :=
-    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
-      {| eqProp := sum1_eqProp1 (X_isSetoid := X_isSetoid); Setoid_requiresEquivalence := _ |}
-    }
-  .
-
-  Next Obligation with now eauto.
-    constructor.
+  Lemma sum1_eqProp1_Equivalence {FL : Type -> Type} {FR : Type -> Type} {X : Type}
+    `(FL_isSetoid1 : isSetoid1 FL)
+    `(FR_isSetoid1 : isSetoid1 FR)
+    `(X_isSetoid : isSetoid X)
+    : @Equivalence (sum1 FL FR X) sum1_eqProp1.
+  Proof with tauto.
+    split.
     - intros [x1 | x1]; cbn.
       all: try reflexivity...
     - intros [x1 | x1] [x2 | x2]; cbn; intros H_1_2.
@@ -248,18 +247,24 @@ Module MyCategories.
       all: try transitivity (x2)...
   Qed.
 
-  Global Instance sum1_obeysFunctorLaws (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} `{F1_isFunctor : isFunctor F1} `{F2_isFunctor : isFunctor F2}
-    `(F1_obeysFunctorLaws : obeysFunctorLaws F1)
-    `(F2_obeysFunctorLaws : obeysFunctorLaws F2)
-    : obeysFunctorLaws (sum1 F1 F2) (F_isSetoid1 := sum1_isSetoid1 F1 F2) (F_isFunctor := sum1_F1_F2_isFunctor F1 F2).
+  Global Program Instance sum1_isSetoid1 (FL : Type -> Type) (FR : Type -> Type) `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} : isSetoid1 (sum1 FL FR) :=
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
+      {| eqProp := sum1_eqProp1; Setoid_requiresEquivalence := sum1_eqProp1_Equivalence FL_isSetoid1 FR_isSetoid1 X_isSetoid |}
+    }
+  .
+
+  Global Instance sum1_obeysFunctorLaws (FL : Type -> Type) (FR : Type -> Type) `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} `{FL_isFunctor : isFunctor FL} `{FR_isFunctor : isFunctor FR}
+    `(FL_obeysFunctorLaws : obeysFunctorLaws FL (F_isSetoid1 := FL_isSetoid1) (F_isFunctor := FL_isFunctor))
+    `(FR_obeysFunctorLaws : obeysFunctorLaws FR (F_isSetoid1 := FR_isSetoid1) (F_isFunctor := FR_isFunctor))
+    : obeysFunctorLaws (sum1 FL FR) (F_isSetoid1 := sum1_isSetoid1 FL FR) (F_isFunctor := sum1_FL_FR_isFunctor FL FR).
   Proof.
     split.
     - intros A B C f1 f2 [x | x].
-      + apply (fmap_fmult_comm (F := F1)).
-      + apply (fmap_fmult_comm (F := F2)).
+      + apply (fmap_fmult_comm (F := FL)).
+      + apply (fmap_fmult_comm (F := FR)).
     - intros A [x | x].
-      + apply (fmap_funit_comm (F := F1)).
-      + apply (fmap_funit_comm (F := F2)).
+      + apply (fmap_funit_comm (F := FL)).
+      + apply (fmap_funit_comm (F := FR)).
   Qed.
 
   (** "Notations" *)
