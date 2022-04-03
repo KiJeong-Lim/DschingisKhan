@@ -560,8 +560,6 @@ Module InteractionTreeTheory.
     }
   .
 
-  Local Hint Resolve eqITreeF_isMonotonic : core.
-
   Theorem eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type}
     (lhs : itree E R)
     (rhs : itree E R)
@@ -589,7 +587,7 @@ Module InteractionTreeTheory.
     firstorder.
   Qed.
 
-  Local Hint Resolve bot_is_empty : core.
+  Local Hint Resolve eqITreeF_isMonotonic bot_is_empty : core.
 
   Definition rel_image {E : Type -> Type} {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
     image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
