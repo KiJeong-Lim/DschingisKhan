@@ -57,20 +57,9 @@ Module MyCategories.
   Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
-  Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
-    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :> isSetoid (F X)
-    }
-  .
+  Local Existing Instance getFreeSetoid1.
 
-  Polymorphic Canonical Structure getFreeSetoid (X : Type) : isSetoid X :=
-    {| eqProp := @eq X; Setoid_requiresEquivalence := eq_equivalence |}
-  .
-
-  Local Polymorphic Instance getFreeSetoid1 {F : Type -> Type} `{F_isSetoid : isSetoid1 F} (X : Type) : isSetoid (F X) :=
-    liftSetoid1 (X := X) (getFreeSetoid X)
-  .
-
-  Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} (F_isFunctor : isFunctor F) : Prop :=
+  Polymorphic Class obeysFunctorLaws (F : Type -> Type) `{F_isSetoid1 : isSetoid1 F} `{F_isFunctor : isFunctor F} : Prop :=
     { fmap_fmult_comm {A : Type} {B : Type} {C : Type} :
       forall f1 : B \to C,
       forall f2 : A \to B,
@@ -80,7 +69,7 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Class obeysMonadLaws {M : Type -> Type} `{eq1 : isSetoid1 M} (M_isMonad : isMonad M) : Prop :=
+  Polymorphic Class obeysMonadLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M} : Prop :=
     { bind_assoc {A : Type} {B : Type} {C : Type} :
       forall m : M A,
       forall k1 : A \to M B,
@@ -108,7 +97,7 @@ Module MyCategories.
     }
   .
 
-  Global Polymorphic Instance Monad_isFunctor {M : Type -> Type} `(M_isMonad : isMonad M) : isFunctor M :=
+  Global Polymorphic Instance Monad_isFunctor (M : Type -> Type) `{M_isMonad : isMonad M} : isFunctor M :=
     { fmap {A : Type} {B : Type} :=
       fun f : A -> B =>
       fun m : M A =>
@@ -116,8 +105,9 @@ Module MyCategories.
     }
   .
 
-  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws {M : Type -> Type} `{eq1 : isSetoid1 M} `{M_isMonad : isMonad M} `(M_obeysMonadLaws : @obeysMonadLaws M eq1 M_isMonad) :
-    obeysFunctorLaws (eq1 := eq1) (Monad_isFunctor M_isMonad).
+  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
+    `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
+    : obeysFunctorLaws M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := Monad_isFunctor M).
   Proof with eauto with *. (* Thanks to Soonwon Moon *)
     enough (claim1 : forall A : Type, forall e : M A, fmap (fun x : A => x) e == e).
     enough (claim2 : forall A : Type, forall B : Type, forall C : Type, forall f1 : B -> C, forall f2 : A -> B, forall e : M A, fmap (f1 `fmult` f2) e == (fmap f1 `fmult` fmap f2) e).
@@ -210,7 +200,7 @@ Module MyCategories.
   .
 
   Global Polymorphic Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
-    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M_isMonad) X
+    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M (M_isMonad := M_isMonad)) X
     }
   .
 
@@ -465,12 +455,13 @@ Module MyVectors.
   .
 
   Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) := vetor_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
+      vetor_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
     }
   .
 
   Global Instance vec_obeysMonadLaws :
-    obeysMonadLaws vec_isMonad.
+    obeysMonadLaws vec_n (M_isSetoid1 := vec_isSetoid1) (M_isMonad := vec_isMonad).
   Proof.
     split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.

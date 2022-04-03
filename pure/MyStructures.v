@@ -18,6 +18,19 @@ Module BasicSetoidTheory.
 
   Global Notation " x '==' y " := (eqProp x y) (at level 70, no associativity) : type_scope.
 
+  Class isSetoid1 (F : Type -> Type) : Type :=
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :> isSetoid (F X)
+    }
+  .
+
+  Definition getFreeSetoid (A : Type) : isSetoid A :=
+    {| eqProp := @eq A; Setoid_requiresEquivalence := eq_equivalence |}
+  .
+
+  Definition getFreeSetoid1 {F : Type -> Type} `{F_isSetoid : isSetoid1 F} (X : Type) : isSetoid (F X) :=
+    liftSetoid1 (X := X) (getFreeSetoid X)
+  .
+
   Lemma Setoid_refl {A : Type} `{A_isSetoid : isSetoid A} :
     forall x1 : A,
     x1 == x1.

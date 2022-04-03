@@ -555,7 +555,7 @@ Module InteractionTreeTheory.
     transitivity proved by (eqITree_Transitive (E := E) (R := R) (R_isSetoid := R_isSetoid))
   as eqITree_Equivalence.
 
-  Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
+  Global Instance itree_E_isSetoid1 (E : Type -> Type) : isSetoid1 (itree E) :=
     { liftSetoid1 {R : Type} `{R_isSetoid : isSetoid R} :=
       {| eqProp := eqITree (E := E) (R := R) (R_isSetoid := R_isSetoid); Setoid_requiresEquivalence := eqITree_Equivalence E R R_isSetoid |}
     }
@@ -925,7 +925,7 @@ Module InteractionTreeTheory.
 
   End REWRITE_BIND.
 
-  Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree_E_isMonad E) :=
+  Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree E) (M_isSetoid1 := itree_E_isSetoid1 E) (M_isMonad := itree_E_isMonad E) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
     ; bind_pure_l {R1 : Type} {R2 : Type} := itree_bind_pure_l (E := E) (R1 := R1) (R2 := R2)
     ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R1 := R1)
@@ -940,7 +940,7 @@ Module InteractionTreeTheory.
       fun k2 : R1 -> itree E R2 =>
       fun H_k1_eq_k2 : forall x : R1, k1 x == k2 x =>
       fun m : itree E R1 => 
-      itree_bind_preserves_eq_on_snd_arg R1 R2 (E := E) m m eq_refl k1 k2 H_k1_eq_k2
+      itree_bind_preserves_eq_on_snd_arg (E := E) R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
     }
   .
 

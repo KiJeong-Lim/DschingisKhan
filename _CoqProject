@@ -11,11 +11,10 @@ pure/Data.v #
 #
 classical/ExclusiveMiddle.v #
 classical/DomainTheory.v #
+classical/ITree.v #
 #
 projects/PropositionalLogic/Base.v #
 projects/PropositionalLogic/ConstructiveMetaTheories.v #
 projects/PropositionalLogic/ClassicalMetaTheories.v #
 projects/PropositionalLogic.v #
-#
-projects/GIT/Arith.v #
 #
