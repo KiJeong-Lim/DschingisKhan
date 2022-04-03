@@ -34,7 +34,7 @@ Module BasicCategories.
 
 End BasicCategories.
 
-Module Universes.
+Module MyUniverses.
 
   Definition Univ : Type := Type.
 
@@ -47,12 +47,12 @@ Module Universes.
     }
   .
 
-End Universes.
+End MyUniverses.
 
 Module BasicEnsembles.
 
-  Import Universes.
+  Import MyUniverses.
 
-  Definition ensemble (A : Hask) : Hask := A -> Prop.
+  Definition ensemble (X : Hask) : Hask := X -> Prop.
 
 End BasicEnsembles.
