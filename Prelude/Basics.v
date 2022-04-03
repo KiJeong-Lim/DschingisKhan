@@ -37,7 +37,7 @@ Module BasicCategories.
   .
 
   Polymorphic Class ContravariantFunctor (f : src_cat -----> tgt_cat) : Type :=
-    { contramap {dom : src_objs} {cod : src_objs} : hom dom cod -> hom (f cod) (f dom)
+    { contramap {dom : src_objs} {cod : src_objs} : hom cod dom -> hom (f dom) (f cod)
     }
   .
 
