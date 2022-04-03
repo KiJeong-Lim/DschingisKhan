@@ -16,7 +16,9 @@ Module BasicSetoidTheory.
     }
   .
 
-  Global Notation " x '==' y " := (eqProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x '==_{' equiv  '}' y " := (@eqProp _ equiv x y) (at level 70, no associativity) : type_scope.
+
+  Global Notation " x '==' y " := (x ==_{ _  } y) (at level 70, no associativity) : type_scope.
 
   Class isSetoid1 (F : Type -> Type) : Type :=
     { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :> isSetoid (F X)
@@ -27,7 +29,7 @@ Module BasicSetoidTheory.
     {| eqProp := @eq A; Setoid_requiresEquivalence := eq_equivalence |}
   .
 
-  Definition getFreeSetoid1 {F : Type -> Type} `{F_isSetoid : isSetoid1 F} (X : Type) : isSetoid (F X) :=
+  Definition getFreeSetoid1 {F : Type -> Type} `{F_isSetoid1 : isSetoid1 F} (X : Type) : isSetoid (F X) :=
     liftSetoid1 (X := X) (getFreeSetoid X)
   .
 
@@ -453,7 +455,9 @@ Module BasicPosetTheory.
     }
   .
 
-  Global Notation " x '=<' y " := (leProp x y) (at level 70, no associativity) : type_scope.
+  Global Notation " x '=<_{' order  '}' y " := (@leProp _ order x y) (at level 70, no associativity) : type_scope.
+
+  Global Notation " x '=<' y " := (x =<_{ _ } y) (at level 70, no associativity) : type_scope.
 
   Lemma Poset_refl {A : Type} `{A_isPoset : isPoset A} :
     forall x1 : A,

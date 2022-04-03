@@ -585,8 +585,6 @@ Module MyVectors.
     }
   .
 
-  Local Infix " == " := (@eqProp (vec_n _) (@getFreeSetoid1 vec_n vec_isSetoid1 _)) : type_scope.
-
   Global Instance vec_obeysMonadLaws
     : obeysMonadLaws vec_n (M_isSetoid1 := vec_isSetoid1) (M_isMonad := vec_isMonad).
   Proof.
@@ -594,7 +592,7 @@ Module MyVectors.
   Qed.
 
   Lemma vec_n_eqProp_iff (A : Type) (xs1 : vec_n A) (xs2 : vec_n A)
-    : xs1 == xs2 <-> xs1 = xs2.
+    : xs1 ==_{ getFreeSetoid1 (F_isSetoid1 := vec_isSetoid1) A } xs2 <-> xs1 = xs2.
   Proof.
     split; intros H_EQ.
     - exact (vector_extensionality xs1 xs2 H_EQ).
