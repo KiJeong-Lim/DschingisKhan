@@ -25,18 +25,18 @@ Module BasicCategories.
 
   Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs}.
 
-  Polymorphic Class isFunctor (funktor : src_cat -----> tgt_cat) : Type :=
-    { fmap {dom : src_objs} {cod : src_objs} : (dom \to cod) -> (funktor dom \to funktor cod)
+  Polymorphic Class isFunctor (F : src_cat -----> tgt_cat) : Type :=
+    { fmap {dom : src_objs} {cod : src_objs} : (dom \to cod) -> (F dom \to F cod)
     }
   .
 
-  Polymorphic Definition NaturalTransformation (funktor_from : src_cat -----> tgt_cat) (funktor_to : src_cat -----> tgt_cat) : Type :=
-    forall obj : src_objs, funktor_from obj \to funktor_to obj
+  Polymorphic Definition NatTrans (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+    forall obj : src_objs, F_from obj \to F_to obj
   .
 
   End Defnitions_of_Functor_and_NaturalTransformation.
 
-  Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
+  Infix " =====> " := NatTrans (at level 100, no associativity) : type_scope.
 
   Global Polymorphic Instance Hask : isCategory Type :=
     { arrs (from_obj : Type) (to_obj : Type) := from_obj -> to_obj
