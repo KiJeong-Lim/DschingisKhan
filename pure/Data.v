@@ -142,8 +142,6 @@ Module MyCategories.
 
   (** "Functor Instances" *)
 
-  (* sum1 *)
-
   Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
   | inl1 : F1 X -> sum1 F1 F2 X
   | inr1 : F2 X -> sum1 F1 F2 X
