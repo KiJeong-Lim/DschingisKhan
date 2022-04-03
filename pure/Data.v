@@ -593,17 +593,17 @@ Module MyVectors.
     split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.
 
-  Lemma vec_n_eqProp_iff {A : Type} :
-    forall xs1 : vec_n A,
-    forall xs2 : vec_n A,
-    xs1 == xs2 <-> xs1 = xs2.
+  Lemma vec_n_eqProp_iff (A : Type) (xs1 : vec_n A) (xs2 : vec_n A)
+    : xs1 == xs2 <-> xs1 = xs2.
   Proof.
-    intros xs1 xs2; split; intros H_EQ.
+    split; intros H_EQ.
     - exact (vector_extensionality xs1 xs2 H_EQ).
     - now rewrite H_EQ.
   Qed.
 
   End VectorIsMonad.
+
+  Global Arguments vec_n_eqProp_iff {n} {A} {xs1} {xs2}.
 
   Definition vector_zip {A : Type} {B : Type} {n : nat} : vector A n -> vector B n -> vector (A * B) n :=
     fun xs : vec_n n A =>
