@@ -52,27 +52,44 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Section ITREE_BIND. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
 
-  Context {E : Type -> Type} {R1 : Type} {R2 : Type}.
+  Context {E : Type -> Type}.
 
-  Variable from_leaf : R1 -> itree E R2.
+  Definition itree_pure {R : Type} : R -> itree E R :=
+    fun r : R =>
+    Ret r
+  .
 
-  Definition expand_leaves_progress (CIH : itree E R1 -> itree E R2) (ot : itreeF (itree E R1) E R1) : itree E R2 :=
-    match ot with
-    | RetF r => from_leaf r
+  Context {R1 : Type} {R2 : Type}.
+
+  Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF (itree E R1) E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
+    match ot0 with
+    | RetF r => k0 r
     | TauF t => Tau (CIH t)
     | VisF X e k => Vis X e (fun x : X => CIH (k x))
     end
   .
 
-  CoFixpoint expand_leaves (t : itree E R1) : itree E R2 :=
-    expand_leaves_progress expand_leaves (observe t)
+  Definition itree_bindAux (k : R1 -> itree E R2) : itree E R1 -> itree E R2 :=
+    cofix itree_bindAux_cofix (t : itree E R1) : itree E R2 :=
+    itree_bindGuard k (observe t) itree_bindAux_cofix
   .
+
+  Definition itree_bind : itree E R1 -> (R1 -> itree E R2) -> itree E R2 :=
+    fun t : itree E R1 =>
+    fun k : R1 -> itree E R2 =>
+    itree_bindAux k t
+  .
+
+  Lemma observe_itree_bind (t0 : itree E R1) (k0 : R1 -> itree E R2) :
+    observe (itree_bind t0 k0) =
+    observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
+  Proof. exact (eq_refl). Defined.
 
   End ITREE_BIND.
 
   Global Instance itree_E_isMonad (E : Type -> Type) : isMonad (itree E) :=
-    { pure {R : Type} := fun r : R => Ret r
-    ; bind {R1 : Type} {R2 : Type} := fun t : itree E R1 => fun k : R1 -> itree E R2 => expand_leaves k t
+    { pure {R : Type} := itree_pure (E := E) (R := R)
+    ; bind {R1 : Type} {R2 : Type} := itree_bind (E := E) (R1 := R1) (R2 := R2)
     }
   .
 
@@ -88,7 +105,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
 
   Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
-    expand_leaves (@sum_rect I R (fun _ => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
+    itree_bindAux (sum_rect (fun _ : I + R => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
   Global Polymorphic Instance itree_E_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
@@ -585,7 +602,7 @@ Module InteractionTreeTheory.
     isSubsetOf (rel_image k (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
   Proof with eauto with *.
     intros k0.
-    assert (claim1 : forall t : itree E R1, observe (expand_leaves k0 t) = observe (expand_leaves_progress k0 (expand_leaves k0) (observe t))) by reflexivity.
+    pose proof (observe_itree_bind (E := E) (R1 := R1) (R2 := R2)) as claim1.
     apply PaCo_acc...
     set (REL := MyUnion bot (rel_image k0 (PaCo eqITreeF bot))).
     transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
@@ -658,11 +675,6 @@ Module InteractionTreeTheory.
 
   Context {R1 : Type} {R2 : Type}.
 
-  Lemma unfold_expand_leaves (t : itree E R1) (k : R1 -> itree E R2) :
-    observe (expand_leaves k t) =
-    observe (expand_leaves_progress k (expand_leaves k) (observe t)).
-  Proof. reflexivity. Qed.
-
   Lemma unfold_itree_bind (t0 : itree E R1) (k0 : R1 -> itree E R2) :
     bind t0 k0 ==
     match observe t0 with
@@ -672,7 +684,7 @@ Module InteractionTreeTheory.
     end.
   Proof.
     apply eqITree_intro_obs_eq_obs.
-    exact (unfold_expand_leaves t0 k0).
+    exact (observe_itree_bind t0 k0).
   Qed.
 
   Variable k0 : R1 -> itree E R2.
@@ -732,11 +744,11 @@ Module InteractionTreeTheory.
     replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_in...
     unfold eqITree in H_in.
     unfold eqITreeF, member, uncurry, curry in *.
-    do 3 rewrite unfold_expand_leaves.
+    do 3 rewrite observe_itree_bind.
     destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
-    - rewrite <- unfold_expand_leaves.
+    - rewrite <- observe_itree_bind.
       subst r2.
-      assert (claim3 := eqITree_refl (expand_leaves k_2 (k_1 r1), expand_leaves k_2 (k_1 r1)) eq_refl).
+      assert (claim3 := eqITree_refl (itree_bindAux k_2 (k_1 r1), itree_bindAux k_2 (k_1 r1)) eq_refl).
       apply PaCo_unfold in claim3...
       replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R3)) in claim3...
       apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
@@ -744,8 +756,8 @@ Module InteractionTreeTheory.
       apply in_union_iff; right.
       apply in_union_iff in H_rel.
       destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
-      replace (expand_leaves k_2 (expand_leaves k_1 t1)) with ((t1 >>= k_1) >>= k_2)...
-      replace (expand_leaves (fun x : R1 => expand_leaves k_2 (k_1 x)) t2) with (t2 >>= (fun x : R1 => k_1 x >>= k_2))...
+      replace (itree_bindAux k_2 (itree_bindAux k_1 t1)) with ((t1 >>= k_1) >>= k_2)...
+      replace (itree_bindAux (fun x : R1 => itree_bindAux k_2 (k_1 x)) t2) with (t2 >>= (fun x : R1 => k_1 x >>= k_2))...
       right.
       apply in_image_iff.
       exists (t1, t2)...
@@ -807,7 +819,7 @@ Module InteractionTreeTheory.
     replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R1)) in H_in...
     unfold eqITree in H_in.
     unfold eqITreeF, member, uncurry, curry in *.
-    rewrite unfold_expand_leaves.
+    rewrite observe_itree_bind.
     destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
     - constructor 1...
     - constructor 2.
@@ -873,7 +885,7 @@ Module InteractionTreeTheory.
     replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2))...
     unfold eqITree.
     unfold eqITreeF, member, uncurry, curry in *.
-    do 2 rewrite unfold_expand_leaves.
+    do 2 rewrite observe_itree_bind.
     destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
     - subst r2.
       rename r1 into r.
@@ -887,8 +899,8 @@ Module InteractionTreeTheory.
       apply in_union_iff; right.
       apply in_union_iff in H_rel.
       destruct H_rel as [H_rel | H_rel]; [ | contradiction (bot_is_empty (t1, t2))].
-      replace (expand_leaves k_2 t2) with (bind t2 k_2)...
-      replace (expand_leaves k_1 t1) with (bind t1 k_1)...
+      replace (itree_bindAux k_2 t2) with (bind t2 k_2)...
+      replace (itree_bindAux k_1 t1) with (bind t1 k_1)...
       right.
       apply in_image_iff.
       exists (t1, t2)...
