@@ -45,7 +45,7 @@ Module Hask.
 
   Definition Univ : Type@{Univ_lv+1} := Type@{Univ_lv}.
 
-  Polymorphic Definition t : Univ := Type.
+  Polymorphic Definition t@{lv} : Univ := Type@{lv}.
 
   Global Polymorphic Instance Cat : BasicCategories.Category t :=
     { hom (dom : t) (cod : t) := dom -> cod
