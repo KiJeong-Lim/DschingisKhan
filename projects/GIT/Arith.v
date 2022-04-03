@@ -343,9 +343,7 @@ Module InteractionTreeTheory.
 
   Lemma or_plus_is :
     ConstructiveCoLaTheory.or_plus = or_plus.
-  Proof.
-    reflexivity.
-  Defined.
+  Proof. reflexivity. Defined.
 
   Local Hint Rewrite or_plus_is : core.
 
@@ -597,7 +595,7 @@ Module InteractionTreeTheory.
     image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
   .
 
-  Lemma expand_leaves_preserves_snd_arg {E : Type -> Type} {R1 : Type} {R2 : Type} :
+  Lemma itree_bindAux_preserves_snd_arg {E : Type -> Type} {R1 : Type} {R2 : Type} :
     forall k : R1 -> itree E R2,
     isSubsetOf (rel_image k (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
   Proof with eauto with *.
@@ -655,13 +653,13 @@ Module InteractionTreeTheory.
   Qed.
 
   Global Add Parametric Morphism (E : Type -> Type) (R1 : Type) (R2 : Type) :
-    bind with signature (eqITree (E := E) (R := R1) ==> eq ==> eqITree (E := E) (R := R2))
+    bind with signature (eqITree (E := E) (R := R1) ==> @eq (R1 -> itree E R2) ==> eqITree (E := E) (R := R2))
   as itree_bind_preserves_eq_on_fst_arg.
   Proof with eauto with *.
     intros lhs rhs H_lhs_eq_rhs k.
     apply PaCo_init.
     apply PaCo_init in H_lhs_eq_rhs.
-    apply (expand_leaves_preserves_snd_arg k (lhs >>= k, rhs >>= k)).
+    apply (itree_bindAux_preserves_snd_arg k (lhs >>= k, rhs >>= k)).
     unfold rel_image.
     apply in_image_iff.
     exists (lhs, rhs)...
