@@ -8,16 +8,14 @@ Module BasicCategories.
 
   Polymorphic Class IsCategory (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
-    ; compose_arr {obj_l : objs} {obj : objs} {obj_r : objs} : hom obj obj_r -> hom obj_l obj -> hom obj_l obj_r
-    ; id_arr {obj : objs} : hom obj obj
+    ; compose {obj_l : objs} {obj : objs} {obj_r : objs} : hom obj obj_r -> hom obj_l obj -> hom obj_l obj_r
+    ; id {obj : objs} : hom obj obj
     }
   .
 
-  Polymorphic Definition ObjectMaps {src_objs : Type} {tgt_objs : Type} (src_cat : IsCategory src_objs) (tgt_cat : IsCategory tgt_objs) : Type :=
-    src_objs -> tgt_objs
-  .
+  Polymorphic Definition ObjMap {src_objs : Type} {tgt_objs : Type} (src_cat : IsCategory src_objs) (tgt_cat : IsCategory tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Infix " -----> " := ObjectMaps (at level 100, no associativity) : type_scope.
+  Infix " -----> " := ObjMap (at level 100, no associativity) : type_scope.
 
   Section Defnitions_of_Functor_and_NaturalTransformation.
 
@@ -28,19 +26,33 @@ Module BasicCategories.
     }
   .
 
-  Polymorphic Definition NatTrans (f_from : src_cat -----> tgt_cat) (f_to : src_cat -----> tgt_cat) : Type :=
-    forall obj : src_objs, hom (f_from obj) (f_to obj)
-  .
+  Polymorphic Definition NatTrans (f_from : src_cat -----> tgt_cat) (f_to : src_cat -----> tgt_cat) : Type := forall obj : src_objs, hom (f_from obj) (f_to obj).
 
   End Defnitions_of_Functor_and_NaturalTransformation.
 
   Infix " =====> " := NatTrans (at level 100, no associativity) : type_scope.
 
-  Global Polymorphic Instance Hask : IsCategory Type :=
-    { hom (dom : Type) (cod : Type) := dom -> cod
-    ; compose_arr {A : Type} {B : Type} {C : Type} := compose (A := A) (B := B) (C := C)
-    ; id_arr {A : Type} := id (A := A)
+End BasicCategories.
+
+Module Universes.
+
+  Definition Univ : Type := Type.
+
+  Definition Hask : Univ := Type.
+
+  Global Instance HaskIsCategory : BasicCategories.IsCategory Hask :=
+    { hom (dom : Hask) (cod : Hask) := dom -> cod
+    ; compose {A : Hask} {B : Hask} {C : Hask} := compose (A := A) (B := B) (C := C)
+    ; id {A : Hask} := id (A := A)
     }
   .
 
-End BasicCategories.
+End Universes.
+
+Module BasicEnsembles.
+
+  Import Universes.
+
+  Definition ensemble (A : Hask) : Hask := A -> Prop.
+
+End BasicEnsembles.
