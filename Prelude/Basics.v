@@ -22,9 +22,8 @@ Module BasicCategories.
 
   Infix " -----> " := isFunctor (at level 100, no associativity) : type_scope.
 
-  Polymorphic Class isNaturalTransformation {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs} (_from : src_objs -> tgt_objs) (_to : src_objs -> tgt_objs) : Type :=
-    { component (obj : src_objs) : _from obj \to _to obj
-    }
+  Polymorphic Definition isNaturalTransformation {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs} (_from : src_objs -> tgt_objs) (_to : src_objs -> tgt_objs) : Type :=
+    forall obj : src_objs, _from obj \to _to obj
   .
 
   Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
