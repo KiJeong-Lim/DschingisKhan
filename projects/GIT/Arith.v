@@ -71,13 +71,8 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   End ITREE_BIND.
 
   Global Instance itree_E_isMonad (E : Type -> Type) : isMonad (itree E) :=
-    { pure {R : Type} :=
-      fun r : R =>
-      Ret r
-    ; bind {R1 : Type} {R2 : Type} :=
-      fun m : itree E R1 =>
-      fun k : R1 -> itree E R2 =>
-      expand_leaves k m
+    { pure {R : Type} := fun r : R => Ret r
+    ; bind {R1 : Type} {R2 : Type} := fun t : itree E R1 => fun k : R1 -> itree E R2 => expand_leaves k t
     }
   .
 
@@ -664,7 +659,8 @@ Module InteractionTreeTheory.
   Context {R1 : Type} {R2 : Type}.
 
   Lemma unfold_expand_leaves (t : itree E R1) (k : R1 -> itree E R2) :
-    observe (expand_leaves k t) = observe (expand_leaves_progress k (expand_leaves k) (observe t)).
+    observe (expand_leaves k t) =
+    observe (expand_leaves_progress k (expand_leaves k) (observe t)).
   Proof. reflexivity. Qed.
 
   Lemma unfold_itree_bind (t0 : itree E R1) (k0 : R1 -> itree E R2) :
@@ -674,7 +670,10 @@ Module InteractionTreeTheory.
     | TauF t => Tau (bind t k0)
     | VisF X e k => Vis X e (fun x : X => bind (k x) k0)
     end.
-  Proof. apply eqITree_intro_obs_eq_obs. exact (unfold_expand_leaves t0 k0). Qed.
+  Proof.
+    apply eqITree_intro_obs_eq_obs.
+    exact (unfold_expand_leaves t0 k0).
+  Qed.
 
   Variable k0 : R1 -> itree E R2.
 
