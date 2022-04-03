@@ -15,18 +15,28 @@ Module BasicCategories.
 
   Infix " \to " := arrs (at level 100, no associativity) : type_scope.
 
-  Polymorphic Class isFunctor {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs} (map_objs : src_objs -> tgt_objs) : Type :=
-    { map_arrs {dom : src_objs} {cod : src_objs} : (dom \to cod) -> (map_objs dom \to map_objs cod)
+  Polymorphic Definition Funktor {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type :=
+    src_objs -> tgt_objs
+  .
+
+  Infix " -----> " := Funktor (at level 100, no associativity) : type_scope.
+
+  Section Defnitions_of_Functor_and_NaturalTransformation.
+
+  Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs}.
+
+  Polymorphic Class isFunctor (funktor : src_cat -----> tgt_cat) : Type :=
+    { fmap {dom : src_objs} {cod : src_objs} : (dom \to cod) -> (funktor dom \to funktor cod)
     }
   .
 
-  Infix " -----> " := isFunctor (at level 100, no associativity) : type_scope.
-
-  Polymorphic Definition isNaturalTransformation {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs} (_from : src_objs -> tgt_objs) (_to : src_objs -> tgt_objs) : Type :=
-    forall obj : src_objs, _from obj \to _to obj
+  Polymorphic Definition NaturalTransformation (funktor_from : src_cat -----> tgt_cat) (funktor_to : src_cat -----> tgt_cat) : Type :=
+    forall obj : src_objs, funktor_from obj \to funktor_to obj
   .
 
-  Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
+  End Defnitions_of_Functor_and_NaturalTransformation.
+
+  Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
   Global Polymorphic Instance Hask : isCategory Type :=
     { arrs (from_obj : Type) (to_obj : Type) := from_obj -> to_obj
