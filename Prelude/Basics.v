@@ -47,10 +47,10 @@ Module Hask.
 
   Polymorphic Definition t@{lv} : Univ := Type@{lv}.
 
-  Global Polymorphic Instance Cat : BasicCategories.Category t :=
-    { hom (dom : t) (cod : t) := dom -> cod
-    ; compose {A : t} {B : t} {C : t} := compose (A := A) (B := B) (C := C)
-    ; id {A : t} := id (A := A)
+  Global Polymorphic Instance Cat@{lv} : BasicCategories.Category t@{lv} :=
+    { hom (dom : t@{lv}) (cod : t@{lv}) := dom -> cod
+    ; compose {A : t@{lv}} {B : t@{lv}} {C : t@{lv}} := compose (A := A) (B := B) (C := C)
+    ; id {A : t@{lv}} := id (A := A)
     }
   .
 
