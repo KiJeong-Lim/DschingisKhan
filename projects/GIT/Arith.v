@@ -148,8 +148,8 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
       | TauF t => Ret (inl t)
       | VisF X e k =>
         match e with
-        | inl1 e1 => Ret (inl (ctx X e1 >>= k))
-        | inr1 e2 => Vis X e2 (fun x : X => Ret (inl (k x)))
+        | inl1 e1 => Ret (inl (bind (ctx X e1) k))
+        | inr1 e2 => Vis X e2 (fun x : X => pure (inl (k x)))
         end
       end
     )
@@ -318,7 +318,7 @@ Module InteractionTreeTheory.
       pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => E X) X e' e H0) as e_eq; subst e'; clear H0 H2.
       pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k1' k1 H1) as k1_eq; subst k1'; clear H1.
       pose proof (ExclusiveMiddle.existT_inj2_eq Type (fun X : Type => X -> itree E R) X k2' k2 H3) as k2_eq; subst k2'; clear H3.
-      intros x. apply eq_itree_iff_eqITree. exact (H_rel x).
+      intros x; apply eq_itree_iff_eqITree; exact (H_rel x).
     - apply eq_itree_iff_eqITree; econstructor.
       constructor 3. intros x; apply eq_itree_iff_eqITree; exact (H_eq x).
   Qed.
