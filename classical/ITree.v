@@ -203,11 +203,11 @@ Module InteractionTreeTheory.
 
   Local Existing Instances arrow_isSetoid getFreeSetoid1.
 
-  Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
+  Section EQUALITY_ON_ITREE_MONAD. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
   Context {E : Type -> Type}.
 
-  Section ITREE_EQUALITY_DEFN.
+  Section ITREE_EQUALITY.
 
   Context {R : Type} `{R_isSetoid : isSetoid R}.
 
@@ -551,7 +551,7 @@ Module InteractionTreeTheory.
     }
   .
 
-  End ITREE_EQUALITY_DEFN.
+  End ITREE_EQUALITY.
 
   Global Instance itree_E_isSetoid1 : isSetoid1 (itree E) :=
     { liftSetoid1 {R : Type} `(R_isSetoid : isSetoid R) :=
@@ -904,7 +904,7 @@ Module InteractionTreeTheory.
       exists (k1 x0, k2 x0)...
   Qed.
 
-  End ITREE_EQUALITY.
+  End EQUALITY_ON_ITREE_MONAD.
 
   Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree E) (M_isSetoid1 := itree_E_isSetoid1 (E := E)) (M_isMonad := itree_E_isMonad E) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
