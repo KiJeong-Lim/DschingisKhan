@@ -15,9 +15,24 @@ Module MyCategories.
 
   Global Existing Instance arrow_isSetoid.
 
+  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
+    { fmap {_from : Type} {_to : Type} : (_from \to _to) -> (F _from \to F _to)
+    }
+  .
+
   Polymorphic Class isMonad (M : Type -> Type) : Type :=
     { pure {A : Type} : A \to M A
     ; bind {A : Type} {B : Type} : M A -> A \to M B -> M B
+    }
+  .
+
+  Polymorphic Class isMonadTrans (T : (Type -> Type) -> (Type -> Type)) : Type :=
+    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} : M X -> T M X
+    }
+  .
+
+  Polymorphic Class isMonadIter (M : Type -> Type) `{M_isMonad : isMonad M} : Type :=
+    { monadic_iter {I : Type} {R : Type} (step : I \to M (sum I R)) : I \to M R
     }
   .
 
@@ -39,17 +54,20 @@ Module MyCategories.
     fun x : A => pure x
   .
 
-  Polymorphic Class isFunctor (F : Type -> Type) : Type :=
-    { fmap {_from : Type} {_to : Type} : (_from \to _to) -> (F _from \to F _to)
-    }
-  .
-
   Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
   Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
-    { getFreeSetoid {X : Type} :> isSetoid (F X)
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :> isSetoid (F X)
     }
+  .
+
+  Polymorphic Canonical Structure getFreeSetoid (X : Type) : isSetoid X :=
+    {| eqProp := @eq X; Setoid_requiresEquivalence := eq_equivalence |}
+  .
+
+  Local Polymorphic Instance getFreeSetoid1 {F : Type -> Type} `{F_isSetoid : isSetoid1 F} (X : Type) : isSetoid (F X) :=
+    liftSetoid1 (X := X) (getFreeSetoid X)
   .
 
   Polymorphic Class obeysFunctorLaws {F : Type -> Type} `{eq1 : isSetoid1 F} (F_isFunctor : isFunctor F) : Prop :=
@@ -134,7 +152,25 @@ Module MyCategories.
 
   Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
 
-  Section OptionIsMonad.
+  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  | inl1 : F1 X -> sum1 F1 F2 X
+  | inr1 : F2 X -> sum1 F1 F2 X
+  .
+
+  Global Arguments inl1 {F1} {F2} {X}.
+  Global Arguments inr1 {F1} {F2} {X}.
+
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
+
+  (* Functor Instances *)
+
+  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
+    }
+  .
+
+  (* Monad Instances *)
 
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Type} :=
@@ -147,9 +183,7 @@ Module MyCategories.
     }
   .
 
-  End OptionIsMonad.
-
-  Section StateTIsMonadTrans.
+  (* MonadTrans Instances *)
 
   Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
     ST \to M (prod X ST)
@@ -169,12 +203,6 @@ Module MyCategories.
     }
   .
 
-  Polymorphic Class isMonadTrans (T : (Type -> Type) -> (Type -> Type)) : Type :=
-    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} : M X -> T M X
-    ; MonadTrans_requiresMonadLifting (M : Type -> Type) `{M_isMonad : isMonad M} : isMonad (T M)
-    }
-  .
-
   Polymorphic Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
     fun X : Type =>
     fun e : E X =>
@@ -183,32 +211,10 @@ Module MyCategories.
 
   Global Polymorphic Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
     { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M_isMonad) X
-    ; MonadTrans_requiresMonadLifting (M : Type -> Type) `{M_isMonad : isMonad M} := stateT_ST_M_isMonad ST M M_isMonad
     }
   .
 
-  End StateTIsMonadTrans.
-
-  Polymorphic Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
-  | inl1 : F1 X -> sum1 F1 F2 X
-  | inr1 : F2 X -> sum1 F1 F2 X
-  .
-
-  Global Arguments inl1 {F1} {F2} {X}.
-  Global Arguments inr1 {F1} {F2} {X}.
-
-  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
-
-  Global Polymorphic Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
-    }
-  .
-
-  Polymorphic Class isMonadIter (M : Type -> Type) `{M_isMonad : isMonad M} : Type :=
-    { monadic_iter {I : Type} {R : Type} (step : I \to M (sum I R)) : I \to M R
-    }
-  .
+  (* MonadIter Instances *)
 
   Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
     fun pr : sum A B * C =>
@@ -223,6 +229,8 @@ Module MyCategories.
       fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
     }
   .
+
+  (* MonadNotations *)
 
   Global Declare Scope monad_scope.
   Open Scope monad_scope.
@@ -359,6 +367,25 @@ Module MyVectors.
     - exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
   Qed.
 
+  Global Program Instance vetor_A_n_isSetoid_if_A_isSetoid_for_any_n {A : Type} `{A_isSetoid : isSetoid A} (n : nat) : isSetoid (vector A n) :=
+    { eqProp :=
+      fun lhs : vector A n =>
+      fun rhs : vector A n =>
+      forall i : FinSet n,
+      lhs !! i == rhs !! i
+    }
+  .
+
+  Next Obligation.
+    split.
+    - intros xs1 i.
+      reflexivity.
+    - intros xs1 xs2 H_1_2 i.
+      symmetry; exact (H_1_2 i).
+    - intros xs1 xs2 xs3 H_1_2 H_2_3 i.
+      transitivity (xs2 !! i); [exact (H_1_2 i) | exact (H_2_3 i)]. 
+  Qed.
+
   Theorem vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
     (H_EXT_EQ : forall i : FinSet n, xs1 !! i = xs2 !! i)
     : xs1 = xs2.
@@ -437,15 +464,15 @@ Module MyVectors.
     }
   .
 
-  Global Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { getFreeSetoid {X : Type} := {| eqProp := @eq (vec_n X); Setoid_requiresEquivalence := eq_equivalence |}
+  Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) := vetor_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
     }
   .
 
   Global Instance vec_obeysMonadLaws :
     obeysMonadLaws vec_isMonad.
   Proof.
-    split; cbn; intros; eapply vector_ext_eq; intros ?; (repeat reduce_monad_methods_of_vector); congruence.
+    split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.
 
   End VectorIsMonad.

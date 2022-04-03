@@ -203,11 +203,11 @@ Module InteractionTreeTheory.
 
   Section ITREE_EQUALITY. (* Reference: "https://github.com/snu-sf/InteractionTrees/blob/72d78f8b08a86c4609a27c4f8bce1ae876fbc22e/theories/Eq/Eq.v" *)
 
-  Context {E : Type -> Type} {R : Type}.
+  Context {E : Type -> Type} {R : Type} `{R_isSetoid : isSetoid R}.
 
   Variant eq_itreeF (sim : itree E R -> itree E R -> Prop) : itreeF (itree E R) E R -> itreeF (itree E R) E R -> Prop :=
   | EqRetF (r1 : R) (r2 : R)
-    (H_rel : r1 = r2)
+    (H_rel : r1 == r2)
     : eq_itreeF sim (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
     (H_rel : sim t1 t2)
@@ -278,7 +278,7 @@ Module InteractionTreeTheory.
   Corollary Ret_eq_iff :
     forall x1 : R,
     forall x2 : R,
-    eqITree (Ret x1) (Ret x2) <-> (x1 = x2).
+    eqITree (Ret x1) (Ret x2) <-> (x1 == x2).
   Proof.
     intros x1 x2. split; intros H_eq.
     - apply eq_itree_iff_eqITree in H_eq.
@@ -378,7 +378,8 @@ Module InteractionTreeTheory.
       destruct (observe rhs) as [r2 | t2 | X2 e2 k2] eqn: H_rhs_obs;
       try congruence.
       + constructor 1.
-        congruence.
+        replace (r2) with (r1) by congruence.
+        reflexivity.
       + constructor 2.
         unfold curry, uncurry.
         apply in_union_iff; right.
@@ -427,7 +428,7 @@ Module InteractionTreeTheory.
     unfold uncurry, curry, member in *.
     destruct H_lhs_eq_rhs as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
     - constructor 1.
-      congruence.
+      now symmetry.
     - apply in_union_iff in H_rel.
       destruct H_rel as [H_rel | H_rel]; [ | contradiction (not_in_bot t1 t2 H_rel)].
       constructor 2.
@@ -489,7 +490,7 @@ Module InteractionTreeTheory.
       inversion H_t_eq_rhs; subst.
       rename H0 into H_lhs_obs, H into H_rhs_obs.
       constructor 1.
-      congruence.
+      now transitivity r3.
     - inversion H_lhs_eq_t; subst.
       rename H_rel into H_rel1.
       inversion H_t_eq_rhs; subst.
@@ -548,16 +549,22 @@ Module InteractionTreeTheory.
 
   End ITREE_EQUALITY.
 
-  Global Add Parametric Relation (E : Type -> Type) (R : Type) : (itree E R) (eqITree (E := E) (R := R))
-    reflexivity proved by (eqITree_Reflexive (E := E) (R := R))
-    symmetry proved by (eqITree_Symmetric (E := E) (R := R))
-    transitivity proved by (eqITree_Transitive (E := E) (R := R))
+  Global Add Parametric Relation (E : Type -> Type) (R : Type) (R_isSetoid : isSetoid R) : (itree E R) (eqITree (E := E) (R := R) (R_isSetoid := R_isSetoid))
+    reflexivity proved by (eqITree_Reflexive (E := E) (R := R) (R_isSetoid := R_isSetoid))
+    symmetry proved by (eqITree_Symmetric (E := E) (R := R) (R_isSetoid := R_isSetoid))
+    transitivity proved by (eqITree_Transitive (E := E) (R := R) (R_isSetoid := R_isSetoid))
   as eqITree_Equivalence.
 
-  Global Instance itree_E_R_isSetoid {E : Type -> Type} {R : Type} : isSetoid (itree E R) :=
-    { eqProp := eqITree (E := E) (R := R)
-    ; Setoid_requiresEquivalence := eqITree_Equivalence E R
+  Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
+    { liftSetoid1 {R : Type} `{R_isSetoid : isSetoid R} :=
+      {| eqProp := eqITree (E := E) (R := R) (R_isSetoid := R_isSetoid); Setoid_requiresEquivalence := eqITree_Equivalence E R R_isSetoid |}
     }
+  .
+
+  Global Existing Instance getFreeSetoid1.
+
+  Definition PaCo_eqITreeF {E : Type -> Type} {R : Type} : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) :=
+    PaCo (eqITreeF (E := E) (R := R) (R_isSetoid := getFreeSetoid R))
   .
 
   Theorem eqITree_intro_obs_eq_obs {E : Type -> Type} {R : Type}
@@ -589,19 +596,25 @@ Module InteractionTreeTheory.
 
   Local Hint Resolve eqITreeF_isMonotonic bot_is_empty : core.
 
-  Definition rel_image {E : Type -> Type} {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
+  Section REWRITE_BIND.
+
+  Context {E : Type -> Type}.
+
+  Section REWRITE_BIND_FST_ARG.
+
+  Definition rel_image {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
     image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
   .
 
-  Lemma itree_bindAux_preserves_snd_arg {E : Type -> Type} {R1 : Type} {R2 : Type} :
+  Lemma itree_bindAux_preserves_snd_arg {R1 : Type} {R2 : Type} :
     forall k : R1 -> itree E R2,
-    isSubsetOf (rel_image k (PaCo eqITreeF bot)) (PaCo eqITreeF bot).
+    isSubsetOf (rel_image k (PaCo_eqITreeF bot)) (PaCo_eqITreeF bot).
   Proof with eauto with *.
     intros k0.
     pose proof (observe_itree_bind (E := E) (R1 := R1) (R2 := R2)) as claim1.
     apply PaCo_acc...
-    set (REL := MyUnion bot (rel_image k0 (PaCo eqITreeF bot))).
-    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    set (REL := MyUnion bot (rel_image k0 (PaCo_eqITreeF bot))).
+    transitivity (eqITreeF (R_isSetoid := getFreeSetoid R2) (or_plus (PaCo_eqITreeF REL) REL)); [ | apply PaCo_fold].
     intros [k0_lhs k0_rhs] H_k0_lhs_eq_k0_rhs.
     unfold member, rel_image in H_k0_lhs_eq_k0_rhs.
     simpl in H_k0_lhs_eq_k0_rhs.
@@ -613,7 +626,7 @@ Module InteractionTreeTheory.
     subst k0_lhs k0_rhs.
     apply PaCo_unfold in H_lhs_eq_rhs...
     unfold eqITree in H_lhs_eq_rhs.
-    assert (claim5 : isSubsetOf (or_plus (PaCo eqITreeF bot) bot) (or_plus (PaCo eqITreeF REL) REL)).
+    assert (claim5 : isSubsetOf (or_plus (PaCo_eqITreeF bot) bot) (or_plus (PaCo_eqITreeF REL) REL)).
     { intros x H_x_in.
       apply in_union_iff in H_x_in.
       apply in_union_iff.
@@ -630,7 +643,7 @@ Module InteractionTreeTheory.
     destruct H_lhs_eq_rhs as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel].
     - simpl.
       assert (claim3 : member (k0 r1, k0 r2) rel_id) by congruence.
-      assert (claim4 := @eqITree_refl E R2 (k0 r1, k0 r2) claim3).
+      assert (claim4 := @eqITree_refl E R2 (getFreeSetoid R2) (k0 r1, k0 r2) claim3).
       apply PaCo_unfold in claim4...
       replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R2)) in claim4...
       apply (eqITreeF_isMonotonic (or_plus (PaCo eqITreeF bot) bot) _ claim5 (k0 r1, k0 r2) claim4).
@@ -650,8 +663,8 @@ Module InteractionTreeTheory.
       right...
   Qed.
 
-  Global Add Parametric Morphism (E : Type -> Type) (R1 : Type) (R2 : Type) :
-    bind with signature (eqITree (E := E) (R := R1) ==> @eq (R1 -> itree E R2) ==> eqITree (E := E) (R := R2))
+  Global Add Parametric Morphism (R1 : Type) (R2 : Type) :
+    bind with signature (eqITree (E := E) (R := R1) (R_isSetoid := getFreeSetoid R1) ==> @eq (R1 -> itree E R2) ==> eqITree (E := E) (R := R2) (R_isSetoid := getFreeSetoid R2))
   as itree_bind_preserves_eq_on_fst_arg.
   Proof with eauto with *.
     intros lhs rhs H_lhs_eq_rhs k.
@@ -663,9 +676,7 @@ Module InteractionTreeTheory.
     exists (lhs, rhs)...
   Qed.
 
-  Section REWRITE_BIND.
-
-  Context {E : Type -> Type}.
+  End REWRITE_BIND_FST_ARG.
 
   Section BIND_CASES.
 
@@ -708,7 +719,7 @@ Module InteractionTreeTheory.
     intros t_0 k_1 k_2.
     revert t_0.
     set (focus_rel := image (fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= k_1) >>= k_2, snd two_trees >>= (fun x : R1 => k_1 x >>= k_2)))).
-    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo_eqITreeF bot)) (PaCo_eqITreeF bot)).
     { intros t0.
       apply PaCo_init.
       assert (claim1 : t0 == t0) by reflexivity.
@@ -719,8 +730,8 @@ Module InteractionTreeTheory.
     }
     apply PaCo_acc...
     assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
-    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
-    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    set (REL := MyUnion bot (focus_rel (PaCo_eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo_eqITreeF bot) bot =< or_plus (PaCo_eqITreeF REL) REL).
     { intros x H_x_in.
       apply in_union_iff in H_x_in.
       destruct H_x_in as [H_x_in | H_x_in].
@@ -728,7 +739,7 @@ Module InteractionTreeTheory.
         apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
       - contradiction (bot_is_empty x).
     }
-    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    transitivity (eqITreeF (R_isSetoid := getFreeSetoid R3) (or_plus (PaCo_eqITreeF REL) REL)); [ | apply PaCo_fold].
     intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
     apply in_image_iff in H_f_lhs_eq_f_rhs.
     destruct H_f_lhs_eq_f_rhs as [[lhs rhs] [H_eq H_in]].
@@ -743,8 +754,9 @@ Module InteractionTreeTheory.
     do 3 rewrite observe_itree_bind.
     destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
     - rewrite <- observe_itree_bind.
+      cbn in H_rel.
       subst r2.
-      assert (claim3 := eqITree_refl (itree_bindAux k_2 (k_1 r1), itree_bindAux k_2 (k_1 r1)) eq_refl).
+      assert (claim3 := eqITree_refl (R_isSetoid := getFreeSetoid R3) (itree_bindAux k_2 (k_1 r1), itree_bindAux k_2 (k_1 r1)) eq_refl).
       apply PaCo_unfold in claim3...
       replace (ConstructiveCoLaTheory.or_plus) with (or_plus (E := E) (R := R3)) in claim3...
       apply (eqITreeF_isMonotonic _ _ claim2 _ claim3).
@@ -783,7 +795,7 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     set (focus := fun two_trees : itree E R1 * itree E R1 => ((fst two_trees >>= pure), snd two_trees)).
     set (focus_rel := image focus).
-    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo_eqITreeF bot)) (PaCo_eqITreeF bot)).
     { intros t0.
       apply PaCo_init.
       assert (claim1 : t0 == t0) by reflexivity.
@@ -794,8 +806,8 @@ Module InteractionTreeTheory.
     }
     apply PaCo_acc...
     assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
-    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
-    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    set (REL := MyUnion bot (focus_rel (PaCo_eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo_eqITreeF bot) bot =< or_plus (PaCo_eqITreeF REL) REL).
     { intros x H_x_in.
       apply in_union_iff in H_x_in.
       destruct H_x_in as [H_x_in | H_x_in].
@@ -803,7 +815,7 @@ Module InteractionTreeTheory.
         apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
       - contradiction (bot_is_empty x).
     }
-    transitivity (eqITreeF (or_plus (PaCo eqITreeF REL) REL)); [ | apply PaCo_fold].
+    transitivity (eqITreeF (R_isSetoid := getFreeSetoid R1) (or_plus (PaCo_eqITreeF REL) REL)); [ | apply PaCo_fold].
     intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
     apply in_image_iff in H_f_lhs_eq_f_rhs.
     destruct H_f_lhs_eq_f_rhs as [[lhs rhs] [H_eq H_in]].
@@ -836,10 +848,8 @@ Module InteractionTreeTheory.
       exists (k1 x0, k2 x0)...
   Qed.
 
-  End REWRITE_BIND.
-
-  Global Add Parametric Morphism (E : Type -> Type) (R1 : Type) (R2 : Type) :
-    bind with signature (@eq (itree E R1) ==> eqProp ==> eqITree (E := E) (R := R2))
+  Global Add Parametric Morphism (R1 : Type) (R2 : Type) :
+    bind with signature (@eq (itree E R1) ==> arrow_eqProp R1 (itree E R2) (getFreeSetoid1 R2) ==> eqITree (E := E) (R := R2) (R_isSetoid := getFreeSetoid R2))
   as itree_bind_preserves_eq_on_snd_arg.
   Proof with eauto with *.
     intros t_0 k_1 k_2 H_k_1_eq_k_2.
@@ -847,7 +857,7 @@ Module InteractionTreeTheory.
     revert t_0.
     set (focus := fun two_trees : itree E R1 * itree E R1 => (bind (fst two_trees) k_1, bind (snd two_trees) k_2)).
     set (focus_rel := image focus).
-    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo eqITreeF bot)) (PaCo eqITreeF bot)).
+    enough (it_is_sufficient_to_show : isSubsetOf (focus_rel (PaCo_eqITreeF bot)) (PaCo_eqITreeF bot)).
     { intros t0.
       apply PaCo_init.
       assert (claim1 : t0 == t0) by reflexivity.
@@ -858,8 +868,8 @@ Module InteractionTreeTheory.
     }
     apply PaCo_acc...
     assert (claim1 : forall A : Type, forall x : ensemble A, bot =< x)...
-    set (REL := MyUnion bot (focus_rel (PaCo eqITreeF bot))).
-    assert (claim2 : or_plus (PaCo eqITreeF bot) bot =< or_plus (PaCo eqITreeF REL) REL).
+    set (REL := MyUnion bot (focus_rel (PaCo_eqITreeF bot))).
+    assert (claim2 : or_plus (PaCo_eqITreeF bot) bot =< or_plus (PaCo_eqITreeF REL) REL).
     { intros x H_x_in.
       apply in_union_iff in H_x_in.
       destruct H_x_in as [H_x_in | H_x_in].
@@ -867,7 +877,7 @@ Module InteractionTreeTheory.
         apply (PaCo_preserves_monotonicity eqITreeF eqITreeF_isMonotonic bot REL)...
       - contradiction (bot_is_empty x).
     }
-    replace ((fun a : itree E R2 * itree E R2 => member a bot \/ member a (focus_rel (PaCo eqITreeF bot)))) with REL...
+    replace ((fun a : itree E R2 * itree E R2 => member a bot \/ member a (focus_rel (PaCo_eqITreeF bot)))) with REL...
     intros [f_lhs f_rhs] H_f_lhs_eq_f_rhs.
     apply PaCo_fold.
     apply in_image_iff in H_f_lhs_eq_f_rhs.
@@ -883,7 +893,8 @@ Module InteractionTreeTheory.
     unfold eqITreeF, member, uncurry, curry in *.
     do 2 rewrite observe_itree_bind.
     destruct H_in as [r1 r2 H_rel | t1 t2 H_rel | X e k1 k2 H_rel]; simpl.
-    - subst r2.
+    - cbn in H_rel.
+      subst r2.
       rename r1 into r.
       assert (claim3 := H_k_1_eq_k_2 r).
       apply PaCo_init in claim3.
@@ -912,12 +923,9 @@ Module InteractionTreeTheory.
       exists (k1 x0, k2 x0)...
   Qed.
 
-  Global Instance itree_E_isSetoid1 {E : Type -> Type} : isSetoid1 (itree E) :=
-    { getFreeSetoid {R : Type} := itree_E_R_isSetoid (E := E) (R := R)
-    }
-  .
+  End REWRITE_BIND.
 
-  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : obeysMonadLaws (itree_E_isMonad E) :=
+  Global Instance itree_E_obeysMonadLaws (E : Type -> Type) : obeysMonadLaws (itree_E_isMonad E) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (E := E) (R1 := R1) (R2 := R2) (R3 := R3)
     ; bind_pure_l {R1 : Type} {R2 : Type} := itree_bind_pure_l (E := E) (R1 := R1) (R2 := R2)
     ; bind_pure_r {R1 : Type} := itree_bind_pure_r (E := E) (R1 := R1)
@@ -926,13 +934,13 @@ Module InteractionTreeTheory.
       fun m2 : itree E R1 =>
       fun H_m1_eq_m2 : m1 == m2 =>
       fun k : R1 -> itree E R2 =>
-      itree_bind_preserves_eq_on_fst_arg E R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
+      itree_bind_preserves_eq_on_fst_arg (E := E) R1 R2 m1 m2 H_m1_eq_m2 k k eq_refl
     ; bind_preserves_eq_on_snd_arg {R1 : Type} {R2 : Type} :=
       fun k1 : R1 -> itree E R2 =>
       fun k2 : R1 -> itree E R2 =>
       fun H_k1_eq_k2 : forall x : R1, k1 x == k2 x =>
       fun m : itree E R1 => 
-      itree_bind_preserves_eq_on_snd_arg E R1 R2 m m eq_refl k1 k2 H_k1_eq_k2
+      itree_bind_preserves_eq_on_snd_arg R1 R2 (E := E) m m eq_refl k1 k2 H_k1_eq_k2
     }
   .
 
