@@ -55,6 +55,96 @@ Module MyCategories.
   Global Infix " `fmult` " := fmult (at level 25, right associativity) : function_scope.
   Global Infix " `kmult` " := kmult (at level 25, right associativity) : function_scope.
 
+  Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
+
+  (** "Functor Instances" *)
+
+  Global Polymorphic Instance Monad_isFunctor (M : Type -> Type) `{M_isMonad : isMonad M} : isFunctor M :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A -> B =>
+      fun m : M A =>
+      bind m (pure `fmult` f)
+    }
+  .
+
+  Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
+  | inl1 : F1 X -> sum1 F1 F2 X
+  | inr1 : F2 X -> sum1 F1 F2 X
+  .
+
+  Global Arguments inl1 {F1} {F2} {X}.
+  Global Arguments inr1 {F1} {F2} {X}.
+
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
+
+  Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isFunctor : isFunctor F1} `{F2_isFunctor : isFunctor F2} : isFunctor (sum1 F1 F2) :=
+    { fmap {A : Type} {B : Type} :=
+      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
+    }
+  .
+
+  (** "Monad Instances" *)
+
+  Global Instance option_isMonad : isMonad option :=
+    { pure {A : Type} :=
+      fun x : A =>
+      Some x
+    ; bind {A : Type} {B : Type} :=
+      fun m : option A =>
+      fun k : A -> option B =>
+      maybe None k m
+    }
+  .
+
+  Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+    ST \to M (prod X ST)
+  .
+
+  Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
+    @funit (stateT ST M X)
+  .
+
+  Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
+    @funit (stateT ST M X)
+  .
+
+  Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} : isMonad (stateT ST M) :=
+    { pure _ := StateT `fmult` curry pure
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
+    }
+  .
+
+  (** "MonadTrans Instances" *)
+
+  Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+    fun X : Type =>
+    fun e : E X =>
+    StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
+  .
+
+  Global Instance stateT_ST_isMonadTrans (ST : Type) : isMonadTrans (stateT ST) :=
+    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M (M_isMonad := M_isMonad)) X
+    }
+  .
+
+  (** "MonadIter Instances" *)
+
+  Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
+    fun pr : sum A B * C =>
+    match pr with
+    | (inl x, z) => inl (x, z)
+    | (inr y, z) => inr (y, z)
+    end
+  .
+
+  Global Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+    { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
+      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
+    }
+  .
+
+  (** "Laws" *)
+
   Local Existing Instances arrow_isSetoid getFreeSetoid1.
 
   Class obeysFunctorLaws (F : Type -> Type) `{F_isSetoid1 : isSetoid1 F} `{F_isFunctor : isFunctor F} : Prop :=
@@ -95,15 +185,9 @@ Module MyCategories.
     }
   .
 
-  Global Polymorphic Instance Monad_isFunctor (M : Type -> Type) `{M_isMonad : isMonad M} : isFunctor M :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A -> B =>
-      fun m : M A =>
-      bind m (pure `fmult` f)
-    }
-  .
-
-  Global Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
+  Global Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type)
+    `{M_isSetoid1 : isSetoid1 M}
+    `{M_isMonad : isMonad M}
     `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
     : obeysFunctorLaws M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := Monad_isFunctor M).
   Proof with eauto with *. (* Thanks to Soonwon Moon *)
@@ -138,85 +222,45 @@ Module MyCategories.
       apply bind_pure_r.
   Qed.
 
-  Global Notation " F1 '-<' F2 " := (forall X : Type, F1 X -> F2 X) (at level 100, no associativity) : type_scope.
-
-  (** "Functor Instances" *)
-
-  Inductive sum1 (F1 : Type -> Type) (F2 : Type -> Type) (X : Type) : Type :=
-  | inl1 : F1 X -> sum1 F1 F2 X
-  | inr1 : F2 X -> sum1 F1 F2 X
-  .
-
-  Global Arguments inl1 {F1} {F2} {X}.
-  Global Arguments inr1 {F1} {F2} {X}.
-
-  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
-
-  Global Instance sum1_F1_F2_isFunctor (F1 : Type -> Type) (F2 : Type -> Type) `(F1_isFunctor : isFunctor F1) `(F2_isFunctor : isFunctor F2) : isFunctor (sum1 F1 F2) :=
-    { fmap {A : Type} {B : Type} :=
-      fun f : A \to B => sum1_rect F1 F2 A (fun _ : sum1 F1 F2 A => sum1 F1 F2 B) (fun l : F1 A => inl1 (fmap (F := F1) f l)) (fun r : F2 A => inr1 (fmap (F := F2) f r))
-    }
-  .
-
-  (** "Monad Instances" *)
-
-  Global Instance option_isMonad : isMonad option :=
-    { pure {A : Type} :=
-      fun x : A =>
-      Some x
-    ; bind {A : Type} {B : Type} :=
-      fun m : option A =>
-      fun k : A -> option B =>
-      maybe None k m
-    }
-  .
-
-  (** "MonadTrans Instances" *)
-
-  Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
-    ST \to M (prod X ST)
-  .
-
-  Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
-    @funit (stateT ST M X)
-  .
-
-  Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
-    @funit (stateT ST M X)
-  .
-
-  Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `(M_isMonad : isMonad M) : isMonad (stateT ST M) :=
-    { pure _ := StateT `fmult` curry pure
-    ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
-    }
-  .
-
-  Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
-    fun X : Type =>
-    fun e : E X =>
-    StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
-  .
-
-  Global Instance stateT_ST_isMonadTrans {ST : Type} : isMonadTrans (stateT ST) :=
-    { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M (M_isMonad := M_isMonad)) X
-    }
-  .
-
-  (** "MonadIter Instances" *)
-
-  Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
-    fun pr : sum A B * C =>
-    match pr with
-    | (inl x, z) => inl (x, z)
-    | (inr y, z) => inr (y, z)
+  Definition sum1_eqProp1 {F1 : Type -> Type} {F2 : Type -> Type} `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} {X : Type} `{X_isSetoid : isSetoid X} : sum1 F1 F2 X -> sum1 F1 F2 X -> Prop :=
+    fun x1 : sum1 F1 F2 X =>
+    fun x2 : sum1 F1 F2 X =>
+    match x1, x2 with
+    | inl1 l1, inl1 l2 => @eqProp _ (liftSetoid1 X_isSetoid) l1 l2
+    | inr1 r1, inr1 r2 => @eqProp _ (liftSetoid1 X_isSetoid) r1 r2
+    | _, _ => False
     end
   .
 
-  Global Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
-      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
+  Global Program Instance sum1_isSetoid1 (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} : isSetoid1 (sum1 F1 F2) :=
+    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
+      {| eqProp := sum1_eqProp1 (X_isSetoid := X_isSetoid); Setoid_requiresEquivalence := _ |}
     }
   .
+
+  Next Obligation with now eauto.
+    constructor.
+    - intros [x1 | x1]; cbn.
+      all: try reflexivity...
+    - intros [x1 | x1] [x2 | x2]; cbn; intros H_1_2.
+      all: try symmetry...
+    - intros [x1 | x1] [x2 | x2] [x3 | x3]; cbn; intros H_1_2 H_2_3.
+      all: try transitivity (x2)...
+  Qed.
+
+  Global Instance sum1_obeysFunctorLaws (F1 : Type -> Type) (F2 : Type -> Type) `{F1_isSetoid1 : isSetoid1 F1} `{F2_isSetoid1 : isSetoid1 F2} `{F1_isFunctor : isFunctor F1} `{F2_isFunctor : isFunctor F2}
+    `(F1_obeysFunctorLaws : obeysFunctorLaws F1)
+    `(F2_obeysFunctorLaws : obeysFunctorLaws F2)
+    : obeysFunctorLaws (sum1 F1 F2) (F_isSetoid1 := sum1_isSetoid1 F1 F2) (F_isFunctor := sum1_F1_F2_isFunctor F1 F2).
+  Proof.
+    split.
+    - intros A B C f1 f2 [x | x].
+      + apply (fmap_fmult_comm (F := F1)).
+      + apply (fmap_fmult_comm (F := F2)).
+    - intros A [x | x].
+      + apply (fmap_funit_comm (F := F1)).
+      + apply (fmap_funit_comm (F := F2)).
+  Qed.
 
   (** "Notations" *)
 
