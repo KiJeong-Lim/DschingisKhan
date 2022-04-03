@@ -600,11 +600,11 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Section REWRITE_BIND_FST_ARG.
-
-  Definition rel_image {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
+  Let rel_image {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (REL1 : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
     image (fun two_trees : itree E R1 * itree E R1 => (fst two_trees >>= k, snd two_trees >>= k)) REL1
   .
+
+  Section REWRITE_BIND_FST_ARG.
 
   Lemma itree_bindAux_preserves_snd_arg {R1 : Type} {R2 : Type} :
     forall k : R1 -> itree E R2,
@@ -849,7 +849,7 @@ Module InteractionTreeTheory.
   Qed.
 
   Global Add Parametric Morphism (R1 : Type) (R2 : Type) :
-    bind with signature (@eq (itree E R1) ==> arrow_eqProp R1 (itree E R2) (getFreeSetoid1 R2) ==> eqITree (E := E) (R := R2) (R_isSetoid := getFreeSetoid R2))
+    bind with signature (@eq (itree E R1) ==> arrow_eqProp R1 (itree E R2) (getFreeSetoid1 (F := itree E) R2) ==> eqITree (E := E) (R := R2) (R_isSetoid := getFreeSetoid R2))
   as itree_bind_preserves_eq_on_snd_arg.
   Proof with eauto with *.
     intros t_0 k_1 k_2 H_k_1_eq_k_2.
@@ -974,6 +974,6 @@ Module InteractionTreeTheory.
     ).
   Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
-  Local Notation Handler E F := (E -< itree F).
+  Local Notation Handler F E := (F -< itree E).
 
 End InteractionTreeTheory.

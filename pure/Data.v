@@ -450,7 +450,7 @@ Module MyVectors.
 
   Global Instance vec_isMonad : isMonad vec_n :=
     { pure {A : Type} := fun x : A => replicate x
-    ; bind {A : Type} {B : Type} := fun m : vec_n A => fun k : A -> vec_n B => diagonal (vector_map k m)
+    ; bind {A : Type} {B : Type} := fun xs : vec_n A => fun k : A -> vec_n B => diagonal (vector_map k xs)
     }
   .
 
