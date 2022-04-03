@@ -113,7 +113,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     }
   .
 
-  Definition itree_interpret {M : Type -> Type} `{M_isMonadIter : isMonadIter M} {E : Type -> Type} (handle : E -< M) : itree E -< M :=
+  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} `{M_isMonadIter : isMonadIter M} (handle : E -< M) : itree E -< M :=
     fun R : Type =>
     monadic_iter (M := M) (I := itree E R) (R := R) (
       fun t0 : itree E R =>
@@ -128,7 +128,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   .
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
-    itree_interpret (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E') (M_isMonadIter := itree_E_isMonadIter E')) (E := E) handle
+    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E') (itree_E_isMonadIter E')) handle
   .
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=

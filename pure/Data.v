@@ -137,7 +137,7 @@ Module MyCategories.
     end
   .
 
-  Global Polymorphic Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+  Global Polymorphic Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} (M_isMonadIter : @isMonadIter M M_isMonad) : isMonadIter (stateT ST M) :=
     { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
       fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
     }
