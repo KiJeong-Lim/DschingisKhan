@@ -4,7 +4,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 
-Module MyCategories.
+Module BasicCategories.
 
   Polymorphic Class isCategory (objs : Type) : Type :=
     { arrs (from_obj : objs) (to_obj : objs) : Type
@@ -22,7 +22,14 @@ Module MyCategories.
     forall s_obj : src_objs, arrs (objs := tgt_objs) (from_map_objs s_obj) (to_map_objs s_obj)
   .
 
-  Global Infix " \to " := arrs (at level 100, no associativity) : type_scope.
-  Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
+  Infix " \to " := arrs (at level 100, no associativity) : type_scope.
+  Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
 
-End MyCategories.
+  Global Polymorphic Instance Hask : isCategory Type :=
+    { arrs (from_obj : Type) (to_obj : Type) := from_obj -> to_obj
+    ; compose_arr {A : Type} {B : Type} {C : Type} := compose (A := A) (B := B) (C := C)
+    ; id_arr {A : Type} := id (A := A)
+    }
+  .
+
+End BasicCategories.
