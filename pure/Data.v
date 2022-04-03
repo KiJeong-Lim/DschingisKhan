@@ -218,7 +218,7 @@ Module MyCategories.
     }
   .
 
-  (* MonadNotations *)
+  (** "Notations" *)
 
   Global Declare Scope monad_scope.
   Open Scope monad_scope.
