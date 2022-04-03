@@ -574,8 +574,7 @@ Module InteractionTreeTheory.
     eapply eq_itree_iff_eqITree; reflexivity.
   Qed.
 
-  Corollary itree_eta {R : Type}
-    (t : itree E R)
+  Corollary itree_eta {R : Type} (t : itree E R)
     : go (observe t) == t.
   Proof. now apply eqITree_intro_obs_eq_obs. Qed.
 
