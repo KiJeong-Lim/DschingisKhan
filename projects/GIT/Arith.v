@@ -249,13 +249,11 @@ Module InteractionTreeTheory.
     ).
   Defined.
 
-  Local Hint Resolve eqITreeF_isMonotonic : core.
-
   Definition eqITree (t1 : itree E R) (t2 : itree E R) : Prop :=
     member (t1, t2) (proj1_sig (nu (exist isMonotonicMap eqITreeF eqITreeF_isMonotonic)))
   .
 
-  Lemma eq_itree_iff_eqITree :
+  Theorem eq_itree_iff_eqITree :
     forall lhs : itree E R,
     forall rhs : itree E R,
     eq_itree lhs rhs <-> eqITree lhs rhs.
@@ -277,7 +275,7 @@ Module InteractionTreeTheory.
     - intros [lhs rhs] H_in; exact (unfold_eq_itree lhs rhs H_in).
   Qed.
 
-  Lemma Ret_eq_iff :
+  Corollary Ret_eq_iff :
     forall x1 : R,
     forall x2 : R,
     eqITree (Ret x1) (Ret x2) <-> (x1 = x2).
@@ -290,7 +288,7 @@ Module InteractionTreeTheory.
       now constructor 1.
   Qed. 
 
-  Lemma Tau_eq_iff :
+  Corollary Tau_eq_iff :
     forall t1 : itree E R,
     forall t2 : itree E R,
     eqITree (Tau t1) (Tau t2) <-> (eqITree t1 t2).
@@ -304,7 +302,7 @@ Module InteractionTreeTheory.
       constructor 2. now apply eq_itree_iff_eqITree.
   Qed.
 
-  Lemma Vis_eq_iff :
+  Corollary Vis_eq_iff :
     forall X : Type,
     forall e : E X,
     forall k1 : X -> itree E R,
@@ -322,6 +320,8 @@ Module InteractionTreeTheory.
     - apply eq_itree_iff_eqITree; econstructor.
       constructor 3. intros x; apply eq_itree_iff_eqITree; exact (H_eq x).
   Qed.
+
+  Local Hint Resolve eqITreeF_isMonotonic : core.
 
   Lemma not_in_bot :
     forall t1 : itree E R,
