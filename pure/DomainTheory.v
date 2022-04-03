@@ -748,6 +748,17 @@ Module PowerSetCoLa.
     }
   .
 
+  Lemma bot_is_empty {A : Type} :
+    forall x : A,
+    ~ member x bot.
+  Proof.
+    intros x.
+    assert (clami1 := @in_empty_iff (ensemble A)).
+    intros H_x_in.
+    apply in_unions_iff in H_x_in.
+    firstorder.
+  Qed.
+
   Section PACO. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
 
   Context {A : Type}.
