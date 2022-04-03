@@ -482,7 +482,7 @@ Module MyVectors.
     - exact (fun i' : FinSet n' => eq_reflexivity (xs' !! i')).
   Qed.
 
-  Global Program Instance vetor_A_n_isSetoid_if_A_isSetoid_for_any_n {A : Type} `{A_isSetoid : isSetoid A} (n : nat) : isSetoid (vector A n) :=
+  Global Program Instance vector_A_n_isSetoid_if_A_isSetoid_for_any_n {A : Type} `{A_isSetoid : isSetoid A} (n : nat) : isSetoid (vector A n) :=
     { eqProp :=
       fun lhs : vector A n =>
       fun rhs : vector A n =>
@@ -581,7 +581,7 @@ Module MyVectors.
 
   Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
     { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
-      vetor_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
+      vector_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
     }
   .
 
