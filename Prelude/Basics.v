@@ -4,17 +4,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 
-Module MyInit.
-
-  Reserved Infix " -----> " (at level 100, no associativity).
-
-  Reserved Infix " =====> " (at level 100, no associativity).
-
-End MyInit.
-
 Module BasicCategories.
-
-  Import MyInit.
 
   Polymorphic Class Category (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
@@ -25,7 +15,7 @@ Module BasicCategories.
 
   Polymorphic Definition ObjMap {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Infix " -----> " := ObjMap : type_scope.
+  Infix " -----> " := ObjMap (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategory.
 
@@ -45,7 +35,7 @@ Module BasicCategories.
 
   End BasicConceptsOfCategory.
 
-  Infix " =====> " := NaturalTransformation : type_scope.
+  Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
 End BasicCategories.
 
@@ -66,10 +56,8 @@ Module Hask.
 
 End Hask.
 
-Module BasicEnsembles.
-
-  Import MyInit BasicCategories.
+Module MyInit.
 
   Polymorphic Definition ensemble (X : Hask.t) : Hask.t := X -> Prop.
 
-End BasicEnsembles.
+End MyInit.
