@@ -50,7 +50,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     end
   .
 
-  Section ITREE_BIND. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
+  Section ITREE_MONAD. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
 
   Context {E : Type -> Type}.
 
@@ -85,7 +85,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
   Proof. exact (eq_refl). Defined.
 
-  End ITREE_BIND.
+  End ITREE_MONAD.
 
   Global Instance itree_E_isMonad (E : Type -> Type) : isMonad (itree E) :=
     { pure {R : Type} := itree_pure (E := E) (R := R)
@@ -113,7 +113,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
     }
   .
 
-  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} `{M_isMonadIter : isMonadIter M} (handle : E -< M) : itree E -< M :=
+  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} `{M_isMonad : isMonad M} `{M_isMonadIter : @isMonadIter M M_isMonad} (handle : E -< M) : itree E -< M :=
     fun R : Type =>
     monadic_iter (M := M) (I := itree E R) (R := R) (
       fun t0 : itree E R =>
