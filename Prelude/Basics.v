@@ -36,11 +36,13 @@ End BasicCategories.
 
 Module MyUniverses.
 
-  Polymorphic Definition LargeUniv : Type := Type.
+  Universe LargeUniv_lv.
+
+  Definition LargeUniv : Type@{LargeUniv_lv+1} := Type@{LargeUniv_lv}.
 
   Polymorphic Definition Univ : LargeUniv := Type.
 
-  Global Instance Hask : BasicCategories.IsCategory Univ :=
+  Global Polymorphic Instance Hask : BasicCategories.IsCategory Univ :=
     { hom (dom : Univ) (cod : Univ) := dom -> cod
     ; compose {A : Univ} {B : Univ} {C : Univ} := compose (A := A) (B := B) (C := C)
     ; id {A : Univ} := id (A := A)
@@ -53,6 +55,6 @@ Module BasicEnsembles.
 
   Import MyUniverses.
 
-  Definition ensemble (X : Univ) : Univ := X -> Prop.
+  Polymorphic Definition ensemble (X : Univ) : Univ := X -> Prop.
 
 End BasicEnsembles.
