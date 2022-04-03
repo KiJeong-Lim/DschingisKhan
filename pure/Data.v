@@ -501,7 +501,7 @@ Module MyVectors.
       transitivity (xs2 !! i); [exact (H_1_2 i) | exact (H_2_3 i)]. 
   Qed.
 
-  Theorem vector_ext_eq {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
+  Theorem vector_extensionality {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
     (H_EXT_EQ : forall i : FinSet n, xs1 !! i = xs2 !! i)
     : xs1 = xs2.
   Proof.
@@ -580,15 +580,27 @@ Module MyVectors.
   .
 
   Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
-      vector_A_n_isSetoid_if_A_isSetoid_for_any_n (A := X) (A_isSetoid := X_isSetoid) n
+    { liftSetoid1 {A : Type} `(A_isSetoid : isSetoid A) :=
+      vector_A_n_isSetoid_if_A_isSetoid_for_any_n (A := A) (A_isSetoid := A_isSetoid) n
     }
   .
 
-  Global Instance vec_obeysMonadLaws :
-    obeysMonadLaws vec_n (M_isSetoid1 := vec_isSetoid1) (M_isMonad := vec_isMonad).
+  Local Infix " == " := (@eqProp (vec_n _) (@getFreeSetoid1 vec_n vec_isSetoid1 _)) : type_scope.
+
+  Global Instance vec_obeysMonadLaws
+    : obeysMonadLaws vec_n (M_isSetoid1 := vec_isSetoid1) (M_isMonad := vec_isMonad).
   Proof.
     split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
+  Qed.
+
+  Lemma vec_n_eqProp_iff {A : Type} :
+    forall xs1 : vec_n A,
+    forall xs2 : vec_n A,
+    xs1 == xs2 <-> xs1 = xs2.
+  Proof.
+    intros xs1 xs2; split; intros H_EQ.
+    - exact (vector_extensionality xs1 xs2 H_EQ).
+    - now rewrite H_EQ.
   Qed.
 
   End VectorIsMonad.
@@ -619,7 +631,7 @@ Module MyVectors.
   Proof.
     revert m; induction n as [ | n IH]; intros m; [eapply FinSet_case0 | eapply FinSet_caseS].
     - reflexivity.
-    - intros i. rewrite evalFinSet_caseFS.
+    - intros i; rewrite evalFinSet_caseFS.
       simpl; rewrite <- IH with (m := S m) (i := i).
       apply Nat.add_succ_comm.
   Qed.
