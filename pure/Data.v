@@ -232,7 +232,7 @@ Module MyCategories.
     end
   .
 
-  Lemma sum1_eqProp1_Equivalence {FL : Type -> Type} {FR : Type -> Type} {X : Type}
+  Local Instance sum1_eqProp1_Equivalence {FL : Type -> Type} {FR : Type -> Type} {X : Type}
     `(FL_isSetoid1 : isSetoid1 FL)
     `(FR_isSetoid1 : isSetoid1 FR)
     `(X_isSetoid : isSetoid X)
@@ -247,7 +247,7 @@ Module MyCategories.
       all: try transitivity (x2)...
   Qed.
 
-  Global Program Instance sum1_isSetoid1 (FL : Type -> Type) (FR : Type -> Type) `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} : isSetoid1 (sum1 FL FR) :=
+  Global Instance sum1_isSetoid1 (FL : Type -> Type) (FR : Type -> Type) `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} : isSetoid1 (sum1 FL FR) :=
     { liftSetoid1 {X : Type} `(X_isSetoid : isSetoid X) :=
       {| eqProp := sum1_eqProp1; Setoid_requiresEquivalence := sum1_eqProp1_Equivalence FL_isSetoid1 FR_isSetoid1 X_isSetoid |}
     }
@@ -265,6 +265,49 @@ Module MyCategories.
     - intros A [x | x].
       + apply (fmap_funit_comm (F := FL)).
       + apply (fmap_funit_comm (F := FR)).
+  Qed.
+
+  Definition option_eqProp1 {A : Type} `{A_isSetoid : isSetoid A} : option A -> option A -> Prop :=
+    fun m1 : option A =>
+    fun m2 : option A =>
+    match m1, m2 with
+    | Some x1, Some x2 => x1 == x2
+    | None, None => True
+    | _, _ => False
+    end
+  .
+
+  Local Instance option_eqProp1_Equivalence {A : Type}
+    `(A_isSetoid : isSetoid A)
+    : @Equivalence (option A) option_eqProp1.
+  Proof with tauto.
+    split.
+    - intros [x1 | ]; cbn.
+      all: try reflexivity...
+    - intros [x1 | ] [x2 | ]; cbn; intros H_1_2.
+      all: try symmetry...
+    - intros [x1 | ] [x2 | ] [x3 | ]; cbn; intros H_1_2 H_2_3.
+      all: try transitivity (x2)...
+  Qed.
+
+  Global Instance option_isSetoid1 : isSetoid1 option :=
+    { liftSetoid1 {A : Type} `(A_isSetoid : isSetoid A) :=
+      {| eqProp := option_eqProp1; Setoid_requiresEquivalence := option_eqProp1_Equivalence A_isSetoid |}
+    }
+  .
+
+  Global Instance option_obeysMonadLaws
+    : obeysMonadLaws option (M_isSetoid1 := option_isSetoid1) (M_isMonad := option_isMonad).
+  Proof with cbn; eauto with *.
+    split; cbn.
+    - intros A B C [x | ]...
+    - intros A B k x...
+    - intros A [x | ]...
+    - intros A B [x1 | ] [x2 | ]...
+      { intros H_EQ k. subst... }
+      all: tauto.
+    - intros A B k1 k2 H_EQ [x | ]...
+      exact (H_EQ x).
   Qed.
 
   (** "Notations" *)
