@@ -138,8 +138,8 @@ Module MyCategories.
   .
 
   Global Polymorphic Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} (M_isMonadIter : @isMonadIter M M_isMonad) : isMonadIter (stateT ST M) :=
-    { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
-      fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
+    { monadic_iter {I : Type} {R : Type} :=
+      fun step : I \to stateT ST M (I + R) => curry (monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry step))
     }
   .
 
@@ -254,8 +254,8 @@ Module MyCategories.
   .
 
   Global Instance sum1_obeysFunctorLaws (FL : Type -> Type) (FR : Type -> Type) `{FL_isSetoid1 : isSetoid1 FL} `{FR_isSetoid1 : isSetoid1 FR} `{FL_isFunctor : isFunctor FL} `{FR_isFunctor : isFunctor FR}
-    `(FL_obeysFunctorLaws : obeysFunctorLaws FL (F_isSetoid1 := FL_isSetoid1) (F_isFunctor := FL_isFunctor))
-    `(FR_obeysFunctorLaws : obeysFunctorLaws FR (F_isSetoid1 := FR_isSetoid1) (F_isFunctor := FR_isFunctor))
+    (FL_obeysFunctorLaws : obeysFunctorLaws FL (F_isSetoid1 := FL_isSetoid1) (F_isFunctor := FL_isFunctor))
+    (FR_obeysFunctorLaws : obeysFunctorLaws FR (F_isSetoid1 := FR_isSetoid1) (F_isFunctor := FR_isFunctor))
     : obeysFunctorLaws (sum1 FL FR) (F_isSetoid1 := sum1_isSetoid1 FL FR) (F_isFunctor := sum1_FL_FR_isFunctor FL FR).
   Proof.
     split.
@@ -278,7 +278,7 @@ Module MyCategories.
   .
 
   Local Instance option_eqProp1_Equivalence {A : Type}
-    `(A_isSetoid : isSetoid A)
+    (A_isSetoid : isSetoid A)
     : @Equivalence (option A) option_eqProp1.
   Proof with tauto.
     split.
