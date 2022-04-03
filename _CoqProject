@@ -1,20 +1,3 @@
 -Q . DschingisKhan #
 #
-pure/MyUtilities.v #
-pure/FunFacts.v #
-pure/MyStructures.v #
-pure/DomainTheory.v #
-pure/UntypedLambdaCalculus.v #
-pure/AczelSet.v #
-pure/CBA.v #
-pure/Data.v #
-#
-classical/ExclusiveMiddle.v #
-classical/DomainTheory.v #
-classical/ITree.v #
-#
-projects/PropositionalLogic/Base.v #
-projects/PropositionalLogic/ConstructiveMetaTheories.v #
-projects/PropositionalLogic/ClassicalMetaTheories.v #
-projects/PropositionalLogic.v #
-#
+Prelude/TypeClasses.v #
