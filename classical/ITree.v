@@ -128,7 +128,7 @@ Module InteractionTree. (* Reference: "https://sf.snu.ac.kr/publications/itrees.
   .
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E -< stateT ST (itree E')) : itree E -< stateT ST (itree E') :=
-    itree_interpret (M := stateT ST (itree E')) (E := E) handle
+    itree_interpret (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E') (M_isMonadIter := itree_E_isMonadIter E')) (E := E) handle
   .
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=

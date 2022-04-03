@@ -117,6 +117,21 @@ Module BasicSetoidTheory.
     }
   .
 
+  Global Program Instance DirectProductOfSetoid {A : Type} {B : Type} (A_requiresSetoid : isSetoid A) (B_requiresSetoid : isSetoid B) : isSetoid (A * B) :=
+    { eqProp :=
+      fun p1 : A * B =>
+      fun p2 : A * B =>
+      fst p1 == fst p2 /\ snd p1 == snd p2
+    }
+  .
+
+  Next Obligation with eauto with *.
+    split.
+    - intros [x1 y1]...
+    - intros [x1 y1] [x2 y2] [H H0]...
+    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
+  Qed.
+
   Definition SubPoset_eqProp : forall A : Type, forall P : A -> Prop, isSetoid A -> sig P -> sig P -> Prop :=
     fun A : Type =>
     fun P : A -> Prop =>

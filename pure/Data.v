@@ -96,19 +96,19 @@ Module MyCategories.
     }
   .
 
-  Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
+  Polymorphic Definition stateT (ST : Type) (M : Type -> Type) (X : Type) : Type :=
     ST \to M (prod X ST)
   .
 
-  Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
+  Polymorphic Definition StateT {ST : Type} {M : Type -> Type} {X : Type} : (ST \to M (prod X ST)) -> stateT ST M X :=
     @funit (stateT ST M X)
   .
 
-  Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
+  Polymorphic Definition runStateT {ST : Type} {M : Type -> Type} {X : Type} : stateT ST M X -> (ST \to M (prod X ST)) :=
     @funit (stateT ST M X)
   .
 
-  Global Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} : isMonad (stateT ST M) :=
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Type) (M : Type -> Type) `{M_isMonad : isMonad M} : isMonad (stateT ST M) :=
     { pure _ := StateT `fmult` curry pure
     ; bind _ _ := fun m k => StateT (uncurry (runStateT `fmult` k) `kmult` runStateT m)
     }
@@ -116,20 +116,20 @@ Module MyCategories.
 
   (** "MonadTrans Instances" *)
 
-  Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
+  Polymorphic Definition liftMonad_stateT {ST : Type} {E : Type -> Type} `{E_isFunctor : isFunctor E} : E -< stateT ST E :=
     fun X : Type =>
     fun e : E X =>
     StateT (fun s : ST => fmap (fun x : X => (x, s)) e)
   .
 
-  Global Instance stateT_ST_isMonadTrans (ST : Type) : isMonadTrans (stateT ST) :=
+  Global Polymorphic Instance stateT_ST_isMonadTrans (ST : Type) : isMonadTrans (stateT ST) :=
     { liftMonad {M : Type -> Type} `{M_isMonad : isMonad M} {X : Type} := liftMonad_stateT (ST := ST) (E := M) (E_isFunctor := Monad_isFunctor M (M_isMonad := M_isMonad)) X
     }
   .
 
   (** "MonadIter Instances" *)
 
-  Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
+  Polymorphic Definition sum_prod_distr {A : Type} {B : Type} {C : Type} : sum A B * C -> prod A C + prod B C :=
     fun pr : sum A B * C =>
     match pr with
     | (inl x, z) => inl (x, z)
@@ -137,7 +137,7 @@ Module MyCategories.
     end
   .
 
-  Global Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+  Global Polymorphic Instance stateT_ST_isMonadIter (ST : Type) (M : Type -> Type) `{M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
     { monadic_iter {I : Type} {R : Type} (step : I \to stateT ST M (sum I R)) :=
       fun x0 : I => StateT (fun s0 : ST => monadic_iter ((pure `fmult` sum_prod_distr) `kmult` uncurry (runStateT `fmult` step)) (x0, s0))
     }
@@ -185,7 +185,7 @@ Module MyCategories.
     }
   .
 
-  Global Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type)
+  Global Polymorphic Instance MonadLaws_guarantees_FunctorLaws (M : Type -> Type)
     `{M_isSetoid1 : isSetoid1 M}
     `{M_isMonad : isMonad M}
     `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
@@ -308,6 +308,38 @@ Module MyCategories.
       all: tauto.
     - intros A B k1 k2 H_EQ [x | ]...
       exact (H_EQ x).
+  Qed.
+
+  Polymorphic Definition stateT_ST_M_isSetoid1 (ST : Type) (M : Type -> Type) `{M_isSetoid1 : isSetoid1 M} : isSetoid1 (stateT ST M) :=
+    {| liftSetoid1 := fun X : Type => fun _ : isSetoid X => @arrow_isSetoid ST (M (prod X ST)) (@getFreeSetoid1 M M_isSetoid1 (prod X ST)) |}
+  .
+
+  Lemma stateT_ST_M_obeysMonadLaws (ST : Type) (M : Type -> Type) `{ST_isSetoid : isSetoid ST} `{M_isSetoid1 : isSetoid1 M} `{M_isMonad : isMonad M}
+    `(M_obeysMonadLaws : obeysMonadLaws M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
+    : obeysMonadLaws (stateT ST M) (M_isSetoid1 := stateT_ST_M_isSetoid1 ST M) (M_isMonad := stateT_ST_M_isMonad ST M).
+  Proof.
+    split; cbn; unfold stateT, kmult, kunit, StateT, runStateT, fmult, funit, curry, uncurry.
+    - intros A B C m k1 k2 s0.
+      rewrite bind_assoc.
+      apply bind_preserves_eq_on_snd_arg.
+      intros [x s1].
+      reflexivity.
+    - intros A B k x s0.
+      rewrite bind_pure_l.
+      reflexivity.
+    - intros A m s0.
+      transitivity (m s0 >>= pure).
+      + apply bind_preserves_eq_on_snd_arg.
+        intros [x s1].
+        reflexivity.
+      + apply bind_pure_r.
+    - intros A B m1 m2 H_EQ k s0.
+      apply bind_preserves_eq_on_fst_arg.
+      exact (H_EQ s0).
+    - intros A B k1 k2 H_EQ m s0.
+      apply bind_preserves_eq_on_snd_arg.
+      intros [x s1].
+      exact (H_EQ x s1).
   Qed.
 
   (** "Notations" *)

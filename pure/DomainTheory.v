@@ -8,21 +8,6 @@ Module ConstructiveCoLaTheory. (* Reference: "The Power of Parameterization in C
 
   Import ListNotations MyUtilities BasicSetoidTheory MyEnsemble BasicPosetTheory.
 
-  Global Program Instance DirectProductOfSetoid {D : Type} {D' : Type} (D_requiresSetoid : isSetoid D) (D'_requiresSetoid : isSetoid D') : isSetoid (D * D') :=
-    { eqProp :=
-      fun p1 : D * D' =>
-      fun p2 : D * D' =>
-      fst p1 == fst p2 /\ snd p1 == snd p2
-    }
-  .
-
-  Next Obligation with eauto with *.
-    split.
-    - intros [x1 y1]...
-    - intros [x1 y1] [x2 y2] [H H0]...
-    - intros [x1 y1] [x2 y2] [x3 y3] [H H0] [H1 H2]...
-  Qed.
-
   Global Program Instance DirectProductOfPoset {D : Type} {D' : Type} (D_requiresPoset : isPoset D) (D'_requiresPoset : isPoset D') : isPoset (D * D') :=
     { leProp :=
       fun p1 : D * D' =>
