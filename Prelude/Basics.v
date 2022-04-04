@@ -21,18 +21,18 @@ Module BasicCategories.
 
   Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs}.
 
-  Polymorphic Class CovariantFunctor (f : src_cat -----> tgt_cat) : Type :=
-    { fmap {dom : src_objs} {cod : src_objs} : hom dom cod -> hom (f dom) (f cod)
+  Polymorphic Class CovariantFunctor (F : src_cat -----> tgt_cat) : Type :=
+    { fmap {dom : src_objs} {cod : src_objs} : hom dom cod -> hom (F dom) (F cod)
     }
   .
 
-  Polymorphic Class ContravariantFunctor (f : src_cat -----> tgt_cat) : Type :=
-    { contramap {dom : src_objs} {cod : src_objs} : hom cod dom -> hom (f dom) (f cod)
+  Polymorphic Class ContravariantFunctor (F : src_cat -----> tgt_cat) : Type :=
+    { contramap {dom : src_objs} {cod : src_objs} : hom cod dom -> hom (F dom) (F cod)
     }
   .
 
-  Polymorphic Definition NaturalTransformation (f_from : src_cat -----> tgt_cat) (f_to : src_cat -----> tgt_cat) : Type :=
-    forall obj : src_objs, hom (f_from obj) (f_to obj)
+  Polymorphic Definition NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+    forall obj : src_objs, hom (F_from obj) (F_to obj)
   .
 
   End BasicConceptsOfCategory.
