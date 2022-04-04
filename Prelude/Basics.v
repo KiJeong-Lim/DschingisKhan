@@ -71,16 +71,6 @@ Module MyTypeClasses.
 
   Local Open Scope program_scope.
 
-  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
-
-  Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
-    { pure {A : Hask.t} : A -> M A
-    ; bind {A : Hask.t} {B : Hask.t} : M A -> (A -> M B) -> M B
-    }
-  .
-
-  Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
-
   Polymorphic Class isSetoid (A : Type) : Type :=
     { eqProp : A -> A -> Prop
     ; eqProp_Equivalence :> @Equivalence A eqProp
@@ -88,6 +78,12 @@ Module MyTypeClasses.
   .
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
+
+  Global Add Parametric Relation (A : Type) (A_isSetoid : isSetoid A) : A (@eqProp A A_isSetoid)
+    reflexivity proved by (@Equivalence_Reflexive A eqProp eqProp_Equivalence)
+    symmetry proved by (@Equivalence_Symmetric A eqProp eqProp_Equivalence)
+    transitivity proved by (@Equivalence_Transitive  A eqProp eqProp_Equivalence)
+  as eqProp_is_an_equivalence_relation.
 
   Polymorphic Class isPoset (A : Type) : Type :=
     { leProp : A -> A -> Prop
@@ -104,7 +100,7 @@ Module MyTypeClasses.
     }
   .
 
-  Polymorphic Class CategoryWithEquality (objs : Type) {cat : Category objs} : Type :=
+  Polymorphic Class CategoryWithEquality {objs : Type} (cat : Category objs) : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
     ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
       forall f : hom C D,
@@ -132,11 +128,31 @@ Module MyTypeClasses.
     }
   .
 
+  Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
+    (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
+  as compose_lifts_eqProp.
+  Proof.
+    intros f1 f2 H_f1_eq_f2 g1 g2 H_g1_eq_g2.
+    transitivity (compose f2 g1).
+    - eapply compose_fst_arg; exact (H_f1_eq_f2).
+    - eapply compose_snd_arg; exact (H_g1_eq_g2).
+  Qed.
+
   Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
     ; eqProp_Equivalence := eq_equivalence
     }
   .
+
+  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
+
+  Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
+    { pure {A : Hask.t} : A -> M A
+    ; bind {A : Hask.t} {B : Hask.t} : M A -> (A -> M B) -> M B
+    }
+  .
+
+  Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
 End MyTypeClasses.
 
@@ -262,5 +278,15 @@ Module MyMathematicalStructures.
       (m0 >>= k1) == (m0 >>= k2)
     }
   .
+
+  Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {M_isSetoid1 : isSetoid1 M} {M_isMonad : isMonad M} {M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad} (A : Hask.t) (B : Hask.t) :
+    (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
+  as bind_lifts_eqProp.
+  Proof.
+    intros m1 m2 H_m1_eq_m2 k1 k2 H_k1_eq_k2.
+    transitivity (m2 >>= k1).
+    - eapply bind_fst_arg; exact (H_m1_eq_m2).
+    - eapply bind_snd_arg; exact (H_k1_eq_k2).
+  Qed.
 
 End MyMathematicalStructures.
