@@ -122,21 +122,21 @@ Module MyTypeClasses.
   .
 
   Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Prop :=
-    { covaraince_map_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
+    { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
       forall f1 : hom obj obj_r,
       forall f2 : hom obj_l obj,
       fmap (dom := obj_l) (cod := obj_r) (compose f1 f2) == compose (fmap f1) (fmap f2)
-    ; covaraince_map_commutes_with_id {obj : src_objs} :
+    ; covarianceMap_commutes_with_id {obj : src_objs} :
       fmap (dom := obj) (cod := obj) id == id
     }
   .
 
   Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Prop :=
-    { contravaraince_map_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
+    { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
       forall f1 : hom obj_l obj,
       forall f2 : hom obj obj_r,
       contramap (dom := obj_r) (cod := obj_l) (compose f2 f1) == compose (contramap f1) (contramap f2)
-    ; contravaraince_map_commutes_with_id {obj : src_objs} :
+    ; contravarianceMap_commutes_with_id {obj : src_objs} :
       contramap (dom := obj) (cod := obj) id == id
     }
   .
@@ -181,7 +181,7 @@ Module BasicInstances.
     end
   .
 
-  Global Instance option_isMonad : isMonad option :=
+  Local Instance option_isMonad : isMonad option :=
     { pure {A : Hask.t} := fun x : A => Some x
     ; bind {A : Hask.t} {B : Hask.t} := fun m : option A => fun k : A -> option B => maybe None k m
     }
@@ -220,11 +220,6 @@ Module BasicInstances.
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli M dom cod
     ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} (k1 : kleisli M B C) (k2 : kleisli M A B) := fun x2 : A => k2 x2 >>= fun x1 : B => k1 x1
     ; id {A : Hask.t} := fun x0 : A => pure x0
-    }
-  .
-
-  Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
-    { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
@@ -304,6 +299,35 @@ Module MyMathematicalStructures.
     transitivity (m2 >>= k1).
     - eapply bind_fst_arg; exact (H_m1_eq_m2).
     - eapply bind_snd_arg; exact (H_k1_eq_k2).
+  Qed.
+
+  Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
+    { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
+    }
+  .
+
+  Global Polymorphic Instance LawsOfMonad_guarantees_LawsOfMonad (M : Hask.cat -----> Hask.cat)
+    {M_isSetoid1 : isSetoid1 M}
+    {M_isMonad : isMonad M}
+    (M_obeysMonadLaws : LawsOfMonad M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
+    : LawsOfFunctor M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := @mkFunctorFromMonad M M_isMonad).
+  Proof. (* Thanks to Soonwon Moon *)
+    split.
+    - intros A B C f g m. symmetry.
+      (* Soonwon's Advice:
+        (map f . map g) m
+        m >>= pure . g >>= pure . f
+        m >>= \x -> pure (g x) >>= pure . f
+        m >>= \x -> (pure . f) (g x)
+        m >>= \x -> pure (f (g x))
+        m >>= pure . (f . g)
+        map (f . g) m
+      *)
+      simpl. unfold "∘" at 1.
+      transitivity (m >>= (fun x : A => pure (g x) >>= pure ∘ f)).
+      + rewrite bind_assoc. apply bind_snd_arg. reflexivity.
+      + apply bind_snd_arg. intros x. apply bind_pure_l with (x := g x).
+    - intros A m. apply bind_pure_r with (m := m).
   Qed.
 
 End MyMathematicalStructures.
