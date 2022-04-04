@@ -79,12 +79,6 @@ Module MyTypeClasses.
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
 
-  Global Add Parametric Relation (A : Type) (A_isSetoid : isSetoid A) : A (@eqProp A A_isSetoid)
-    reflexivity proved by (@Equivalence_Reflexive A eqProp eqProp_Equivalence)
-    symmetry proved by (@Equivalence_Symmetric A eqProp eqProp_Equivalence)
-    transitivity proved by (@Equivalence_Transitive  A eqProp eqProp_Equivalence)
-  as eqProp_is_an_equivalence_relation.
-
   Polymorphic Class isPoset (A : Type) : Type :=
     { leProp : A -> A -> Prop
     ; Poset_requiresSetoid :> isSetoid A
@@ -137,12 +131,6 @@ Module MyTypeClasses.
     - eapply compose_fst_arg; exact (H_f1_eq_f2).
     - eapply compose_snd_arg; exact (H_g1_eq_g2).
   Qed.
-
-  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
-    { eqProp := @eq A
-    ; eqProp_Equivalence := eq_equivalence
-    }
-  .
 
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
@@ -222,6 +210,16 @@ Module BasicInstances.
     { fmap {dom : Hask.t} {cod : Hask.t} (f : dom -> cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
+
+  Section THE_FINEST_SETOID.
+
+  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+    { eqProp := @eq A
+    ; eqProp_Equivalence := eq_equivalence
+    }
+  .
+
+  End THE_FINEST_SETOID.
 
 End BasicInstances.
 
