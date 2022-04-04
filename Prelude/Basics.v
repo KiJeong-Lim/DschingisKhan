@@ -110,6 +110,34 @@ Module MyTypeClasses.
     }
   .
 
+  Polymorphic Class CategoryWithEquality (objs : Type) {cat : Category objs} : Type :=
+    { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
+    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
+      forall f : hom C D,
+      forall g : hom B C,
+      forall h : hom A B,
+      compose f (compose g h) == compose (compose f g) h
+    ; compose_id_l {A : objs} {B : objs} :
+      forall f : hom A B,
+      compose id f == f
+    ; compose_id_r {A : objs} {B : objs} :
+      forall f : hom A B,
+      compose f id == f
+    ; compose_fst_arg {A : objs} {B : objs} {C : objs} :
+      forall f : hom B C,
+      forall g : hom B C,
+      forall h : hom A B,
+      f == g ->
+      compose f h == compose g h 
+    ; compose_snd_arg {A : objs} {B : objs} {C : objs} :
+      forall f : hom B C,
+      forall g : hom A B,
+      forall h : hom A B,
+      g == h->
+      compose f g == compose f h 
+    }
+  .
+
 End MyTypeClasses.
 
 Module BasicInstances.
@@ -188,22 +216,6 @@ Module MyMathematicalStructures.
   Local Open Scope program_scope.
 
   Global Notation " 'id_{' A  '}' " := (BasicCategoryTheory.id (objs := Hask.t) (obj := A)) (at level 0, no associativity) : program_scope.
-
-  Polymorphic Class LawsOfCategory (objs : Type) {cat : Category objs} {cat_has_eqProp : isSetoid objs} : Type :=
-    { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
-    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
-      forall f : hom C D,
-      forall g : hom B C,
-      forall h : hom A B,
-      compose f (compose g h) == compose (compose f g) h
-    ; compose_id_l {A : objs} {B : objs} :
-      forall f : hom A B,
-      compose id f == f
-    ; compose_id_r {A : objs} {B : objs} :
-      forall f : hom A B,
-      compose f id == f
-    }
-  .
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (TArr A B) (TArr (F A) (F B)) :=
     BasicCategoryTheory.fmap (F := F) (dom := A) (cod := B)
