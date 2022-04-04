@@ -226,11 +226,13 @@ Module MyMathematicalStructures.
 
   Local Open Scope program_scope.
 
-  Global Notation " 'id_{' A  '}' " := (BasicCategoryTheory.id (objs := Hask.t) (obj := A)) (at level 0, no associativity) : program_scope.
+  Global Notation " 'id_{' A  '}' " := (fun x : A => x) (at level 0, no associativity) : program_scope.
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (TArr A B) (TArr (F A) (F B)) :=
     BasicCategoryTheory.fmap (F := F) (dom := A) (cod := B)
   .
+
+  Global Notation " 'BasicCategoryTheory.fmap' " := BasicCategoryTheory.fmap.
 
   Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {F_isSetoid1 : isSetoid1 F} : isSetoid (F X) :=
     liftSetoid1 (F := F) (theFinestSetoidOf X)
