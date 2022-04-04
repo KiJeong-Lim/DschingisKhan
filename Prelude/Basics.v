@@ -181,7 +181,7 @@ Module BasicInstances.
 
   Local Open Scope program_scope.
 
-  Section THE_FINEST_SETOID.
+  Section IMPL_eq.
 
   Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
@@ -189,7 +189,9 @@ Module BasicInstances.
     }
   .
 
-  End THE_FINEST_SETOID.
+  End IMPL_eq.
+
+  Section IMPL_option.
 
   Global Instance option_isFunctor : isFunctor option :=
     { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
@@ -209,6 +211,10 @@ Module BasicInstances.
     }
   .
 
+  End IMPL_option.
+
+  Section IMPL_arrow.
+
   Polymorphic Definition arrow_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x == rhs x
   .
@@ -224,6 +230,10 @@ Module BasicInstances.
     }
   .
 
+  End IMPL_arrow.
+
+  Section IMPL_ensemble.
+
   Local Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp := iff
     ; eqProp_Equivalence := iff_equivalence
@@ -234,16 +244,26 @@ Module BasicInstances.
 
   Local Polymorphic Instance ensemble_isSetoid (X : Hask.t) : isSetoid (ensemble X) := arrow_dom_cod_isSetoid X Prop.
 
+  End IMPL_ensemble.
+
+  Section IMPL_kleisli.
+
   Polymorphic Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Polymorphic Definition kleisli (M : Hask.cat -----> Hask.cat) (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
+  Variable M : Hask.cat -----> Hask.cat.
 
-  Local Polymorphic Instance kleisliCategory (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : Category (kleisli_objs M) :=
-    { hom (dom : Hask.t) (cod : Hask.t) := kleisli M dom cod
-    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} (k1 : kleisli M B C) (k2 : kleisli M A B) := fun x2 : A => k2 x2 >>= fun x1 : B => k1 x1
-    ; id {A : Hask.t} := fun x0 : A => pure x0
+  Polymorphic Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
+
+  Context {M_isMonad : isMonad M}.
+
+  Local Polymorphic Instance kleisliCategory : Category (kleisli_objs M) :=
+    { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
+    ; compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) := fun x_l => k_l x_l >>= fun x_r => k_r x_r
+    ; id {obj : Hask.t} := fun x => pure x
     }
   .
+
+  End IMPL_kleisli.
 
 End BasicInstances.
 
