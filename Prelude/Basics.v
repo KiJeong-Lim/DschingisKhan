@@ -132,13 +132,13 @@ Module BasicTypeClasses.
       (f1 : hom B C)
       (f2 : hom B C)
       (f3 : hom A B)
-      (H_FST_ARG_EQ : f1 == f2)
+      (H_FST_ARG : f1 == f2)
       : compose f1 f3 == compose f2 f3 
     ; compose_snd_arg {A : objs} {B : objs} {C : objs}
       (f1 : hom B C)
       (f2 : hom A B)
       (f3 : hom A B)
-      (H_SND_ARG_EQ : f2 == f3)
+      (H_SND_ARG : f2 == f3)
       : compose f1 f2 == compose f1 f3 
     }
   .
@@ -421,13 +421,13 @@ Module BasicMathematicalStructures.
     ; bind_fst_arg {A : Hask.t} {B : Hask.t}
       (m1 : M A)
       (m2 : M A)
-      (H_FST_ARG_EQ : m1 == m2)
+      (H_FST_ARG : m1 == m2)
       (k0 : kleisli M A B)
       : (m1 >>= k0) == (m2 >>= k0)
     ; bind_snd_arg {A : Hask.t} {B : Hask.t}
       (k1 : kleisli M A B)
       (k2 : kleisli M A B)
-      (H_SND_ARG_EQ : k1 == k2)
+      (H_SND_ARG : k1 == k2)
       (m0 : M A)
       : (m0 >>= k1) == (m0 >>= k2)
     }
