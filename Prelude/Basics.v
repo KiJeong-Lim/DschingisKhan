@@ -13,9 +13,9 @@ Module BasicCategoryTheory.
     }
   .
 
-  Polymorphic Definition objectMap {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition ObjectMap_t {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Global Infix " -----> " := objectMap (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := ObjectMap_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
@@ -31,18 +31,15 @@ Module BasicCategoryTheory.
     }
   .
 
-  Polymorphic Definition functorMap (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+  Polymorphic Definition NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
     forall obj : src_objs, hom (F_from obj) (F_to obj)
-  .
-
-  Polymorphic Class NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
-    { component {at_obj : src_objs} : hom (F_from at_obj) (F_to at_obj)
-    }
   .
 
   End BasicConceptsOfCategoryTheory.
 
-  Global Infix " =====> " := functorMap (at level 100, no associativity) : type_scope.
+  Global Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
+
+  Polymorphic Definition componentOf {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {F_from : src_cat -----> tgt_cat} {F_to : src_cat -----> tgt_cat} (eta : F_from =====> F_to) (at_obj : src_objs) : hom (F_from at_obj) (F_to at_obj) := eta at_obj.
 
 End BasicCategoryTheory.
 
