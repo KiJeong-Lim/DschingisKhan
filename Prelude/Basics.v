@@ -269,7 +269,7 @@ Module BasicMathematicalStructures.
     { fmap_commutes_with_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
       (arr_r : obj -> obj_r)
       (arr_l : obj_l -> obj)
-      : fmap (arr_l ∘ arr_r) == (fmap arr_l ∘ fmap arr_r)
+      : fmap (arr_r ∘ arr_l) == (fmap arr_r ∘ fmap arr_l)
     ; fmap_commutes_with_id {obj : Hask.t}
       : fmap id_{ obj } == id_{ F obj }
     }
