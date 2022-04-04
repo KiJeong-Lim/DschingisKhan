@@ -133,7 +133,7 @@ Module MyTypeClasses.
       forall f : hom B C,
       forall g : hom A B,
       forall h : hom A B,
-      g == h->
+      g == h ->
       compose f g == compose f h 
     }
   .
