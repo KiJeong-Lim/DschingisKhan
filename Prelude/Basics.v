@@ -36,7 +36,7 @@ Module BasicCategories.
   .
 
   Polymorphic Class NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
-    { component (obj : src_objs) : hom (F_from obj) (F_to obj) }
+    { component {at_obj : src_objs} : hom (F_from at_obj) (F_to at_obj) }
   .
 
   End BasicConceptsOfCategoryTheory.
