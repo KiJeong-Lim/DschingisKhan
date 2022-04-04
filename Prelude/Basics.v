@@ -13,9 +13,9 @@ Module BasicCategoryTheory.
     }
   .
 
-  Polymorphic Definition ObjectMap_t {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition isObjectMap {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Global Infix " -----> " := ObjectMap_t (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := isObjectMap (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
@@ -39,7 +39,7 @@ Module BasicCategoryTheory.
 
   Global Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
-  Polymorphic Definition componentOf {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {F_from : src_cat -----> tgt_cat} {F_to : src_cat -----> tgt_cat} (eta : F_from =====> F_to) (at_obj : src_objs) : hom (F_from at_obj) (F_to at_obj) := eta at_obj.
+  Polymorphic Definition isComponentOf {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {F_from : src_cat -----> tgt_cat} {F_to : src_cat -----> tgt_cat} (eta : F_from =====> F_to) (at_obj : src_objs) : hom (F_from at_obj) (F_to at_obj) := eta at_obj.
 
 End BasicCategoryTheory.
 
