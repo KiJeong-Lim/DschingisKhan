@@ -45,7 +45,7 @@ Module Hask.
 
   Universe Univ_lv.
 
-  Definition Univ : Type@{Univ_lv+1} := Type@{Univ_lv}.
+  Definition Univ : Type@{Univ_lv + 1} := Type@{Univ_lv}.
 
   Polymorphic Definition t : Univ := Type.
 
