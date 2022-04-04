@@ -26,7 +26,7 @@ Module BasicCategoryTheory.
 
   Polymorphic Class Category (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
-    ; compose {obj_l : objs} {obj : objs} {obj_r : objs} : hom obj obj_r -> hom obj_l obj -> hom obj_l obj_r
+    ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_l : hom obj obj_r) (arr_r : hom obj_l obj) : hom obj_l obj_r
     ; id {obj : objs} : hom obj obj
     }
   .
@@ -40,12 +40,12 @@ Module BasicCategoryTheory.
   Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs}.
 
   Polymorphic Class CovariantFunctor (F : src_cat -----> tgt_cat) : Type :=
-    { fmap {dom : src_objs} {cod : src_objs} : hom dom cod -> hom (F dom) (F cod)
+    { fmap {dom : src_objs} {cod : src_objs} (arr : hom dom cod) : hom (F dom) (F cod)
     }
   .
 
   Polymorphic Class ContravariantFunctor (F : src_cat -----> tgt_cat) : Type :=
-    { contramap {dom : src_objs} {cod : src_objs} : hom cod dom -> hom (F dom) (F cod)
+    { contramap {dom : src_objs} {cod : src_objs} (arr : hom cod dom) : hom (F dom) (F cod)
     }
   .
 
@@ -69,12 +69,12 @@ Module Hask.
 
   Polymorphic Definition t : Univ := Type.
 
-  Polymorphic Definition arrow (dom : t) (cod : t) : t := dom -> cod.
+  Polymorphic Definition arrow (dom : Hask.t) (cod : Hask.t) : Hask.t := dom -> cod.
 
   Global Polymorphic Instance cat : BasicCategoryTheory.Category t :=
-    { hom (dom : t) (cod : t) := arrow dom cod
-    ; compose {A : t} {B : t} {C : t} := compose (A := A) (B := B) (C := C)
-    ; id {A : t} := id (A := A)
+    { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
+    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} := compose (A := A) (B := B) (C := C)
+    ; id {A : Hask.t} := id (A := A)
     }
   .
 
@@ -82,7 +82,7 @@ Module Hask.
 
 End Hask.
 
-Module MyTypeClasses.
+Module BasicTypeClasses.
 
   Import BasicCategoryTheory.
 
@@ -173,11 +173,11 @@ Module MyTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
-End MyTypeClasses.
+End BasicTypeClasses.
 
 Module BasicInstances.
 
-  Import BasicCategoryTheory MyTypeClasses.
+  Import BasicCategoryTheory BasicTypeClasses.
 
   Local Open Scope program_scope.
 
@@ -247,9 +247,9 @@ Module BasicInstances.
 
 End BasicInstances.
 
-Module MyMathematicalStructures.
+Module BasicMathematicalStructures.
 
-  Import BasicCategoryTheory MyTypeClasses BasicInstances.
+  Import BasicCategoryTheory BasicTypeClasses BasicInstances.
 
   Local Open Scope program_scope.
 
@@ -335,4 +335,4 @@ Module MyMathematicalStructures.
     - ii. eapply bind_pure_r.
   Qed.
 
-End MyMathematicalStructures.
+End BasicMathematicalStructures.
