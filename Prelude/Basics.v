@@ -100,13 +100,13 @@ Module MyTypeClasses.
   Global Infix " =< " := leProp (at level 70, no associativity) : type_scope.
 
   Polymorphic Class isSetoid1 (F : Hask.cat -----> Hask.cat) : Type :=
-    { liftSetoid1 {X : Hask.t} `{X_isSetoid : isSetoid X} :> isSetoid (F X)
+    { liftSetoid1 {X : Hask.t} (X_isSetoid : isSetoid X) :> isSetoid (F X)
     }
   .
 
   Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
-    ; eqProp_Equivalence := @eq_equivalence A
+    ; eqProp_Equivalence := eq_equivalence
     }
   .
 
