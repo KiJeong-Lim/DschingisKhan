@@ -66,6 +66,19 @@ Module MyInit.
 
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.Cat) (tgt_cat := Hask.Cat)).
 
+  Polymorphic Class isMonad (M : Hask.Cat -----> Hask.Cat) : Type :=
+    { pure {A : Hask.t} : A -> M A
+    ; bind {A : Hask.t} {B : Hask.t} : M A -> (A -> M B) -> M B
+    }
+  .
+
+  Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
+
+  Global Instance option_isFunctor : isFunctor option :=
+    { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
+    }
+  .
+
   Polymorphic Definition ensemble (X : Hask.t) : Hask.t := X -> Prop.
 
 End MyInit.
