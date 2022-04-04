@@ -122,22 +122,22 @@ Module MyTypeClasses.
   .
 
   Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Prop :=
-    { covaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
-      forall f1 : hom B C,
-      forall f2 : hom A B,
-      fmap (dom := A) (cod := C) (compose f1 f2) == compose (fmap f1) (fmap f2)
-    ; covaraince_map_commutes_with_id {A : src_objs} :
-      fmap (dom := A) (cod := A) id == id
+    { covaraince_map_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
+      forall f1 : hom obj obj_r,
+      forall f2 : hom obj_l obj,
+      fmap (dom := obj_l) (cod := obj_r) (compose f1 f2) == compose (fmap f1) (fmap f2)
+    ; covaraince_map_commutes_with_id {obj : src_objs} :
+      fmap (dom := obj) (cod := obj) id == id
     }
   .
 
   Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Prop :=
-    { contravaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
-      forall f1 : hom B C,
-      forall f2 : hom A B,
-      contramap (dom := C) (cod := A) (compose f1 f2) == compose (contramap f2) (contramap f1)
-    ; contravaraince_map_commutes_with_id {A : src_objs} :
-      contramap (dom := A) (cod := A) id == id
+    { contravaraince_map_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
+      forall f1 : hom obj_l obj,
+      forall f2 : hom obj obj_r,
+      contramap (dom := obj_r) (cod := obj_l) (compose f2 f1) == compose (contramap f1) (contramap f2)
+    ; contravaraince_map_commutes_with_id {obj : src_objs} :
+      contramap (dom := obj) (cod := obj) id == id
     }
   .
 
