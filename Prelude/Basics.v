@@ -69,16 +69,16 @@ Module Hask.
 
   Polymorphic Definition t : Univ := Type.
 
+  Bind Scope type_scope with Hask.t.
+
   Polymorphic Definition arrow (dom : Hask.t) (cod : Hask.t) : Hask.t := dom -> cod.
 
-  Global Polymorphic Instance cat : BasicCategoryTheory.Category t :=
+  Global Polymorphic Instance cat : BasicCategoryTheory.Category Hask.t :=
     { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
     ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} := compose (A := A) (B := B) (C := C)
     ; id {A : Hask.t} := id (A := A)
     }
   .
-
-  Bind Scope type_scope with t.
 
 End Hask.
 
