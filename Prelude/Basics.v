@@ -13,11 +13,11 @@ Module BasicCategories.
     }
   .
 
-  Polymorphic Definition objmap {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition objectMap {src_objs : Type} {tgt_objs : Type} (src_cat : Category src_objs) (tgt_cat : Category tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Global Infix " -----> " := objmap (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := objectMap (at level 100, no associativity) : type_scope.
 
-  Section BasicConceptsOfCategory.
+  Section BasicConceptsOfCategoryTheory.
 
   Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs}.
 
@@ -31,13 +31,17 @@ Module BasicCategories.
     }
   .
 
-  Polymorphic Definition NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+  Polymorphic Definition functorMap (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
     forall obj : src_objs, hom (F_from obj) (F_to obj)
   .
 
-  End BasicConceptsOfCategory.
+  Polymorphic Class NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+    { component (obj : src_objs) : hom (F_from obj) (F_to obj) }
+  .
 
-  Global Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
+  End BasicConceptsOfCategoryTheory.
+
+  Global Infix " =====> " := functorMap (at level 100, no associativity) : type_scope.
 
 End BasicCategories.
 
