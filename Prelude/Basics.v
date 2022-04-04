@@ -121,7 +121,7 @@ Module MyTypeClasses.
     }
   .
 
-  Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Type :=
+  Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Prop :=
     { covaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
       forall f1 : hom B C,
       forall f2 : hom A B,
@@ -131,7 +131,7 @@ Module MyTypeClasses.
     }
   .
 
-  Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Type :=
+  Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Prop :=
     { contravaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
       forall f1 : hom B C,
       forall f2 : hom A B,
