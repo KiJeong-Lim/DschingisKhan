@@ -51,8 +51,10 @@ Module Hask.
 
   Polymorphic Definition t : Univ := Type.
 
+  Polymorphic Definition arrow (dom : t) (cod : t) : t := dom -> cod.
+
   Global Polymorphic Instance cat : BasicCategoryTheory.Category t :=
-    { hom (dom : t) (cod : t) := dom -> cod
+    { hom (dom : t) (cod : t) := arrow dom cod
     ; compose {A : t} {B : t} {C : t} := compose (A := A) (B := B) (C := C)
     ; id {A : t} := id (A := A)
     }
@@ -165,20 +167,18 @@ Module BasicInstances.
     }
   .
 
-  Polymorphic Definition TArr (dom : Hask.t) (cod : Hask.t) : Hask.t := hom dom cod.
-
-  Polymorphic Definition TArr_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : TArr dom cod) (rhs : TArr dom cod) : Prop :=
+  Polymorphic Definition arrow_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall i : dom, lhs i == rhs i
   .
 
-  Polymorphic Lemma TArr_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
+  Polymorphic Lemma arrow_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
     (cod_isSetoid : isSetoid cod)
-    : Equivalence (TArr_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)).
+    : Equivalence (arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)).
   Proof. split; (repeat intro); [reflexivity | symmetry | etransitivity]; eauto. Qed.
 
-  Global Polymorphic Instance TArr_isSetoid (dom : Hask.t) (cod : Hask.t) {cod_isSetoid : isSetoid cod} : isSetoid (TArr dom cod) :=
-    { eqProp := TArr_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)
-    ; eqProp_Equivalence := TArr_eqProp_Equivalence (dom := dom) (cod := cod) cod_isSetoid
+  Global Polymorphic Instance arrow_dom_cod_isSetoid (dom : Hask.t) (cod : Hask.t) {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+    { eqProp := arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)
+    ; eqProp_Equivalence := arrow_eqProp_Equivalence (dom := dom) (cod := cod) cod_isSetoid
     }
   .
 
@@ -188,13 +188,13 @@ Module BasicInstances.
     }
   .
 
-  Polymorphic Definition ensemble (X : Hask.t) : Hask.t := TArr X Prop.
+  Polymorphic Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
 
-  Local Polymorphic Instance ensemble_isSetoid (X : Hask.t) : isSetoid (ensemble X) := TArr_isSetoid X Prop.
+  Local Polymorphic Instance ensemble_isSetoid (X : Hask.t) : isSetoid (ensemble X) := arrow_dom_cod_isSetoid X Prop.
 
   Polymorphic Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Polymorphic Definition kleisli (M : Hask.cat -----> Hask.cat) (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := TArr dom (M cod).
+  Polymorphic Definition kleisli (M : Hask.cat -----> Hask.cat) (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
 
   Local Polymorphic Instance kleisliCategory (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : Category (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli M dom cod
@@ -204,7 +204,7 @@ Module BasicInstances.
   .
 
   Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
-    { fmap {dom : Hask.t} {cod : Hask.t} (f : dom -> cod) (m : M dom) := bind m (fun x : dom => pure (f x))
+    { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
@@ -228,7 +228,7 @@ Module MyMathematicalStructures.
 
   Global Notation " 'id_{' A  '}' " := (fun x : A => x) (at level 0, no associativity) : program_scope.
 
-  Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (TArr A B) (TArr (F A) (F B)) :=
+  Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     BasicCategoryTheory.fmap (F := F) (dom := A) (cod := B)
   .
 
