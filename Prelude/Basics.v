@@ -104,12 +104,6 @@ Module MyTypeClasses.
     }
   .
 
-  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
-    { eqProp := @eq A
-    ; eqProp_Equivalence := eq_equivalence
-    }
-  .
-
   Polymorphic Class CategoryWithEquality (objs : Type) {cat : Category objs} : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
     ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
@@ -135,6 +129,12 @@ Module MyTypeClasses.
       forall h : hom A B,
       g == h ->
       compose f g == compose f h 
+    }
+  .
+
+  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+    { eqProp := @eq A
+    ; eqProp_Equivalence := eq_equivalence
     }
   .
 
