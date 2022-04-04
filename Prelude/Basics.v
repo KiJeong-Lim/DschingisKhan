@@ -4,7 +4,7 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 
-Module MyTactics.
+Module BasicTactics.
 
   Global Ltac i := repeat intro.
 
@@ -18,9 +18,9 @@ Module MyTactics.
     eapply MODUS_PONENS; [ eapply PRF | intros PAT ]
   .
 
-End MyTactics.
+End BasicTactics.
 
-Export MyTactics.
+Export BasicTactics.
 
 Module BasicCategoryTheory.
 
