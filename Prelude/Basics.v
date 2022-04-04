@@ -140,9 +140,9 @@ Module BasicTypeClasses.
 
   Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Prop :=
     { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
-      (f1 : hom obj obj_r)
-      (f2 : hom obj_l obj)
-      : fmap (dom := obj_l) (cod := obj_r) (compose f1 f2) == compose (fmap f1) (fmap f2)
+      (arr_r : hom obj obj_r)
+      (arr_l : hom obj_l obj)
+      : fmap (dom := obj_l) (cod := obj_r) (compose arr_r arr_l) == compose (fmap arr_r) (fmap arr_l)
     ; covarianceMap_commutes_with_id {obj : src_objs}
       : fmap (dom := obj) (cod := obj) id == id
     }
@@ -150,9 +150,9 @@ Module BasicTypeClasses.
 
   Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Prop :=
     { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
-      (f1 : hom obj_l obj)
-      (f2 : hom obj obj_r)
-      : contramap (dom := obj_r) (cod := obj_l) (compose f2 f1) == compose (contramap f1) (contramap f2)
+      (arr_l : hom obj_l obj)
+      (arr_r : hom obj obj_r)
+      : contramap (dom := obj_r) (cod := obj_l) (compose arr_r arr_l) == compose (contramap arr_l) (contramap arr_r)
     ; contravarianceMap_commutes_with_id {obj : src_objs}
       : contramap (dom := obj) (cod := obj) id == id
     }
@@ -266,12 +266,12 @@ Module BasicMathematicalStructures.
   .
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {F_isSetoid1 : isSetoid1 F} {F_isFunctor : isFunctor F} : Prop :=
-    { fmap_commutes_with_compose {A : Hask.t} {B : Hask.t} {C : Hask.t}
-      (f1 : B -> C)
-      (f2 : A -> B)
-      : fmap (f1 ∘ f2) == (fmap f1 ∘ fmap f2)
-    ; fmap_commutes_with_id {A : Hask.t}
-      : fmap id_{ A } == id_{ F A }
+    { fmap_commutes_with_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
+      (arr_r : obj -> obj_r)
+      (arr_l : obj_l -> obj)
+      : fmap (arr_l ∘ arr_r) == (fmap arr_l ∘ fmap arr_r)
+    ; fmap_commutes_with_id {obj : Hask.t}
+      : fmap id_{ obj } == id_{ F obj }
     }
   .
 
