@@ -31,7 +31,9 @@ Module BasicCategories.
     }
   .
 
-  Polymorphic Definition NaturalTransformation (f_from : src_cat -----> tgt_cat) (f_to : src_cat -----> tgt_cat) : Type := forall obj : src_objs, hom (f_from obj) (f_to obj).
+  Polymorphic Definition NaturalTransformation (f_from : src_cat -----> tgt_cat) (f_to : src_cat -----> tgt_cat) : Type :=
+    forall obj : src_objs, hom (f_from obj) (f_to obj)
+  .
 
   End BasicConceptsOfCategory.
 
