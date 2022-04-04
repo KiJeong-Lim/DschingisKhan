@@ -18,6 +18,10 @@ Module BasicTactics.
     eapply MODUS_PONENS; [ eapply PRF | intros PAT ]
   .
 
+  Global Create HintDb khan_hints.
+
+  Global Hint Unfold flip : khan_hints.
+
 End BasicTactics.
 
 Export BasicTactics.
@@ -96,8 +100,9 @@ Module BasicTypeClasses.
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isPoset (A : Type) {Poset_requiresSetoid : isSetoid A} : Type :=
+  Polymorphic Class isPoset (A : Type) : Type :=
     { leProp (lhs : A) (rhs : A) : Prop
+    ; Poset_requiresSetoid :> isSetoid A
     ; leProp_PreOrder :> @PreOrder A leProp
     ; leProp_PartialOrder :> @PartialOrder A eqProp (@eqProp_Equivalence A Poset_requiresSetoid) leProp leProp_PreOrder
     }
@@ -160,7 +165,7 @@ Module BasicTypeClasses.
 
   Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
-  as compose_lifts_eqProp.
+    as compose_lifts_eqProp.
   Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
 
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
@@ -173,6 +178,14 @@ Module BasicTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
+  Global Hint Resolve eqProp_Equivalence : khan_hints.
+
+  Global Hint Resolve Poset_requiresSetoid : khan_hints.
+
+  Global Hint Resolve leProp_PreOrder : khan_hints.
+
+  Global Hint Resolve leProp_PartialOrder : khan_hints.
+
 End BasicTypeClasses.
 
 Module BasicInstances.
@@ -181,17 +194,17 @@ Module BasicInstances.
 
   Local Open Scope program_scope.
 
-  Section IMPL_eq.
+  Section ImplFor_eq.
 
-  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+  Local Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
     ; eqProp_Equivalence := eq_equivalence
     }
   .
 
-  End IMPL_eq.
+  End ImplFor_eq.
 
-  Section IMPL_option.
+  Section ImplFor_option.
 
   Global Instance option_isFunctor : isFunctor option :=
     { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
@@ -211,28 +224,56 @@ Module BasicInstances.
     }
   .
 
-  End IMPL_option.
+  End ImplFor_option.
 
-  Section IMPL_arrow.
+  Section ImplFor_arrow.
 
-  Polymorphic Definition arrow_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+  Context {dom : Hask.t} {cod : Hask.t}.
+
+  Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x == rhs x
   .
 
-  Polymorphic Lemma arrow_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
+  Local Instance arrow_eqProp_Equivalence
     (cod_isSetoid : isSetoid cod)
-    : Equivalence (arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)).
+    : Equivalence (arrow_eqProp (cod_isSetoid := cod_isSetoid)).
   Proof. split; ii; [reflexivity | symmetry | etransitivity]; eauto. Qed.
 
-  Global Polymorphic Instance arrow_dom_cod_isSetoid (dom : Hask.t) (cod : Hask.t) {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
-    { eqProp := arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)
-    ; eqProp_Equivalence := arrow_eqProp_Equivalence (dom := dom) (cod := cod) cod_isSetoid
+  Global Instance arrow_dom_cod_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+    { eqProp := arrow_eqProp (cod_isSetoid := cod_isSetoid)
+    ; eqProp_Equivalence := arrow_eqProp_Equivalence cod_isSetoid
     }
   .
 
-  End IMPL_arrow.
+  Definition arrow_leProp {cod_isPoset : isPoset cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+    forall x : dom, lhs x =< rhs x
+  .
 
-  Section IMPL_ensemble.
+  Local Instance arrow_leProp_PreOrder
+    (cod_isPoset : isPoset cod)
+    : PreOrder (arrow_leProp (cod_isPoset := cod_isPoset)).
+  Proof. split; ii; [reflexivity | etransitivity]; eauto. Qed.
+
+  Local Instance arrow_leProp_PartialOrder
+    (cod_isPoset : isPoset cod)
+    : PartialOrder eqProp (arrow_leProp (cod_isPoset := cod_isPoset)).
+  Proof with eauto with *.
+    intros f1 f2; split; [intros H_EQ | intros [H_LE H_GE]].
+    - split; intros x; apply leProp_PartialOrder; exploit (H_EQ x) as H_EQ_x...
+    - ii; apply leProp_PartialOrder; split...
+  Qed.
+
+  Global Instance arrow_dom_cod_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
+    { leProp := arrow_leProp
+    ; Poset_requiresSetoid := arrow_dom_cod_isSetoid
+    ; leProp_PreOrder := arrow_leProp_PreOrder cod_isPoset
+    ; leProp_PartialOrder := arrow_leProp_PartialOrder cod_isPoset
+    }
+  .
+
+  End ImplFor_arrow.
+
+  Section ImplFor_ensemble.
 
   Local Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp := iff
@@ -240,30 +281,56 @@ Module BasicInstances.
     }
   .
 
-  Polymorphic Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
+  Local Instance impl_PreOrder
+    : PreOrder impl.
+  Proof. unfold impl; split; ii; tauto. Qed.
 
-  Local Polymorphic Instance ensemble_isSetoid (X : Hask.t) : isSetoid (ensemble X) := arrow_dom_cod_isSetoid X Prop.
+  Local Instance impl_PartialOrder
+    : PartialOrder iff impl.
+  Proof. unfold impl; intros p1 p2; split. all: unfold relation_conjunction, flip; cbn; tauto. Qed.
 
-  End IMPL_ensemble.
+  Local Program Instance Prop_isPoset : isPoset Prop :=
+    { leProp := impl
+    ; Poset_requiresSetoid := Prop_isSetoid
+    }
+  .
 
-  Section IMPL_kleisli.
+  Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
 
-  Polymorphic Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
+  Global Polymorphic Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) :=
+    arrow_dom_cod_isPoset (dom := X) (cod := Prop) (cod_isPoset := Prop_isPoset)
+  .
 
-  Polymorphic Variable M : Hask.cat -----> Hask.cat.
+  Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
-  Polymorphic Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
+  Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
+    forall x : A, member x xs1 -> member x xs2
+  .
 
-  Polymorphic Context {M_isMonad : isMonad M}.
+  Lemma isSubsetOf_iff {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A)
+    : isSubsetOf xs1 xs2 <-> xs1 =< xs2.
+  Proof. reflexivity. Qed.
 
-  Local Polymorphic Instance kleisliCategory : Category (kleisli_objs M) :=
+  End ImplFor_ensemble.
+
+  Section ImplFor_kleisli.
+
+  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
+
+  Variable M : Hask.cat -----> Hask.cat.
+
+  Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
+
+  Context {M_isMonad : isMonad M}.
+
+  Local Instance kleisliCategory : Category (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
     ; compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) := fun x_l => k_l x_l >>= fun x_r => k_r x_r
     ; id {obj : Hask.t} := fun x => pure x
     }
   .
 
-  End IMPL_kleisli.
+  End ImplFor_kleisli.
 
 End BasicInstances.
 
@@ -325,7 +392,7 @@ Module BasicMathematicalStructures.
 
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) (M_isSetoid1 : isSetoid1 M) (M_isMonad : isMonad M) (M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad) (A : Hask.t) (B : Hask.t) :
     (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
-  as bind_lifts_eqProp.
+    as bind_lifts_eqProp.
   Proof. ii; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
 
   Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
