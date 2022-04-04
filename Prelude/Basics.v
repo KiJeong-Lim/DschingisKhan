@@ -71,16 +71,15 @@ Module MyTypeClasses.
   Local Open Scope program_scope.
 
   Polymorphic Class isSetoid (A : Type) : Type :=
-    { eqProp : A -> A -> Prop
+    { eqProp (lhs : A) (rhs : A) : Prop
     ; eqProp_Equivalence :> @Equivalence A eqProp
     }
   .
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isPoset (A : Type) : Type :=
-    { leProp : A -> A -> Prop
-    ; Poset_requiresSetoid :> isSetoid A
+  Polymorphic Class isPoset (A : Type) {Poset_requiresSetoid : isSetoid A} : Type :=
+    { leProp (lhs : A) (rhs : A) : Prop
     ; leProp_PreOrder :> @PreOrder A leProp
     ; leProp_PartialOrder :> @PartialOrder A eqProp (@eqProp_Equivalence A Poset_requiresSetoid) leProp leProp_PreOrder
     }
@@ -95,49 +94,49 @@ Module MyTypeClasses.
 
   Polymorphic Class CategoryWithEquality {objs : Type} (cat : Category objs) : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
-    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
-      forall f1 : hom C D,
-      forall f2 : hom B C,
-      forall f3 : hom A B,
-      compose f1 (compose f2 f3) == compose (compose f1 f2) f3
-    ; compose_id_l {A : objs} {B : objs} :
-      forall f1 : hom A B,
-      compose id f1 == f1
-    ; compose_id_r {A : objs} {B : objs} :
-      forall f1 : hom A B,
-      compose f1 id == f1
-    ; compose_fst_arg {A : objs} {B : objs} {C : objs} :
-      forall f1 : hom B C,
-      forall f2 : hom B C,
-      forall f3 : hom A B,
-      f1 == f2 ->
-      compose f1 f3 == compose f2 f3 
-    ; compose_snd_arg {A : objs} {B : objs} {C : objs} :
-      forall f1 : hom B C,
-      forall f2 : hom A B,
-      forall f3 : hom A B,
-      f2 == f3 ->
-      compose f1 f2 == compose f1 f3 
+    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs}
+      (f1 : hom C D)
+      (f2 : hom B C)
+      (f3 : hom A B)
+      : compose f1 (compose f2 f3) == compose (compose f1 f2) f3
+    ; compose_id_l {A : objs} {B : objs}
+      (f1 : hom A B)
+      : compose id f1 == f1
+    ; compose_id_r {A : objs} {B : objs}
+      (f1 : hom A B)
+      : compose f1 id == f1
+    ; compose_fst_arg {A : objs} {B : objs} {C : objs}
+      (f1 : hom B C)
+      (f2 : hom B C)
+      (f3 : hom A B)
+      (H_FST_ARG_EQ : f1 == f2)
+      : compose f1 f3 == compose f2 f3 
+    ; compose_snd_arg {A : objs} {B : objs} {C : objs}
+      (f1 : hom B C)
+      (f2 : hom A B)
+      (f3 : hom A B)
+      (H_SND_ARG_EQ : f2 == f3)
+      : compose f1 f2 == compose f1 f3 
     }
   .
 
   Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Prop :=
-    { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
-      forall f1 : hom obj obj_r,
-      forall f2 : hom obj_l obj,
-      fmap (dom := obj_l) (cod := obj_r) (compose f1 f2) == compose (fmap f1) (fmap f2)
-    ; covarianceMap_commutes_with_id {obj : src_objs} :
-      fmap (dom := obj) (cod := obj) id == id
+    { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
+      (f1 : hom obj obj_r)
+      (f2 : hom obj_l obj)
+      : fmap (dom := obj_l) (cod := obj_r) (compose f1 f2) == compose (fmap f1) (fmap f2)
+    ; covarianceMap_commutes_with_id {obj : src_objs}
+      : fmap (dom := obj) (cod := obj) id == id
     }
   .
 
   Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Prop :=
-    { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs} :
-      forall f1 : hom obj_l obj,
-      forall f2 : hom obj obj_r,
-      contramap (dom := obj_r) (cod := obj_l) (compose f2 f1) == compose (contramap f1) (contramap f2)
-    ; contravarianceMap_commutes_with_id {obj : src_objs} :
-      contramap (dom := obj) (cod := obj) id == id
+    { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
+      (f1 : hom obj_l obj)
+      (f2 : hom obj obj_r)
+      : contramap (dom := obj_r) (cod := obj_l) (compose f2 f1) == compose (contramap f1) (contramap f2)
+    ; contravarianceMap_commutes_with_id {obj : src_objs}
+      : contramap (dom := obj) (cod := obj) id == id
     }
   .
 
@@ -154,8 +153,8 @@ Module MyTypeClasses.
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
   Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
-    { pure {A : Hask.t} : A -> M A
-    ; bind {A : Hask.t} {B : Hask.t} : M A -> (A -> M B) -> M B
+    { pure {A : Hask.t} (x : A) : M A
+    ; bind {A : Hask.t} {B : Hask.t} (m : M A) (k : A -> M B) : M B
     }
   .
 
@@ -182,8 +181,8 @@ Module BasicInstances.
   .
 
   Local Instance option_isMonad : isMonad option :=
-    { pure {A : Hask.t} := fun x : A => Some x
-    ; bind {A : Hask.t} {B : Hask.t} := fun m : option A => fun k : A -> option B => maybe None k m
+    { pure {A : Hask.t} (x : A) := Some x
+    ; bind {A : Hask.t} {B : Hask.t} (m : option A) (k : A -> option B) := maybe None k m
     }
   .
 
@@ -254,40 +253,40 @@ Module MyMathematicalStructures.
   .
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {F_isSetoid1 : isSetoid1 F} {F_isFunctor : isFunctor F} : Prop :=
-    { fmap_commutes_with_compose {A : Hask.t} {B : Hask.t} {C : Hask.t} :
-      forall f1 : B -> C,
-      forall f2 : A -> B,
-      fmap (f1 ∘ f2) == (fmap f1 ∘ fmap f2)
-    ; fmap_commutes_with_id {A : Hask.t} :
-      fmap id_{ A } == id_{ F A }
+    { fmap_commutes_with_compose {A : Hask.t} {B : Hask.t} {C : Hask.t}
+      (f1 : B -> C)
+      (f2 : A -> B)
+      : fmap (f1 ∘ f2) == (fmap f1 ∘ fmap f2)
+    ; fmap_commutes_with_id {A : Hask.t}
+      : fmap id_{ A } == id_{ F A }
     }
   .
 
   Polymorphic Class LawsOfMonad (M : Hask.cat -----> Hask.cat) {M_isSetoid1 : isSetoid1 M} {M_isMonad : isMonad M} : Prop :=
-    { bind_assoc {A : Hask.t} {B : Hask.t} {C : Hask.t} :
-      forall m0 : M A,
-      forall k1 : kleisli M A B,
-      forall k2 : kleisli M B C,
-      (m0 >>= k1 >>= k2) == (m0 >>= fun x1 : A => k1 x1 >>= k2)
-    ; bind_pure_l {A : Hask.t} {B : Hask.t} :
-      forall k : kleisli M A B,
-      forall x : A,
-      (pure x >>= k) == k x
-    ; bind_pure_r {A : Hask.t} :
-      forall m : M A,
-      (m >>= pure) == m
-    ; bind_fst_arg {A : Hask.t} {B : Hask.t} :
-      forall m1 : M A,
-      forall m2 : M A,
-      m1 == m2 ->
-      forall k0 : kleisli M A B,
-      (m1 >>= k0) == (m2 >>= k0)
-    ; bind_snd_arg {A : Hask.t} {B : Hask.t} :
-      forall k1 : kleisli M A B,
-      forall k2 : kleisli M A B,
-      k1 == k2 ->
-      forall m0 : M A,
-      (m0 >>= k1) == (m0 >>= k2)
+    { bind_assoc {A : Hask.t} {B : Hask.t} {C : Hask.t}
+      (m0 : M A)
+      (k1 : kleisli M A B)
+      (k2 : kleisli M B C)
+      : (m0 >>= k1 >>= k2) == (m0 >>= fun x1 : A => k1 x1 >>= k2)
+    ; bind_pure_l {A : Hask.t} {B : Hask.t}
+      (k : kleisli M A B)
+      (x : A)
+      : (pure x >>= k) == k x
+    ; bind_pure_r {A : Hask.t}
+      (m : M A)
+      : (m >>= pure) == m
+    ; bind_fst_arg {A : Hask.t} {B : Hask.t}
+      (m1 : M A)
+      (m2 : M A)
+      (H_FST_ARG_EQ : m1 == m2)
+      (k0 : kleisli M A B)
+      : (m1 >>= k0) == (m2 >>= k0)
+    ; bind_snd_arg {A : Hask.t} {B : Hask.t}
+      (k1 : kleisli M A B)
+      (k2 : kleisli M A B)
+      (H_SND_ARG_EQ : k1 == k2)
+      (m0 : M A)
+      : (m0 >>= k1) == (m0 >>= k2)
     }
   .
 
