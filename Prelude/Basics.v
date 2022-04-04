@@ -96,28 +96,28 @@ Module MyTypeClasses.
   Polymorphic Class CategoryWithEquality {objs : Type} (cat : Category objs) : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
     ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
-      forall f : hom C D,
-      forall g : hom B C,
-      forall h : hom A B,
-      compose f (compose g h) == compose (compose f g) h
+      forall f1 : hom C D,
+      forall f2 : hom B C,
+      forall f3 : hom A B,
+      compose f1 (compose f2 f3) == compose (compose f1 f2) f3
     ; compose_id_l {A : objs} {B : objs} :
-      forall f : hom A B,
-      compose id f == f
+      forall f1 : hom A B,
+      compose id f1 == f1
     ; compose_id_r {A : objs} {B : objs} :
-      forall f : hom A B,
-      compose f id == f
+      forall f1 : hom A B,
+      compose f1 id == f1
     ; compose_fst_arg {A : objs} {B : objs} {C : objs} :
-      forall f : hom B C,
-      forall g : hom B C,
-      forall h : hom A B,
-      f == g ->
-      compose f h == compose g h 
+      forall f1 : hom B C,
+      forall f2 : hom B C,
+      forall f3 : hom A B,
+      f1 == f2 ->
+      compose f1 f3 == compose f2 f3 
     ; compose_snd_arg {A : objs} {B : objs} {C : objs} :
-      forall f : hom B C,
-      forall g : hom A B,
-      forall h : hom A B,
-      g == h ->
-      compose f g == compose f h 
+      forall f1 : hom B C,
+      forall f2 : hom A B,
+      forall f3 : hom A B,
+      f2 == f3 ->
+      compose f1 f2 == compose f1 f3 
     }
   .
 
