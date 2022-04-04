@@ -79,6 +79,24 @@ Module MyTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
+  Polymorphic Class isSetoid (A : Hask.t) : Type :=
+    { eqProp : A -> A -> Prop
+    ; eqProp_Equivalence :> @Equivalence A eqProp
+    }
+  .
+
+  Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
+
+  Polymorphic Class isPoset (A : Hask.t) : Type :=
+    { leProp : A -> A -> Prop
+    ; Poset_requiresSetoid :> isSetoid A
+    ; leProp_PreOrder :> @PreOrder A leProp
+    ; leProp_PartialOrder :> @PartialOrder A eqProp (@eqProp_Equivalence A Poset_requiresSetoid) leProp leProp_PreOrder
+    }
+  .
+
+  Global Infix " =< " := leProp (at level 70, no associativity) : type_scope.
+
 End MyTypeClasses.
 
 Module BasicInstances.
