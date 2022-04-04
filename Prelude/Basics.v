@@ -36,7 +36,8 @@ Module BasicCategories.
   .
 
   Polymorphic Class NaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
-    { component {at_obj : src_objs} : hom (F_from at_obj) (F_to at_obj) }
+    { component {at_obj : src_objs} : hom (F_from at_obj) (F_to at_obj)
+    }
   .
 
   End BasicConceptsOfCategoryTheory.
@@ -62,7 +63,7 @@ Module Hask.
 
 End Hask.
 
-Module MyInit.
+Module MyTypeClasses.
 
   Import BasicCategories.
 
@@ -78,6 +79,14 @@ Module MyInit.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
+End MyTypeClasses.
+
+Module BasicInstances.
+
+  Import BasicCategories MyTypeClasses.
+
+  Local Open Scope program_scope.
+
   Global Instance option_isFunctor : isFunctor option :=
     { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
     }
@@ -85,4 +94,4 @@ Module MyInit.
 
   Polymorphic Definition ensemble (X : Hask.t) : Hask.t := X -> Prop.
 
-End MyInit.
+End BasicInstances.
