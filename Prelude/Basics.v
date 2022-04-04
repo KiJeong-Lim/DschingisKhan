@@ -121,6 +121,26 @@ Module MyTypeClasses.
     }
   .
 
+  Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : CovariantFunctor F) : Type :=
+    { covaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
+      forall f1 : hom B C,
+      forall f2 : hom A B,
+      fmap (dom := A) (cod := C) (compose f1 f2) == compose (fmap f1) (fmap f2)
+    ; covaraince_map_commutes_with_id {A : src_objs} :
+      fmap (dom := A) (cod := A) id == id
+    }
+  .
+
+  Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) (F_isFunctor : ContravariantFunctor F) : Type :=
+    { contravaraince_map_commutes_with_compose {A : src_objs} {B : src_objs} {C : src_objs} :
+      forall f1 : hom B C,
+      forall f2 : hom A B,
+      contramap (dom := C) (cod := A) (compose f1 f2) == compose (contramap f2) (contramap f1)
+    ; contravaraince_map_commutes_with_id {A : src_objs} :
+      contramap (dom := A) (cod := A) id == id
+    }
+  .
+
   Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
   as compose_lifts_eqProp.
@@ -240,9 +260,9 @@ Module MyMathematicalStructures.
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {F_isSetoid1 : isSetoid1 F} {F_isFunctor : isFunctor F} : Prop :=
     { fmap_commutes_with_compose {A : Hask.t} {B : Hask.t} {C : Hask.t} :
-      forall f1 : A -> B,
-      forall f2 : B -> C,
-      fmap (f2 ∘ f1) == (fmap f2 ∘ fmap f1)
+      forall f1 : B -> C,
+      forall f2 : A -> B,
+      fmap (f1 ∘ f2) == (fmap f1 ∘ fmap f2)
     ; fmap_commutes_with_id {A : Hask.t} :
       fmap id_{ A } == id_{ F A }
     }
