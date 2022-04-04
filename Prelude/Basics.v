@@ -260,7 +260,7 @@ Module BasicInstances.
   Proof with eauto with *.
     intros f1 f2; split; [intros H_EQ | intros [H_LE H_GE]].
     - split; intros x; apply leProp_PartialOrder; exploit (H_EQ x) as H_EQ_x...
-    - ii; apply leProp_PartialOrder; split...
+    - intros x; apply leProp_PartialOrder; split...
   Qed.
 
   Global Instance arrow_dom_cod_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
@@ -287,17 +287,19 @@ Module BasicInstances.
 
   Local Instance impl_PartialOrder
     : PartialOrder iff impl.
-  Proof. unfold impl; intros p1 p2; split. all: unfold relation_conjunction, flip; cbn; tauto. Qed.
+  Proof. unfold impl; intros p1 p2; split; unfold relation_conjunction, flip; cbn; tauto. Qed.
 
-  Local Program Instance Prop_isPoset : isPoset Prop :=
+  Local Instance Prop_isPoset : isPoset Prop :=
     { leProp := impl
     ; Poset_requiresSetoid := Prop_isSetoid
+    ; leProp_PreOrder := impl_PreOrder
+    ; leProp_PartialOrder := impl_PartialOrder
     }
   .
 
   Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
 
-  Global Polymorphic Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) :=
+  Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) :=
     arrow_dom_cod_isPoset (dom := X) (cod := Prop) (cod_isPoset := Prop_isPoset)
   .
 
