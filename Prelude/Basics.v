@@ -313,7 +313,7 @@ Module MyMathematicalStructures.
     }
   .
 
-  Global Polymorphic Instance LawsOfMonad_guarantees_LawsOfMonad (M : Hask.cat -----> Hask.cat)
+  Global Polymorphic Instance LawsOfMonad_guarantees_LawsOfFunctor (M : Hask.cat -----> Hask.cat)
     {M_isSetoid1 : isSetoid1 M}
     {M_isMonad : isMonad M}
     (M_obeysMonadLaws : LawsOfMonad M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
