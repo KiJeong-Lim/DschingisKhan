@@ -4,6 +4,24 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 
+Module MyTactics.
+
+  Global Ltac i := repeat intro.
+
+  Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
+    (ASSUMPTION : HYPOTHESIS)
+    (PREMISE : HYPOTHESIS -> CONCLUSION)
+    : CONCLUSION.
+  Proof. tauto. Qed.
+
+  Global Tactic Notation " exploit " constr( PRF ) "as" simple_intropattern( PAT ) :=
+    eapply MODUS_PONENS; [ eapply PRF | intros PAT ]
+  .
+
+End MyTactics.
+
+Export MyTactics.
+
 Module BasicCategoryTheory.
 
   Polymorphic Class Category (objs : Type) : Type :=
@@ -143,12 +161,7 @@ Module MyTypeClasses.
   Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
   as compose_lifts_eqProp.
-  Proof.
-    intros f1 f2 H_f1_eq_f2 g1 g2 H_g1_eq_g2.
-    transitivity (compose f2 g1).
-    - eapply compose_fst_arg; exact (H_f1_eq_f2).
-    - eapply compose_snd_arg; exact (H_g1_eq_g2).
-  Qed.
+  Proof. i; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
 
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
@@ -193,7 +206,7 @@ Module BasicInstances.
   Polymorphic Lemma arrow_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
     (cod_isSetoid : isSetoid cod)
     : Equivalence (arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)).
-  Proof. split; (repeat intro); [reflexivity | symmetry | etransitivity]; eauto. Qed.
+  Proof. split; i; [reflexivity | symmetry | etransitivity]; eauto. Qed.
 
   Global Polymorphic Instance arrow_dom_cod_isSetoid (dom : Hask.t) (cod : Hask.t) {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)
@@ -293,12 +306,7 @@ Module MyMathematicalStructures.
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) (M_isSetoid1 : isSetoid1 M) (M_isMonad : isMonad M) (M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad) (A : Hask.t) (B : Hask.t) :
     (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
   as bind_lifts_eqProp.
-  Proof.
-    intros m1 m2 H_m1_eq_m2 k1 k2 H_k1_eq_k2.
-    transitivity (m2 >>= k1).
-    - eapply bind_fst_arg; exact (H_m1_eq_m2).
-    - eapply bind_snd_arg; exact (H_k1_eq_k2).
-  Qed.
+  Proof. i; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
 
   Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
     { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
@@ -312,7 +320,7 @@ Module MyMathematicalStructures.
     : LawsOfFunctor M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := @mkFunctorFromMonad M M_isMonad).
   Proof. (* Thanks to Soonwon Moon *)
     split.
-    - intros A B C f g m. symmetry.
+    - i. symmetry.
       (* Soonwon's Advice:
         (map f . map g) m
         m >>= pure . g >>= pure . f
@@ -322,11 +330,9 @@ Module MyMathematicalStructures.
         m >>= pure . (f . g)
         map (f . g) m
       *)
-      simpl. unfold "∘" at 1.
-      transitivity (m >>= (fun x : A => pure (g x) >>= pure ∘ f)).
-      + rewrite bind_assoc. apply bind_snd_arg. reflexivity.
-      + apply bind_snd_arg. intros x. apply bind_pure_l with (x := g x).
-    - intros A m. apply bind_pure_r with (m := m).
+      cbn. rewrite bind_assoc. eapply bind_snd_arg.
+      i. rewrite bind_pure_l. reflexivity.
+    - i. eapply bind_pure_r.
   Qed.
 
 End MyMathematicalStructures.
