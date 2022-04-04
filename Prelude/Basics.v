@@ -165,16 +165,17 @@ Module BasicInstances.
 
   Polymorphic Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Polymorphic Definition kleisli (M : Hask.cat -----> Hask.cat) (A : Hask.t) (B : Hask.t) : kleisli_objs M := TArr A (M B).
+  Polymorphic Definition kleisli (M : Hask.cat -----> Hask.cat) (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := TArr dom (M cod).
 
   Local Polymorphic Instance kleisliCategory (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : Category (kleisli_objs M) :=
-    { hom (A : Hask.t) (B : Hask.t) := kleisli M A B
-    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} :=
-      fun k1 : kleisli M B C =>
-      fun k2 : kleisli M A B =>
-      fun x2 : A => k2 x2 >>= fun x1 : B => k1 x1
-    ; id {A : Hask.t} :=
-      fun x0 : A => pure x0
+    { hom (dom : Hask.t) (cod : Hask.t) := kleisli M dom cod
+    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} (k1 : kleisli M B C) (k2 : kleisli M A B) := fun x2 : A => k2 x2 >>= fun x1 : B => k1 x1
+    ; id {A : Hask.t} := fun x0 : A => pure x0
+    }
+  .
+
+  Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
+    { fmap {dom : Hask.t} {cod : Hask.t} (f : dom -> cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
