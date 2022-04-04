@@ -60,6 +60,12 @@ End Hask.
 
 Module MyInit.
 
+  Import BasicCategories.
+
+  Local Open Scope program_scope.
+
+  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.Cat) (tgt_cat := Hask.Cat)).
+
   Polymorphic Definition ensemble (X : Hask.t) : Hask.t := X -> Prop.
 
 End MyInit.
