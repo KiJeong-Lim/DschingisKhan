@@ -81,7 +81,7 @@ Module MyTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
-  Polymorphic Class isSetoid (A : Hask.t) : Type :=
+  Polymorphic Class isSetoid (A : Type) : Type :=
     { eqProp : A -> A -> Prop
     ; eqProp_Equivalence :> @Equivalence A eqProp
     }
@@ -89,7 +89,7 @@ Module MyTypeClasses.
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isPoset (A : Hask.t) : Type :=
+  Polymorphic Class isPoset (A : Type) : Type :=
     { leProp : A -> A -> Prop
     ; Poset_requiresSetoid :> isSetoid A
     ; leProp_PreOrder :> @PreOrder A leProp
@@ -99,8 +99,8 @@ Module MyTypeClasses.
 
   Global Infix " =< " := leProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isSetoid1 (F : Hask.cat -----> Hask.cat) : Type :=
-    { liftSetoid1 {X : Hask.t} (X_isSetoid : isSetoid X) :> isSetoid (F X)
+  Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
+    { liftSetoid1 {X : Type} (X_isSetoid : isSetoid X) :> isSetoid (F X)
     }
   .
 
@@ -187,14 +187,30 @@ Module MyMathematicalStructures.
 
   Local Open Scope program_scope.
 
+  Global Notation " 'id_{' A  '}' " := (BasicCategoryTheory.id (objs := Hask.t) (obj := A)) (at level 0, no associativity) : program_scope.
+
+  Polymorphic Class LawsOfCategory (objs : Type) {cat : Category objs} {cat_has_eqProp : isSetoid objs} : Type :=
+    { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
+    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs} :
+      forall f : hom C D,
+      forall g : hom B C,
+      forall h : hom A B,
+      compose f (compose g h) == compose (compose f g) h
+    ; compose_id_l {A : objs} {B : objs} :
+      forall f : hom A B,
+      compose id f == f
+    ; compose_id_r {A : objs} {B : objs} :
+      forall f : hom A B,
+      compose f id == f
+    }
+  .
+
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (TArr A B) (TArr (F A) (F B)) :=
     BasicCategoryTheory.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Global Notation " 'id_{' A  '}' " := (BasicCategoryTheory.id (objs := Hask.t) (obj := A)) (at level 0, no associativity) : program_scope.
-
   Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {F_isSetoid1 : isSetoid1 F} : isSetoid (F X) :=
-    liftSetoid1 (F := F) (X := X) (X_isSetoid := theFinestSetoidOf X)
+    liftSetoid1 (F := F) (theFinestSetoidOf X)
   .
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {F_isSetoid1 : isSetoid1 F} {F_isFunctor : isFunctor F} : Prop :=
