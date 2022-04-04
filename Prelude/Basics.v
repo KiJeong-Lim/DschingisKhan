@@ -275,7 +275,7 @@ Module BasicInstances.
 
   Section ImplFor_ensemble.
 
-  Local Instance Prop_isSetoid : isSetoid Prop :=
+  Global Instance Prop_isSetoid : isSetoid Prop :=
     { eqProp := iff
     ; eqProp_Equivalence := iff_equivalence
     }
@@ -289,7 +289,7 @@ Module BasicInstances.
     : PartialOrder iff impl.
   Proof. unfold impl; intros p1 p2; split; unfold relation_conjunction, flip; cbn; tauto. Qed.
 
-  Local Instance Prop_isPoset : isPoset Prop :=
+  Global Instance Prop_isPoset : isPoset Prop :=
     { leProp := impl
     ; Poset_requiresSetoid := Prop_isSetoid
     ; leProp_PreOrder := impl_PreOrder
@@ -314,6 +314,47 @@ Module BasicInstances.
   Proof. reflexivity. Qed.
 
   End ImplFor_ensemble.
+
+  Section ImplFor_bool.
+
+  Definition bool_eqProp (lhs : bool) (rhs : bool) : Prop := eq_true lhs == eq_true rhs.
+
+  Lemma bool_eqProp_Equivalence
+    : @Equivalence bool bool_eqProp.
+  Proof with eauto with *.
+    unfold bool_eqProp; split; ii...
+    transitivity (eq_true y)...
+  Qed.
+
+  Definition bool_leProp (lhs : bool) (rhs : bool) : Prop := eq_true lhs =< eq_true rhs.
+
+  Lemma bool_leProp_PreOrder
+    : @PreOrder bool bool_leProp.
+  Proof with eauto with *.
+    unfold bool_eqProp; split; ii...
+  Qed.
+
+  Lemma bool_leProp_PartialOrder
+    : @PartialOrder bool bool_eqProp bool_eqProp_Equivalence bool_leProp bool_leProp_PreOrder.
+  Proof with eauto with *.
+    unfold bool_eqProp; split; ii...
+  Qed.
+
+  Local Instance bool_isSetoid : isSetoid bool :=
+    { eqProp := bool_eqProp
+    ; eqProp_Equivalence := bool_eqProp_Equivalence
+    }
+  .
+
+  Local Instance bool_isPoset : isPoset bool :=
+    { leProp := bool_leProp
+    ; Poset_requiresSetoid := bool_isSetoid
+    ; leProp_PreOrder := bool_leProp_PreOrder
+    ; leProp_PartialOrder := bool_leProp_PartialOrder
+    }
+  .
+
+  End ImplFor_pair.
 
   Section ImplFor_kleisli.
 
