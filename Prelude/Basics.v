@@ -6,7 +6,7 @@ Require Import Coq.Setoids.Setoid.
 
 Module BasicTactics.
 
-  Global Ltac i := repeat intro.
+  Global Ltac ii := repeat intro.
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -161,7 +161,7 @@ Module MyTypeClasses.
   Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
   as compose_lifts_eqProp.
-  Proof. i; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
+  Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
 
   Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
@@ -200,13 +200,13 @@ Module BasicInstances.
   .
 
   Polymorphic Definition arrow_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
-    forall i : dom, lhs i == rhs i
+    forall ii : dom, lhs ii == rhs ii
   .
 
   Polymorphic Lemma arrow_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
     (cod_isSetoid : isSetoid cod)
     : Equivalence (arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)).
-  Proof. split; i; [reflexivity | symmetry | etransitivity]; eauto. Qed.
+  Proof. split; ii; [reflexivity | symmetry | etransitivity]; eauto. Qed.
 
   Global Polymorphic Instance arrow_dom_cod_isSetoid (dom : Hask.t) (cod : Hask.t) {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (dom := dom) (cod := cod) (cod_isSetoid := cod_isSetoid)
@@ -306,7 +306,7 @@ Module MyMathematicalStructures.
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) (M_isSetoid1 : isSetoid1 M) (M_isMonad : isMonad M) (M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad) (A : Hask.t) (B : Hask.t) :
     (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
   as bind_lifts_eqProp.
-  Proof. i; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
+  Proof. ii; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
 
   Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
     { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
@@ -320,7 +320,7 @@ Module MyMathematicalStructures.
     : LawsOfFunctor M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := @mkFunctorFromMonad M M_isMonad).
   Proof. (* Thanks to Soonwon Moon *)
     split.
-    - i. symmetry.
+    - ii. symmetry.
       (* Soonwon's Advice:
         (map f . map g) m
         m >>= pure . g >>= pure . f
@@ -331,8 +331,8 @@ Module MyMathematicalStructures.
         map (f . g) m
       *)
       cbn. rewrite bind_assoc. eapply bind_snd_arg.
-      i. rewrite bind_pure_l. reflexivity.
-    - i. eapply bind_pure_r.
+      ii. rewrite bind_pure_l. reflexivity.
+    - ii. eapply bind_pure_r.
   Qed.
 
 End MyMathematicalStructures.
