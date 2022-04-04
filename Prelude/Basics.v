@@ -26,7 +26,7 @@ Module BasicCategoryTheory.
 
   Polymorphic Class Category (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
-    ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_l : hom obj obj_r) (arr_r : hom obj_l obj) : hom obj_l obj_r
+    ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
     ; id {obj : objs} : hom obj obj
     }
   .
