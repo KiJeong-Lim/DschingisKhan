@@ -128,7 +128,7 @@ Module MyTypeClasses.
     }
   .
 
-  Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
+  Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
   as compose_lifts_eqProp.
   Proof.
@@ -279,7 +279,7 @@ Module MyMathematicalStructures.
     }
   .
 
-  Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {M_isSetoid1 : isSetoid1 M} {M_isMonad : isMonad M} {M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad} (A : Hask.t) (B : Hask.t) :
+  Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) (M_isSetoid1 : isSetoid1 M) (M_isMonad : isMonad M) (M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad) (A : Hask.t) (B : Hask.t) :
     (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
   as bind_lifts_eqProp.
   Proof.
