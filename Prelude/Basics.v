@@ -181,6 +181,16 @@ Module BasicInstances.
 
   Local Open Scope program_scope.
 
+  Section THE_FINEST_SETOID.
+
+  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+    { eqProp := @eq A
+    ; eqProp_Equivalence := eq_equivalence
+    }
+  .
+
+  End THE_FINEST_SETOID.
+
   Global Instance option_isFunctor : isFunctor option :=
     { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
     }
@@ -200,7 +210,7 @@ Module BasicInstances.
   .
 
   Polymorphic Definition arrow_eqProp {dom : Hask.t} {cod : Hask.t} {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
-    forall ii : dom, lhs ii == rhs ii
+    forall x : dom, lhs x == rhs x
   .
 
   Polymorphic Lemma arrow_eqProp_Equivalence {dom : Hask.t} {cod : Hask.t}
@@ -234,16 +244,6 @@ Module BasicInstances.
     ; id {A : Hask.t} := fun x0 : A => pure x0
     }
   .
-
-  Section THE_FINEST_SETOID.
-
-  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
-    { eqProp := @eq A
-    ; eqProp_Equivalence := eq_equivalence
-    }
-  .
-
-  End THE_FINEST_SETOID.
 
 End BasicInstances.
 
