@@ -205,7 +205,7 @@ Module BasicInstances.
     end
   .
 
-  Local Instance option_isMonad : isMonad option :=
+  Global Instance option_isMonad : isMonad option :=
     { pure {A : Hask.t} (x : A) := Some x
     ; bind {A : Hask.t} {B : Hask.t} (m : option A) (k : A -> option B) := maybe None k m
     }
@@ -250,11 +250,11 @@ Module BasicInstances.
 
   Polymorphic Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Variable M : Hask.cat -----> Hask.cat.
+  Polymorphic Variable M : Hask.cat -----> Hask.cat.
 
   Polymorphic Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
 
-  Context {M_isMonad : isMonad M}.
+  Polymorphic Context {M_isMonad : isMonad M}.
 
   Local Polymorphic Instance kleisliCategory : Category (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
