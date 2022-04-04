@@ -49,7 +49,7 @@ Module Hask.
 
   Polymorphic Definition t : Univ := Type.
 
-  Global Polymorphic Instance Cat : BasicCategories.Category t :=
+  Global Polymorphic Instance cat : BasicCategories.Category t :=
     { hom (dom : t) (cod : t) := dom -> cod
     ; compose {A : t} {B : t} {C : t} := compose (A := A) (B := B) (C := C)
     ; id {A : t} := id (A := A)
@@ -64,9 +64,9 @@ Module MyInit.
 
   Local Open Scope program_scope.
 
-  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.Cat) (tgt_cat := Hask.Cat)).
+  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
-  Polymorphic Class isMonad (M : Hask.Cat -----> Hask.Cat) : Type :=
+  Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
     { pure {A : Hask.t} : A -> M A
     ; bind {A : Hask.t} {B : Hask.t} : M A -> (A -> M B) -> M B
     }
