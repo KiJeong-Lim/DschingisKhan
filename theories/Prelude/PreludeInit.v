@@ -747,7 +747,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
+  Global Arguments liftMonad {T} {_} {M} {M_isMonad} {_}.
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
