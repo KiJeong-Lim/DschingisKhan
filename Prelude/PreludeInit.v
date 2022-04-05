@@ -710,9 +710,9 @@ Module BasicMathematicalStructures.
     }
   .
 
-  (** "4. Monoid, Group, Ring and Field" *)
+  (** "4. Group, Ring and Field" *)
 
-  Class AssocBinOp {A : Type} {A_isSetoid : isSetoid A} (bin_op : A -> A -> A) : Prop :=
+  Class AssocBinOp {A : Hask.t} {A_isSetoid : isSetoid A} (bin_op : A -> A -> A) : Prop :=
     { bin_op_assoc (xl : A) (x : A) (xr : A)
       : bin_op xl (bin_op x xr) == bin_op (bin_op xl x) xr
     ; bin_op_lifts_eqProp (xl_1 : A) (xl_2 : A) (xr_1 : A) (xr_2 : A)
