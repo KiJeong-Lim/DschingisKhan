@@ -21,6 +21,7 @@ Module BasicTactics.
 
   Global Hint Unfold flip : khan_hints.
   Global Hint Unfold relation_conjunction : khan_hints.
+  Global Hint Unfold REFERENCE_HOLDER : khan_hints.
 
   (** "\S3. Introduction Tactics" *)
 
