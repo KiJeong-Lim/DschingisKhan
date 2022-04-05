@@ -13,10 +13,6 @@ Module BasicTactics.
 
   Global Notation " '<{' STATEMENT_REFERENCE ':' STATEMENT '}>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
 
-  Polymorphic Lemma unfold_REFERENCE_HOLDER {STATEMENT_Type : Type} (STATEMENT : STATEMENT_Type)
-    : <{ STATEMENT_REFERENCE : STATEMENT }> = STATEMENT.
-  Proof. reflexivity. Defined.
-
   Global Ltac unnw := unfold REFERENCE_HOLDER in *.
 
   (** "\S2. Hint Database" *)
