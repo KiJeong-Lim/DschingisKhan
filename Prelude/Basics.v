@@ -354,7 +354,7 @@ Module BasicInstances.
     }
   .
 
-  End ImplFor_pair.
+  End ImplFor_bool.
 
   Section ImplFor_kleisli.
 
