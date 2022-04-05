@@ -28,7 +28,7 @@ Module CountableBooleanAlgebra.
 
   Class isCBA (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
     { CBA_requiresBooleanAlgebra :> isBooleanAlgebra BA
-    ; CBA_isCountable :> isCountable BA
+    ; CBA_requiresCountable :> isCountable BA
     }
   .
 
