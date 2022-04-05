@@ -481,11 +481,11 @@ Module BasicInstances.
 
   Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Context {M : Hask.cat -----> Hask.cat}.
+  Variable M : Hask.cat -----> Hask.cat.
 
   Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
 
-  Context {M_isMonad : isMonad M}.
+  Context {requiresMonad : isMonad M}.
 
   Local Instance kleisliCategory : Category (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
