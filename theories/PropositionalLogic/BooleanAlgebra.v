@@ -1,10 +1,8 @@
-Require Import DschingisKhan.Prelude.PreludeInit.
-Require Import DschingisKhan.Prelude.PreludeLtac.
-Require Import DschingisKhan.Prelude.PreludeMath.
+Require Import DschingisKhan.Prelude.
 
 Module CountableBooleanAlgebra.
 
-  Import BasicMath UndergraduateAlgebra.
+  Import MathPrelude UndergraduateAlgebra.
 
   Class isBooleanAlgebra (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
     { BooleanAlgebra_requiresRing :> isRing BA

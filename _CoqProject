@@ -5,6 +5,10 @@ theories/Prelude/PreludeInit.v #
 theories/Prelude/PreludeLtac.v #
 theories/Prelude/PreludeMath.v #
 theories/Prelude/PreludeUtil.v #
+theories/Prelude.v #
 #
 theories/PropositionalLogic/BooleanAlgebra.v #
+#
+theories/DomainTheory/ClassicalDomainTheory.v #
+theories/DomainTheory/ConstructiveDomainTheory.v #
 #

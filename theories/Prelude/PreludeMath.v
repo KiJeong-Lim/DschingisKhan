@@ -1,6 +1,6 @@
 Require Import DschingisKhan.Prelude.PreludeInit.
 
-Module BasicMath.
+Module MathPrelude.
 
   Class isCountable (X : Hask.t) : Type :=
     { enum (n : nat) : X
@@ -8,7 +8,7 @@ Module BasicMath.
     }
   .
 
-End BasicMath.
+End MathPrelude.
 
 Module UndergraduateAlgebra.
 
