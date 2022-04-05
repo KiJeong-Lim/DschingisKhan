@@ -87,7 +87,7 @@ Module Hask.
     }
   .
 
-  (* E : Type -> Type, F : Type -> Type |- eq_refl : (E =====> F) = (forall X : Type, E X -> F X) *)
+  (* E : Hask.cat -----> Hask.cat, F : Hask.cat -----> Hask.cat |- eq_refl : (E =====> F) = (forall X : Type, E X -> F X) *)
 
 End Hask.
 
