@@ -665,22 +665,22 @@ Module BasicMathematicalStructures.
 
   (** "2. CPO and CoLa" *)
 
-  Definition isSupremumOf {D : Hask.t} {D_isPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
+  Definition isSupremumOf {D : Hask.t} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
     forall upper_bound : D, (forall x : D, member x X -> x =< upper_bound) <-> sup_X =< upper_bound
   .
 
-  Class isCoLa (D : Hask.t) {D_isPoset : isPoset D} : Type :=
+  Class isCoLa (D : Hask.t) {requiresPoset : isPoset D} : Type :=
     { CoLa_requiresCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}
     }
   .
 
-  Definition isDirectedSubset {D : Hask.t} {D_isPoset : isPoset D} (X : ensemble D) : Prop :=
+  Definition isDirectedSubset {D : Hask.t} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, member x1 X ->
     forall x2 : D, member x2 X ->
     exists x3 : D, member x3 X /\ (x1 =< x3 /\ x2 =< x3)
   .
 
-  Class isCPO (D : Hask.t) {D_isPoset : isPoset D} : Type :=
+  Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
     { CPO_requiresCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}
     }
   .
