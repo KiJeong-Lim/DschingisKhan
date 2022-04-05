@@ -496,6 +496,8 @@ Module MyEnsembles.
 
   Import ListNotations BasicCategoryTheory BasicTypeClasses BasicInstances.
 
+  Global Infix " \in " := member (at level 70, no associativity) : type_scope.
+
   Inductive _union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) (x : A) : Prop :=
   | In_union_l
     (x_in_Xl : member x Xl)
@@ -548,6 +550,9 @@ Module MyEnsembles.
     : member x (_full)
   .
 
+  Inductive _empty {A : Hask.t} (x : A) : Prop :=
+  .
+
   Definition union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _union Xl Xr.
 
   Definition unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) : ensemble A := _unions_i Xs.
@@ -563,6 +568,8 @@ Module MyEnsembles.
   Definition intersection {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _intersection Xl Xr.
 
   Definition full {A : Hask.t} : ensemble A := _full.
+
+  Definition empty {A : Hask.t} : ensemble A := _empty.
 
   Global Opaque union unions_i unions image preimage finite intersection full.
 
