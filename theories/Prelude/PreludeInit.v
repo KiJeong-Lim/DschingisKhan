@@ -23,7 +23,7 @@ Module BasicTactics.
 
   Definition HYPOTHESIS_HOLDER (P : unit -> Prop) : Prop := P tt.
 
-  Global Notation " '<<' H_P ':' P '>>' " := (HYPOTHESIS_HOLDER (fun H_P : unit => match H_P with | tt => P end)) (at level 70, H_P name, no associativity) : type_scope.
+  Global Notation " '<<' H_P ':' P '>>' " := (HYPOTHESIS_HOLDER (fun H_P : unit => match H_P with | tt => P end)) (H_P name, P at level 100, at level 70, no associativity) : type_scope.
 
   Lemma unfold_HYPOTHESIS_HOLDER {P : Prop} :
     << H_P : P >> = P.
