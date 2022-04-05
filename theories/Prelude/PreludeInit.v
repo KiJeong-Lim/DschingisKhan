@@ -87,6 +87,8 @@ Module Hask.
     }
   .
 
+  (* E : Type -> Type, F : Type -> Type |- eq_refl : (E =====> F) = (forall X : Type, E X -> F X) *)
+
 End Hask.
 
 Module BasicTypeClasses.
@@ -156,7 +158,7 @@ Module BasicTypeClasses.
     }
   .
 
-  Polymorphic Class ContravarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) {F_isFunctor : ContravariantFunctor F} : Prop :=
+  Polymorphic Class ContravariantFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) {F_isFunctor : ContravariantFunctor F} : Prop :=
     { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_l : hom obj_l obj)
       (arr_r : hom obj obj_r)
