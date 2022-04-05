@@ -7,3 +7,5 @@ theories/Prelude/PreludeMath.v #
 theories/Prelude/PreludePure.v #
 theories/Prelude/PreludeUtil.v #
 #
+theories/PropositionalLogic/BooleanAlgebra.v #
+#

@@ -900,9 +900,7 @@ Module BasicMathematicalStructures.
   .
 
   Class isCommutativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
-    { bin_op_comm (x1 : S) (x2 : S)
-      : bin_op x1 x2 == bin_op x2 x1
-    }
+    bin_op_comm (x1 : S) (x2 : S) : bin_op x1 x2 == bin_op x2 x1
   .
 
   Class isAbelianGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
@@ -971,4 +969,9 @@ Module BasicMathematicalStructures.
 
 End BasicMathematicalStructures.
 
+Export BasicTypeClasses BasicInstances BasicMathematicalStructures.
+
 Include BasicTactics.
+Include BasicTypeClasses.
+Include BasicInstances.
+Include BasicMathematicalStructures.
