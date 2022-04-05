@@ -228,7 +228,9 @@ Module BasicInstances.
 
   Section ImplFor_arrow.
 
-  Context {dom : Hask.t} {cod : Hask.t}.
+  Variable dom : Hask.t.
+
+  Variable cod : Hask.t.
 
   Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x == rhs x
@@ -273,6 +275,9 @@ Module BasicInstances.
 
   End ImplFor_arrow.
 
+  Global Arguments arrow_eqProp {dom} {cod}.
+  Global Arguments arrow_leProp {dom} {cod}.
+
   Section ImplFor_ensemble.
 
   Global Instance Prop_isSetoid : isSetoid Prop :=
@@ -300,7 +305,7 @@ Module BasicInstances.
   Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
 
   Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) :=
-    arrow_dom_cod_isPoset (dom := X) (cod := Prop) (cod_isPoset := Prop_isPoset)
+    arrow_dom_cod_isPoset X Prop
   .
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
