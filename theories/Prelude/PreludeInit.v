@@ -82,6 +82,8 @@ Module BasicCategoryTheory.
 
 End BasicCategoryTheory.
 
+Module Cat := BasicCategoryTheory.
+
 Module Hask.
 
   Universe Univ_lv.
@@ -517,16 +519,30 @@ Module BasicInstances.
 
   Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
 
-  Context {requiresMonad : isMonad M}.
+  Variable requiresMonad : isMonad M.
+
+  Definition kempty {obj : Hask.t} : obj -> M obj :=
+    fun x => pure x
+  .
+
+  Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : obj_l -> M obj_r :=
+    fun x_l => k_l x_l >>= fun x_r => k_r x_r
+  .
 
   Local Instance kleisliCategory : Category (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
-    ; compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) := fun x_l => k_l x_l >>= fun x_r => k_r x_r
-    ; id {obj : Hask.t} := fun x => pure x
+    ; compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} := kappend (obj_l := obj_l) (obj := obj) (obj_r := obj_r)
+    ; id {obj : Hask.t} := kempty (obj := obj)
     }
   .
 
   End ImplFor_kleisli.
+
+  Global Arguments kempty {M} {requiresMonad} {_}.
+  Global Arguments kappend {M} {requiresMonad} {_} {_} {_}.
+  Global Arguments kleisliCategory (M) {requiresMonad}.
+
+  Global Infix " <=< " := kappend (at level 40, left associativity) : program_scope.
 
 End BasicInstances.
 
@@ -697,7 +713,7 @@ Module BasicMathematicalStructures.
   Section S1. (** "Functor, Monad, MonadTrans and MonadIter" *)
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
-    C.fmap (F := F) (dom := A) (cod := B)
+    Cat.fmap (F := F) (dom := A) (cod := B)
   .
 
   Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) :=
@@ -968,9 +984,45 @@ Module BasicMathematicalStructures.
 
 End BasicMathematicalStructures.
 
-Export BasicTypeClasses BasicInstances BasicMathematicalStructures.
+Module BasicExtraInstances.
+
+  Local Open Scope program_scope.
+
+  Import BasicCategoryTheory BasicTypeClasses BasicInstances MyEnsembles BasicMathematicalStructures.
+
+  (** "1. stateT" *)
+
+  Polymorphic Definition stateT (ST : Hask.t) (M : Hask.cat -----> Hask.cat) : Hask.cat -----> Hask.cat := fun X : Hask.t => ST -> M (prod X ST).
+
+  Polymorphic Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id_{ stateT ST M X }.
+
+  Polymorphic Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id_{ stateT ST M X }.
+
+  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
+    { pure _ := StateT ∘ curry kempty
+    ; bind _ _ := fun m k => StateT (uncurry (runStateT ∘ k) <=< runStateT m)
+    }
+  .
+
+  Global Polymorphic Instance stateT_ST_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
+    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} (X : Hask.t) := fun e : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) e)
+    }
+  .
+
+  Polymorphic Definition sum_prod_distr_l {A : Hask.t} {B : Hask.t} {C : Hask.t} (pr : (A + B) * C) : (A * C) + (B * C) :=
+    match pr with
+    | (inl x, z) => inl (x, z)
+    | (inr y, z) => inr (y, z)
+    end
+  .
+
+  Global Polymorphic Instance stateT_ST_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad ((kempty ∘ sum_prod_distr_l) <=< uncurry step))
+    }
+  .
+
+End BasicExtraInstances.
+
+Export BasicTypeClasses BasicInstances BasicMathematicalStructures BasicExtraInstances.
 
 Include BasicTactics.
-Include BasicTypeClasses.
-Include BasicInstances.
-Include BasicMathematicalStructures.
