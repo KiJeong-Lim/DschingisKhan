@@ -722,13 +722,13 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Semigroup (S : Hask.t) {requiresSetoid : isSetoid S} : Type :=
+  Class isSemigroup (S : Hask.t) {requiresSetoid : isSetoid S} : Type :=
     { plu : S * S -> S
     ; plu_assoc :> isAssociativeBinaryOperation plu
     }
   .
 
-  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {isSemigroup : Semigroup S} (zer : S) : Prop :=
+  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {is_semigroup : isSemigroup S} (zer : S) : Prop :=
     { zer_left_id_plu (x : S)
       : plu (zer, x) == x
     ; zer_right_id_plu (x : S)
@@ -736,14 +736,14 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Monoid (M : Hask.t) {requiresSetoid : isSetoid M} : Type :=
+  Class isMonoid (M : Hask.t) {requiresSetoid : isSetoid M} : Type :=
     { zer : M
-    ; Monoid_requiresSemigroup :> Semigroup M
+    ; Monoid_requiresSemigroup :> isSemigroup M
     ; zer_id_plu :> isAdditiveIdentity zer
     }
   .
 
-  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {isMonoid : Monoid M} (neg : M -> M) : Prop :=
+  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {is_monoid : isMonoid M} (neg : M -> M) : Prop :=
     { neg_left_inv_plu (x : M)
       : plu (neg x, x) == zer
     ; neg_right_inv_plu (x : M)
@@ -754,9 +754,9 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Group (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
+  Class isGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
     { neg : G -> G
-    ; Group_requiresMonoid :> Monoid G
+    ; Group_requiresMonoid :> isMonoid G
     ; neg_inv_plu :> isAdditiveInverse neg
     }
   .
@@ -767,13 +767,13 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class AbelianGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
-    { AbelianGroup_requiresGroup :> Group G
+  Class isAbelianGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
+    { AbelianGroup_requiresGroup :> isGroup G
     ; plu_comm :> isCommutativeBinaryOperation plu
     }
   .
 
-  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {isSemigroup : Semigroup R} (mul : R * R -> R) : Prop :=
+  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {is_semigroup : isSemigroup R} (mul : R * R -> R) : Prop :=
     { mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
       : mul (plu (x1, x2), x3) == plu (mul (x1, x3), mul (x2, x3))
     ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
@@ -781,14 +781,14 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Rng (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
+  Class isRng (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
     { mul : R * R -> R
-    ; Rng_requiresAbelianGroup :> AbelianGroup R
+    ; Rng_requiresAbelianGroup :> isAbelianGroup R
     ; mul_distr :> isDistributableBinaryOperation mul
     }
   .
 
-  Class isMultiplicativeIdentity {R : Hask.t} {requiresSetoid : isSetoid R} {isRng : Rng R} (unity : R) : Prop :=
+  Class isMultiplicativeIdentity {R : Hask.t} {requiresSetoid : isSetoid R} {is_rng : isRng R} (unity : R) : Prop :=
     { unity_left_id_mul (x : R)
       : mul (unity, x) == x
     ; unity_right_id_mul (x : R)
@@ -798,14 +798,14 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Ring (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
+  Class isRing (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
     { unity : R
-    ; Ring_requiresRng :> Rng R
+    ; Ring_requiresRng :> isRng R
     ; unity_id_mul :> isMultiplicativeIdentity unity
     }
   .
 
-  Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {isRing : Ring R} (recip : R -> R) : Prop :=
+  Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {is_ring : isRing R} (recip : R -> R) : Prop :=
     { recip_left_inv_mul (x : R)
       (x_NOT_zer : ~ x == zer)
       : mul (recip x, x) == unity
@@ -820,9 +820,9 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class Field {K : Hask.t} {requiresSetoid : isSetoid K} : Type :=
+  Class isField {K : Hask.t} {requiresSetoid : isSetoid K} : Type :=
     { recip : K -> K
-    ; Field_requiresRing :> Ring K
+    ; Field_requiresRing :> isRing K
     ; recip_inv_mul :> isMultiplicativeInverse recip
     ; mul_comm :> isCommutativeBinaryOperation mul
     }
