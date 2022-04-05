@@ -337,6 +337,8 @@ Module BasicInstances.
 
   Global Arguments arrow_eqProp {dom} {cod}.
   Global Arguments arrow_leProp {dom} {cod}.
+  Global Arguments arrow_isSetoid {dom} {cod}.
+  Global Arguments arrow_isPoset {dom} {cod}.
 
   Section ImplFor_ensemble.
 
@@ -472,12 +474,14 @@ Module BasicInstances.
 
   Global Arguments pair_eqProp {fsts} {snds}.
   Global Arguments pair_leProp {fsts} {snds}.
+  Global Arguments pair_isSetoid {fsts} {snds}.
+  Global Arguments pair_isPoset {fsts} {snds}.
 
   Section ImplFor_kleisli.
 
   Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
 
-  Variable M : Hask.cat -----> Hask.cat.
+  Context {M : Hask.cat -----> Hask.cat}.
 
   Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
 
