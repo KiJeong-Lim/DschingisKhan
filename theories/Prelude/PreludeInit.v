@@ -7,8 +7,6 @@ Require Import Coq.Setoids.Setoid.
 
 Module BasicTactics.
 
-  Global Ltac ii := repeat intro.
-
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
     (PREMISE : HYPOTHESIS -> CONCLUSION)
@@ -22,6 +20,18 @@ Module BasicTactics.
   Global Create HintDb khan_hints.
 
   Global Hint Unfold flip : khan_hints.
+
+  Definition HYPOTHESIS_HOLDER (P : unit -> Prop) : Prop := P tt.
+
+  Global Notation " '<<' H_P ':' P '>>' " := (HYPOTHESIS_HOLDER (fun H_P : unit => match H_P with | tt => P end)) (at level 70, H_P name, no associativity) : type_scope.
+
+  Lemma unfold_HYPOTHESIS_HOLDER {P : Prop} :
+    << H_P : P >> = P.
+  Proof. reflexivity. Defined.
+
+  Global Ltac unnw := unfold HYPOTHESIS_HOLDER in *.
+
+  Global Ltac ii := (repeat intro).
 
 End BasicTactics.
 
@@ -584,13 +594,13 @@ Module MyEnsembles.
 
   Lemma in_union_iff {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A)
     : forall x : A, x \in union Xl Xr <-> (x \in Xl \/ x \in Xr).
-  Proof. intros x; split; intros [H_l | H_r]; eauto. Qed.
+  Proof. ii; split; intros [? | ?]; eauto. Qed.
 
   Definition unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) : ensemble A := _unions_i Xs.
 
   Lemma in_unions_i_iff {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A))
     : forall x : A, x \in unions_i Xs <-> (exists i : I, x \in Xs i).
-  Proof. intros x; split; intros [i H_i]; eauto. Qed.
+  Proof. ii; split; intros [? ?]; eauto. Qed.
 
   Definition unions {A : Hask.t} (Xs : ensemble (ensemble A)) : ensemble A := _unions Xs.
 
