@@ -7,6 +7,15 @@ Require Import Coq.Setoids.Setoid.
 
 Module BasicTactics.
 
+  (** "\S1" *)
+
+  Global Create HintDb khan_hints.
+
+  Global Hint Unfold flip : khan_hints.
+  Global Hint Unfold relation_conjunction : khan_hints.
+
+  (** "\S2" *)
+
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
     (PREMISE : HYPOTHESIS -> CONCLUSION)
@@ -17,19 +26,19 @@ Module BasicTactics.
     eapply MODUS_PONENS; [eapply PRF | intros PAT]
   .
 
-  Global Create HintDb khan_hints.
+  (** "\S3" *)
 
-  Global Hint Unfold flip : khan_hints.
-
-  Definition REFERENCE_HOLDER (STATEMENT : unit -> Prop) : Prop := STATEMENT tt.
+  Polymorphic Definition REFERENCE_HOLDER {A : Type} (P : unit -> A) : A := P tt.
 
   Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
 
-  Lemma unfold_REFERENCE_HOLDER {STATEMENT : Prop}
+  Polymorphic Lemma unfold_REFERENCE_HOLDER {STATEMENT_Type : Type} (STATEMENT : STATEMENT_Type)
     : << STATEMENT_REFERENCE : STATEMENT >> = STATEMENT.
   Proof. reflexivity. Defined.
 
   Global Ltac unnw := unfold REFERENCE_HOLDER in *.
+
+  (** "\S4" *)
 
   Global Ltac ii := (repeat intro).
 
