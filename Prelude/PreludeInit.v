@@ -820,7 +820,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isField {K : Hask.t} {requiresSetoid : isSetoid K} : Type :=
+  Class isField (K : Hask.t) {requiresSetoid : isSetoid K} : Type :=
     { recip : K -> K
     ; Field_requiresRing :> isRing K
     ; recip_inv_mul :> isMultiplicativeInverse recip
