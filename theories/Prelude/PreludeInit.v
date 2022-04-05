@@ -182,11 +182,8 @@ Module BasicTypeClasses.
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
   Global Hint Resolve eqProp_Equivalence : khan_hints.
-
   Global Hint Resolve Poset_requiresSetoid : khan_hints.
-
   Global Hint Resolve leProp_PreOrder : khan_hints.
-
   Global Hint Resolve leProp_PartialOrder : khan_hints.
 
 End BasicTypeClasses.
@@ -239,7 +236,7 @@ Module BasicInstances.
 
   Variable f : Hask.arrow dom cod.
 
-  Local Polymorphic Instance equivalence_relation_by_image
+  Local Instance equivalence_relation_by_image
     (cod_isSetoid : isSetoid cod)
     : Equivalence (im_eqProp f).
   Proof.
@@ -249,7 +246,7 @@ Module BasicInstances.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Local Polymorphic Instance preorder_relation_by_image
+  Local Instance preorder_relation_by_image
     (cod_isPoset : isPoset cod)
     : PreOrder (im_leProp f).
   Proof.
@@ -258,7 +255,7 @@ Module BasicInstances.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Local Polymorphic Instance partialorder_relation_by_image
+  Local Instance partialorder_relation_by_image
     (cod_isPoset : isPoset cod)
     : PartialOrder (im_eqProp f) (im_leProp f).
   Proof.
@@ -368,6 +365,8 @@ Module BasicInstances.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
+  Global Opaque ensemble member.
+
   Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
     forall x : A, member x xs1 -> member x xs2
   .
@@ -386,8 +385,6 @@ Module BasicInstances.
   Proof. reflexivity. Qed.
 
   End ImplFor_ensemble.
-
-  Global Opaque ensemble member.
 
   Section ImplFor_pair.
 
