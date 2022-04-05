@@ -93,7 +93,7 @@ Module Hask.
 
   Polymorphic Definition t : Univ := Type.
 
-  Bind Scope type_scope with Hask.t.
+  Global Bind Scope type_scope with Hask.t.
 
   Polymorphic Definition arrow (dom : Hask.t) (cod : Hask.t) : Hask.t := dom -> cod.
 
@@ -114,7 +114,7 @@ Module BasicTypeClasses.
 
   Local Open Scope program_scope.
 
-  (** "1. Setoid and Posets" *)
+  (** "1. Setoid and Poset" *)
 
   Polymorphic Class isSetoid (A : Type) : Type :=
     { eqProp (lhs : A) (rhs : A) : Prop
@@ -744,6 +744,16 @@ Module BasicMathematicalStructures.
       (H_SND_ARG : k1 == k2)
       (m0 : M A)
       : (m0 >>= k1) == (m0 >>= k2)
+    }
+  .
+
+  Polymorphic Class isMonadTransformer (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
+    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} {X : Hask.t} : M X -> T M X
+    }
+  .
+
+  Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
+    { monad_iter {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
     }
   .
 
