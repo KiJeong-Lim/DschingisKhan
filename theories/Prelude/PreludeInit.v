@@ -697,7 +697,7 @@ Module BasicMathematicalStructures.
 
   Local Open Scope program_scope.
 
-  Section S1. (** "Functor and Monad" *)
+  Section S1. (** "Functor, Monad, MonadTrans and MonadIter" *)
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     C.fmap (F := F) (dom := A) (cod := B)
@@ -745,7 +745,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Polymorphic Class isMonadTransformer (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
+  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
     { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} {X : Hask.t} : Hask.arrow (M X) (T M X)
     }
   .
