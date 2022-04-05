@@ -743,9 +743,11 @@ Module BasicMathematicalStructures.
   .
 
   Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} {X : Hask.t} : Hask.arrow (M X) (T M X)
+    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} : M =====> T M
     }
   .
+
+  Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
