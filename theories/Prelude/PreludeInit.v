@@ -367,13 +367,28 @@ Module BasicInstances.
 
   Global Opaque ensemble member.
 
+  Definition isSameSetAs {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
+    forall x : A, member x xs1 <-> member x xs2
+  .
+
+  Global Instance ensemble_isSetoid (A : Hask.t) : isSetoid (ensemble A) :=
+    { eqProp := @isSameSetAs A
+    ; eqProp_Equivalence := @arrow_eqProp_Equivalence A Prop Prop_isSetoid
+    }
+  .
+
+  Lemma unfold_ensemble_isSetoid {A : Hask.t} :
+    ensemble_isSetoid A =
+    @arrow_isSetoid A Prop Prop_isSetoid.
+  Proof. reflexivity. Qed.
+
   Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
     forall x : A, member x xs1 -> member x xs2
   .
 
   Global Instance ensemble_isPoset (A : Hask.t) : isPoset (ensemble A) :=
     { leProp := @isSubsetOf A
-    ; Poset_requiresSetoid := @arrow_isSetoid A Prop Prop_isSetoid
+    ; Poset_requiresSetoid := ensemble_isSetoid A
     ; leProp_PreOrder := arrow_leProp_PreOrder A Prop Prop_isPoset
     ; leProp_PartialOrder := arrow_leProp_PartialOrder A Prop Prop_isPoset
     }
