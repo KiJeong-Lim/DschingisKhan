@@ -231,15 +231,15 @@ Module BasicInstances.
 
   Context {dom : Hask.t} {cod : Hask.t}.
 
-  Definition image_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs == f rhs.
+  Definition im_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs == f rhs.
 
-  Definition image_leProp {cod_isPoset : isPoset cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
+  Definition im_leProp {cod_isPoset : isPoset cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
 
   Variable f : Hask.arrow dom cod.
 
   Local Polymorphic Instance equivalence_relation_by_image
     (cod_isSetoid : isSetoid cod)
-    : Equivalence (image_eqProp f).
+    : Equivalence (im_eqProp f).
   Proof.
     constructor.
     - intros x1. exact (Equivalence_Reflexive (f x1)).
@@ -249,7 +249,7 @@ Module BasicInstances.
 
   Local Polymorphic Instance preorder_relation_by_image
     (cod_isPoset : isPoset cod)
-    : PreOrder (image_leProp f).
+    : PreOrder (im_leProp f).
   Proof.
     constructor.
     - intros x1. exact (PreOrder_Reflexive (f x1)).
@@ -258,7 +258,7 @@ Module BasicInstances.
 
   Local Polymorphic Instance partialorder_relation_by_image
     (cod_isPoset : isPoset cod)
-    : PartialOrder (image_eqProp f) (image_leProp f).
+    : PartialOrder (im_eqProp f) (im_leProp f).
   Proof.
     intros x1 x2. constructor.
     - intros H_EQ. constructor.
