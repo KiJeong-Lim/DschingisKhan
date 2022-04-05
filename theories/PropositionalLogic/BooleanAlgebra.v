@@ -2,7 +2,7 @@ Require Import DschingisKhan.Prelude.
 
 Module CountableBooleanAlgebra.
 
-  Import MathPrelude UndergraduateAlgebra.
+  Import UndergraduateAlgebra.
 
   Class isBooleanAlgebra (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
     { BooleanAlgebra_requiresRing :> isRing BA
@@ -15,23 +15,23 @@ Module CountableBooleanAlgebra.
 
   Context {BA : Hask.t} {requiresSetoid : isSetoid BA} {requiresBooleanAlgebra : isBooleanAlgebra BA (requiresSetoid := requiresSetoid)}.
 
-  Definition or_BA : BA -> BA -> BA := plu.
+  Local Notation or := plu.
 
-  Definition true_BA : BA := zer.
+  Local Notation false := zer.
 
-  Definition and_BA : BA -> BA -> BA := mul.
+  Local Notation and := mul.
 
-  Definition false_BA : BA := unity.
+  Local Notation true := unity.
 
 (**
-  Lemma or_idempotent (x : BA)
-    : and_BA x x == x.
+  Lemma orBA_idempotent (x : BA)
+    : or x x == x.
   *)
 
   End TheoryOfBooleanAlgebra.
 
   Class isCBA (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
-    { CBA_requiresBooleanAlgebra :> isBooleanAlgebra BA
+    { CBA_requiresBooleanAlgebra :> isBooleanAlgebra BA (requiresSetoid := requiresSetoid)
     ; CBA_requiresCountable :> isCountable BA
     }
   .
