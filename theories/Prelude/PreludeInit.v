@@ -83,8 +83,6 @@ Module BasicCategoryTheory.
 
   Global Infix " =====> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
-  Polymorphic Definition isComponentOf {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {F_from : src_cat -----> tgt_cat} {F_to : src_cat -----> tgt_cat} (eta : F_from =====> F_to) (at_obj : src_objs) : hom (F_from at_obj) (F_to at_obj) := eta at_obj.
-
 End BasicCategoryTheory.
 
 Module Hask.
