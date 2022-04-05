@@ -811,7 +811,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Global Add Parametric Morphism {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) {is_assoc : isAssociativeBinaryOperation bin_op} :
+  Global Add Parametric Morphism {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) {requiresSemigroup : isAssociativeBinaryOperation bin_op} :
     (bin_op) with signature (eqProp ==> eqProp ==> eqProp)
     as Semigroup_lifts_eqProp.
   Proof. ii. apply bin_op_lifts_eqProp; eauto. Qed.
