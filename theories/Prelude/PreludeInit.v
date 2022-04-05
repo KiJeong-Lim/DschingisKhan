@@ -21,15 +21,15 @@ Module BasicTactics.
 
   Global Hint Unfold flip : khan_hints.
 
-  Definition STATEMENT_HOLDER (STATEMENT : unit -> Prop) : Prop := STATEMENT tt.
+  Definition REFERENCE_HOLDER (STATEMENT : unit -> Prop) : Prop := STATEMENT tt.
 
-  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (STATEMENT_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 100, at level 70, no associativity) : type_scope.
+  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
 
-  Lemma unfold_STATEMENT_HOLDER {STATEMENT : Prop}
+  Lemma unfold_REFERENCE_HOLDER {STATEMENT : Prop}
     : << STATEMENT_REFERENCE : STATEMENT >> = STATEMENT.
   Proof. reflexivity. Defined.
 
-  Global Ltac unnw := unfold STATEMENT_HOLDER in *.
+  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
 
   Global Ltac ii := (repeat intro).
 
