@@ -784,6 +784,7 @@ Module BasicMathematicalStructures.
   Class isRng (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
     { mul : R * R -> R
     ; Rng_requiresAbelianGroup :> isAbelianGroup R
+    ; mul_assoc :> isAssociativeBinaryOperation mul
     ; mul_distr :> isDistributableBinaryOperation mul
     }
   .
