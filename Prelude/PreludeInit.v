@@ -733,7 +733,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Polymorphic Class isGroup (G : Hask.t) {G_isSetoid : isSetoid G} {G_isMonoid : @isMonoid G G_isSetoid} : Type :=
+  Class isGroup (G : Hask.t) {G_isSetoid : isSetoid G} {G_isMonoid : @isMonoid G G_isSetoid} : Type :=
     { neg (x : G) : G
     ; neg_left_inv_plu (x : G)
       : plu (neg x) x == zer
@@ -745,7 +745,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Polymorphic Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isMonoid : @isMonoid R R_isSetoid} {R_isGroup : @isGroup R R_isSetoid R_isMonoid} : Type :=
+  Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isMonoid : @isMonoid R R_isSetoid} {R_isGroup : @isGroup R R_isSetoid R_isMonoid} : Type :=
     { mul (x1 : R) (x2 : R) : R
     ; mul_assoc :> @AssocBinOp R R_isSetoid mul
     ; mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
@@ -755,7 +755,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Polymorphic Class isField (K : Hask.t) {K_isSetoid : isSetoid K} {K_isMonoid : @isMonoid K K_isSetoid} {K_isGroup : @isGroup K K_isSetoid K_isMonoid} {K_isRing : @isRing K K_isSetoid K_isMonoid K_isGroup} : Type :=
+  Class isField (K : Hask.t) {K_isSetoid : isSetoid K} {K_isMonoid : @isMonoid K K_isSetoid} {K_isGroup : @isGroup K K_isSetoid K_isMonoid} {K_isRing : @isRing K K_isSetoid K_isMonoid K_isGroup} : Type :=
     { unity : K
     ; recip (x : K) : K
     ; unity_left_id_mul (x : K)
