@@ -24,7 +24,7 @@ Module UndergraduateAlgebra.
   *)
 
 (**
-  Lemma mul_isCommutative
+  Lemma mul_comm_if_idem
     (mul_idempotent : forall x : R, mul x x == x)
     : isCommutativeBinaryOperation mul.
   *)
