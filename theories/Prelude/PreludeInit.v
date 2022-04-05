@@ -26,7 +26,7 @@ Module BasicTactics.
   Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (STATEMENT_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 100, at level 70, no associativity) : type_scope.
 
   Lemma unfold_STATEMENT_HOLDER {STATEMENT : Prop}
-    : << STATEMENT_HOLDER : STATEMENT >> = STATEMENT.
+    : << STATEMENT_REFERENCE : STATEMENT >> = STATEMENT.
   Proof. reflexivity. Defined.
 
   Global Ltac unnw := unfold STATEMENT_HOLDER in *.
