@@ -369,14 +369,14 @@ Module BasicInstances.
   .
 
   Global Instance ensemble_isPoset (A : Hask.t) : isPoset (ensemble A) :=
-    { leProp := isSubsetOf
+    { leProp := @isSubsetOf A
     ; Poset_requiresSetoid := @arrow_isSetoid A Prop Prop_isSetoid
     ; leProp_PreOrder := arrow_leProp_PreOrder A Prop Prop_isPoset
     ; leProp_PartialOrder := arrow_leProp_PartialOrder A Prop Prop_isPoset
     }
   .
 
-  Lemma unfold_ensemble_isPoset (A : Hask.t) :
+  Lemma unfold_ensemble_isPoset {A : Hask.t} :
     ensemble_isPoset A =
     @arrow_isPoset A Prop Prop_isPoset.
   Proof. reflexivity. Qed.
