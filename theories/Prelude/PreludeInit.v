@@ -97,6 +97,8 @@ Module BasicTypeClasses.
 
   Local Open Scope program_scope.
 
+  (** "1. Setoid and Posets" *)
+
   Polymorphic Class isSetoid (A : Type) : Type :=
     { eqProp (lhs : A) (rhs : A) : Prop
     ; eqProp_Equivalence :> @Equivalence A eqProp
@@ -119,6 +121,8 @@ Module BasicTypeClasses.
     { liftSetoid1 {X : Type} (X_isSetoid : isSetoid X) :> isSetoid (F X)
     }
   .
+
+  (** "2. Category and Functor with Equality" *)
 
   Polymorphic Class CategoryWithEquality {objs : Type} (cat : Category objs) : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
@@ -176,7 +180,7 @@ Module BasicTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
-  (** "Accessories" *)
+  (** "3. Accessories" *)
 
   Global Hint Resolve eqProp_Equivalence : khan_hints.
   Global Hint Resolve Poset_requiresSetoid : khan_hints.
@@ -516,8 +520,6 @@ Module MyEnsembles.
 
   Import ListNotations BasicCategoryTheory BasicTypeClasses BasicInstances.
 
-  Global Infix " \in " := member (at level 70, no associativity) : type_scope.
-
   Inductive _union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) (x : A) : Prop :=
   | In_union_l
     (x_in_Xl : member x Xl)
@@ -575,6 +577,8 @@ Module MyEnsembles.
   .
 
   Local Hint Constructors _union _unions_i _unions _image _preimage _finite _intersection _full _empty : core.
+
+  Global Infix " \in " := member (at level 70, no associativity) : type_scope.
 
   Definition union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _union Xl Xr.
 
