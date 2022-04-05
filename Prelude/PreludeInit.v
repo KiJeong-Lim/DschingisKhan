@@ -755,7 +755,7 @@ Module BasicMathematicalStructures.
   .
 
   Class isCoLa (D : Hask.t) {requiresPoset : isPoset D} : Type :=
-    { CoLa_requiresCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}
+    { CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}
     }
   .
 
@@ -766,7 +766,7 @@ Module BasicMathematicalStructures.
   .
 
   Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
-    { CPO_requiresCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}
+    { CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}
     }
   .
 
