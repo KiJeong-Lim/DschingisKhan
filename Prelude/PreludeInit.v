@@ -1,4 +1,5 @@
 Require Import Coq.Classes.RelationClasses.
+Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
@@ -15,7 +16,7 @@ Module BasicTactics.
   Proof. exact (PREMISE ASSUMPTION). Defined.
 
   Global Tactic Notation " exploit " constr( PRF ) "as" simple_intropattern( PAT ) :=
-    eapply MODUS_PONENS; [ eapply PRF | intros PAT ]
+    eapply MODUS_PONENS; [eapply PRF | intros PAT]
   .
 
   Global Create HintDb khan_hints.
@@ -143,7 +144,7 @@ Module BasicTypeClasses.
     }
   .
 
-  Polymorphic Class CovarinatFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) {F_isFunctor : CovariantFunctor F} : Prop :=
+  Polymorphic Class CovariantFunctorWithEquality {src_objs : Type} {tgt_objs : Type} {src_cat : Category src_objs} {tgt_cat : Category tgt_objs} {tgt_cat_with_eq : CategoryWithEquality (objs := tgt_objs) tgt_cat} (F : src_cat -----> tgt_cat) {F_isFunctor : CovariantFunctor F} : Prop :=
     { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_r : hom obj obj_r)
       (arr_l : hom obj_l obj)
@@ -232,8 +233,11 @@ Module BasicInstances.
 
   Definition image_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs == f rhs.
 
+  Definition image_leProp {cod_isPoset : isPoset cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
+
+  Variable f : Hask.arrow dom cod.
+
   Local Polymorphic Instance equivalence_relation_by_image
-    (f : Hask.arrow dom cod)
     (cod_isSetoid : isSetoid cod)
     : Equivalence (image_eqProp f).
   Proof.
@@ -243,10 +247,7 @@ Module BasicInstances.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Definition image_leProp {cod_isPoset : isPoset cod}  (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
-
   Local Polymorphic Instance preorder_relation_by_image
-    (f : Hask.arrow dom cod)
     (cod_isPoset : isPoset cod)
     : PreOrder (image_leProp f).
   Proof.
@@ -256,7 +257,6 @@ Module BasicInstances.
   Defined.
 
   Local Polymorphic Instance partialorder_relation_by_image
-    (f : Hask.arrow dom cod)
     (cod_isPoset : isPoset cod)
     : PartialOrder (image_eqProp f) (image_leProp f).
   Proof.
@@ -360,21 +360,25 @@ Module BasicInstances.
     }
   .
 
-  Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
+  Definition ensemble : Hask.cat -----> Hask.cat := fun X : Hask.t => Hask.arrow X Prop.
 
   Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) := arrow_isPoset X Prop.
 
-  Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
+  Context {A : Hask.t}.
 
-  Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
+  Definition member (x : A) (xs : ensemble A) : Prop := xs x.
+
+  Definition isSubsetOf (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
     forall x : A, member x xs1 -> member x xs2
   .
 
-  Lemma isSubsetOf_iff {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A)
+  Lemma isSubsetOf_iff (xs1 : ensemble A) (xs2 : ensemble A)
     : isSubsetOf xs1 xs2 <-> xs1 =< xs2.
   Proof. reflexivity. Qed.
 
   End ImplFor_ensemble.
+
+  Global Opaque ensemble member.
 
   Section ImplFor_pair.
 
@@ -483,9 +487,88 @@ Module BasicInstances.
 
 End BasicInstances.
 
+Module MyEnsembles.
+
+  Import ListNotations BasicCategoryTheory BasicTypeClasses BasicInstances.
+
+  Inductive _union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) (x : A) : Prop :=
+  | In_union_l
+    (x_in_Xl : member x Xl)
+    : member x (_union Xl Xr)
+  | In_union_r
+    (x_in_Xr : member x Xr)
+    : member x (_union Xl Xr)
+  .
+
+  Inductive _unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) (x : A) : Prop :=
+  | In_unions_i (i : I)
+    (x_in_Xs_i : member x (Xs i))
+    : member x (_unions_i Xs)
+  .
+
+  Inductive _unions {A : Hask.t} (Xs : ensemble (ensemble A)) (x : A) : Prop :=
+  | In_unions (X : ensemble A)
+    (x_in_X : member x X)
+    (X_in_Xs : member X Xs)
+    : member x (_unions Xs)
+  .
+
+  Inductive _image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) (y : B) : Prop :=
+  | In_image (x : A)
+    (y_is_f_X : y = f x)
+    : member y (_image f X)
+  .
+
+  Inductive _preimage {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B) (x : A) : Prop :=
+  | In_preimage
+    (f_x_in_Y : member (f x) Y)
+    : member x (_preimage f Y)
+  .
+
+  Inductive _finite {A : Hask.t} (xs : list A) (x : A) : Prop :=
+  | In_finite
+    (x_in_xs : In x xs)
+    : member x (_finite xs)
+  .
+
+  Inductive _intersection {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) (x : A) : Prop :=
+  | In_intersection
+    (x_in_Xl : member x Xl)
+    (x_in_Xr : member x Xr)
+    : member x (_intersection Xl Xr)
+  .
+
+  Definition union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _union Xl Xr.
+
+  Definition unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) : ensemble A := _unions_i Xs.
+
+  Definition unions {A : Hask.t} (Xs : ensemble (ensemble A)) : ensemble A := _unions Xs.
+
+  Definition image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) : ensemble B := _image f X.
+
+  Definition preimage {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B) : ensemble A := _preimage f Y.
+
+  Definition finite {A : Hask.t} (xs : list A) : ensemble A := _finite xs.
+
+  Definition intersection {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _intersection Xl Xr.
+
+  Global Opaque union unions_i unions image preimage finite intersection.
+
+  Local Instance Powerset_CovariantFunctor : CovariantFunctor ensemble :=
+    { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B)
+    }
+  .
+
+  Local Instance Powerset_ContravariantFunctor : ContravariantFunctor ensemble :=
+    { contramap {B : Hask.t} {A : Hask.t} := preimage (A := A) (B := B)
+    }
+  .
+
+End MyEnsembles.
+
 Module BasicMathematicalStructures.
 
-  Import BasicCategoryTheory BasicTypeClasses BasicInstances.
+  Import BasicCategoryTheory BasicTypeClasses BasicInstances MyEnsembles.
 
   Local Open Scope program_scope.
 
@@ -516,7 +599,7 @@ Module BasicMathematicalStructures.
       (m0 : M A)
       (k1 : kleisli M A B)
       (k2 : kleisli M B C)
-      : (m0 >>= k1 >>= k2) == (m0 >>= fun x1 : A => k1 x1 >>= k2)
+      : (m0 >>= k1 >>= k2) == (m0 >>= fun x1 => k1 x1 >>= k2)
     ; bind_pure_l {A : Hask.t} {B : Hask.t}
       (k : kleisli M A B)
       (x : A)
@@ -572,3 +655,5 @@ Module BasicMathematicalStructures.
   Qed.
 
 End BasicMathematicalStructures.
+
+Include BasicTactics.
