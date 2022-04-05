@@ -809,7 +809,7 @@ Module BasicMathematicalStructures.
   Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {is_ring : isRing R} (recip : R -> R) : Prop :=
     { recip_left_inv_mul (x : R)
       (x_NOT_zer : ~ x == zer)
-      : mul (recip() x), x) == unity
+      : mul (recip (x), x) == unity
     ; recip_right_inv_plu (x : R)
       (x_NOT_zer : ~ x == zer)
       : mul (x, recip (x)) == unity
