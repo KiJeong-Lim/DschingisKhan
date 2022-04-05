@@ -367,8 +367,8 @@ Module BasicInstances.
 
   Global Opaque ensemble member.
 
-  Definition isSameSetAs {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
-    forall x : A, member x xs1 <-> member x xs2
+  Definition isSameSetAs {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
+    forall x : A, member x lhs <-> member x rhs
   .
 
   Global Instance ensemble_isSetoid (A : Hask.t) : isSetoid (ensemble A) :=
@@ -377,13 +377,12 @@ Module BasicInstances.
     }
   .
 
-  Lemma unfold_ensemble_isSetoid {A : Hask.t} :
-    ensemble_isSetoid A =
-    @arrow_isSetoid A Prop Prop_isSetoid.
+  Lemma unfold_ensemble_isSetoid {A : Hask.t}
+    : ensemble_isSetoid A = @arrow_isSetoid A Prop Prop_isSetoid.
   Proof. reflexivity. Qed.
 
-  Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
-    forall x : A, member x xs1 -> member x xs2
+  Definition isSubsetOf {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
+    forall x : A, member x lhs -> member x rhs
   .
 
   Global Instance ensemble_isPoset (A : Hask.t) : isPoset (ensemble A) :=
@@ -394,9 +393,8 @@ Module BasicInstances.
     }
   .
 
-  Lemma unfold_ensemble_isPoset {A : Hask.t} :
-    ensemble_isPoset A =
-    @arrow_isPoset A Prop Prop_isPoset.
+  Lemma unfold_ensemble_isPoset {A : Hask.t}
+    : ensemble_isPoset A = @arrow_isPoset A Prop Prop_isPoset.
   Proof. reflexivity. Qed.
 
   End ImplFor_ensemble.
