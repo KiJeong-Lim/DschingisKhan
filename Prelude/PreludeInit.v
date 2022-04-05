@@ -362,18 +362,23 @@ Module BasicInstances.
 
   Definition ensemble : Hask.cat -----> Hask.cat := fun X : Hask.t => Hask.arrow X Prop.
 
-  Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) := arrow_isPoset X Prop.
+  Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
-  Context {A : Hask.t}.
-
-  Definition member (x : A) (xs : ensemble A) : Prop := xs x.
-
-  Definition isSubsetOf (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
+  Definition isSubsetOf {A : Hask.t} (xs1 : ensemble A) (xs2 : ensemble A) : Prop :=
     forall x : A, member x xs1 -> member x xs2
   .
 
-  Lemma isSubsetOf_iff (xs1 : ensemble A) (xs2 : ensemble A)
-    : isSubsetOf xs1 xs2 <-> xs1 =< xs2.
+  Global Instance ensemble_isPoset (A : Hask.t) : isPoset (ensemble A) :=
+    { leProp := isSubsetOf
+    ; Poset_requiresSetoid := @arrow_isSetoid A Prop Prop_isSetoid
+    ; leProp_PreOrder := arrow_leProp_PreOrder A Prop Prop_isPoset
+    ; leProp_PartialOrder := arrow_leProp_PartialOrder A Prop Prop_isPoset
+    }
+  .
+
+  Lemma unfold_ensemble_isPoset (A : Hask.t) :
+    ensemble_isPoset A =
+    @arrow_isPoset A Prop Prop_isPoset.
   Proof. reflexivity. Qed.
 
   End ImplFor_ensemble.
