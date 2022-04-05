@@ -712,10 +712,10 @@ Module BasicMathematicalStructures.
 
   (** "4. Group, Ring and Field" *)
 
-  Class AssocBinOp {A : Hask.t} {A_isSetoid : isSetoid A} (bin_op : A -> A -> A) : Prop :=
-    { bin_op_assoc (xl : A) (x : A) (xr : A)
+  Class AssociativeBinaryOperation {M : Hask.t} {M_isSetoid : isSetoid M} (bin_op : M -> M -> M) : Prop :=
+    { bin_op_assoc (xl : M) (x : M) (xr : M)
       : bin_op xl (bin_op x xr) == bin_op (bin_op xl x) xr
-    ; bin_op_lifts_eqProp (xl_1 : A) (xl_2 : A) (xr_1 : A) (xr_2 : A)
+    ; bin_op_lifts_eqProp (xl_1 : M) (xl_2 : M) (xr_1 : M) (xr_2 : M)
       (H_FST_ARG : xl_1 == xl_2)
       (H_SND_ARG : xr_1 == xr_2)
       : bin_op xl_1 xr_1 == bin_op xl_2 xr_2
@@ -725,7 +725,7 @@ Module BasicMathematicalStructures.
   Class isMonoid (M : Hask.t) {M_isSetoid : isSetoid M} : Type :=
     { plu (x1 : M) (x2 : M) : M
     ; zer : M
-    ; plu_assoc :> @AssocBinOp M M_isSetoid plu
+    ; plu_assoc :> @AssociativeBinaryOperation M M_isSetoid plu
     ; zer_left_id_plu (x : M)
       : plu zer x == x
     ; zer_right_id_plu (x : M)
@@ -733,8 +733,9 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isGroup (G : Hask.t) {G_isSetoid : isSetoid G} {G_isMonoid : @isMonoid G G_isSetoid} : Type :=
+  Class isGroup (G : Hask.t) {G_isSetoid : isSetoid G} : Type :=
     { neg (x : G) : G
+    ; Group_requiresMonoid :> @isMonoid G G_isSetoid
     ; neg_left_inv_plu (x : G)
       : plu (neg x) x == zer
     ; neg_right_inv_plu (x : G)
@@ -745,9 +746,9 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isMonoid : @isMonoid R R_isSetoid} {R_isGroup : @isGroup R R_isSetoid R_isMonoid} : Type :=
+  Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isGroup : @isGroup R R_isSetoid} : Type :=
     { mul (x1 : R) (x2 : R) : R
-    ; mul_assoc :> @AssocBinOp R R_isSetoid mul
+    ; mul_assoc :> @AssociativeBinaryOperation R R_isSetoid mul
     ; mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
       : mul (plu x1 x2) x3 == plu (mul x1 x3) (mul x2 x3)
     ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
@@ -755,15 +756,21 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isField (K : Hask.t) {K_isSetoid : isSetoid K} {K_isMonoid : @isMonoid K K_isSetoid} {K_isGroup : @isGroup K K_isSetoid K_isMonoid} {K_isRing : @isRing K K_isSetoid K_isMonoid K_isGroup} : Type :=
-    { unity : K
-    ; recip (x : K) : K
-    ; unity_left_id_mul (x : K)
+  Class MultiplicativeIdentity {R : Hask.t} {R_isSetoid : isSetoid R} {R_isGroup : @isGroup R R_isSetoid} {R_isRing : @isRing R R_isSetoid R_isGroup} (unity : R) : Prop :=
+    { unity_left_id_mul (x : R)
       : mul unity x == x
-    ; unity_right_id_mul (x : K)
+    ; unity_right_id_mul (x : R)
       : mul x unity == x
     ; unity_NOT_zer
       : ~ unity == zer
+    }
+  .
+
+  Class isField (K : Hask.t) {K_isSetoid : isSetoid K} {K_isGroup : @isGroup K K_isSetoid} : Type :=
+    { unity : K
+    ; recip (x : K) : K
+    ; Field_requiresRing :> @isRing K K_isSetoid K_isGroup
+    ; unity_id_mul :> @MultiplicativeIdentity K K_isSetoid K_isGroup Field_requiresRing unity
     ; recip_left_inv_mul (x : K)
       (x_NOT_zer : ~ x == zer)
       : mul (recip x) x == unity
