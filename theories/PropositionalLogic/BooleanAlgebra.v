@@ -4,20 +4,20 @@ Require Import DschingisKhan.Prelude.PreludeMath.
 
 Module CountableBooleanAlgebra.
 
-  Import UndergraduateAlgebra.
+  Import BasicMath UndergraduateAlgebra.
 
-  Class isBooleanAlgebra (B : Hask.t) {requiresSetoid : isSetoid B} : Type :=
-    { BooleanAlgebra_requiresRing :> isRing B
-    ; mul_idempotent (x : B) :
+  Class isBooleanAlgebra (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
+    { BooleanAlgebra_requiresRing :> isRing BA
+    ; mul_idempotent (x : BA) :
       mul x x == x
     }
   .
 
   Section TheoryOfBooleanAlgebra.
 
-  Variable B : Hask.t.
+  Variable BA : Hask.t.
 
-  Context {requiresSetoid : isSetoid B} {requiresBooleanAlgebra : isBooleanAlgebra B (requiresSetoid := requiresSetoid)}.
+  Context {requiresSetoid : isSetoid BA} {requiresBooleanAlgebra : isBooleanAlgebra BA (requiresSetoid := requiresSetoid)}.
 
 (**
   Local Instance and_isCommutative
@@ -25,5 +25,11 @@ Module CountableBooleanAlgebra.
   *)
 
   End TheoryOfBooleanAlgebra.
+
+  Class isCBA (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
+    { CBA_requiresBooleanAlgebra :> isBooleanAlgebra BA
+    ; CBA_isCountable :> isCountable BA
+    }
+  .
 
 End CountableBooleanAlgebra.

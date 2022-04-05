@@ -1,8 +1,18 @@
 Require Import DschingisKhan.Prelude.PreludeInit.
 
+Module BasicMath.
+
+  Class isCountable (X : Hask.t) : Type :=
+    { enum (n : nat) : X
+    ; enumeratable (x : X) : exists n : nat, enum n = x
+    }
+  .
+
+End BasicMath.
+
 Module UndergraduateAlgebra.
 
-  Section TheoryOfRing.
+  Section BasicTheoryOfRing.
 
   Variable R : Hask.t.
 
@@ -13,6 +23,6 @@ Module UndergraduateAlgebra.
     : mul (neg a) (neg b) == mul a b.
   *)
 
-  End TheoryOfRing.
+  End BasicTheoryOfRing.
 
 End UndergraduateAlgebra.
