@@ -7,7 +7,7 @@ Require Import Coq.Setoids.Setoid.
 
 Module BasicTactics.
 
-  (** "\S1" *)
+  (** "\S1. Reference Holder" *)
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
@@ -19,18 +19,18 @@ Module BasicTactics.
 
   Global Ltac unnw := unfold REFERENCE_HOLDER in *.
 
-  (** "\S2" *)
+  (** "\S2. Hint Database" *)
 
   Global Create HintDb khan_hints.
 
   Global Hint Unfold flip : khan_hints.
   Global Hint Unfold relation_conjunction : khan_hints.
 
-  (** "\S3" *)
+  (** "\S3. Introduction Tactics" *)
 
   Global Ltac ii := (repeat intro).
 
-  (** "\S4" *)
+  (** "\S4. Exploit Tactics" *)
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -746,13 +746,11 @@ Module BasicMathematicalStructures.
   .
 
   Polymorphic Class isMonadTransformer (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} {X : Hask.t} : M X -> T M X
-    }
+   { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} {X : Hask.t} : Hask.arrow (M X) (T M X) }
   .
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
-    }
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R }
   .
 
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} {obeysMonadLaws : @LawsOfMonad M requiresSetoid1 requiresMonad} {A : Hask.t} {B : Hask.t} :
