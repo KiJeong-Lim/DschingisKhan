@@ -29,6 +29,8 @@ Export BasicTactics.
 
 Module BasicCategoryTheory.
 
+  Global Notation " 'id_{' A  '}' " := (@id A) (at level 0, no associativity) : program_scope.
+
   Polymorphic Class Category (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
@@ -164,7 +166,7 @@ Module BasicTypeClasses.
     }
   .
 
-  Global Add Parametric Morphism (objs : Type) (cat : Category objs) (cat_with_eq : CategoryWithEquality (objs := objs) cat) (A : objs) (B : objs) (C : objs) :
+  Global Add Parametric Morphism (objs : Type) {cat : Category objs} {cat_with_eq : CategoryWithEquality (objs := objs) cat} {A : objs} {B : objs} {C : objs} :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
     as compose_lifts_eqProp.
   Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
@@ -656,19 +658,19 @@ Module BasicMathematicalStructures.
 
   Local Open Scope program_scope.
 
-  (** "1. Functor and Monad" *)
+  Section S1.
 
-  Global Notation " 'id_{' A  '}' " := (fun x : A => x) (at level 0, no associativity) : program_scope.
+  (** "1. Functor and Monad" *)
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     C.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {F_isSetoid1 : isSetoid1 F} : isSetoid (F X) :=
+  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) :=
     liftSetoid1 (F := F) (theFinestSetoidOf X)
   .
 
-  Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {F_isSetoid1 : isSetoid1 F} {F_isFunctor : isFunctor F} : Prop :=
+  Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
     { fmap_commutes_with_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
       (arr_r : obj -> obj_r)
       (arr_l : obj_l -> obj)
@@ -678,7 +680,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Polymorphic Class LawsOfMonad (M : Hask.cat -----> Hask.cat) {M_isSetoid1 : isSetoid1 M} {M_isMonad : isMonad M} : Prop :=
+  Polymorphic Class LawsOfMonad (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} : Prop :=
     { bind_assoc {A : Hask.t} {B : Hask.t} {C : Hask.t}
       (m0 : M A)
       (k1 : kleisli M A B)
@@ -706,21 +708,21 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) (M_isSetoid1 : isSetoid1 M) (M_isMonad : isMonad M) (M_obeysMonadLaws : @LawsOfMonad M M_isSetoid1 M_isMonad) (A : Hask.t) (B : Hask.t) :
-    (@bind M M_isMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
+  Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} {obeysMonadLaws : @LawsOfMonad M requiresSetoid1 requiresMonad} {A : Hask.t} {B : Hask.t} :
+    (@bind M requiresMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
     as bind_lifts_eqProp.
   Proof. ii; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
 
-  Local Polymorphic Instance mkFunctorFromMonad (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isFunctor M :=
+  Local Polymorphic Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
     { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
   Global Polymorphic Instance LawsOfMonad_guarantees_LawsOfFunctor (M : Hask.cat -----> Hask.cat)
-    {M_isSetoid1 : isSetoid1 M}
-    {M_isMonad : isMonad M}
-    (M_obeysMonadLaws : LawsOfMonad M (M_isSetoid1 := M_isSetoid1) (M_isMonad := M_isMonad))
-    : LawsOfFunctor M (F_isSetoid1 := M_isSetoid1) (F_isFunctor := @mkFunctorFromMonad M M_isMonad).
+    {requiresSetoid1 : isSetoid1 M}
+    {requiresMonad : isMonad M}
+    {obeysMonadLaws : LawsOfMonad M (requiresSetoid1 := requiresSetoid1) (requiresMonad := requiresMonad)}
+    : LawsOfFunctor M (requiresSetoid1 := requiresSetoid1) (requiresFunctor := Monad_isFunctor M).
   Proof. (* Thanks to Soonwon Moon *)
     split.
     - ii. symmetry.
@@ -737,6 +739,10 @@ Module BasicMathematicalStructures.
       ii. rewrite bind_pure_l. reflexivity.
     - ii. eapply bind_pure_r.
   Qed.
+
+  End S1.
+
+  Section S2.
 
   (** "2. CPO and CoLa" *)
 
@@ -759,6 +765,10 @@ Module BasicMathematicalStructures.
     { CPO_requiresCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}
     }
   .
+
+  End S2.
+
+  Section S3.
 
   (** "3. Topology" *)
 
@@ -785,6 +795,10 @@ Module BasicMathematicalStructures.
     }
   .
 
+  End S3.
+
+  Section S4.
+
   (** "4. Group, Ring and Field" *)
 
   Class isAssociativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S * S -> S) : Prop :=
@@ -803,7 +817,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {is_semigroup : isSemigroup S} (zer : S) : Prop :=
+  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {requiresSemigroup : isSemigroup S} (zer : S) : Prop :=
     { zer_left_id_plu (x : S)
       : plu (zer, x) == x
     ; zer_right_id_plu (x : S)
@@ -818,7 +832,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {is_monoid : isMonoid M} (neg : M -> M) : Prop :=
+  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {requiresMonoid : isMonoid M} (neg : M -> M) : Prop :=
     { neg_left_inv_plu (x : M)
       : plu (neg (x), x) == zer
     ; neg_right_inv_plu (x : M)
@@ -848,7 +862,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {is_semigroup : isSemigroup R} (mul : R * R -> R) : Prop :=
+  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {requiresSemigroup : isSemigroup R} (mul : R * R -> R) : Prop :=
     { mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
       : mul (plu (x1, x2), x3) == plu (mul (x1, x3), mul (x2, x3))
     ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
@@ -864,7 +878,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isMultiplicativeIdentity {R : Hask.t} {requiresSetoid : isSetoid R} {is_rng : isRng R} (unity : R) : Prop :=
+  Class isMultiplicativeIdentity {R : Hask.t} {requiresSetoid : isSetoid R} {requiresRng : isRng R} (unity : R) : Prop :=
     { unity_left_id_mul (x : R)
       : mul (unity, x) == x
     ; unity_right_id_mul (x : R)
@@ -879,7 +893,7 @@ Module BasicMathematicalStructures.
     }
   .
 
-  Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {is_ring : isRing R} (recip : R -> R) : Prop :=
+  Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {requiresRing : isRing R} (recip : R -> R) : Prop :=
     { unity_NOT_zer
       : ~ unity == zer
     ; recip_left_inv_mul (x : R)
@@ -903,6 +917,8 @@ Module BasicMathematicalStructures.
     ; mul_comm :> isCommutativeBinaryOperation mul
     }
   .
+
+  End S4.
 
 End BasicMathematicalStructures.
 
