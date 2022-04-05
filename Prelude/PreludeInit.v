@@ -815,7 +815,7 @@ Module BasicMathematicalStructures.
       : mul (x, recip x) == unity
     ; recip_lift_eqProp (x_1 : R) (x_2 : R)
       (x1_NOT_zer : ~ x_1 == zer)
-      (x2_NOT_zer : ~ x_1 == zer)
+      (x2_NOT_zer : ~ x_2 == zer)
       (H_FST_ARG : x_1 == x_2)
       : recip (x_1) == recip (x_2)
     }
