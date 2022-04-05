@@ -29,7 +29,7 @@ Export BasicTactics.
 
 Module BasicCategoryTheory.
 
-  Global Notation " 'id_{' A  '}' " := (@id A) (at level 0, no associativity) : program_scope.
+  Global Notation " 'id_{' A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
 
   Polymorphic Class Category (objs : Type) : Type :=
     { hom (dom : objs) (cod : objs) : Type
@@ -168,13 +168,6 @@ Module BasicTypeClasses.
     }
   .
 
-  Global Add Parametric Morphism (objs : Type) {cat : Category objs} {cat_with_eq : CategoryWithEquality (objs := objs) cat} {A : objs} {B : objs} {C : objs} :
-    (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
-    as compose_lifts_eqProp.
-  Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
-
-  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
-
   Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
     { pure {A : Hask.t} (x : A) : M A
     ; bind {A : Hask.t} {B : Hask.t} (m : M A) (k : A -> M B) : M B
@@ -183,10 +176,19 @@ Module BasicTypeClasses.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
+  (** "Accessories" *)
+
   Global Hint Resolve eqProp_Equivalence : khan_hints.
   Global Hint Resolve Poset_requiresSetoid : khan_hints.
   Global Hint Resolve leProp_PreOrder : khan_hints.
   Global Hint Resolve leProp_PartialOrder : khan_hints.
+
+  Global Add Parametric Morphism (objs : Type) {cat : Category objs} {cat_with_eq : CategoryWithEquality (objs := objs) cat} {A : objs} {B : objs} {C : objs} :
+    (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
+    as compose_lifts_eqProp.
+  Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
+
+  Global Notation isFunctor := (CovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
 End BasicTypeClasses.
 
