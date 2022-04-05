@@ -9,12 +9,28 @@ Module BasicTactics.
 
   (** "\S1" *)
 
+  Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
+
+  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
+
+  Polymorphic Lemma unfold_REFERENCE_HOLDER {STATEMENT_Type : Type} (STATEMENT : STATEMENT_Type)
+    : << STATEMENT_REFERENCE : STATEMENT >> = STATEMENT.
+  Proof. reflexivity. Defined.
+
+  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
+
+  (** "\S2" *)
+
   Global Create HintDb khan_hints.
 
   Global Hint Unfold flip : khan_hints.
   Global Hint Unfold relation_conjunction : khan_hints.
 
-  (** "\S2" *)
+  (** "\S3" *)
+
+  Global Ltac ii := (repeat intro).
+
+  (** "\S4" *)
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -25,22 +41,6 @@ Module BasicTactics.
   Global Tactic Notation " exploit " constr( PRF ) "as" simple_intropattern( PAT ) :=
     eapply MODUS_PONENS; [eapply PRF | intros PAT]
   .
-
-  (** "\S3" *)
-
-  Polymorphic Definition REFERENCE_HOLDER {A : Type} (P : unit -> A) : A := P tt.
-
-  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
-
-  Polymorphic Lemma unfold_REFERENCE_HOLDER {STATEMENT_Type : Type} (STATEMENT : STATEMENT_Type)
-    : << STATEMENT_REFERENCE : STATEMENT >> = STATEMENT.
-  Proof. reflexivity. Defined.
-
-  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
-
-  (** "\S4" *)
-
-  Global Ltac ii := (repeat intro).
 
 End BasicTactics.
 
