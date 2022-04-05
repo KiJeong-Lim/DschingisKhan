@@ -700,7 +700,7 @@ Module BasicMathematicalStructures.
     C.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) :=
+  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) :=
     liftSetoid1 (F := F) (theFinestSetoidOf X)
   .
 
