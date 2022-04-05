@@ -745,9 +745,9 @@ Module BasicMathematicalStructures.
 
   Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {is_monoid : isMonoid M} (neg : M -> M) : Prop :=
     { neg_left_inv_plu (x : M)
-      : plu (neg x, x) == zer
+      : plu (neg (x), x) == zer
     ; neg_right_inv_plu (x : M)
-      : plu (x, neg x) == zer
+      : plu (x, neg (x)) == zer
     ; neg_lift_eqProp (x_1 : M) (x_2 : M)
       (H_FST_ARG : x_1 == x_2)
       : neg (x_1) == neg (x_2)
@@ -809,10 +809,10 @@ Module BasicMathematicalStructures.
   Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {is_ring : isRing R} (recip : R -> R) : Prop :=
     { recip_left_inv_mul (x : R)
       (x_NOT_zer : ~ x == zer)
-      : mul (recip x, x) == unity
+      : mul (recip() x), x) == unity
     ; recip_right_inv_plu (x : R)
       (x_NOT_zer : ~ x == zer)
-      : mul (x, recip x) == unity
+      : mul (x, recip (x)) == unity
     ; recip_lift_eqProp (x_1 : R) (x_2 : R)
       (x1_NOT_zer : ~ x_1 == zer)
       (x2_NOT_zer : ~ x_2 == zer)
