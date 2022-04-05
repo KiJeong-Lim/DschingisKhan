@@ -712,76 +712,79 @@ Module BasicMathematicalStructures.
 
   (** "4. Group, Ring and Field" *)
 
-  Class AssociativeBinaryOperation {M : Hask.t} {M_isSetoid : isSetoid M} (bin_op : M -> M -> M) : Prop :=
-    { bin_op_assoc (xl : M) (x : M) (xr : M)
+  Class isAssociativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
+    { bin_op_assoc (xl : S) (x : S) (xr : S)
       : bin_op xl (bin_op x xr) == bin_op (bin_op xl x) xr
-    ; bin_op_lifts_eqProp (xl_1 : M) (xl_2 : M) (xr_1 : M) (xr_2 : M)
+    ; bin_op_lifts_eqProp (xl_1 : S) (xl_2 : S) (xr_1 : S) (xr_2 : S)
       (H_FST_ARG : xl_1 == xl_2)
       (H_SND_ARG : xr_1 == xr_2)
       : bin_op xl_1 xr_1 == bin_op xl_2 xr_2
     }
   .
 
-  Class isMonoid (M : Hask.t) {M_isSetoid : isSetoid M} : Type :=
-    { plu (x1 : M) (x2 : M) : M
-    ; zer : M
-    ; plu_assoc :> @AssociativeBinaryOperation M M_isSetoid plu
-    ; zer_left_id_plu (x : M)
+  Class Semigroup (S : Hask.t) {requiresSetoid : isSetoid S} : Type :=
+    { plu (x1 : S) (x2 : S) : S
+    ; plu_assoc :> isAssociativeBinaryOperation plu
+    }
+  .
+
+  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {isSemigroup : Semigroup S} (zer : S) : Prop :=
+    { zer_left_id_plu (x : S)
       : plu zer x == x
-    ; zer_right_id_plu (x : M)
+    ; zer_right_id_plu (x : S)
       : plu x zer == x
     }
   .
 
-  Class isGroup (G : Hask.t) {G_isSetoid : isSetoid G} : Type :=
-    { neg (x : G) : G
-    ; Group_requiresMonoid :> @isMonoid G G_isSetoid
-    ; neg_left_inv_plu (x : G)
+  Class Monoid (M : Hask.t) {requiresSetoid : isSetoid M} : Type :=
+    { zer : M
+    ; Monoid_requiresSemigroup :> Semigroup M
+    ; zer_id_plu :> isAdditiveIdentity zer
+    }
+  .
+
+  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {isMonoid : Monoid M} (neg : M -> M) : Prop :=
+    { neg_left_inv_plu (x : M)
       : plu (neg x) x == zer
-    ; neg_right_inv_plu (x : G)
+    ; neg_right_inv_plu (x : M)
       : plu x (neg x) == zer
-    ; neg_lift_eqProp (x_1 : G) (x_2 : G)
+    ; neg_lift_eqProp (x_1 : M) (x_2 : M)
       (H_FST_ARG : x_1 == x_2)
       : neg x_1 == neg x_2
     }
   .
 
-  Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isGroup : @isGroup R R_isSetoid} : Type :=
+  Class Group (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
+    { neg (x : G) : G
+    ; Group_requiresMonoid :> Monoid G
+    ; neg_inv_plu :> isAdditiveInverse neg
+    }
+  .
+
+  Class isCommutativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
+    { bin_op_comm (x1 : S) (x2 : S)
+      : bin_op x1 x2 == bin_op x2 x1
+    }
+  .
+
+  Class AbelianGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
+    { AbelianGroup_requiresGroup :> Group G
+    ; plu_comm :> isCommutativeBinaryOperation plu
+    }
+  .
+
+  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {isSemigroup : Semigroup R} (bin_op : R -> R -> R) : Prop :=
+    { bin_op_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
+      : bin_op (plu x1 x2) x3 == plu (bin_op x1 x3) (bin_op x2 x3)
+    ; bin_op_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
+      : bin_op x1 (plu x2 x3) == plu (bin_op x1 x3) (bin_op x2 x3)
+    }
+  .
+
+  Class Ring (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
     { mul (x1 : R) (x2 : R) : R
-    ; mul_assoc :> @AssociativeBinaryOperation R R_isSetoid mul
-    ; mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
-      : mul (plu x1 x2) x3 == plu (mul x1 x3) (mul x2 x3)
-    ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
-      : mul x1 (plu x2 x3) == plu (mul x1 x3) (mul x2 x3)
-    }
-  .
-
-  Class MultiplicativeIdentity {R : Hask.t} {R_isSetoid : isSetoid R} {R_isGroup : @isGroup R R_isSetoid} {R_isRing : @isRing R R_isSetoid R_isGroup} (unity : R) : Prop :=
-    { unity_left_id_mul (x : R)
-      : mul unity x == x
-    ; unity_right_id_mul (x : R)
-      : mul x unity == x
-    ; unity_NOT_zer
-      : ~ unity == zer
-    }
-  .
-
-  Class isField (K : Hask.t) {K_isSetoid : isSetoid K} {K_isGroup : @isGroup K K_isSetoid} : Type :=
-    { unity : K
-    ; recip (x : K) : K
-    ; Field_requiresRing :> @isRing K K_isSetoid K_isGroup
-    ; unity_id_mul :> @MultiplicativeIdentity K K_isSetoid K_isGroup Field_requiresRing unity
-    ; recip_left_inv_mul (x : K)
-      (x_NOT_zer : ~ x == zer)
-      : mul (recip x) x == unity
-    ; recip_right_inv_mul (x : K)
-      (x_NOT_zer : ~ x == zer)
-      : mul x (recip x) == unity
-    ; recip_lift_eqProp (x1 : K) (x2 : K)
-      (x1_NOT_zer : ~ x1 == zer)
-      (x2_NOT_zer : ~ x2 == zer)
-      (H_FST_ARG : x1 == x2)
-      : recip x1 == recip x2
+    ; Ring_requiresAbelianGroup :> AbelianGroup R
+    ; mul_distr :> isDistributableBinaryOperation mul
     }
   .
 
