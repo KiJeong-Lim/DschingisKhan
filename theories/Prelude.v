@@ -6,10 +6,14 @@ Require Export Coq.micromega.Lia.
 Require Export Coq.Program.Basics.
 Require Export Coq.Relations.Relation_Definitions.
 Require Export Coq.Setoids.Setoid.
-From DschingisKhan.Prelude Require Export PreludeData PreludeInit PreludeMath PreludeTacs PreludeUtil.
+Require Export DschingisKhan.Prelude.PreludeData.
+Require Export DschingisKhan.Prelude.PreludeInit.
+Require Export DschingisKhan.Prelude.PreludeMath.
+Require Export DschingisKhan.Prelude.PreludeTacs.
+Require Export DschingisKhan.Prelude.PreludeUtil.
 
-Include DschingisKhan.Prelude.PreludeInit.
-Include DschingisKhan.Prelude.PreludeUtil.
-Include DschingisKhan.Prelude.PreludeData.
-Include DschingisKhan.Prelude.PreludeTacs.
-Include DschingisKhan.Prelude.PreludeMath.
+Include PreludeInit.
+Include PreludeUtil.
+Include PreludeData.
+Include PreludeTacs.
+Include PreludeMath.
