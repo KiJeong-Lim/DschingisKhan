@@ -262,9 +262,9 @@ Module BasicInstances.
   Proof.
     intros x1 x2. constructor.
     - intros H_EQ. constructor.
-      + exact (proj1 (proj1 (leProp_PartialOrder (f x1) (f x2)) H_EQ)).
-      + exact (proj2 (proj1 (leProp_PartialOrder (f x1) (f x2)) H_EQ)).
-    - intros H_EQ. apply (proj2 (leProp_PartialOrder (f x1) (f x2))). constructor.
+      + exact (proj1 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
+      + exact (proj2 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
+    - intros H_EQ. apply (proj2 (partial_order_equivalence (f x1) (f x2))). constructor.
       + exact (proj1 H_EQ).
       + exact (proj2 H_EQ).
   Defined.
@@ -316,9 +316,9 @@ Module BasicInstances.
   Proof.
     intros f1 f2. constructor.
     - intros H_EQ. constructor.
-      + intros x. exact (proj1 (proj1 (leProp_PartialOrder (f1 x) (f2 x)) (H_EQ x))).
-      + intros x. exact (proj2 (proj1 (leProp_PartialOrder (f1 x) (f2 x)) (H_EQ x))).
-    - intros H_EQ x. apply (proj2 (leProp_PartialOrder (f1 x) (f2 x))). constructor.
+      + intros x. exact (proj1 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
+      + intros x. exact (proj2 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
+    - intros H_EQ x. apply (proj2 (partial_order_equivalence (f1 x) (f2 x))). constructor.
       + exact (proj1 H_EQ x).
       + exact (proj2 H_EQ x).
   Defined.
@@ -439,16 +439,16 @@ Module BasicInstances.
     intros p1 p2. constructor.
     - intros H_EQ. constructor.
       + constructor.
-        { exact (proj1 (proj1 (leProp_PartialOrder (fst p1) (fst p2)) (proj1 H_EQ))). }
-        { exact (proj1 (proj1 (leProp_PartialOrder (snd p1) (snd p2)) (proj2 H_EQ))). }
+        { exact (proj1 (proj1 (partial_order_equivalence (fst p1) (fst p2)) (proj1 H_EQ))). }
+        { exact (proj1 (proj1 (partial_order_equivalence (snd p1) (snd p2)) (proj2 H_EQ))). }
       + constructor.
-        { exact (proj2 (proj1 (leProp_PartialOrder (fst p1) (fst p2)) (proj1 H_EQ))). }
-        { exact (proj2 (proj1 (leProp_PartialOrder (snd p1) (snd p2)) (proj2 H_EQ))). }
+        { exact (proj2 (proj1 (partial_order_equivalence (fst p1) (fst p2)) (proj1 H_EQ))). }
+        { exact (proj2 (proj1 (partial_order_equivalence (snd p1) (snd p2)) (proj2 H_EQ))). }
     - intros H_EQ. constructor.
-      + apply (proj2 (leProp_PartialOrder (fst p1) (fst p2))). constructor.
+      + apply (proj2 (partial_order_equivalence (fst p1) (fst p2))). constructor.
         { exact (proj1 (proj1 H_EQ)). }
         { exact (proj1 (proj2 H_EQ)). }
-      + apply (proj2 (leProp_PartialOrder (snd p1) (snd p2))). constructor.
+      + apply (proj2 (partial_order_equivalence (snd p1) (snd p2))). constructor.
         { exact (proj2 (proj1 H_EQ)). }
         { exact (proj2 (proj2 H_EQ)). }
   Defined.
