@@ -813,7 +813,7 @@ Module BasicMathematicalStructures.
 
   (** "3. Topology" *)
 
-  Class isTopologicalSpace (A : Type) : Type :=
+  Class isTopologicalSpace (A : Hask.t) : Type :=
     { isOpen (X : ensemble A) : Prop
     ; fullOpen
       : isOpen full
