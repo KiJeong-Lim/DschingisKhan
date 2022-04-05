@@ -697,9 +697,7 @@ Module BasicMathematicalStructures.
 
   Local Open Scope program_scope.
 
-  Section S1.
-
-  (** "1. Functor and Monad" *)
+  Section S1. (** "Functor and Monad" *)
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     C.fmap (F := F) (dom := A) (cod := B)
@@ -791,9 +789,7 @@ Module BasicMathematicalStructures.
 
   End S1.
 
-  Section S2.
-
-  (** "2. CPO and CoLa" *)
+  Section S2. (** "CPO and CoLa" *)
 
   Definition isSupremumOf {D : Hask.t} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
     forall upper_bound : D, (forall x : D, member x X -> x =< upper_bound) <-> sup_X =< upper_bound
@@ -807,7 +803,8 @@ Module BasicMathematicalStructures.
   Definition isDirectedSubset {D : Hask.t} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, member x1 X ->
     forall x2 : D, member x2 X ->
-    exists x3 : D, member x3 X /\ (x1 =< x3 /\ x2 =< x3)
+    exists x3 : D, member x3 X /\
+    << DRT : x1 =< x3 /\ x2 =< x3 >>
   .
 
   Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
@@ -817,9 +814,7 @@ Module BasicMathematicalStructures.
 
   End S2.
 
-  Section S3.
-
-  (** "3. Topology" *)
+  Section S3. (** "Topology" *)
 
   Class isTopologicalSpace (A : Hask.t) : Type :=
     { isOpen (X : ensemble A) : Prop
@@ -846,9 +841,7 @@ Module BasicMathematicalStructures.
 
   End S3.
 
-  Section S4.
-
-  (** "4. Group, Ring and Field" *)
+  Section S4. (** "Group, Ring and Field" *)
 
   Class isAssociativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
     { bin_op_assoc (xl : S) (x : S) (xr : S)
