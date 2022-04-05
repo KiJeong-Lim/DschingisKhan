@@ -753,7 +753,7 @@ Module BasicMathematicalStructures.
   .
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { monad_iter {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
     }
   .
 
