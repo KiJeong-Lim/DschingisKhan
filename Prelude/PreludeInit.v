@@ -12,7 +12,7 @@ Module BasicTactics.
     (ASSUMPTION : HYPOTHESIS)
     (PREMISE : HYPOTHESIS -> CONCLUSION)
     : CONCLUSION.
-  Proof. tauto. Qed.
+  Proof. exact (PREMISE ASSUMPTION). Defined.
 
   Global Tactic Notation " exploit " constr( PRF ) "as" simple_intropattern( PAT ) :=
     eapply MODUS_PONENS; [ eapply PRF | intros PAT ]
@@ -118,28 +118,28 @@ Module BasicTypeClasses.
   Polymorphic Class CategoryWithEquality {objs : Type} (cat : Category objs) : Type :=
     { hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
     ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs}
-      (f1 : hom C D)
-      (f2 : hom B C)
-      (f3 : hom A B)
-      : compose f1 (compose f2 f3) == compose (compose f1 f2) f3
+      (arr_l : hom C D)
+      (arr : hom B C)
+      (arr_r : hom A B)
+      : compose arr_l (compose arr arr_r) == compose (compose arr_l arr) arr_r
     ; compose_id_l {A : objs} {B : objs}
-      (f1 : hom A B)
-      : compose id f1 == f1
+      (arr_r : hom A B)
+      : compose id arr_r == arr_r
     ; compose_id_r {A : objs} {B : objs}
-      (f1 : hom A B)
-      : compose f1 id == f1
+      (arr_l : hom A B)
+      : compose arr_l id == arr_l
     ; compose_fst_arg {A : objs} {B : objs} {C : objs}
-      (f1 : hom B C)
-      (f2 : hom B C)
-      (f3 : hom A B)
-      (H_FST_ARG : f1 == f2)
-      : compose f1 f3 == compose f2 f3 
+      (arr_r0 : hom A B)
+      (arr_l1 : hom B C)
+      (arr_l2 : hom B C)
+      (H_FST_ARG : arr_l1 == arr_l2)
+      : compose arr_l1 arr_r0 == compose arr_l2 arr_r0 
     ; compose_snd_arg {A : objs} {B : objs} {C : objs}
-      (f1 : hom B C)
-      (f2 : hom A B)
-      (f3 : hom A B)
-      (H_SND_ARG : f2 == f3)
-      : compose f1 f2 == compose f1 f3 
+      (arr_l0 : hom B C)
+      (arr_r1 : hom A B)
+      (arr_r2 : hom A B)
+      (H_SND_ARG : arr_r1 == arr_r2)
+      : compose arr_l0 arr_r1 == compose arr_l0 arr_r2 
     }
   .
 
@@ -226,6 +226,51 @@ Module BasicInstances.
 
   End ImplFor_option.
 
+  Section ImplFor_image.
+
+  Context {dom : Hask.t} {cod : Hask.t}.
+
+  Definition image_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs == f rhs.
+
+  Local Polymorphic Instance equivalence_relation_by_image
+    (f : Hask.arrow dom cod)
+    (cod_isSetoid : isSetoid cod)
+    : Equivalence (image_eqProp f).
+  Proof.
+    constructor.
+    - intros x1. exact (Equivalence_Reflexive (f x1)).
+    - intros x1 x2 H_1EQ2. exact (Equivalence_Symmetric (f x1) (f x2) H_1EQ2).
+    - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
+  Defined.
+
+  Definition image_leProp {cod_isPoset : isPoset cod}  (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
+
+  Local Polymorphic Instance preorder_relation_by_image
+    (f : Hask.arrow dom cod)
+    (cod_isPoset : isPoset cod)
+    : PreOrder (image_leProp f).
+  Proof.
+    constructor.
+    - intros x1. exact (PreOrder_Reflexive (f x1)).
+    - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
+  Defined.
+
+  Local Polymorphic Instance partialorder_relation_by_image
+    (f : Hask.arrow dom cod)
+    (cod_isPoset : isPoset cod)
+    : PartialOrder (image_eqProp f) (image_leProp f).
+  Proof.
+    intros x1 x2. constructor.
+    - intros H_EQ. constructor.
+      + exact (proj1 (proj1 (leProp_PartialOrder (f x1) (f x2)) H_EQ)).
+      + exact (proj2 (proj1 (leProp_PartialOrder (f x1) (f x2)) H_EQ)).
+    - intros H_EQ. apply (proj2 (leProp_PartialOrder (f x1) (f x2))). constructor.
+      + exact (proj1 H_EQ).
+      + exact (proj2 H_EQ).
+  Defined.
+
+  End ImplFor_image.
+
   Section ImplFor_arrow.
 
   Variable dom : Hask.t.
@@ -238,10 +283,15 @@ Module BasicInstances.
 
   Local Instance arrow_eqProp_Equivalence
     (cod_isSetoid : isSetoid cod)
-    : Equivalence (arrow_eqProp (cod_isSetoid := cod_isSetoid)).
-  Proof. split; ii; [reflexivity | symmetry | etransitivity]; eauto. Qed.
+    : Equivalence arrow_eqProp.
+  Proof.
+    split.
+    - intros f1 x. exact (Equivalence_Reflexive (f1 x)).
+    - intros f1 f2 H_1EQ2 x. exact (Equivalence_Symmetric (f1 x) (f2 x) (H_1EQ2 x)).
+    - intros f1 f2 f3 H_1EQ2 H_2EQ3 x. exact (Equivalence_Transitive (f1 x) (f2 x) (f3 x) (H_1EQ2 x) (H_2EQ3 x)).
+  Defined.
 
-  Global Instance arrow_dom_cod_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+  Global Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (cod_isSetoid := cod_isSetoid)
     ; eqProp_Equivalence := arrow_eqProp_Equivalence cod_isSetoid
     }
@@ -253,21 +303,29 @@ Module BasicInstances.
 
   Local Instance arrow_leProp_PreOrder
     (cod_isPoset : isPoset cod)
-    : PreOrder (arrow_leProp (cod_isPoset := cod_isPoset)).
-  Proof. split; ii; [reflexivity | etransitivity]; eauto. Qed.
+    : PreOrder arrow_leProp.
+  Proof.
+    constructor.
+    - intros f1 x. exact (PreOrder_Reflexive (f1 x)).
+    - intros f1 f2 f3 H_1LE2 H_2LE3 x. exact (PreOrder_Transitive (f1 x) (f2 x) (f3 x) (H_1LE2 x) (H_2LE3 x)).
+  Defined.
 
   Local Instance arrow_leProp_PartialOrder
     (cod_isPoset : isPoset cod)
-    : PartialOrder eqProp (arrow_leProp (cod_isPoset := cod_isPoset)).
-  Proof with eauto with *.
-    intros f1 f2; split; [intros H_EQ | intros [H_LE H_GE]].
-    - split; intros x; apply leProp_PartialOrder; exploit (H_EQ x) as H_EQ_x...
-    - intros x; apply leProp_PartialOrder; split...
-  Qed.
+    : PartialOrder arrow_eqProp arrow_leProp.
+  Proof.
+    intros f1 f2. constructor.
+    - intros H_EQ. constructor.
+      + intros x. exact (proj1 (proj1 (leProp_PartialOrder (f1 x) (f2 x)) (H_EQ x))).
+      + intros x. exact (proj2 (proj1 (leProp_PartialOrder (f1 x) (f2 x)) (H_EQ x))).
+    - intros H_EQ x. apply (proj2 (leProp_PartialOrder (f1 x) (f2 x))). constructor.
+      + exact (proj1 H_EQ x).
+      + exact (proj2 H_EQ x).
+  Defined.
 
-  Global Instance arrow_dom_cod_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
+  Local Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
     { leProp := arrow_leProp
-    ; Poset_requiresSetoid := arrow_dom_cod_isSetoid
+    ; Poset_requiresSetoid := arrow_isSetoid
     ; leProp_PreOrder := arrow_leProp_PreOrder cod_isPoset
     ; leProp_PartialOrder := arrow_leProp_PartialOrder cod_isPoset
     }
@@ -294,7 +352,7 @@ Module BasicInstances.
     : PartialOrder iff impl.
   Proof. unfold impl; intros p1 p2; split; unfold relation_conjunction, flip; cbn; tauto. Qed.
 
-  Global Instance Prop_isPoset : isPoset Prop :=
+  Local Instance Prop_isPoset : isPoset Prop :=
     { leProp := impl
     ; Poset_requiresSetoid := Prop_isSetoid
     ; leProp_PreOrder := impl_PreOrder
@@ -304,9 +362,7 @@ Module BasicInstances.
 
   Definition ensemble (X : Hask.t) : Hask.t := Hask.arrow X Prop.
 
-  Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) :=
-    arrow_dom_cod_isPoset X Prop
-  .
+  Global Instance ensemble_isPoset (X : Hask.t) : isPoset (ensemble X) := arrow_isPoset X Prop.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
@@ -320,46 +376,91 @@ Module BasicInstances.
 
   End ImplFor_ensemble.
 
-  Section ImplFor_bool.
+  Section ImplFor_pair.
 
-  Definition bool_eqProp (lhs : bool) (rhs : bool) : Prop := eq_true lhs == eq_true rhs.
+  Variable fsts : Hask.t.
 
-  Lemma bool_eqProp_Equivalence
-    : @Equivalence bool bool_eqProp.
-  Proof with eauto with *.
-    unfold bool_eqProp; split; ii...
-    transitivity (eq_true y)...
-  Qed.
+  Variable snds : Hask.t.
 
-  Definition bool_leProp (lhs : bool) (rhs : bool) : Prop := eq_true lhs =< eq_true rhs.
+  Definition pair_eqProp {fsts_isSetoid : isSetoid fsts} {snds_isSetoid : isSetoid snds} (lhs : fsts * snds) (rhs : fsts * snds) : Prop :=
+    fst lhs == fst rhs /\ snd lhs == snd rhs
+  .
 
-  Lemma bool_leProp_PreOrder
-    : @PreOrder bool bool_leProp.
-  Proof with eauto with *.
-    unfold bool_eqProp; split; ii...
-  Qed.
+  Local Instance pair_eqProp_Equivalence
+    (fsts_isSetoid : isSetoid fsts)
+    (snds_isSetoid : isSetoid snds)
+    : Equivalence pair_eqProp.
+  Proof.
+    constructor.
+    - intros p1. constructor.
+      + exact (Equivalence_Reflexive (fst p1)).
+      + exact (Equivalence_Reflexive (snd p1)).
+    - intros p1 p2 H_1EQ2. constructor.
+      + exact (Equivalence_Symmetric (fst p1) (fst p2) (proj1 H_1EQ2)).
+      + exact (Equivalence_Symmetric (snd p1) (snd p2) (proj2 H_1EQ2)).
+    - intros p1 p2 p3 H_1EQ2 H_2EQ3. constructor.
+      + exact (Equivalence_Transitive (fst p1) (fst p2) (fst p3) (proj1 H_1EQ2) (proj1 H_2EQ3)).
+      + exact (Equivalence_Transitive (snd p1) (snd p2) (snd p3) (proj2 H_1EQ2) (proj2 H_2EQ3)).
+  Defined.
 
-  Lemma bool_leProp_PartialOrder
-    : @PartialOrder bool bool_eqProp bool_eqProp_Equivalence bool_leProp bool_leProp_PreOrder.
-  Proof with eauto with *.
-    unfold bool_eqProp; split; ii...
-  Qed.
-
-  Local Instance bool_isSetoid : isSetoid bool :=
-    { eqProp := bool_eqProp
-    ; eqProp_Equivalence := bool_eqProp_Equivalence
+  Global Instance pair_isSetoid {fsts_isSetoid : isSetoid fsts} {snds_isSetoid : isSetoid snds} : isSetoid (fsts * snds) :=
+    { eqProp := pair_eqProp
+    ; eqProp_Equivalence := pair_eqProp_Equivalence fsts_isSetoid snds_isSetoid
     }
   .
 
-  Local Instance bool_isPoset : isPoset bool :=
-    { leProp := bool_leProp
-    ; Poset_requiresSetoid := bool_isSetoid
-    ; leProp_PreOrder := bool_leProp_PreOrder
-    ; leProp_PartialOrder := bool_leProp_PartialOrder
+  Definition pair_leProp {fsts_isPoset : isPoset fsts} {snds_isPoset : isPoset snds} (lhs : fsts * snds) (rhs : fsts * snds) : Prop :=
+    fst lhs =< fst rhs /\ snd lhs =< snd rhs
+  .
+
+  Local Instance pair_leProp_PreOrder
+    (fsts_isPoset : isPoset fsts)
+    (snds_isPoset : isPoset snds)
+    : PreOrder pair_leProp.
+  Proof.
+    constructor.
+    - intros p1. constructor.
+      + exact (PreOrder_Reflexive (fst p1)).
+      + exact (PreOrder_Reflexive (snd p1)).
+    - intros p1 p2 p3 H_1LE2 H_2LE3. constructor.
+      + exact (PreOrder_Transitive (fst p1) (fst p2) (fst p3) (proj1 H_1LE2) (proj1 H_2LE3)).
+      + exact (PreOrder_Transitive (snd p1) (snd p2) (snd p3) (proj2 H_1LE2) (proj2 H_2LE3)).
+  Defined.
+
+  Local Instance pair_leProp_PartialOrder
+    (fsts_isPoset : isPoset fsts)
+    (snds_isPoset : isPoset snds)
+    : PartialOrder pair_eqProp pair_leProp.
+  Proof.
+    intros p1 p2. constructor.
+    - intros H_EQ. constructor.
+      + constructor.
+        { exact (proj1 (proj1 (leProp_PartialOrder (fst p1) (fst p2)) (proj1 H_EQ))). }
+        { exact (proj1 (proj1 (leProp_PartialOrder (snd p1) (snd p2)) (proj2 H_EQ))). }
+      + constructor.
+        { exact (proj2 (proj1 (leProp_PartialOrder (fst p1) (fst p2)) (proj1 H_EQ))). }
+        { exact (proj2 (proj1 (leProp_PartialOrder (snd p1) (snd p2)) (proj2 H_EQ))). }
+    - intros H_EQ. constructor.
+      + apply (proj2 (leProp_PartialOrder (fst p1) (fst p2))). constructor.
+        { exact (proj1 (proj1 H_EQ)). }
+        { exact (proj1 (proj2 H_EQ)). }
+      + apply (proj2 (leProp_PartialOrder (snd p1) (snd p2))). constructor.
+        { exact (proj2 (proj1 H_EQ)). }
+        { exact (proj2 (proj2 H_EQ)). }
+  Defined.
+
+  Local Instance pair_isPoset {fsts_isPoset : isPoset fsts} {snds_isPoset : isPoset snds} : isPoset (fsts * snds) :=
+    { leProp := pair_leProp
+    ; Poset_requiresSetoid := pair_isSetoid
+    ; leProp_PreOrder := pair_leProp_PreOrder fsts_isPoset snds_isPoset
+    ; leProp_PartialOrder := pair_leProp_PartialOrder fsts_isPoset snds_isPoset
     }
   .
 
-  End ImplFor_bool.
+  End ImplFor_pair.
+
+  Global Arguments pair_eqProp {fsts} {snds}.
+  Global Arguments pair_leProp {fsts} {snds}.
 
   Section ImplFor_kleisli.
 
