@@ -12,17 +12,23 @@ End BasicMath.
 
 Module UndergraduateAlgebra.
 
-  Section BasicTheoryOfRing.
+  Section BasicTheoryOfRng.
 
   Variable R : Hask.t.
 
-  Context {requiresSetoid : isSetoid R} {requiresRing : isRing R (requiresSetoid := requiresSetoid)}.
+  Context {requiresSetoid : isSetoid R} {requiresRng : isRng R (requiresSetoid := requiresSetoid)}.
 
 (**
   Lemma neg_a_mul_neg_b_is_a_mul_b (a : R) (b : R)
     : mul (neg a) (neg b) == mul a b.
   *)
 
-  End BasicTheoryOfRing.
+(**
+  Lemma mul_isCommutative
+    (mul_idempotent : forall x : R, mul x x == x)
+    : isCommutativeBinaryOperation mul.
+  *)
+
+  End BasicTheoryOfRng.
 
 End UndergraduateAlgebra.

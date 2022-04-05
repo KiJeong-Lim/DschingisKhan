@@ -8,20 +8,26 @@ Module CountableBooleanAlgebra.
 
   Class isBooleanAlgebra (BA : Hask.t) {requiresSetoid : isSetoid BA} : Type :=
     { BooleanAlgebra_requiresRing :> isRing BA
-    ; mul_idempotent (x : BA) :
+    ; and_idempotent (x : BA) :
       mul x x == x
     }
   .
 
   Section TheoryOfBooleanAlgebra.
 
-  Variable BA : Hask.t.
+  Context {BA : Hask.t} {requiresSetoid : isSetoid BA} {requiresBooleanAlgebra : isBooleanAlgebra BA (requiresSetoid := requiresSetoid)}.
 
-  Context {requiresSetoid : isSetoid BA} {requiresBooleanAlgebra : isBooleanAlgebra BA (requiresSetoid := requiresSetoid)}.
+  Definition or_BA : BA -> BA -> BA := plu.
+
+  Definition true_BA : BA := zer.
+
+  Definition and_BA : BA -> BA -> BA := mul.
+
+  Definition false_BA : BA := unity.
 
 (**
-  Local Instance and_isCommutative
-    : isCommutativeBinaryOperation mul.
+  Lemma or_idempotent (x : BA)
+    : and_BA x x == x.
   *)
 
   End TheoryOfBooleanAlgebra.
