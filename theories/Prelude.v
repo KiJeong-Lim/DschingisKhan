@@ -1,11 +1,15 @@
-Require Export DschingisKhan.Prelude.PreludeInit.
-Require Export DschingisKhan.Prelude.PreludeUtil.
-Require Export DschingisKhan.Prelude.PreludeData.
-Require Export DschingisKhan.Prelude.PreludeLtac.
-Require Export DschingisKhan.Prelude.PreludeMath.
+Require Export Coq.Arith.PeanoNat.
+Require Export Coq.Bool.Bool.
+Require Export Coq.Classes.RelationClasses.
+Require Export Coq.Lists.List.
+Require Export Coq.micromega.Lia.
+Require Export Coq.Program.Basics.
+Require Export Coq.Relations.Relation_Definitions.
+Require Export Coq.Setoids.Setoid.
+From DschingisKhan.Prelude Require Export PreludeData PreludeInit PreludeMath PreludeTacs PreludeUtil.
 
-Include PreludeInit.
-Include PreludeUtil.
-Include PreludeData.
-Include PreludeLtac.
-Include PreludeMath.
+Include DschingisKhan.Prelude.PreludeInit.
+Include DschingisKhan.Prelude.PreludeUtil.
+Include DschingisKhan.Prelude.PreludeData.
+Include DschingisKhan.Prelude.PreludeTacs.
+Include DschingisKhan.Prelude.PreludeMath.
