@@ -616,7 +616,25 @@ Module MyEnsembles.
     : forall x : A, x \in complement X <-> (~ x \in X).
   Proof. reflexivity. Qed.
 
-  Global Opaque union unions_i unions image preimage finite intersection full empty complement.
+  Definition singleton {A : Hask.t} (x0 : A) : ensemble A := finite [x0].
+
+  Lemma in_singleton_iff {A : Hask.t} (x0 : A)
+    : forall x : A, x \in singleton x0 <-> (x = x0).
+  Proof. intros x. unfold singleton. rewrite in_finite_iff. split; [intros [H | []] | intros []; left]; eauto. Qed.
+
+  Definition delete {A : Hask.t} (x0 : A) (X : ensemble A) : ensemble A := intersection (complement (singleton x0)) X.
+
+  Lemma in_delete_iff {A : Hask.t} (x0 : A) (X : ensemble A)
+    : forall x : A, x \in delete x0 X <-> (x <> x0 /\ x \in X).
+  Proof. intros x. unfold delete. rewrite in_intersection_iff, in_complement_iff, in_singleton_iff. tauto. Qed.
+
+  Definition insert {A : Hask.t} (x0 : A) (X : ensemble A) : ensemble A := union (singleton x0) X.
+
+  Lemma in_insert_iff {A : Hask.t} (x0 : A) (X : ensemble A)
+    : forall x : A, x \in insert x0 X <-> (x = x0 \/ x \in X).
+  Proof. intros x. unfold insert. rewrite in_union_iff, in_singleton_iff. tauto. Qed.
+
+  Global Opaque union unions_i unions image preimage finite intersection full empty complement singleton delete insert.
 
   Local Instance Powerset_CovariantFunctor : CovariantFunctor ensemble :=
     { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B)
