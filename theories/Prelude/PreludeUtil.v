@@ -3,7 +3,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Module FUN_FACTS.
 
   Lemma NoetherianRecursionAux {A : Type} {phi : A -> Type} (LT : A -> A -> Prop)
-    (H_GOAL : forall x : A, « IH : forall y : A, LT y x -> phi y » -> phi x)
+    (H_GOAL : forall x : A, <{ IH : forall y : A, LT y x -> phi y }> -> phi x)
     : forall a : A, Acc LT a -> phi a.
   Proof.
     exact (
@@ -16,7 +16,7 @@ Module FUN_FACTS.
 
   Theorem NoetherianRecursion {A : Type} {phi : A -> Type} (LT : A -> A -> Prop)
     (H_WELL_FOUNDED : forall a : A, Acc LT a)
-    (H_GOAL : forall x : A, « IH : forall y : A, LT y x -> phi y » -> phi x)
+    (H_GOAL : forall x : A, <{ IH : forall y : A, LT y x -> phi y }> -> phi x)
     : forall a : A, phi a.
   Proof.
     exact (fun a : A => NoetherianRecursionAux LT H_GOAL a (H_WELL_FOUNDED a)).

@@ -11,10 +11,10 @@ Module BasicTactics.
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
-  Global Notation " '«' STATEMENT_REFERENCE ':' STATEMENT '»' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
+  Global Notation " '<{' STATEMENT_REFERENCE ':' STATEMENT '}>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
 
   Polymorphic Lemma unfold_REFERENCE_HOLDER {STATEMENT_Type : Type} (STATEMENT : STATEMENT_Type)
-    : « STATEMENT_REFERENCE : STATEMENT » = STATEMENT.
+    : <{ STATEMENT_REFERENCE : STATEMENT }> = STATEMENT.
   Proof. reflexivity. Defined.
 
   Global Ltac unnw := unfold REFERENCE_HOLDER in *.
@@ -807,7 +807,7 @@ Module BasicMathematicalStructures.
     forall x1 : D, member x1 X ->
     forall x2 : D, member x2 X ->
     exists x3 : D, member x3 X /\
-    « DIRECT : x1 =< x3 /\ x2 =< x3 »
+    <{ DIRECT : x1 =< x3 /\ x2 =< x3 }>
   .
 
   Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
