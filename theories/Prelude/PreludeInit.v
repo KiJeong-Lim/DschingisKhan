@@ -807,7 +807,7 @@ Module BasicMathematicalStructures.
     forall x1 : D, member x1 X ->
     forall x2 : D, member x2 X ->
     exists x3 : D, member x3 X /\
-    << DRT : x1 =< x3 /\ x2 =< x3 >>
+    << DIRECT : x1 =< x3 /\ x2 =< x3 >>
   .
 
   Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
