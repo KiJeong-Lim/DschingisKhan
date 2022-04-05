@@ -701,7 +701,7 @@ Module BasicMathematicalStructures.
       (X1_isOpen : isOpen X1)
       (X2_isOpen : isOpen X2)
       : isOpen (intersection X1 X2)
-    ; open_ext_eq
+    ; isOpen_eqProp_isOpen
       (X1 : ensemble A)
       (X2 : ensemble A)
       (X1_isOpen : isOpen X1)
