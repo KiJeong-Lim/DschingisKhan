@@ -21,15 +21,15 @@ Module BasicTactics.
 
   Global Hint Unfold flip : khan_hints.
 
-  Definition HYPOTHESIS_HOLDER (P : unit -> Prop) : Prop := P tt.
+  Definition STATEMENT_HOLDER (STATEMENT : unit -> Prop) : Prop := STATEMENT tt.
 
-  Global Notation " '<<' H_P ':' P '>>' " := (HYPOTHESIS_HOLDER (fun H_P : unit => match H_P with | tt => P end)) (H_P name, P at level 100, at level 70, no associativity) : type_scope.
+  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (STATEMENT_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 100, at level 70, no associativity) : type_scope.
 
-  Lemma unfold_HYPOTHESIS_HOLDER {P : Prop} :
-    << H_P : P >> = P.
+  Lemma unfold_STATEMENT_HOLDER {STATEMENT : Prop}
+    : << STATEMENT_HOLDER : STATEMENT >> = STATEMENT.
   Proof. reflexivity. Defined.
 
-  Global Ltac unnw := unfold HYPOTHESIS_HOLDER in *.
+  Global Ltac unnw := unfold STATEMENT_HOLDER in *.
 
   Global Ltac ii := (repeat intro).
 
