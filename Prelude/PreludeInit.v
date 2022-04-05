@@ -522,6 +522,7 @@ Module MyEnsembles.
 
   Inductive _image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) (y : B) : Prop :=
   | In_image (x : A)
+    (x_in_X : member x X)
     (y_eq_f_x : y = f x)
     : member y (_image f X)
   .
@@ -553,25 +554,69 @@ Module MyEnsembles.
   Inductive _empty {A : Hask.t} (x : A) : Prop :=
   .
 
+  Local Hint Constructors _union _unions_i _unions _image _preimage _finite _intersection _full _empty : core.
+
   Definition union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _union Xl Xr.
+
+  Lemma in_union_iff {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A)
+    : forall x : A, x \in union Xl Xr <-> (x \in Xl \/ x \in Xr).
+  Proof. intros x; split; intros [H_l | H_r]; eauto. Qed.
 
   Definition unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) : ensemble A := _unions_i Xs.
 
+  Lemma in_unions_i_iff {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A))
+    : forall x : A, x \in unions_i Xs <-> (exists i : I, x \in Xs i).
+  Proof. intros x; split; intros [i H_i]; eauto. Qed.
+
   Definition unions {A : Hask.t} (Xs : ensemble (ensemble A)) : ensemble A := _unions Xs.
+
+  Lemma in_unions_iff {A : Hask.t} (Xs : ensemble (ensemble A))
+    : forall x : A, x \in unions Xs <-> (exists X : ensemble A, x \in X /\ X \in Xs).
+  Proof. intros x; split; [intros [X H_X H_Xs] | intros [X [H_X H_Xs]]]; eauto. Qed.
 
   Definition image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) : ensemble B := _image f X.
 
+  Lemma in_image_iff {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A)
+    : forall y : B, y \in image f X <-> (exists x : A, y = f x /\ x \in X).
+  Proof. intros y; split; [intros [x H_x H_y] | intros [x [H_x H_y]]]; eauto. Qed.
+
   Definition preimage {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B) : ensemble A := _preimage f Y.
+
+  Lemma in_preimage_iff {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B)
+    : forall x : A, x \in preimage f Y <-> (exists y : B, y = f x /\ y \in Y).
+  Proof. intros y; split; [intros [H_x] | intros [x [H_x H_y]]; subst]; eauto. Qed.
 
   Definition finite {A : Hask.t} (xs : list A) : ensemble A := _finite xs.
 
+  Lemma in_finite_iff {A : Hask.t} (xs : list A)
+    : forall x : A, x \in finite xs <-> (In x xs).
+  Proof. intros x; split; [intros [H_x] | intros H_x]; eauto. Qed.
+
   Definition intersection {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) : ensemble A := _intersection Xl Xr.
+
+  Lemma in_intersection_iff {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A)
+    : forall x : A, x \in intersection Xl Xr <-> (x \in Xl /\ x \in Xr).
+  Proof. intros x; split; intros [H_l H_r]; eauto. Qed.
 
   Definition full {A : Hask.t} : ensemble A := _full.
 
+  Lemma in_full_iff {A : Hask.t}
+    : forall x : A, x \in full <-> (True).
+  Proof. intros x; split; eauto. Qed.
+
   Definition empty {A : Hask.t} : ensemble A := _empty.
 
-  Global Opaque union unions_i unions image preimage finite intersection full.
+  Lemma in_empty_iff {A : Hask.t}
+    : forall x : A, x \in empty <-> (False).
+  Proof. intros x; split; intros []. Qed.
+
+  Definition complement {A : Hask.t} (X : ensemble A) : ensemble A := fun x : A => ~ x \in X.
+
+  Lemma in_complement_iff {A : Hask.t} (X : ensemble A)
+    : forall x : A, x \in complement X <-> (~ x \in X).
+  Proof. reflexivity. Qed.
+
+  Global Opaque union unions_i unions image preimage finite intersection full empty complement.
 
   Local Instance Powerset_CovariantFunctor : CovariantFunctor ensemble :=
     { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B)
