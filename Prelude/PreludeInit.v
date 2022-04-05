@@ -577,6 +577,8 @@ Module BasicMathematicalStructures.
 
   Import BasicCategoryTheory BasicTypeClasses BasicInstances MyEnsembles.
 
+  Module C := BasicCategoryTheory.
+
   Local Open Scope program_scope.
 
   (** "1. Functor and Monad" *)
@@ -584,10 +586,8 @@ Module BasicMathematicalStructures.
   Global Notation " 'id_{' A  '}' " := (fun x : A => x) (at level 0, no associativity) : program_scope.
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
-    BasicCategoryTheory.fmap (F := F) (dom := A) (cod := B)
+    C.fmap (F := F) (dom := A) (cod := B)
   .
-
-  Global Notation " 'BasicCategoryTheory.fmap' " := BasicCategoryTheory.fmap.
 
   Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.t -> Hask.t) (X : Hask.t) {F_isSetoid1 : isSetoid1 F} : isSetoid (F X) :=
     liftSetoid1 (F := F) (theFinestSetoidOf X)
@@ -712,19 +712,24 @@ Module BasicMathematicalStructures.
 
   (** "4. Monoid, Group, Ring and Field" *)
 
-  Polymorphic Class isMonoid (M : Hask.t) {M_isSetoid : isSetoid M} : Type :=
+  Class AssocBinOp {A : Type} {A_isSetoid : isSetoid A} (bin_op : A -> A -> A) : Prop :=
+    { bin_op_assoc (xl : A) (x : A) (xr : A)
+      : bin_op xl (bin_op x xr) == bin_op (bin_op xl x) xr
+    ; bin_op_lifts_eqProp (xl_1 : A) (xl_2 : A) (xr_1 : A) (xr_2 : A)
+      (H_FST_ARG : xl_1 == xl_2)
+      (H_SND_ARG : xr_1 == xr_2)
+      : bin_op xl_1 xr_1 == bin_op xl_2 xr_2
+    }
+  .
+
+  Class isMonoid (M : Hask.t) {M_isSetoid : isSetoid M} : Type :=
     { plu (x1 : M) (x2 : M) : M
     ; zer : M
-    ; plu_assoc (x1 : M) (x2 : M) (x3 : M)
-      : plu x1 (plu x2 x3) == plu (plu x1 x2) x3
+    ; plu_assoc :> @AssocBinOp M M_isSetoid plu
     ; zer_left_id_plu (x : M)
       : plu zer x == x
     ; zer_right_id_plu (x : M)
       : plu x zer == x
-    ; plu_lift_eqProp (x1 : M) (x2 : M) (x3 : M) (x4 : M)
-      (H_FST_ARG : x1 == x2)
-      (H_SND_ARG : x3 == x4)
-      : plu x1 x3 == plu x2 x4
     }
   .
 
@@ -734,24 +739,19 @@ Module BasicMathematicalStructures.
       : plu (neg x) x == zer
     ; neg_right_inv_plu (x : G)
       : plu x (neg x) == zer
-    ; neg_lift_eqProp (x1 : G) (x2 : G)
-      (H_FST_ARG : x1 == x2)
-      : neg x1 == neg x2
+    ; neg_lift_eqProp (x_1 : G) (x_2 : G)
+      (H_FST_ARG : x_1 == x_2)
+      : neg x_1 == neg x_2
     }
   .
 
   Polymorphic Class isRing (R : Hask.t) {R_isSetoid : isSetoid R} {R_isMonoid : @isMonoid R R_isSetoid} {R_isGroup : @isGroup R R_isSetoid R_isMonoid} : Type :=
     { mul (x1 : R) (x2 : R) : R
-    ; mul_assoc (x1 : R) (x2 : R) (x3 : R)
-      : mul x1 (mul x2 x3) == mul (plu x1 x2) x3
+    ; mul_assoc :> @AssocBinOp R R_isSetoid mul
     ; mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
       : mul (plu x1 x2) x3 == plu (mul x1 x3) (mul x2 x3)
     ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
       : mul x1 (plu x2 x3) == plu (mul x1 x3) (mul x2 x3)
-    ; mul_lift_eqProp (x1 : R) (x2 : R) (x3 : R) (x4 : R)
-      (H_FST_ARG : x1 == x2)
-      (H_SND_ARG : x3 == x4)
-      : mul x1 x3 == mul x2 x4
     }
   .
 
