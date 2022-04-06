@@ -303,6 +303,20 @@ Module PreludeInit_main.
 
   End ImplFor_image.
 
+  Global Instance subSetoid (A : Hask.t) (P : A -> Prop) {requiresSetoid : isSetoid A} : isSetoid (@sig A P) :=
+    { eqProp := im_eqProp (@proj1_sig A P)
+    ; eqProp_Equivalence := equivalence_relation_by_image (@proj1_sig A P) requiresSetoid
+    }
+  .
+
+  Global Instance subPoset (A : Hask.t) (P : A -> Prop) {requiresPoset : isPoset A} : isPoset (@sig A P) :=
+    { leProp := im_leProp (@proj1_sig A P)
+    ; Poset_requiresSetoid := subSetoid A P
+    ; leProp_PreOrder := preorder_relation_by_image (@proj1_sig A P) requiresPoset
+    ; leProp_PartialOrder := partialorder_relation_by_image (@proj1_sig A P) requiresPoset
+    }
+  .
+
   Section ImplFor_arrow.
 
   Variable dom : Hask.t.

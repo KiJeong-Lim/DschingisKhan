@@ -7,35 +7,53 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 
-Module MathProperties.
+Module MathProps.
 
   Local Open Scope program_scope.
 
-  Class isUnaryOpCompatWith_eqProp {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (f : dom -> cod) : Prop := unary_operation_preserves_eqProp (lhs : dom) (rhs : dom) (H_EQ : lhs == rhs) : f lhs == f rhs.
+  Class Op1_preserves_eqProp {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (f : dom -> cod) : Prop :=
+    unary_operation_lifts_eqProp (lhs1 : dom) (rhs1 : dom)
+    (H_EQ1 : lhs1 == rhs1)
+    : f lhs1 == f rhs1
+  .
 
-  Class isBinaryOpCompatWith_eqProp {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (f : dom1 -> dom2 -> cod) : Prop := binary_operation_preserves_eqProp (lhs1 : dom1) (rhs1 : dom1) (lhs2 : dom2) (rhs2 : dom2) (H_EQ1 : lhs1 == rhs1) (H_EQ2 : lhs2 == rhs2) : f lhs1 lhs2 == f rhs1 rhs2.
+  Class Op2_preserves_eqProp {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (f : dom1 -> dom2 -> cod) : Prop :=
+    binary_operation_lifts_eqProp (lhs1 : dom1) (rhs1 : dom1) (lhs2 : dom2) (rhs2 : dom2)
+    (H_EQ1 : lhs1 == rhs1)
+    (H_EQ2 : lhs2 == rhs2)
+    : f lhs1 lhs2 == f rhs1 rhs2
+  .
 
-  Global Add Parametric Morphism {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (f : dom -> cod) {isCompatibleWith_eqProp : isUnaryOpCompatWith_eqProp f} :
+  Global Add Parametric Morphism {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (f : dom -> cod) {preserves_eqProp : Op1_preserves_eqProp f} :
     f with signature (eqProp ==> eqProp)
-    as unary_operation_lifts_eqProp.
-  Proof. intros x1 x2 H_x_eq; exact (unary_operation_preserves_eqProp x1 x2 H_x_eq). Defined.
+    as unary_operation_preserves_eqProp.
+  Proof. intros x1 x2 H_x_eq; exact (unary_operation_lifts_eqProp x1 x2 H_x_eq). Defined.
 
-  Global Add Parametric Morphism {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (f : dom1 -> dom2 -> cod) {isCompatibleWith_eqProp : isBinaryOpCompatWith_eqProp f} :
+  Global Add Parametric Morphism {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (f : dom1 -> dom2 -> cod) {preserves_eqProp : Op2_preserves_eqProp f} :
     f with signature (eqProp ==> eqProp ==> eqProp)
-    as binary_operation_lifts_eqProp.
-  Proof. intros x1 x2 H_x_eq y1 y2 H_y_eq; exact (binary_operation_preserves_eqProp x1 x2 y1 y2 H_x_eq H_y_eq). Defined.
+    as binary_operation_preserves_eqProp.
+  Proof. intros x1 x2 H_x_eq y1 y2 H_y_eq; exact (binary_operation_lifts_eqProp x1 x2 y1 y2 H_x_eq H_y_eq). Defined.
 
   Section STATEMENTS_FOR_OPERATION_PROPERTIES.
 
   Context {A : Hask.t} {requiresSetoid : isSetoid A}.
 
-  Class isAssocOp (bin_op : A -> A -> A) : Prop := associativity (x : A) (y : A) (z : A) : bin_op x (bin_op y z) == bin_op (bin_op x y) z.
+  Class AssocOp (bin_op : A -> A -> A) : Prop :=
+    associativity (x : A) (y : A) (z : A)
+    : bin_op x (bin_op y z) == bin_op (bin_op x y) z
+  .
 
-  Class isCommOp (bin_op : A -> A -> A) : Prop := commutativity (x : A) (y : A) : bin_op x y == bin_op y x.
+  Class CommOp (bin_op : A -> A -> A) : Prop :=
+    commutativity (x : A) (y : A)
+    : bin_op x y == bin_op y x
+  .
 
-  Class isIdemOp (bin_op : A -> A -> A) : Prop := idemponence (x : A) : bin_op x x == x.
+  Class IdemOp (bin_op : A -> A -> A) : Prop :=
+    idemponence (x : A)
+    : bin_op x x == x
+  .
 
-  Class isDistr (bin_op1 : A -> A -> A) (bin_op2 : A -> A -> A) : Prop :=
+  Class Distr (bin_op1 : A -> A -> A) (bin_op2 : A -> A -> A) : Prop :=
     { left_distr (x : A) (y : A) (z : A)
       : bin_op1 x (bin_op2 y z) == bin_op2 (bin_op1 x y) (bin_op1 x z)
     ; right_distr (x : A) (y : A) (z : A)
@@ -43,7 +61,7 @@ Module MathProperties.
     }
   .
 
-  Class isIdElemOf (e : A) (bin_op : A -> A -> A) : Prop :=
+  Class IdElemOf (e : A) (bin_op : A -> A -> A) : Prop :=
     { left_id (x : A)
       : bin_op e x == x
     ; right_id (x : A)
@@ -51,7 +69,7 @@ Module MathProperties.
     }
   .
 
-  Class isInvOpOf (inv : A -> A) (bin_op : A -> A -> A) : Prop :=
+  Class InvOpOf (inv : A -> A) (bin_op : A -> A -> A) : Prop :=
     { left_inv (x : A)
       : bin_op (inv x) x == x
     ; right_inv (x : A)
@@ -69,17 +87,17 @@ Module MathProperties.
 
   End STATEMENTS_FOR_OPERATION_PROPERTIES.
 
-  Global Infix " `distributesOver` " := isDistr (at level 70, no associativity) : type_scope.
-  Global Infix " `isIdentityOf` " := isIdElemOf (at level 70, no associativity) : type_scope.
-  Global Infix " `isInverseOpFor` " := isInvOpOf (at level 70, no associativity) : type_scope.
+  Global Infix " `distributesOver` " := Distr (at level 70, no associativity) : type_scope.
+  Global Infix " `isIdentityOf` " := IdElemOf (at level 70, no associativity) : type_scope.
+  Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
 
-  Class isCountable (A : Hask.t) : Type :=
+  Class Countable (A : Hask.t) : Type :=
     { enum : nat -> A
     ; requiresRecursivelyEnumerable
       : forall x : A, exists n : nat, enum n = x
     }
   .
 
-End MathClasses.
+End MathProps.
 
-Export MathProperties.
+Export MathProps.
