@@ -1005,19 +1005,19 @@ Module BasicExtraInstances.
   .
 
   Global Polymorphic Instance stateT_ST_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} (X : Hask.t) := fun e : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) e)
+    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} (X : Hask.t) := fun m : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
     }
   .
 
-  Polymorphic Definition sum_prod_distr_l {A : Hask.t} {B : Hask.t} {C : Hask.t} (pr : (A + B) * C) : (A * C) + (B * C) :=
-    match pr with
+  Polymorphic Definition sum_prod_distr_l {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : (A + B) * C) : (A * C) + (B * C) :=
+    match it with
     | (inl x, z) => inl (x, z)
     | (inr y, z) => inr (y, z)
     end
   .
 
   Global Polymorphic Instance stateT_ST_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad ((kempty ∘ sum_prod_distr_l) <=< uncurry step))
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad (kempty ∘ sum_prod_distr_l <=< uncurry step))
     }
   .
 
