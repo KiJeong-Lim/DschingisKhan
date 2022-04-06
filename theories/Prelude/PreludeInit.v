@@ -12,11 +12,6 @@ Module Khan.
   Global Notation id := id.
   Global Notation " 'id_{' A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
 
-  (* Reserved *)
-  Global Reserved Infix " == " (at level 70, no associativity).
-  Global Reserved Infix " =< " (at level 70, no associativity).
-  Global Reserved Infix " \in " (at level 70, no associativity).
-
   (** "\S1. Reference Holder" *)
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
