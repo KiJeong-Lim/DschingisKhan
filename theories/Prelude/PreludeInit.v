@@ -57,11 +57,11 @@ Module Cat.
     }
   .
 
-  Polymorphic Definition ObjectMap {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition objMap_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Global Bind Scope type_scope with ObjectMap isCategory hom.
+  Global Bind Scope type_scope with objMap_t isCategory hom.
 
-  Global Infix " -----> " := ObjectMap (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := objMap_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
@@ -77,13 +77,13 @@ Module Cat.
     }
   .
 
-  Polymorphic Class isNaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type := component (obj : src_objs) : hom (F_from obj) (F_to obj).
+  Polymorphic Class isNaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+    component (obj : src_objs) : hom (F_from obj) (F_to obj)
+  .
 
   End BasicConceptsOfCategoryTheory.
 
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
-
-  Global Arguments component {src_objs} {tgt_objs} {src_cat} {tgt_cat} {F_from} {F_to} {_} {obj}.
 
 End Cat.
 
@@ -611,11 +611,11 @@ Module PreludeInit_main.
   .
 
   Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} : M =====> T M
+    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} :> M =====> T M
     }
   .
 
-  Global Arguments liftMonad {T} {_} {M} {M_isMonad} {_}.
+  Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
