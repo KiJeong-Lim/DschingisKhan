@@ -264,7 +264,7 @@ Module PreludeInit_main.
 
   Variable f : Hask.arrow dom cod.
 
-  Lemma equivalence_relation_by_image
+  Local Instance equivalence_relation_by_image
     (cod_isSetoid : isSetoid cod)
     : Equivalence (im_eqProp f).
   Proof.
@@ -274,7 +274,7 @@ Module PreludeInit_main.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Lemma preorder_relation_by_image
+  Local Instance preorder_relation_by_image
     (cod_isPoset : isPoset cod)
     : PreOrder (im_leProp f).
   Proof.
@@ -283,9 +283,9 @@ Module PreludeInit_main.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Lemma partialorder_relation_by_image
+  Local Instance partialorder_relation_by_image
     (cod_isPoset : isPoset cod)
-    : @PartialOrder _ (im_eqProp f) (equivalence_relation_by_image _) (im_leProp f) (preorder_relation_by_image _).
+    : PartialOrder (im_eqProp f) (im_leProp f).
   Proof.
     intros x1 x2. constructor.
     - intros H_EQ. constructor.
@@ -298,14 +298,14 @@ Module PreludeInit_main.
 
   End ImplFor_image.
 
-  Global Instance subSetoid (A : Hask.t) (P : A -> Prop) {requiresSetoid : isSetoid A} : isSetoid (@sig A P) :=
-    { eqProp := im_eqProp (@proj1_sig A P)
+  Global Instance subSetoid (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isSetoid (@sig A P) :=
+    { eqProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs == proj1_sig rhs
     ; eqProp_Equivalence := equivalence_relation_by_image (@proj1_sig A P) requiresSetoid
     }
   .
 
-  Global Instance subPoset (A : Hask.t) (P : A -> Prop) {requiresPoset : isPoset A} : isPoset (@sig A P) :=
-    { leProp := im_leProp (@proj1_sig A P)
+  Global Instance subPoset (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isPoset (@sig A P) :=
+    { leProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs =< proj1_sig rhs
     ; Poset_requiresSetoid := subSetoid A P
     ; leProp_PreOrder := preorder_relation_by_image (@proj1_sig A P) requiresPoset
     ; leProp_PartialOrder := partialorder_relation_by_image (@proj1_sig A P) requiresPoset
