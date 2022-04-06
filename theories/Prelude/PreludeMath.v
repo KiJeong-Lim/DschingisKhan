@@ -93,7 +93,7 @@ Module MathPrelude.
 
   Class isCountable (A : Hask.t) : Type :=
     { enum (n : nat) : A
-    ; enumeratable (x : A)
+    ; requiresRecursivelyEnumerable (x : A)
       : exists n : nat, enum n = x
     }
   .
