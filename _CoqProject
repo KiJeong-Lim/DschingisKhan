@@ -1,2 +1,5 @@
 -Q ./theories DschingisKhan #
 #
+theories/Prelude/PreludeInit.v #
+theories/Prelude/PreludeMath.v #
+#
