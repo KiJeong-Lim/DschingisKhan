@@ -1,4 +1,4 @@
-Require Export Coq.Arith.PeanoNat.
+Require Import Coq.Arith.PeanoNat.
 Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module EQ_FACTS.
