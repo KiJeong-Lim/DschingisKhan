@@ -1021,6 +1021,23 @@ Module BasicExtraInstances.
     }
   .
 
+  (** "2. sum1" *)
+
+  Polymorphic Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
+  | inl1 : FL X -> sum1 FL FR X
+  | inr1 : FR X -> sum1 FL FR X
+  .
+
+  Global Arguments inl1 {FL} {FR} {X}.
+  Global Arguments inr1 {FL} {FR} {X}.
+
+  Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
+
+  Global Instance sum1_FL_FR_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (sum1 FL FR) :=
+    { fmap {A : Hask.t} {B : Hask.t} := fun f : Hask.arrow A B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap f l)) (fun r : FR A => inr1 (fmap f r))
+    }
+  .
+
 End BasicExtraInstances.
 
 Export BasicTypeClasses BasicInstances BasicMathematicalStructures BasicExtraInstances.
