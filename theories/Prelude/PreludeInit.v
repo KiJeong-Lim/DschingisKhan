@@ -521,11 +521,11 @@ Module BasicInstances.
 
   Variable requiresMonad : isMonad M.
 
-  Definition kempty {obj : Hask.t} : obj -> M obj :=
+  Definition kempty {obj : Hask.t} : kleisli obj obj :=
     fun x => pure x
   .
 
-  Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : obj_l -> M obj_r :=
+  Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r :=
     fun x_l => k_l x_l >>= fun x_r => k_r x_r
   .
 
