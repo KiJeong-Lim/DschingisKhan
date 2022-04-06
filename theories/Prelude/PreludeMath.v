@@ -92,9 +92,9 @@ Module MathPrelude.
   Global Infix " `isInverseOpFor` " := isInverseOperation (at level 70, no associativity) : type_scope.
 
   Class isCountable (A : Hask.t) : Type :=
-    { enum (n : nat) : A
-    ; requiresRecursivelyEnumerable (x : A)
-      : exists n : nat, enum n = x
+    { enum : nat -> A
+    ; requiresRecursivelyEnumerable
+      : forall x : A, exists n : nat, enum n = x
     }
   .
 
