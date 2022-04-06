@@ -13,3 +13,5 @@ theories/PropositionalLogic/BooleanAlgebra.v #
 theories/DomainTheory/ClassicalDomainTheory.v #
 theories/DomainTheory/ConstructiveDomainTheory.v #
 #
+theories/Scratch.v #
+#
