@@ -3,3 +3,6 @@
 theories/Prelude/PreludeInit.v #
 theories/Prelude/PreludeMath.v #
 #
+theories/DomainTheory/ClassicalDomainTheory.v #
+theories/DomainTheory/ConstructiveDomainTheory.v #
+#
