@@ -1,4 +1,13 @@
+Require Export Coq.Arith.PeanoNat.
 Require Import DschingisKhan.Prelude.PreludeInit.
+
+Module EQ_FACTS.
+
+End EQ_FACTS.
+
+Module NAT_ARITH.
+
+End NAT_ARITH.
 
 Module FUN_FACTS.
 
@@ -29,8 +38,6 @@ Module FUN_FACTS.
     exact (fun a : A => NoetherianRecursionAux wf_rel phi H_GOAL a (WELL_FOUNDED a)).
   Defined.
 
-  (** "2. eq" *)
-
-  (** "3. LawOfExclusiveMiddle" *)
+  (** "2. LawOfExclusiveMiddle" *)
 
 End FUN_FACTS.
