@@ -2,24 +2,35 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module FUN_FACTS.
 
-  Lemma NoetherianRecursionAux {A : Type} {phi : A -> Type} (LT : A -> A -> Prop)
+  (** "1. Acc" *)
+
+  Class isWellFounded (A : Type) : Type :=
+    { wf_rel : A -> A -> Prop
+    ; WELL_FOUNDED : forall a : A, Acc wf_rel a
+    }
+  .
+
+  Lemma NoetherianRecursionAux {A : Type} (LT : A -> A -> Prop) (phi : A -> Type)
     (H_GOAL : forall x : A, <{ IH : forall y : A, LT y x -> phi y }> -> phi x)
     : forall a : A, Acc LT a -> phi a.
   Proof.
     exact (
-      fix NoetherianRecursionAux_fix (x : A) (H_Acc_x : Acc LT x) {struct H_Acc_x} : phi x :=
+      fix Aux_fix (x : A) (H_Acc_x : Acc LT x) {struct H_Acc_x} : phi x :=
       match H_Acc_x as _ in Acc _ _ return phi x with
-      | Acc_intro _ H_LT_implies_Acc => H_GOAL x (fun y : A => fun H_LT : LT y x => NoetherianRecursionAux_fix y (H_LT_implies_Acc y H_LT))
+      | Acc_intro _ H_LT_implies_Acc => H_GOAL x (fun y : A => fun H_LT : LT y x => Aux_fix y (H_LT_implies_Acc y H_LT))
       end
     ).
   Defined.
 
-  Theorem NoetherianRecursion {A : Type} {phi : A -> Type} (LT : A -> A -> Prop)
-    (H_WELL_FOUNDED : forall a : A, Acc LT a)
-    (H_GOAL : forall x : A, <{ IH : forall y : A, LT y x -> phi y }> -> phi x)
+  Theorem NoetherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
+    (H_GOAL : forall x : A, <{ IH : forall y : A, wf_rel y x -> phi y }> -> phi x)
     : forall a : A, phi a.
   Proof.
-    exact (fun a : A => NoetherianRecursionAux LT H_GOAL a (H_WELL_FOUNDED a)).
+    exact (fun a : A => NoetherianRecursionAux wf_rel phi H_GOAL a (WELL_FOUNDED a)).
   Defined.
+
+  (** "2. eq" *)
+
+  (** "3. LawOfExclusiveMiddle" *)
 
 End FUN_FACTS.
