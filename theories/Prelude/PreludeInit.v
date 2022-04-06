@@ -57,11 +57,11 @@ Module Cat.
     }
   .
 
-  Polymorphic Definition objMap_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
 
-  Global Bind Scope type_scope with objMap_t isCategory hom.
+  Global Bind Scope type_scope with Functor_t isCategory hom.
 
-  Global Infix " -----> " := objMap_t (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
