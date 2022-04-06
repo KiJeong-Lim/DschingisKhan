@@ -1,17 +1,2 @@
 -Q ./theories DschingisKhan #
 #
-theories/Prelude/PreludeData.v #
-theories/Prelude/PreludeInit.v #
-theories/Prelude/PreludeMath.v #
-theories/Prelude/PreludeTacs.v #
-theories/Prelude/PreludeUtil.v #
-theories/Prelude.v #
-theories/PreludeExtra.v #
-#
-theories/PropositionalLogic/BooleanAlgebra.v #
-#
-theories/DomainTheory/ClassicalDomainTheory.v #
-theories/DomainTheory/ConstructiveDomainTheory.v #
-#
-theories/Scratch.v #
-#
