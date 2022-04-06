@@ -83,6 +83,8 @@ Module Cat.
 
   End BasicConceptsOfCategoryTheory.
 
+  Global Arguments component {src_objs} {tgt_objs} {src_cat} {tgt_cat} {F_from} {F_to} (isNaturalTransformation) (obj). 
+
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
 
 End Cat.
