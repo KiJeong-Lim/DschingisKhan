@@ -24,9 +24,9 @@ Module FUN_FACTS.
     : forall a : A, Acc LT a -> phi a.
   Proof.
     exact (
-      fix Aux_fix (x : A) (H_Acc_x : Acc LT x) {struct H_Acc_x} : phi x :=
+      fix Noetherian_fix (x : A) (H_Acc_x : Acc LT x) {struct H_Acc_x} : phi x :=
       match H_Acc_x as _ in Acc _ _ return phi x with
-      | Acc_intro _ H_LT_implies_Acc => H_GOAL x (fun y : A => fun H_LT : LT y x => Aux_fix y (H_LT_implies_Acc y H_LT))
+      | Acc_intro _ H_LT_implies_Acc => H_GOAL x (fun y : A => fun H_LT : LT y x => Noetherian_fix y (H_LT_implies_Acc y H_LT))
       end
     ).
   Defined.
