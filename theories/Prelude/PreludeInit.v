@@ -300,7 +300,7 @@ Module PreludeInit_main.
 
   End ImplFor_image.
 
-  Global Instance subSetoid (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isSetoid (@sig A P) :=
+  Global Instance subSetoid (A : Hask.t) {requiresSetoid : isSetoid A} {P : A -> Prop} : isSetoid (@sig A P) :=
     { eqProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs == proj1_sig rhs
     ; eqProp_Equivalence := equivalence_relation_by_image (@proj1_sig A P) requiresSetoid
     }
@@ -308,7 +308,7 @@ Module PreludeInit_main.
 
   Global Instance subPoset (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isPoset (@sig A P) :=
     { leProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs =< proj1_sig rhs
-    ; Poset_requiresSetoid := subSetoid A P
+    ; Poset_requiresSetoid := subSetoid A
     ; leProp_PreOrder := preorder_relation_by_image (@proj1_sig A P) requiresPoset
     ; leProp_PartialOrder := partialorder_relation_by_image (@proj1_sig A P) requiresPoset
     }
@@ -558,13 +558,13 @@ Module PreludeInit_main.
 
   End ImplFor_kleisli.
 
-  Global Arguments kempty {M} {requiresMonad} {_}.
-  Global Arguments kappend {M} {requiresMonad} {_} {_} {_}.
+  Global Arguments kempty {M} {requiresMonad} {obj}.
+  Global Arguments kappend {M} {requiresMonad} {obj_l} {obj} {obj_r}.
   Global Arguments kleisliCategory (M) {requiresMonad}.
 
   Global Infix " <=< " := kappend (at level 40, left associativity) : program_scope.
 
-  Section ProgrammersTypeclasses.
+  Section TypeclassesForProgrammers.
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     Cat.fmap (F := F) (dom := A) (cod := B)
@@ -656,7 +656,7 @@ Module PreludeInit_main.
     - ii. eapply bind_pure_r.
   Qed.
 
-  End ProgrammersTypeclasses.
+  End TypeclassesForProgrammers.
 
   Polymorphic Definition stateT (ST : Hask.t) (M : Hask.cat -----> Hask.cat) : Hask.cat -----> Hask.cat := fun X : Hask.t => ST -> M (prod X ST).
 
