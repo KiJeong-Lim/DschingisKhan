@@ -260,7 +260,7 @@ Module BasicInstances.
 
   Variable f : Hask.arrow dom cod.
 
-  Local Instance equivalence_relation_by_image
+  Lemma equivalence_relation_by_image
     (cod_isSetoid : isSetoid cod)
     : Equivalence (im_eqProp f).
   Proof.
@@ -270,7 +270,7 @@ Module BasicInstances.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Local Instance preorder_relation_by_image
+  Lemma preorder_relation_by_image
     (cod_isPoset : isPoset cod)
     : PreOrder (im_leProp f).
   Proof.
@@ -279,9 +279,9 @@ Module BasicInstances.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Local Instance partialorder_relation_by_image
+  Lemma partialorder_relation_by_image
     (cod_isPoset : isPoset cod)
-    : PartialOrder (im_eqProp f) (im_leProp f).
+    : @PartialOrder _ (im_eqProp f) (equivalence_relation_by_image _) (im_leProp f) (preorder_relation_by_image _).
   Proof.
     intros x1 x2. constructor.
     - intros H_EQ. constructor.
@@ -702,15 +702,13 @@ Module MyEnsembles.
 
 End MyEnsembles.
 
-Module BasicMathematicalStructures.
+Module BasicExtra.
 
   Import BasicCategoryTheory BasicTypeClasses BasicInstances MyEnsembles.
 
-  Module C := BasicCategoryTheory.
-
   Local Open Scope program_scope.
 
-  Section S1. (** "Functor, Monad, MonadTrans and MonadIter" *)
+  Section ProgrammersTypeclasses. (** "Functor, Monad, MonadTrans and MonadIter" *)
 
   Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     Cat.fmap (F := F) (dom := A) (cod := B)
@@ -802,193 +800,7 @@ Module BasicMathematicalStructures.
     - ii. eapply bind_pure_r.
   Qed.
 
-  End S1.
-
-  Section S2. (** "CPO and CoLa" *)
-
-  Definition isUpperBound {D : Hask.t} {requiresPoset : isPoset D} (upper_bound_of_X : D) (X : ensemble D) : Prop :=
-    forall x : D, member x X -> x =< upper_bound_of_X
-  .
-
-  Definition isSupremumOf {D : Hask.t} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
-    forall upper_bound_of_X : D, isUpperBound upper_bound_of_X X <-> sup_X =< upper_bound_of_X
-  .
-
-  Class isCoLa (D : Hask.t) {requiresPoset : isPoset D} : Type :=
-    CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}
-  .
-
-  Definition isDirectedSubset {D : Hask.t} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
-    forall x1 : D, member x1 X ->
-    forall x2 : D, member x2 X ->
-    exists x3 : D, member x3 X /\
-    <{ DIRECT : x1 =< x3 /\ x2 =< x3 }>
-  .
-
-  Class isCPO (D : Hask.t) {requiresPoset : isPoset D} : Type :=
-    CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}
-  .
-
-  End S2.
-
-  Section S3. (** "Topology" *)
-
-  Class isTopologicalSpace (A : Hask.t) : Type :=
-    { isOpen (X : ensemble A) : Prop
-    ; fullOpen
-      : isOpen full
-    ; unionsOpen
-      (Xs : ensemble (ensemble A))
-      (every_member_of_Xs_isOpen : forall X : ensemble A, member X Xs -> isOpen X)
-      : isOpen (unions Xs)
-    ; intersectionOpen
-      (X1 : ensemble A)
-      (X2 : ensemble A)
-      (X1_isOpen : isOpen X1)
-      (X2_isOpen : isOpen X2)
-      : isOpen (intersection X1 X2)
-    ; isOpen_eqProp_isOpen
-      (X1 : ensemble A)
-      (X2 : ensemble A)
-      (X1_isOpen : isOpen X1)
-      (X1_eq_X2 : X1 == X2)
-      : isOpen X2
-    }
-  .
-
-  End S3.
-
-  Section S4. (** "Group, Ring and Field" *)
-
-  Class isAssociativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
-    { bin_op_assoc (xl : S) (x : S) (xr : S)
-      : bin_op xl (bin_op x xr) == bin_op (bin_op xl x) xr
-    ; bin_op_lifts_eqProp (xl_1 : S) (xl_2 : S) (xr_1 : S) (xr_2 : S)
-      (H_FST_ARG : xl_1 == xl_2)
-      (H_SND_ARG : xr_1 == xr_2)
-      : bin_op xl_1 xr_1 == bin_op xl_2 xr_2
-    }
-  .
-
-  Global Add Parametric Morphism {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) {requiresSemigroup : isAssociativeBinaryOperation bin_op} :
-    (bin_op) with signature (eqProp ==> eqProp ==> eqProp)
-    as Semigroup_lifts_eqProp.
-  Proof. ii. apply bin_op_lifts_eqProp; eauto. Qed.
-
-  Class isSemigroup (S : Hask.t) {requiresSetoid : isSetoid S} : Type :=
-    { plu : S -> S -> S
-    ; plu_assoc :> isAssociativeBinaryOperation plu
-    }
-  .
-
-  Class isAdditiveIdentity {S : Hask.t} {requiresSetoid : isSetoid S} {requiresSemigroup : isSemigroup S} (zer : S) : Prop :=
-    { zer_left_id_plu (x : S)
-      : plu zer x == x
-    ; zer_right_id_plu (x : S)
-      : plu x zer == x
-    }
-  .
-
-  Class isMonoid (M : Hask.t) {requiresSetoid : isSetoid M} : Type :=
-    { zer : M
-    ; Monoid_requiresSemigroup :> isSemigroup M
-    ; zer_id_plu :> isAdditiveIdentity zer
-    }
-  .
-
-  Class isAdditiveInverse {M : Hask.t} {requiresSetoid : isSetoid M} {requiresMonoid : isMonoid M} (neg : M -> M) : Prop :=
-    { neg_left_inv_plu (x : M)
-      : plu (neg x) x == zer
-    ; neg_right_inv_plu (x : M)
-      : plu x (neg x) == zer
-    ; neg_lift_eqProp (x_1 : M) (x_2 : M)
-      (H_FST_ARG : x_1 == x_2)
-      : neg x_1 == neg x_2
-    }
-  .
-
-  Class isGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
-    { neg : G -> G
-    ; Group_requiresMonoid :> isMonoid G
-    ; neg_inv_plu :> isAdditiveInverse neg
-    }
-  .
-
-  Class isCommutativeBinaryOperation {S : Hask.t} {requiresSetoid : isSetoid S} (bin_op : S -> S -> S) : Prop :=
-    bin_op_comm (x1 : S) (x2 : S) : bin_op x1 x2 == bin_op x2 x1
-  .
-
-  Class isAbelianGroup (G : Hask.t) {requiresSetoid : isSetoid G} : Type :=
-    { AbelianGroup_requiresGroup :> isGroup G
-    ; plu_comm :> isCommutativeBinaryOperation plu
-    }
-  .
-
-  Class isDistributableBinaryOperation {R : Hask.t} {requiresSetoid : isSetoid R} {requiresSemigroup : isSemigroup R} (mul : R -> R -> R) : Prop :=
-    { mul_left_distr_plu (x1 : R) (x2 : R) (x3 : R)
-      : mul (plu x1 x2) x3 == plu (mul x1 x3) (mul x2 x3)
-    ; mul_right_distr_plu (x1 : R) (x2 : R) (x3 : R)
-      : mul x1 (plu x2 x3) == plu (mul x1 x3) (mul x2 x3)
-    }
-  .
-
-  Class isRng (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
-    { mul : R -> R -> R
-    ; Rng_requiresAbelianGroup :> isAbelianGroup R
-    ; mul_assoc :> isAssociativeBinaryOperation mul
-    ; mul_distr :> isDistributableBinaryOperation mul
-    }
-  .
-
-  Class isMultiplicativeIdentity {R : Hask.t} {requiresSetoid : isSetoid R} {requiresRng : isRng R} (unity : R) : Prop :=
-    { unity_left_id_mul (x : R)
-      : mul unity x == x
-    ; unity_right_id_mul (x : R)
-      : mul x unity == x
-    }
-  .
-
-  Class isRing (R : Hask.t) {requiresSetoid : isSetoid R} : Type :=
-    { unity : R
-    ; Ring_requiresRng :> isRng R
-    ; unity_id_mul :> isMultiplicativeIdentity unity
-    }
-  .
-
-  Class isMultiplicativeInverse {R : Hask.t} {requiresSetoid : isSetoid R} {requiresRing : isRing R} (recip : R -> R) : Prop :=
-    { unity_NOT_zer
-      : ~ unity == zer
-    ; recip_left_inv_mul (x : R)
-      (x_NOT_zer : ~ x == zer)
-      : mul (recip x) x == unity
-    ; recip_right_inv_plu (x : R)
-      (x_NOT_zer : ~ x == zer)
-      : mul x (recip x) == unity
-    ; recip_lift_eqProp (x_1 : R) (x_2 : R)
-      (x1_NOT_zer : ~ x_1 == zer)
-      (x2_NOT_zer : ~ x_2 == zer)
-      (H_FST_ARG : x_1 == x_2)
-      : recip x_1 == recip x_2
-    }
-  .
-
-  Class isField (K : Hask.t) {requiresSetoid : isSetoid K} : Type :=
-    { recip : K -> K
-    ; Field_requiresRing :> isRing K
-    ; recip_inv_mul :> isMultiplicativeInverse recip
-    ; mul_comm :> isCommutativeBinaryOperation mul
-    }
-  .
-
-  End S4.
-
-End BasicMathematicalStructures.
-
-Module BasicExtraInstances.
-
-  Local Open Scope program_scope.
-
-  Import BasicCategoryTheory BasicTypeClasses BasicInstances MyEnsembles BasicMathematicalStructures.
+  End ProgrammersTypeclasses.
 
   (** "1. stateT" *)
 
@@ -1038,8 +850,8 @@ Module BasicExtraInstances.
     }
   .
 
-End BasicExtraInstances.
+End BasicExtra.
 
-Export BasicTypeClasses BasicInstances BasicMathematicalStructures BasicExtraInstances.
+Export BasicTypeClasses BasicInstances MyEnsembles BasicExtra.
 
 Include BasicTactics.
