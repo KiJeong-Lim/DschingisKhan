@@ -46,3 +46,4 @@ Makefile.conf
 CoqMakefile
 CoqMakefile.conf
 .Makefile.d
+.vscode
