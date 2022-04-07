@@ -1,1 +1,1 @@
-From DschingisKhan.Prelude Require Import PreludeInit PreludeMath.
+Require Import DschingisKhan.Prelude.PurePrelude.

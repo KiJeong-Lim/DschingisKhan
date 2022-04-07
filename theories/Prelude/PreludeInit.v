@@ -1,8 +1,8 @@
-Require Export Coq.Classes.RelationClasses.
-Require Export Coq.Lists.List.
-Require Export Coq.Program.Basics.
-Require Export Coq.Relations.Relation_Definitions.
-Require Export Coq.Setoids.Setoid.
+Require Import Coq.Classes.RelationClasses.
+Require Import Coq.Lists.List.
+Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Setoids.Setoid.
 
 Module Khan.
 
@@ -863,3 +863,26 @@ Module E.
   .
 
 End E.
+
+Module MathNotations.
+
+  Global Declare Scope math_scope.
+  Global Declare Custom Entry math_viewer.
+
+  Global Bind Scope math_scope with not Funclass eqProp leProp and or impl iff.
+
+  Global Notation " '$' e '$' " := e (e custom math_viewer at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " e " := e (in custom math_viewer at level 0, e ident).
+  Global Notation " '[|' e '|]' " := e (in custom math_viewer, e constr).
+  Global Notation " '(' e ')' " := e (in custom math_viewer, e at level 11).
+  Global Notation " '~' e " := (not e) (in custom math_viewer at level 7, right associativity).
+  Global Notation " A '->' B " := (A -> B) (in custom math_viewer at level 10, right associativity).
+  Global Infix " '==' " := eqProp (in custom math_viewer at level 7, no associativity).
+  Global Infix " '=<' " := leProp (in custom math_viewer at level 7, no associativity).
+  Global Infix " '/\' " := and (in custom math_viewer at level 8, right associativity).
+  Global Infix " '\/' " := or (in custom math_viewer at level 9, right associativity).
+  Global Infix " '<->' " := iff (in custom math_viewer at level 10, no associativity).
+
+End MathNotations.
+
+Export MathNotations.

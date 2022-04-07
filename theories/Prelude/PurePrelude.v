@@ -1,0 +1,9 @@
+Require Export Coq.Arith.PeanoNat.
+Require Export Coq.Classes.RelationClasses.
+Require Export Coq.Lists.List.
+Require Export Coq.Program.Basics.
+Require Export Coq.Relations.Relation_Definitions.
+Require Export Coq.Relations.Relation_Operators.
+Require Export Coq.Setoids.Setoid.
+Require Export DschingisKhan.Prelude.PreludeInit.
+Require Export DschingisKhan.Prelude.PreludeMath.
