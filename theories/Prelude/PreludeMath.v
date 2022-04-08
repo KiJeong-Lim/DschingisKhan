@@ -351,13 +351,13 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝟚' " := (bool)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'Prop' " := (Prop)
+  Global Notation " '𝐏𝐫𝐨𝐩' " := (Prop)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'Set' " := (Set)
+  Global Notation " '𝐒𝐞𝐭' " := (Set)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'Type' " := (Type)
+  Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝕋𝕪𝕡𝕖' " := (Hask.t)
+  Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
     (in custom math_term_scope at level 0, no associativity).
