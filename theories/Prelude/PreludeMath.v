@@ -321,6 +321,8 @@ Module MathNotations.
   Global Declare Custom Entry math_term_scope.
   Global Declare Custom Entry math_form_scope.
   Global Declare Scope math_scope.
+  Global Bind Scope math_scope with Funclass Sortclass.
+  Global Open Scope math_scope.
 
 (** "Auxiliary Symbols" *)
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
@@ -427,9 +429,6 @@ Module MathNotations.
 (** "Entry Points" *)
   Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity) : math_scope.
   Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
-
-  Global Bind Scope math_scope with Funclass Sortclass.
-  Global Open Scope math_scope.
 
 End MathNotations.
 
