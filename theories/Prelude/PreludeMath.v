@@ -361,6 +361,13 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
     (in custom math_term_scope at level 0, no associativity).
+  (* Data Constructor *)
+  Global Notation " '()' " := (tt)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐓' " := (true)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐅' " := (false)
+    (in custom math_term_scope at level 0, no associativity).
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
     (in custom math_term_scope at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
