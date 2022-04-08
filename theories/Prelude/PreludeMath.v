@@ -281,17 +281,23 @@ Module Ensembles.
     : forall x : A, x \in complement X <-> (~ x \in X).
   Proof. reflexivity. Qed.
 
+  Definition setminus {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) : ensemble A := intersection X1 (complement X2).
+
+  Lemma in_setminus_iff {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A)
+    : forall x : A, x \in setminus X1 X2 <-> (x \in X1 /\ ~ x \in X2).
+  Proof. intros x. unfold setminus. rewrite in_intersection_iff, in_complement_iff. tauto. Qed.
+
   Definition singleton {A : Hask.t} (z : A) : ensemble A := finite [z].
 
   Lemma in_singleton_iff {A : Hask.t} (z : A)
     : forall x : A, x \in singleton z <-> (x = z).
   Proof. intros x. unfold singleton. rewrite in_finite_iff. split; [intros [H | []] | intros []; left]; eauto. Qed.
 
-  Definition delete {A : Hask.t} (z : A) (X : ensemble A) : ensemble A := intersection (complement (singleton z)) X.
+  Definition delete {A : Hask.t} (z : A) (X : ensemble A) : ensemble A := setminus X (singleton z).
 
   Lemma in_delete_iff {A : Hask.t} (z : A) (X : ensemble A)
     : forall x : A, x \in delete z X <-> (x <> z /\ x \in X).
-  Proof. intros x. unfold delete. rewrite in_intersection_iff, in_complement_iff, in_singleton_iff. tauto. Qed.
+  Proof. intros x. unfold delete. rewrite in_setminus_iff, in_singleton_iff. tauto. Qed.
 
   Definition insert {A : Hask.t} (z : A) (X : ensemble A) : ensemble A := union (singleton z) X.
 
@@ -299,7 +305,7 @@ Module Ensembles.
     : forall x : A, x \in insert z X <-> (x = z \/ x \in X).
   Proof. intros x. unfold insert. rewrite in_union_iff, in_singleton_iff. tauto. Qed.
 
-  Global Opaque union unions_i unions image preimage finite intersection full empty complement singleton delete insert.
+  Global Opaque union unions_i unions image preimage finite intersection full empty complement setminus singleton delete insert.
 
   Local Instance Powerset_isCovariantFunctor : isCovariantFunctor ensemble :=
     { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B)
@@ -355,6 +361,8 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " t '→' s " := (Cat.hom t s)
     (in custom math_term_scope at level 10, right associativity).
+  Global Notation " t '⟹' s " := (Cat.isNaturalTransformation t s)
+    (in custom math_term_scope at level 10, right associativity).
   (* Projection *)
   Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
     (in custom math_term_scope at level 1, left associativity).
@@ -388,6 +396,8 @@ Module MathNotations.
   Global Notation " ∅ " := (empty)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '^{c}' " := (complement s)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " s '∖' t " := (setminus s t)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '\{' s '\}' " := (singleton s)
     (in custom math_term_scope at level 0, no associativity).
