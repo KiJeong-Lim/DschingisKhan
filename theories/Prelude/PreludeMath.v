@@ -114,25 +114,24 @@ Module MathProps.
   Global Infix " `isIdentityOf` " := IdElemOf (at level 70, no associativity) : type_scope.
   Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
 
-  Definition isSurjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Type :=
-    forall y : B, {x : A | y = f x}
+  Definition isInjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Prop :=
+    forall x1 : A, forall x2 : A, ⟪ f_x1_eq_f_x2 : f x1 = f x2 ⟫ -> ⟪ x1_eq_x2 : x1 = x2 ⟫
   .
 
-  Definition isInjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Prop :=
-    forall x1 : A, forall x2 : A, f x1 = f x2 -> x1 = x2
+  Definition isSurjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Type :=
+    forall y : B, {x : A | ⟪ y_is_f_x : y = f x ⟫}
   .
 
   Class HasSameCardinality (A : Hask.t) (B : Hask.t) : Type :=
     { bijection : A -> B
-    ; bijectionSurjective : isSurjective bijection
     ; bijectionInjective : isInjective bijection
+    ; bijectionSurjective : isSurjective bijection
     }
   .
 
   Class Countable (A : Hask.t) : Type :=
     { enum : nat -> A
-    ; requiresRecursivelyEnumerable
-      : forall x : A, exists n : nat, enum n = x
+    ; requiresRecursivelyEnumerable : isSurjective enum
     }
   .
 
