@@ -114,23 +114,23 @@ Module MathProps.
   Global Infix " `isIdentityOf` " := IdElemOf (at level 70, no associativity) : type_scope.
   Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
 
-  Definition isInjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Prop :=
-    forall x1 : A, forall x2 : A, ⟪ f_x1_eq_f_x2 : f x1 = f x2 ⟫ -> ⟪ x1_eq_x2 : x1 = x2 ⟫
+  Definition isInjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Prop :=
+    forall x1 : dom, forall x2 : dom, ⟪ f_x1_eq_f_x2 : f x1 = f x2 ⟫ -> ⟪ x1_eq_x2 : x1 = x2 ⟫
   .
 
-  Definition isSurjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Type :=
-    forall y : B, {x : A | ⟪ y_is_f_x : y = f x ⟫}
+  Definition isSurjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Type :=
+    forall y : cod, {x : dom | ⟪ y_is_f_x : y = f x ⟫}
   .
 
-  Class HasSameCardinality (A : Hask.t) (B : Hask.t) : Type :=
-    { bijection : A -> B
+  Class HasSameCardinality (dom : Hask.t) (cod : Hask.t) : Type :=
+    { bijection : dom -> cod
     ; bijectionInjective : isInjective bijection
     ; bijectionSurjective : isSurjective bijection
     }
   .
 
-  Class Countable (A : Hask.t) : Type :=
-    { enum : nat -> A
+  Class Countable (dom : Hask.t) : Type :=
+    { enum : nat -> dom
     ; requiresRecursivelyEnumerable : isSurjective enum
     }
   .
@@ -139,9 +139,9 @@ Module MathProps.
     forall y : X, {member y Y} + {~ member y Y}
   .
 
-  Class EqDec (A : Hask.t) : Type := eq_dec (x : A) : isDecidable (@eq A x).
+  Class EqDec (dom : Hask.t) : Type := eq_dec (x : dom) : isDecidable (@eq dom x).
 
-  Global Arguments eq_dec {A} {EqDec} (x) (y) : simpl nomatch.
+  Global Arguments eq_dec {dom} {EqDec} (x) (y) : simpl nomatch.
 
   Global Instance natEqDec : EqDec nat := { eq_dec := Nat.eq_dec }.
 
