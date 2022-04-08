@@ -152,7 +152,7 @@ Module MathProps.
 
 End MathProps.
 
-Module E.
+Module Ensembles.
 
   Import ListNotations.
 
@@ -308,11 +308,15 @@ Module E.
     }
   .
 
-End E.
+End Ensembles.
+
+Module E := Ensembles.
+
+Export Ensembles.
 
 Module MathNotations.
 
-  Import E MathProps.
+  Import MathProps.
 
   Global Declare Scope math_scope.
   Global Declare Custom Entry math_term_entry.
@@ -368,7 +372,7 @@ Module MathNotations.
     (in custom math_term_entry at level 0, no associativity).
   Global Notation " ∅ " := (empty)
     (in custom math_term_entry at level 0, no associativity).
-  Global Notation " '{'  s '}^c' " := (complement s)
+  Global Notation " s '^{c}' " := (complement s)
     (in custom math_term_entry at level 0, no associativity).
   Global Notation " '\{' s '\}' " := (singleton s)
     (in custom math_term_entry at level 0, no associativity).
@@ -393,7 +397,7 @@ Module MathNotations.
     (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
 
 (** "Logical Connectives" *)
-  (* Of propositional logic *)
+  (* Propositional logic *)
   Global Notation " '⊤' " := (True)
     (in custom math_form_entry at level 0, no associativity).
   Global Notation " '⊥' " := (False)
@@ -410,7 +414,7 @@ Module MathNotations.
     (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
   Global Notation " P '->' Q " := (P -> Q)
     (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
-  (* Of 1st-order logic *)
+  (* First-order logic *)
   Global Notation " '(∀' x ')' P " := (forall x: _, P)
     (x as pattern, P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
   Global Notation " '(∃' x ')' P " := (exists x: _, P)
