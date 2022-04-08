@@ -92,11 +92,11 @@ Module MathProps.
     }
   .
 
-  Class InvOpOf (inv : A -> A) (bin_op : A -> A -> A) : Prop :=
+  Class InvOpOf (inv : A -> A) (bin_op : A -> A -> A) {e : A} {e_id_bin_op : IdElemOf e bin_op} : Prop :=
     { left_inv (x : A)
-      : bin_op (inv x) x == x
+      : bin_op (inv x) x == e
     ; right_inv (x : A)
-      : bin_op x (inv x) == x
+      : bin_op x (inv x) == e
     }
   .
 
@@ -449,22 +449,32 @@ Module MathClasses.
   .
 
   Class Semigroup_axiom (plus : S -> S -> S) : Prop :=
-    { Semigroup_requiresAssoc :> Assoc plus
-    ; Semigroup_requiresMagma :> Magma_axiom plus
+    { Semigroup_requiresMagma :> Magma_axiom plus
+    ; Semigroup_requiresAssoc :> Assoc plus
     }
   .
 
   Class Monoid_axiom (plus : S -> S -> S) (zero : S) : Prop :=
-    { Monoid_requiresIdElem :> zero `isIdentityOf` plus
-    ; Monoid_requiresSemigroup :> Semigroup_axiom plus
+    { Monoid_requiresSemigroup :> Semigroup_axiom plus
+    ; Monoid_requiresIdElem :> zero `isIdentityOf` plus
     }
   .
 
   Class Group_axiom (plus : S -> S -> S) (zero : S) (neg : S -> S) : Prop :=
-    { Group_requiresInvOp :> neg `isInverseOpFor` plus
-    ; Group_requiresMonoid :> Monoid_axiom plus zero
+    { Group_requiresMonoid :> Monoid_axiom plus zero
+    ; Group_requiresInvOp :> neg `isInverseOpFor` plus
     }
   .
+
+  Global Instance neg_preserves_eqProp_inGroup (plus : S -> S -> S) (zero : S) (neg : S -> S)
+    (requiresGroup : Group_axiom plus zero neg)
+    : preserves_eqProp1 neg.
+  Proof.
+    ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_plus neg_right_inv_plus]].
+    rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1). rewrite Semigroup_requiresAssoc.
+    enough (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite claim1; apply left_id.
+    now rewrite <- H_EQ1.
+  Qed.
 
   End AXIOMS.
 
