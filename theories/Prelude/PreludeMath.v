@@ -326,16 +326,19 @@ Module MathNotations.
   Global Open Scope math_scope.
 
 (** "Auxiliary Symbols" *)
+  Global Notation " t " := t (t ident, in custom math_term_scope at level 0).
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
-  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 0, right associativity).
+  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 11, right associativity).
   Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
+  Global Notation " P " := P (P constr, in custom math_form_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
-  Global Notation " x '↦' P " := (fun x => P) (x as pattern, in custom math_form_scope at level 0, right associativity).
-  Global Notation " '⟦' P '⟧' " := P (P constr, in custom math_form_scope at level 0).
   Global Notation " '⟪' '_' '⋯' P '⟫' " := ⟪ P ⟫ (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '⟪' H '⋯' P '⟫' " := << H : P >> (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
 
 (** "Terms" *)
+  (* Type *)
+  Global Notation " 'ℕ' " := nat
+    (in custom math_term_scope at level 0, no associativity).
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
     (in custom math_term_scope at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
@@ -346,7 +349,10 @@ Module MathNotations.
   (* Category *)
   Global Notation " t '∘' s " := (Cat.compose t s)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation id := Cat.id.
+  Global Notation " 'id' " := Cat.id
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " t '→' s " := (Cat.hom t s)
+    (in custom math_term_scope at level 10, right associativity).
   (* Projection *)
   Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
     (in custom math_term_scope at level 1, left associativity).
@@ -430,6 +436,16 @@ Module MathNotations.
 (** "Entry Points" *)
   Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity) : math_scope.
   Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
+
+(* Notation Test #1 *)
+(* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
+(* "$ (x ↦ x) ∘ (x ↦ x) $ : $ ℕ → ℕ $" *)
+
+(* Notation Test #2 *)
+(* Check (Cat.compose Cat.id (fun x : nat => x + 1)). *)
+(* "$ id ∘ (x ↦ ⟦ x + 1 ⟧) $ : $ ℕ → ℕ $" *)
+
+Local Open Scope program_scope.
 
 End MathNotations.
 
