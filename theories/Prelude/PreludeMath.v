@@ -114,13 +114,6 @@ Module MathProps.
   Global Infix " `isIdentityOf` " := IdElemOf (at level 70, no associativity) : type_scope.
   Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
 
-  Class Countable (A : Hask.t) : Type :=
-    { enum : nat -> A
-    ; requiresRecursivelyEnumerable
-      : forall x : A, exists n : nat, enum n = x
-    }
-  .
-
   Definition isSurjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Type :=
     forall y : B, {x : A | y = f x}
   .
@@ -136,9 +129,20 @@ Module MathProps.
     }
   .
 
-  Class EqDec (A : Hask.t) : Type := eq_dec (lhs : A) (rhs : A) : {lhs = rhs} + {lhs <> rhs}.
+  Class Countable (A : Hask.t) : Type :=
+    { enum : nat -> A
+    ; requiresRecursivelyEnumerable
+      : forall x : A, exists n : nat, enum n = x
+    }
+  .
 
-  Global Arguments eq_dec {A} {EqDec} (lhs) (rhs) : simpl nomatch.
+  Definition isDecidable {X : Hask.t} (Y : ensemble X) : Type :=
+    forall y : X, {member y Y} + {~ member y Y}
+  .
+
+  Class EqDec (A : Hask.t) : Type := eq_dec (x : A) : isDecidable (@eq A x).
+
+  Global Arguments eq_dec {A} {EqDec} (x) (y) : simpl nomatch.
 
   Global Instance natEqDec : EqDec nat := { eq_dec := Nat.eq_dec }.
 
@@ -518,7 +522,7 @@ Module MathClasses.
   .
 
   Class isRig (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rig_hasAdditiveMonoid :> isMonoid R
+    { Rig_hasMonoid :> isMonoid R
     ; Rig_has_mul :> Has_mul R
     ; Rig_has_unity :> Has_unity R
     ; Rig_add_comm :> Comm add
@@ -528,7 +532,7 @@ Module MathClasses.
   .
 
   Class isRng (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rng_hasAddtiveGroup :> isGroup R
+    { Rng_hasGroup :> isGroup R
     ; Rng_has_mul :> Has_mul R
     ; Rng_add_comm :> Comm add
     ; Rng_mul_assoc :> Semigroup_axiom R mul
