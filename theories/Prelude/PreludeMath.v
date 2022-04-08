@@ -360,8 +360,8 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '{'  x '∈' A '|' B  '}' " := {x : A | B}
-    (x ident, B custom math_form_scope at level 11, in custom math_term_scope at level 0, no associativity).
+  Global Notation " '\{'  x '∈' A '|' B  '\}' " := {x : A | B}
+    (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
     (in custom math_term_scope at level 0, no associativity).
@@ -390,17 +390,17 @@ Module MathNotations.
   Global Notation " s '=====>' t " := (Cat.isNaturalTransformation s t)
     (in custom math_term_scope at level 10, no associativity).
   (* Projection *)
-  Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
+  Global Notation " t '.unlift' " := (proj1_sig t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.property' " := (@proj2_sig _ _ t)
+  Global Notation " t '.property' " := (proj2_sig t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.fst' " := (@fst _ _ t)
+  Global Notation " t '.fst' " := (fst t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.snd' " := (@snd _ _ t)
+  Global Notation " t '.snd' " := (snd t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.1' " := (@projT1 _ _ t)
+  Global Notation " t '.1' " := (projT1 t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.2' " := (@projT2 _ _ t)
+  Global Notation " t '.2' " := (projT2 t)
     (in custom math_term_scope at level 1, left associativity).
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
@@ -475,21 +475,25 @@ Module MathNotations.
   Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
   Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
 
-(* MathNotations Test #1 *)
+(** "MathNotations Test #1" *)
 (* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
 (* "$ (x ↦ x) ∘ (x ↦ x) $ : $ ℕ → ℕ $" *)
 
-(* MathNotations Test #2 *)
+(** "MathNotations Test #2" *)
 (* Check (Cat.compose Cat.id (fun x : nat => x + 1)). *)
 (* "$ id ∘ (x ↦ ⟦ x + 1 ⟧) $ : $ ℕ → ℕ $" *)
 
-(* MathNotations Test #3 *)
+(** "MathNotations Test #3" *)
 (* Check (fun x : nat => x + 1 = 2). *)
 (* "$ x ↦ ⟪ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ ⟫ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
 
-(** MathNotations Test #4 *)
+(** "MathNotations Test #4" *)
 (* Check (fun x : nat => exists y : nat, x + 1 = y + 1). *)
 (* "$ x ↦ ⟪ (∃y) ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ⟫ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
+
+(** "MathNotations Test #5" *)
+(* Check (fun x : nat => {y : nat | x + 1 = y + 1}). *)
+(* "$ x ↦ \{ y ∈ ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ \} $ : $$ ℕ -> 𝐒𝐞𝐭 $$" *)
 
 End MathNotations.
 
