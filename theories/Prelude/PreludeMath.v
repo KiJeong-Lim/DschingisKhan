@@ -442,10 +442,7 @@ Module MathClasses.
 
   Context (S : Hask.t) {requireSetoid : isSetoid S}.
 
-  Class Magma_axiom (plus : S -> S -> S) : Prop :=
-    { Magma_requiresCongruence :> preserves_eqProp2 plus
-    }
-  .
+  Class Magma_axiom (plus : S -> S -> S) : Prop := Magma_requiresCongruence :> preserves_eqProp2 plus.
 
   Class Semigroup_axiom (plus : S -> S -> S) : Prop :=
     { Semigroup_requiresMagma :> Magma_axiom plus
