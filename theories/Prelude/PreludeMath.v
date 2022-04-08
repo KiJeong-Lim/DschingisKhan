@@ -330,7 +330,7 @@ Module MathNotations.
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
   Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 11, right associativity).
   Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
-  Global Notation " P " := P (P constr, in custom math_form_scope at level 0).
+  Global Notation " P " := P (P custom math_term_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
   Global Notation " '⟪' '_' '⋯' P '⟫' " := ⟪ P ⟫ (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '⟪' H '⋯' P '⟫' " := << H : P >> (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
@@ -338,6 +338,8 @@ Module MathNotations.
 (** "Terms" *)
   (* Type *)
   Global Notation " 'ℕ' " := nat
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " 'ℙ' " := Prop
     (in custom math_term_scope at level 0, no associativity).
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
@@ -445,7 +447,9 @@ Module MathNotations.
 (* Check (Cat.compose Cat.id (fun x : nat => x + 1)). *)
 (* "$ id ∘ (x ↦ ⟦ x + 1 ⟧) $ : $ ℕ → ℕ $" *)
 
-Local Open Scope program_scope.
+(* Notation Test #3 *)
+(* Check (fun x : nat => x + 1 = 2). *)
+(* "$ x ↦ ⟦ $$ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ $$ ⟧ $ : $$ ℕ -> ℙ $$" *)
 
 End MathNotations.
 
