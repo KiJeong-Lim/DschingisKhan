@@ -360,11 +360,13 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " A × B " := (A * B)%type
+  Global Notation " A '×' B " := (A * B)%type
     (in custom math_term_scope at level 6, no associativity).
-  Global Notation " A ⊎ B " := (A + B)%type
+  Global Notation " A '⊔' B " := (A + B)%type
     (in custom math_term_scope at level 6, no associativity).
-  Global Notation " '\{'  x '∈' A '|' B  '\}' " := {x : A | B}
+  Global Notation " '⨆_{' x '∈' A  '}' B " := ({x : A & B})%type
+    (x pattern, A custom math_term_scope at level 6, B custom math_term_scope at level 1, in custom math_term_scope at level 0).
+  Global Notation " '\{' x '∈' A '|' B '\}' " := ({x : A | B})%type
     (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
@@ -409,8 +411,8 @@ Module MathNotations.
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " '⋃_{' i  '}' s " := (unions_i (fun i => s))
-    (i ident, in custom math_term_scope at level 1, no associativity).
+  Global Notation " '⋃_{' i ':' t  '}' s " := (unions_i (fun i : t => s))
+    (i pattern, in custom math_term_scope at level 1, no associativity).
   Global Notation " '⋃' s " := (unions s)
     (in custom math_term_scope at level 1, no associativity).
   Global Notation " f '^{→}' '[' X ']' " := (image f X)
@@ -469,9 +471,9 @@ Module MathNotations.
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   (* First-order logic *)
   Global Notation " '(∀' x ')' P " := (forall x, P)
-    (x ident, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
+    (x binder, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " '(∃' x ')' P " := (exists x, P)
-    (x ident, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
+    (x binder, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " t '=' s " := (t = s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
@@ -498,6 +500,10 @@ Module MathNotations.
 (** "MathNotations Test #5" *)
 (* Check (fun x : nat => {y | x + 1 = y + 1}). *)
 (* "$ x ↦ \{ y ∈ ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ \} $ : $$ ℕ -> 𝐒𝐞𝐭 $$" *)
+
+(** "MathNotations Test #6" *)
+(* Check (fun x : nat => {'(z, y) | x + 1 = y + 1 /\ z = 1}). *)
+(* "$ x ↦ \{ (z, y) ∈ ℕ × ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ∧ z = ⟦ 1 ⟧ \} $ : $$ ℕ -> 𝐒𝐞𝐭 $$" *)
 
 (** "MathNotations Test #6" *)
 (* Check (fun x : nat => {'(z, y) | x + 1 = y + 1 /\ z = 1}). *)
