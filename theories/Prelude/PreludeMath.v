@@ -480,7 +480,7 @@ Module MathNotations.
 
 (* Notation Test #3 *)
 (* Check (fun x : nat => x + 1 = 2). *)
-(* "$ x ↦ ⟦ $$ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ $$ ⟧ $ : $$ ℕ -> Prop $$" *)
+(* "$ x ↦ ⟦ $$ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ $$ ⟧ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
 
 End MathNotations.
 
