@@ -330,14 +330,14 @@ Module MathNotations.
 
 (** "Auxiliary Symbols" *)
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
-  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 0, right associativity).
-  Global Notation " t " := t (t constr, in custom math_term_scope at level 0).
+  Global Notation " x '↦' t " := (fun x : _ => t) (x as pattern, in custom math_term_scope at level 0, right associativity).
+  Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
-  Global Notation " x '↦' P " := (fun x => P) (x as pattern, in custom math_form_scope at level 0, right associativity).
-  Global Notation " P " := P (P constr, in custom math_form_scope at level 0).
-  Global Notation " '⟦' '_' '⋯' P '⟧' " := (⟪ _ : P ⟫)%type
+  Global Notation " x '↦' P " := (fun x : _ => P) (x as pattern, in custom math_form_scope at level 0, right associativity).
+  Global Notation " '⟦' P '⟧' " := P (P constr, in custom math_form_scope at level 0).
+  Global Notation " '⟪' '_' '⋯' P '⟫' " := (⟪ _ : P ⟫)%type
     (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
-  Global Notation " '⟦' H '⋯' P '⟧' " := (<< H : P >>)%type
+  Global Notation " '⟪' H '⋯' P '⟫' " := (<< H : P >>)%type
     (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
 
 (** "Terms" *)
@@ -348,6 +348,10 @@ Module MathNotations.
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '≟' s " := (eq_dec t s)
     (in custom math_term_scope at level 6, no associativity).
+  (* Category *)
+  Global Notation " t '∘' s " := (Cat.compose t s)
+    (in custom math_term_scope at level 1, left associativity).
+  Global Notation id := Cat.id.
   (* Projection *)
   Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
     (in custom math_term_scope at level 1, left associativity).
@@ -383,8 +387,6 @@ Module MathNotations.
   Global Notation " s '^{c}' " := (complement s)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '\{' s '\}' " := (singleton s)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " ∅ " := (empty)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '.delete' t " := (delete t s)
     (in custom math_term_scope at level 1, left associativity).
