@@ -31,8 +31,7 @@ Module Khan.
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw x'; rednw y');
-      (tryif guard x' = H then rename y' into H else idtac)
+      (destruct H as [x' y']; rednw x'; rednw y')
     | ?P \/ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
@@ -40,8 +39,7 @@ Module Khan.
     | ?P <-> ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw x'; rednw y');
-      (tryif guard x' = H then rename y' into H else idtac)
+      (destruct H as [x' y']; rednw x'; rednw y')
     | exists x, ?P =>
       let x' := fresh x in
       let y' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
