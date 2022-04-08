@@ -359,8 +359,6 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
-    (in custom math_term_scope at level 0, no associativity).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
     (in custom math_term_scope at level 0, no associativity).
@@ -382,8 +380,12 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " t '→' s " := (Cat.hom t s)
     (in custom math_term_scope at level 10, right associativity).
-  Global Notation " t '⟹' s " := (Cat.isNaturalTransformation t s)
-    (in custom math_term_scope at level 10, right associativity).
+  Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " t '----->' s " := (Cat.Functor_t t s)
+    (in custom math_term_scope at level 10, no associativity).
+  Global Notation " t '=====>' s " := (Cat.isNaturalTransformation t s)
+    (in custom math_term_scope at level 10, no associativity).
   (* Projection *)
   Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
     (in custom math_term_scope at level 1, left associativity).
