@@ -429,6 +429,7 @@ Module MathNotations.
   Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
 
   Global Bind Scope math_scope with Funclass Sortclass.
+  Global Open Scope math_scope.
 
 End MathNotations.
 
@@ -546,7 +547,5 @@ Module MathClasses.
   Global Notation " '-' x " := (neg x) (in custom math_term_scope at level 2, right associativity).
   Global Notation " x '*' y " := (mul x y) (in custom math_term_scope at level 3, left associativity).
   Global Notation " '1' " := (unity) (in custom math_term_scope at level 0, no associativity).
-
-  Import MathNotations.
 
 End MathClasses.
