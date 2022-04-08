@@ -23,7 +23,8 @@ Module Khan.
 
   Global Tactic Notation " rednw " hyp( H ) :=
     (match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
-    (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end).
+    (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
+  .
 
   Global Tactic Notation " desnw " "in" hyp( H ) :=
     match type of H with
@@ -44,24 +45,22 @@ Module Khan.
       let x' := fresh x in
       let y' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       (destruct H as [x' y']; rednw y')
-    end.
+    end
+  .
+
+  Global Ltac unfold_nw := unfold REFERENCE_HOLDER in *.
+
+  Global Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
 
   (** "\S2. Hint Database" *)
 
   Global Create HintDb khan_hints.
 
-  Global Hint Unfold flip : khan_hints.
-  Global Hint Unfold relation_conjunction : khan_hints.
-  Global Hint Unfold REFERENCE_HOLDER : khan_hints.
+  Global Hint Unfold flip relation_conjunction REFERENCE_HOLDER : khan_hints.
 
   (** "\S3. Introduction Tactics" *)
 
   Global Ltac ii := repeat intro.
-
-  Global Tactic Notation " desnw " "in" "*" :=
-    repeat (match goal with H : _ |- _ => desnw in H end).
-
-  Global Ltac unfold_nw := unfold REFERENCE_HOLDER in *.
 
   (** "\S4. Exploit Tactics" *)
 
