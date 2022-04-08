@@ -121,7 +121,137 @@ Module MathProps.
     }
   .
 
+  Definition isSurjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Type :=
+    forall y : B, {x : A | y = f x}
+  .
+
+  Definition isInjective {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) : Prop :=
+    forall x1 : A, forall x2 : A, f x1 = f x2 -> x1 = x2
+  .
+
+  Class HasSameCardinality (A : Hask.t) (B : Hask.t) : Type :=
+    { bijection : A -> B
+    ; bijectionSurjective : isSurjective bijection
+    ; bijectionInjective : isInjective bijection
+    }
+  .
+
+  Class EqDec (A : Hask.t) : Type := eq_dec (lhs : A) (rhs : A) : {lhs = rhs} + {lhs <> rhs}.
+
+  Global Arguments eq_dec {A} {EqDec} (lhs) (rhs) : simpl nomatch.
+
+  Global Instance natEqDec : EqDec nat := { eq_dec := Nat.eq_dec }.
+
+  Class ToBool (B : Hask.t) : Type := to_bool (b : B) : bool.
+
+  Global Arguments to_bool {B} {ToBool} (b) : simpl nomatch.
+
+  Global Instance boolToBool : ToBool bool := { to_bool := id_{ bool } }.
+
+  Global Instance sumboolToBool (P : Prop) (Q : Prop) : ToBool ({P} + {Q}) := { to_bool := fun b : {P} + {Q} => if b then true else false }.
+
 End MathProps.
+
+Module MathNotations.
+
+  Import E MathProps.
+
+  Global Declare Scope math_scope.
+  Global Declare Custom Entry math_form_entry.
+  Global Declare Custom Entry math_term_entry.
+
+(** "Auxiliary Symbols" *)
+  Global Notation " P " := P (P ident, in custom math_form_entry at level 0).
+  Global Notation " '⟦' P '⟧' " := P (P constr, in custom math_form_entry at level 0).
+  Global Notation " '(' P ')' " := P (in custom math_form_entry at level 0, P custom math_form_entry at level 11).
+  Global Notation " x '↦' P " := (fun x => P) (x as pattern, in custom math_form_entry at level 0, right associativity).
+  Global Notation " t " := t (t ident, in custom math_term_entry at level 0).
+  Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_form_entry at level 0).
+  Global Notation " '(' t ')' " := t (in custom math_term_entry at level 0, t custom math_term_entry at level 11).
+  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_entry at level 0, right associativity).
+  Global Notation " '⟪' H '⋯' P '⟫' " := (REFERENCE_HOLDER (fun H : unit => match H with tt => P end)) (H name, P custom math_form_entry at level 11, in custom math_form_entry at level 0).
+
+(** "Logical Connectives" *)
+  (* Of propositional logic *)
+  Global Notation " '⊤' " := (True)
+    (in custom math_form_entry at level 0, no associativity).
+  Global Notation " '⊥' " := (False)
+    (in custom math_form_entry at level 0, no associativity).
+  Global Notation " '¬' P " := (not P)
+    (P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+  Global Notation " P '∧' Q " := (and P Q)
+    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 8, right associativity).
+  Global Notation " P '∨' Q " := (or P Q)
+    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 9, right associativity).
+  Global Notation " P '⟶' Q " := (impl P Q)
+    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+  Global Notation " P '⟷' Q " := (iff P Q)
+    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+  Global Notation " P '->' Q " := (P -> Q)
+    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+  (* Of 1st-order logic *)
+  Global Notation " '(∀' x ')' P " := (forall x: _, P)
+    (x as pattern, P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+  Global Notation " '(∃' x ')' P " := (exists x: _, P)
+    (x as pattern, P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+  Global Notation " t '=' s " := (t = s)
+    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+
+(** "Atomic Formulae" *)
+  (* Setoid *)
+  Global Notation " t '≡' s " := (eqProp t s)
+    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+  (* Poset *)
+  Global Notation " t '≦' s " := (leProp t s)
+    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+  (* Ensemble *)
+  Global Notation " t '∈' s " := (member t s)
+    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+  Global Notation " t '⊆' s " := (isSubsetOf t s)
+    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+
+(** "Terms" *)
+  (* Bool *)
+  Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
+    (in custom math_term_entry at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
+  Global Notation " t '.asbool' " := (to_bool t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '≟' s " := (eq_dec t s)
+    (in custom math_term_entry at level 6, no associativity).
+  (* Projection *)
+  Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '.property' " := (@proj2_sig _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '.fst' " := (@fst _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '.snd' " := (@snd _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '.1' " := (@projT1 _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " t '.2' " := (projT2 _ _ t)
+    (in custom math_term_entry at level 1, left associativity).
+  (* Ensemble *)
+  Global Notation " s '∩' t " := (intersection s t)
+    (in custom math_term_entry at level 1, no associativity).
+  Global Notation " s '∪' t " := (union s t)
+    (in custom math_term_entry at level 1, no associativity).
+  Global Notation " '⋃' s " := (unions s)
+    (in custom math_term_entry at level 1, no associativity).
+  Global Notation " '{' s '}' " := (singleton s)
+    (in custom math_term_entry at level 0, no associativity).
+  Global Notation " '{' s ',' t ',' .. ',' u '}' " := (finite (cons s (cons t .. (cons u nil) ..)))
+    (in custom math_term_entry at level 0, no associativity).
+  Global Notation " f '^{→}' '[' X ']' " := (image f X)
+    (in custom math_term_entry at level 1, left associativity).
+  Global Notation " f '^{←}' '[' X ']' " := (preimage f X)
+    (in custom math_term_entry at level 1, left associativity).
+
+(** "Entry Points" *)
+  Global Notation " '$$' P '$$' " := P (P custom math_form_entry at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " '$' t '$' " := t (t custom math_term_entry at level 11, at level 0, no associativity) : math_scope.
+
+End MathNotations.
 
 Module MathClasses.
 
@@ -161,6 +291,8 @@ Module MathClasses.
 
   End AXIOMS.
 
+  Section SIGNATURES.
+
   Class Add_sig (S : Hask.t) : Type := add : S -> S -> S.
 
   Class AddId_sig (M : Hask.t) : Type := zero : M.
@@ -170,8 +302,14 @@ Module MathClasses.
   Class Mul_sig (R : Hask.t) : Type := mul : R -> R -> R.
 
   Class MulId_sig (R : Hask.t) : Type := unity : R.
-  
+
   Class MulInv_sig (R : Hask.t) : Type := recip : R -> R.
+
+  End SIGNATURES.
+
+  Definition nonzero {K : Hask.t} {requireSetoid : isSetoid K} {requiresMonoid : AddId_sig K} (x : K) : Prop := ~ x == zero.
+
+  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requiresMonoid : AddId_sig K} : Hask.t := @sig K nonzero.
 
   Class isSemigroup (S : Hask.t) {requireSetoid : isSetoid S} : Type :=
     { sigOfSemigroup :> Add_sig S
@@ -214,10 +352,6 @@ Module MathClasses.
     }
   .
 
-  Definition nonzero {M : Hask.t} {requireSetoid : isSetoid M} {requiresMonoid : isMonoid M} (x : M) : Prop := ~ x == zero.
-
-  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requiresMonoid : isMonoid K} : Hask.t := @sig K nonzero.
-
   Class isField (K : Hask.t) {requireSetoid : isSetoid K} : Type :=
     { Field_hasRing_asSelf :> isRing K
     ; sigOfFieldMultiplicativePart :> MulInv_sig (zero_removed K)
@@ -228,11 +362,11 @@ Module MathClasses.
     }
   .
 
-  Global Notation " x '+' y " := (add x y) (in custom math_viewer at level 6, left associativity).
-  Global Notation " '0' " := (zero) (in custom math_viewer at level 0, no associativity).
-  Global Notation " x '-' y " := (add x (neg y)) (in custom math_viewer at level 6, left associativity).
-  Global Notation " '-' x " := (neg x) (in custom math_viewer at level 4, right associativity).
-  Global Notation " x '*' y " := (mul x y) (in custom math_viewer at level 5, left associativity).
-  Global Notation " '1' " := (unity) (in custom math_viewer at level 0, no associativity).
+  Global Notation " x '+' y " := (add x y) (in custom math_term_entry at level 4, left associativity).
+  Global Notation " '0' " := (zero) (in custom math_term_entry at level 0, no associativity).
+  Global Notation " x '-' y " := (add x (neg y)) (in custom math_term_entry at level 4, left associativity).
+  Global Notation " '-' x " := (neg x) (in custom math_term_entry at level 2, right associativity).
+  Global Notation " x '*' y " := (mul x y) (in custom math_term_entry at level 3, left associativity).
+  Global Notation " '1' " := (unity) (in custom math_term_entry at level 0, no associativity).
 
 End MathClasses.
