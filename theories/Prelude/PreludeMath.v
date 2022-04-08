@@ -318,113 +318,113 @@ Module MathNotations.
 
   Import MathProps.
 
+  Global Declare Custom Entry math_term_scope.
+  Global Declare Custom Entry math_form_scope.
   Global Declare Scope math_scope.
-  Global Declare Custom Entry math_term_entry.
-  Global Declare Custom Entry math_form_entry.
 
 (** "Auxiliary Symbols" *)
-  Global Notation " '(' t ')' " := t (in custom math_term_entry at level 0, t custom math_term_entry at level 11).
-  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_entry at level 0, right associativity).
-  Global Notation " t " := t (t constr, in custom math_term_entry at level 0).
-  Global Notation " '(' P ')' " := P (in custom math_form_entry at level 0, P custom math_form_entry at level 11).
-  Global Notation " x '↦' P " := (fun x => P) (x as pattern, in custom math_form_entry at level 0, right associativity).
-  Global Notation " P " := P (P constr, in custom math_form_entry at level 0).
-  Global Notation " '⟪' H '⋯' P '⟫' " := (REFERENCE_HOLDER (fun H : unit => match H with tt => P end))
-    (H name, P custom math_form_entry at level 11, in custom math_form_entry at level 0).
+  Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
+  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 0, right associativity).
+  Global Notation " t " := t (t constr, in custom math_term_scope at level 0).
+  Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
+  Global Notation " x '↦' P " := (fun x => P) (x as pattern, in custom math_form_scope at level 0, right associativity).
+  Global Notation " P " := P (P constr, in custom math_form_scope at level 0).
+  Global Notation " '⟦' H '⋯' P '⟧' " := (⟪ H : P ⟫)%type
+    (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
 
 (** "Terms" *)
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
-    (in custom math_term_entry at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
+    (in custom math_term_scope at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
   Global Notation " t '.asbool' " := (to_bool t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '≟' s " := (eq_dec t s)
-    (in custom math_term_entry at level 6, no associativity).
+    (in custom math_term_scope at level 6, no associativity).
   (* Projection *)
   Global Notation " t '.unlift' " := (@proj1_sig _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.property' " := (@proj2_sig _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.fst' " := (@fst _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.snd' " := (@snd _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.1' " := (@projT1 _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.2' " := (projT2 _ _ t)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
-    (in custom math_term_entry at level 1, no associativity).
+    (in custom math_term_scope at level 1, no associativity).
   Global Notation " '⋃_{' i  '}' s " := (unions_i (fun i => s))
-    (i as pattern, in custom math_term_entry at level 1, no associativity).
+    (i as pattern, in custom math_term_scope at level 1, no associativity).
   Global Notation " '⋃' s " := (unions s)
-    (in custom math_term_entry at level 1, no associativity).
+    (in custom math_term_scope at level 1, no associativity).
   Global Notation " f '^{→}' '[' X ']' " := (image f X)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " f '^{←}' '[' X ']' " := (preimage f X)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " '\{' s ',' t ',' .. ',' u '\}' " := (finite (cons s (cons t .. (cons u nil) ..)))
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '∩' t " := (intersection s t)
-    (in custom math_term_entry at level 1, no associativity).
+    (in custom math_term_scope at level 1, no associativity).
   Global Notation " 'Univ_{' A  '}' " := (@full A)
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " ∅ " := (empty)
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '^{c}' " := (complement s)
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " '\{' s '\}' " := (singleton s)
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " ∅ " := (empty)
-    (in custom math_term_entry at level 0, no associativity).
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '.delete' t " := (delete t s)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
   Global Notation " s '.insert' t " := (insert t s)
-    (in custom math_term_entry at level 1, left associativity).
+    (in custom math_term_scope at level 1, left associativity).
 
 (** "Atomic Formulas" *)
   (* Setoid *)
   Global Notation " t '≡' s " := (eqProp t s)
-    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
   (* Poset *)
   Global Notation " t '≦' s " := (leProp t s)
-    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
   (* Ensemble *)
   Global Notation " t '∈' s " := (member t s)
-    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
   Global Notation " t '⊆' s " := (isSubsetOf t s)
-    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
 (** "Logical Connectives" *)
   (* Propositional logic *)
   Global Notation " '⊤' " := (True)
-    (in custom math_form_entry at level 0, no associativity).
+    (in custom math_form_scope at level 0, no associativity).
   Global Notation " '⊥' " := (False)
-    (in custom math_form_entry at level 0, no associativity).
+    (in custom math_form_scope at level 0, no associativity).
   Global Notation " '¬' P " := (not P)
-    (P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+    (P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " P '∧' Q " := (and P Q)
-    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 8, right associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 8, right associativity).
   Global Notation " P '∨' Q " := (or P Q)
-    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 9, right associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 9, right associativity).
   Global Notation " P '⟶' Q " := (impl P Q)
-    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   Global Notation " P '⟷' Q " := (iff P Q)
-    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   Global Notation " P '->' Q " := (P -> Q)
-    (P custom math_form_entry, Q custom math_form_entry, in custom math_form_entry at level 10, no associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   (* First-order logic *)
   Global Notation " '(∀' x ')' P " := (forall x: _, P)
-    (x as pattern, P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+    (x as pattern, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " '(∃' x ')' P " := (exists x: _, P)
-    (x as pattern, P custom math_form_entry, in custom math_form_entry at level 7, right associativity).
+    (x as pattern, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " t '=' s " := (t = s)
-    (t custom math_term_entry at level 6, s custom math_term_entry at level 6, in custom math_form_entry at level 7, no associativity).
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
 (** "Entry Points" *)
-  Global Notation " '$' t '$' " := t (t custom math_term_entry at level 11, at level 0, no associativity) : math_scope.
-  Global Notation " '$$' P '$$' " := P (P custom math_form_entry at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
 
 End MathNotations.
 
@@ -433,7 +433,6 @@ Module MathClasses.
   Import MathProps.  
 
   Local Open Scope program_scope.
-  Local Open Scope math_scope.
 
   Section AXIOMS.
 
@@ -537,11 +536,11 @@ Module MathClasses.
     }
   .
 
-  Global Notation " x '+' y " := (add x y) (in custom math_term_entry at level 4, left associativity).
-  Global Notation " '0' " := (zero) (in custom math_term_entry at level 0, no associativity).
-  Global Notation " x '-' y " := (add x (neg y)) (in custom math_term_entry at level 4, left associativity).
-  Global Notation " '-' x " := (neg x) (in custom math_term_entry at level 2, right associativity).
-  Global Notation " x '*' y " := (mul x y) (in custom math_term_entry at level 3, left associativity).
-  Global Notation " '1' " := (unity) (in custom math_term_entry at level 0, no associativity).
+  Global Notation " x '+' y " := (add x y) (in custom math_term_scope at level 4, left associativity).
+  Global Notation " '0' " := (zero) (in custom math_term_scope at level 0, no associativity).
+  Global Notation " x '-' y " := (add x (neg y)) (in custom math_term_scope at level 4, left associativity).
+  Global Notation " '-' x " := (neg x) (in custom math_term_scope at level 2, right associativity).
+  Global Notation " x '*' y " := (mul x y) (in custom math_term_scope at level 3, left associativity).
+  Global Notation " '1' " := (unity) (in custom math_term_scope at level 0, no associativity).
 
 End MathClasses.

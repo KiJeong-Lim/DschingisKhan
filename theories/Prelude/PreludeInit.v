@@ -13,12 +13,42 @@ Module Khan.
   Global Notation " 'id_{' A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
 
   (** "\S1. Reference Holder" *)
+  (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"*)
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
-  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with | tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
+  Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE => STATEMENT)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
+  Global Notation " '<<' STATEMENT '>>' " := (REFERENCE_HOLDER (fun _ => STATEMENT)) (STATEMENT at level 200, at level 0, no associativity) : type_scope.
+  Global Notation " '⟪' STATEMENT_REFERENCE ':' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
-  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
+  Global Tactic Notation " rednw " hyp( H ) :=
+    (match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
+    (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
+  .
+
+  Global Tactic Notation " desnw " "in" hyp( H ) :=
+    match type of H with
+    | REFERENCE_HOLDER (fun z => _) => rename H into z; red in z
+    | ?P /\ ?Q =>
+      let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
+      let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
+      (destruct H as [x' y']; rednw x'; rednw y');
+      (tryif guard x' = H then rename y' into H else idtac)
+    | ?P \/ ?Q =>
+      let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
+      let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
+      (destruct H as [x' | y']; [rednw x' | rednw y'])
+    | ?P <-> ?Q =>
+      let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
+      let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
+      (destruct H as [x' y']; rednw x'; rednw y');
+      (tryif guard x' = H then rename y' into H else idtac)
+    | exists x, ?P =>
+      let x' := fresh x in
+      let y' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
+      (destruct H as [x' y']; rednw y')
+    end
+  .
 
   (** "\S2. Hint Database" *)
 
@@ -30,7 +60,11 @@ Module Khan.
 
   (** "\S3. Introduction Tactics" *)
 
-  Global Ltac ii := (repeat intro).
+  Global Ltac ii := repeat intro.
+
+  Global Tactic Notation " desnw " "in" "*" := repeat (match goal with H : _ |- _ => desnw in H end).
+
+  Global Ltac unfold_nw := unfold REFERENCE_HOLDER in *.
 
   (** "\S4. Exploit Tactics" *)
 
