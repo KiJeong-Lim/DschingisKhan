@@ -343,9 +343,9 @@ Module MathNotations.
 
 (** "Terms" *)
   (* Type *)
-  Global Notation " 'ℕ' " := nat
+  Global Notation " 'ℕ' " := (nat)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'ℙ' " := Prop
+  Global Notation " 'ℙ' " := (Prop)
     (in custom math_term_scope at level 0, no associativity).
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
@@ -357,7 +357,7 @@ Module MathNotations.
   (* Category *)
   Global Notation " t '∘' s " := (Cat.compose t s)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " 'id' " := Cat.id
+  Global Notation " 'id' " := (Cat.id)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " t '→' s " := (Cat.hom t s)
     (in custom math_term_scope at level 10, right associativity).
@@ -393,7 +393,7 @@ Module MathNotations.
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " 'Univ_{' A  '}' " := (@full A)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " ∅ " := (empty)
+  Global Notation " '∅' " := (empty)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '^{c}' " := (complement s)
     (in custom math_term_scope at level 0, no associativity).
