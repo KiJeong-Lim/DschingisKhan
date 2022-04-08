@@ -400,7 +400,7 @@ Module MathNotations.
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " t '.1' " := (@projT1 _ _ t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.2' " := (projT2 _ _ t)
+  Global Notation " t '.2' " := (@projT2 _ _ t)
     (in custom math_term_scope at level 1, left associativity).
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
