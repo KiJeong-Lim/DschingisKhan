@@ -472,7 +472,7 @@ Module MathClasses.
     ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_plus neg_right_inv_plus]].
     rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1).
     assert (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite <- H_EQ1.
-    now rewrite Semigroup_requiresAssoc, claim1; apply left_id.
+    now rewrite Semigroup_requiresAssoc, claim1, left_id.
   Qed.
 
   End AXIOMS.
@@ -496,9 +496,9 @@ Module MathClasses.
   Global Notation " x '*' y " := (mul x y) (in custom math_term_scope at level 3, left associativity).
   Global Notation " '1' " := (unity) (in custom math_term_scope at level 0, no associativity).
 
-  Definition nonzero {K : Hask.t} {requireSetoid : isSetoid K} {requiresAddId_sig : Has_zero K} (x : K) : Prop := ~ x == zero.
+  Definition nonzero {K : Hask.t} {requireSetoid : isSetoid K} {requires_zero : Has_zero K} (x : K) : Prop := ~ x == zero.
 
-  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requiresAddId_sig : Has_zero K} : Hask.t := @sig K nonzero.
+  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requires_zero : Has_zero K} : Hask.t := @sig K nonzero.
 
   Class isSemigroup (S : Hask.t) {requireSetoid : isSetoid S} : Type :=
     { Semigroup_has_add :> Has_add S
@@ -521,7 +521,7 @@ Module MathClasses.
   .
 
   Class isRig (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rig_has_AdditiveMonoid :> isMonoid R
+    { Rig_hasAdditiveMonoid :> isMonoid R
     ; Rig_has_mul :> Has_mul R
     ; Rig_has_unity :> Has_unity R
     ; Rig_add_comm :> Comm add
@@ -531,7 +531,7 @@ Module MathClasses.
   .
 
   Class isRng (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rng_has_addtiveGroup :> isGroup R
+    { Rng_hasAddtiveGroup :> isGroup R
     ; Rng_has_mul :> Has_mul R
     ; Rng_add_comm :> Comm add
     ; Rng_mul_assoc :> Semigroup_axiom R mul
