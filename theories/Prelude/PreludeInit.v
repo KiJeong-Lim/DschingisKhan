@@ -18,7 +18,8 @@ Module Khan.
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
   Global Notation " '⟪' STATEMENT_REFERENCE ':' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE => STATEMENT)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
-  Global Notation " '⟪' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun _ => STATEMENT)) (STATEMENT at level 200, at level 0, no associativity) : type_scope.
+  Global Notation " '⟪' STATEMENT '⟫' " := (⟪ _ : STATEMENT ⟫) (STATEMENT at level 200, at level 0, no associativity) : type_scope.
+
   Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
   Global Tactic Notation " rednw " hyp( H ) :=

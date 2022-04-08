@@ -334,9 +334,9 @@ Module MathNotations.
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
   Global Notation " x '↦' P " := (fun x : _ => P) (x as pattern, in custom math_form_scope at level 0, right associativity).
   Global Notation " '⟦' P '⟧' " := P (P constr, in custom math_form_scope at level 0).
-  Global Notation " '⟪' '_' '⋯' P '⟫' " := (⟪ _ : P ⟫)%type
+  Global Notation " '⟪' '_' '⋯' P '⟫' " := ⟪ P ⟫
     (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
-  Global Notation " '⟪' H '⋯' P '⟫' " := (<< H : P >>)%type
+  Global Notation " '⟪' H '⋯' P '⟫' " := << H : P >>
     (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
 
 (** "Terms" *)
