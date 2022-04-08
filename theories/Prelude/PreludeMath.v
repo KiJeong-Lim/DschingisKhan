@@ -364,7 +364,7 @@ Module MathNotations.
     (in custom math_term_scope at level 6, no associativity).
   Global Notation " A '⊔' B " := (sum A B)
     (in custom math_term_scope at level 6, no associativity).
-  Global Notation " '⨆_{' x '∈' A  '}' B " := (@existT A (fun x => B))
+  Global Notation " '⨆_{' x '∈' A  '}' B " := (@sigT A (fun x => B))
     (x pattern, A custom math_term_scope at level 6, B custom math_term_scope at level 1, in custom math_term_scope at level 0).
   Global Notation " '\{' x '∈' A '|' B '\}' " := (@sig A (fun x => B))
     (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
