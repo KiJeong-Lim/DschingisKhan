@@ -123,9 +123,9 @@ Module MathProps.
 
 End MathProps.
 
-Export MathProps.
-
 Module MathClasses.
+
+  Import MathNotations MathProps.  
 
   Local Open Scope program_scope.
   Local Open Scope math_scope.
@@ -221,9 +221,9 @@ Module MathClasses.
   Class isField (K : Hask.t) {requireSetoid : isSetoid K} : Type :=
     { Field_hasRing_asSelf :> isRing K
     ; sigOfFieldMultiplicativePart :> MulInv_sig (zero_removed K)
-    ; Field_unity_NOT_zero : nonzero unity
-    ; Field_absenceOfZeroDivisor (x : zero_removed K) (y : zero_removed K) : ~ mul (proj1_sig x) (proj1_sig y) == zero
-    ; axOfFieldMultiplicativePart :> Group_ax (zero_removed K) (fun x : zero_removed K => fun y : zero_removed K => exist nonzero (mul (proj1_sig x) (proj1_sig y)) (Field_absenceOfZeroDivisor x y)) (exist nonzero unity Field_unity_NOT_zero) recip
+    ; Field_unity_nonzero : nonzero unity
+    ; Field_absenceOfZeroDivisor (x : zero_removed K) (y : zero_removed K) : nonzero (mul (proj1_sig x) (proj1_sig y))
+    ; axOfFieldMultiplicativePart :> Group_ax (zero_removed K) (fun x : zero_removed K => fun y : zero_removed K => exist nonzero (mul (proj1_sig x) (proj1_sig y)) (Field_absenceOfZeroDivisor x y)) (exist nonzero unity Field_unity_nonzero) recip
     ; Field_mul_comm :> Comm mul
     }
   .

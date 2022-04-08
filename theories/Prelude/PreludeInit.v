@@ -884,5 +884,3 @@ Module MathNotations.
   Global Infix " '<->' " := iff (in custom math_viewer at level 10, no associativity).
 
 End MathNotations.
-
-Export MathNotations.
