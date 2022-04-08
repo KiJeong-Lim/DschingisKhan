@@ -331,19 +331,15 @@ Module MathNotations.
   Global Bind Scope math_scope with Funclass Sortclass.
   Global Open Scope math_scope.
 
-(** "Entry Points" *)
-  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
-  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
-
 (** "Auxiliary Symbols" *)
   Global Notation " t " := t (t ident, in custom math_term_scope at level 0).
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
   Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 11, right associativity).
   Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
-  Global Notation " t " := t (t custom math_term_scope at level 11, in custom math_form_scope at level 0).
+  Global Notation " P " := P (P custom math_term_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
   Global Notation " '⟪' '_' '⋯' P '⟫' " := ⟪ P ⟫ (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
-  Global Notation " '⟪' H '⋯' P '⟫' " := << H : P >> (H name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
+  Global Notation " '⟪' H_P '⋯' P '⟫' " := << H_P : P >> (H_P name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '⟪' P '⟫' " := P (P custom math_form_scope at level 11, in custom math_term_scope at level 0).
 
 (** "Terms" *)
@@ -474,6 +470,10 @@ Module MathNotations.
     (x as pattern, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " t '=' s " := (t = s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
+
+(** "Entry Points" *)
+  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
+  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
 
 (* Notation Test #1 *)
 (* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
