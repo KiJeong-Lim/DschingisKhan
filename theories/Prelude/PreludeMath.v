@@ -319,8 +319,6 @@ Export Ensembles.
 
 Module MathNotations.
 
-  Import MathProps.
-
   Global Declare Custom Entry math_term_scope.
   Global Declare Custom Entry math_form_scope.
   Global Declare Scope math_scope.
@@ -343,9 +341,9 @@ Module MathNotations.
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
     (in custom math_term_scope at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
-  Global Notation " t '.asbool' " := (to_bool t)
+  Global Notation " t '.asbool' " := (MathProps.to_bool t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '≟' s " := (eq_dec t s)
+  Global Notation " t '≟' s " := (MathProps.eq_dec t s)
     (in custom math_term_scope at level 6, no associativity).
   (* Category *)
   Global Notation " t '∘' s " := (Cat.compose t s)
