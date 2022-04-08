@@ -345,7 +345,21 @@ Module MathNotations.
   (* Type *)
   Global Notation " 'ℕ' " := (nat)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " 'ℙ' " := (Prop)
+  Global Notation " '𝟘' " := (Empty_set)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝟙' " := (unit)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝟚' " := (bool)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " 'Prop' " := (Prop)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " 'Set' " := (Set)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " 'Type' " := (Type)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝕋𝕪𝕡𝕖' " := (Hask.t)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
     (in custom math_term_scope at level 0, no associativity).
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
@@ -446,8 +460,8 @@ Module MathNotations.
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
 (** "Entry Points" *)
-  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity) : math_scope.
-  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
+  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
 
 (* Notation Test #1 *)
 (* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
@@ -459,7 +473,7 @@ Module MathNotations.
 
 (* Notation Test #3 *)
 (* Check (fun x : nat => x + 1 = 2). *)
-(* "$ x ↦ ⟦ $$ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ $$ ⟧ $ : $$ ℕ -> ℙ $$" *)
+(* "$ x ↦ ⟦ $$ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ $$ ⟧ $ : $$ ℕ -> Prop $$" *)
 
 End MathNotations.
 
