@@ -478,17 +478,17 @@ Module MathClasses.
 
   End AXIOMS.
 
-  Class Add_sig (S : Hask.t) : Type := add : S -> S -> S.
+  Class Has_add (S : Hask.t) : Type := add : S -> S -> S.
 
-  Class AddId_sig (M : Hask.t) : Type := zero : M.
+  Class Has_zero (M : Hask.t) : Type := zero : M.
 
-  Class AddInv_sig (G : Hask.t) : Type := neg : G -> G.
+  Class Has_neg (G : Hask.t) : Type := neg : G -> G.
 
-  Class Mul_sig (R : Hask.t) : Type := mul : R -> R -> R.
+  Class Has_mul (R : Hask.t) : Type := mul : R -> R -> R.
 
-  Class MulId_sig (R : Hask.t) : Type := unity : R.
+  Class Has_unity (R : Hask.t) : Type := unity : R.
 
-  Class MulInv_sig (K : Hask.t) : Type := recip : K -> K.
+  Class Has_recip (K : Hask.t) : Type := recip : K -> K.
 
   Global Notation " x '+' y " := (add x y) (in custom math_term_scope at level 4, left associativity).
   Global Notation " '0' " := (zero) (in custom math_term_scope at level 0, no associativity).
@@ -497,34 +497,34 @@ Module MathClasses.
   Global Notation " x '*' y " := (mul x y) (in custom math_term_scope at level 3, left associativity).
   Global Notation " '1' " := (unity) (in custom math_term_scope at level 0, no associativity).
 
-  Definition nonzero {K : Hask.t} {requireSetoid : isSetoid K} {requiresAddId_sig : AddId_sig K} (x : K) : Prop := ~ x == zero.
+  Definition nonzero {K : Hask.t} {requireSetoid : isSetoid K} {requiresAddId_sig : Has_zero K} (x : K) : Prop := ~ x == zero.
 
-  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requiresAddId_sig : AddId_sig K} : Hask.t := @sig K nonzero.
+  Definition zero_removed (K : Hask.t) {requireSetoid : isSetoid K} {requiresAddId_sig : Has_zero K} : Hask.t := @sig K nonzero.
 
   Class isSemigroup (S : Hask.t) {requireSetoid : isSetoid S} : Type :=
-    { Semigroup_has_add :> Add_sig S
+    { Semigroup_has_add :> Has_add S
     ; Semigroup_add_assoc :> Semigroup_axiom S add
     }
   .
 
   Class isMonoid (M : Hask.t) {requireSetoid : isSetoid M} : Type :=
     { Monoid_hasSemigroup :> isSemigroup M
-    ; Monoid_has_zero :> AddId_sig M
+    ; Monoid_has_zero :> Has_zero M
     ; Monoid_zero_id_add :> Monoid_axiom M add zero
     }
   .
 
   Class isGroup (G : Hask.t) {requireSetoid : isSetoid G} : Type :=
     { Group_hasMonoid :> isMonoid G
-    ; Group_has_neg :> AddInv_sig G
+    ; Group_has_neg :> Has_neg G
     ; Group_neg_inv_add :> Group_axiom G add zero neg
     }
   .
 
   Class isRig (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
     { Rig_has_AdditiveMonoid :> isMonoid R
-    ; Rig_has_mul :> Mul_sig R
-    ; Rig_has_unity :> MulId_sig R
+    ; Rig_has_mul :> Has_mul R
+    ; Rig_has_unity :> Has_unity R
     ; Rig_add_comm :> Comm add
     ; Rig_unity_id_mul :> Monoid_axiom R mul unity
     ; Rig_mul_distr_add :> mul `distributesOver` add
@@ -533,7 +533,7 @@ Module MathClasses.
 
   Class isRng (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
     { Rng_has_addtiveGroup :> isGroup R
-    ; Rng_has_mul :> Mul_sig R
+    ; Rng_has_mul :> Has_mul R
     ; Rng_add_comm :> Comm add
     ; Rng_mul_assoc :> Semigroup_axiom R mul
     ; Rng_mul_distr_add :> mul `distributesOver` add
@@ -542,14 +542,14 @@ Module MathClasses.
 
   Class isRing (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
     { Ring_hasRng :> isRng R
-    ; Ring_has_unity :> MulId_sig R
+    ; Ring_has_unity :> Has_unity R
     ; Ring_unity_id_mul :> Monoid_axiom R mul unity
     }
   .
 
   Class isField (K : Hask.t) {requireSetoid : isSetoid K} : Type :=
     { Field_hasRing :> isRing K
-    ; Field_has_recip :> MulInv_sig (zero_removed K)
+    ; Field_has_recip :> Has_recip (zero_removed K)
     ; Field_unity_nonzero : nonzero unity
     ; Field_absenceOfZeroDivisor (x : zero_removed K) (y : zero_removed K) : nonzero (mul (proj1_sig x) (proj1_sig y))
     ; Field_recip_inv_mul :> Group_axiom (zero_removed K) (fun x : zero_removed K => fun y : zero_removed K => @exist K nonzero (mul (proj1_sig x) (proj1_sig y)) (Field_absenceOfZeroDivisor x y)) (@exist K nonzero unity Field_unity_nonzero) recip
