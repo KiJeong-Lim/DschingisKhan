@@ -343,7 +343,7 @@ Module MathNotations.
   Global Notation " '⟪' P '⟫' " := P (P custom math_form_scope at level 11, in custom math_term_scope at level 0).
 
 (** "Terms" *)
-  (* Type *)
+  (* Type Constructor *)
   Global Notation " 'ℕ' " := (nat)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝟘' " := (Empty_set)
@@ -360,6 +360,10 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
+  Global Notation " A × B " := (A * B)%type
+    (in custom math_term_scope at level 6, no associativity).
+  Global Notation " A ⊎ B " := (A + B)%type
+    (in custom math_term_scope at level 6, no associativity).
   Global Notation " '\{'  x '∈' A '|' B  '\}' " := {x : A | B}
     (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
   (* Data Constructor *)
@@ -492,8 +496,12 @@ Module MathNotations.
 (* "$ x ↦ ⟪ (∃y) ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ⟫ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
 
 (** "MathNotations Test #5" *)
-(* Check (fun x : nat => {y : nat | x + 1 = y + 1}). *)
+(* Check (fun x : nat => {y | x + 1 = y + 1}). *)
 (* "$ x ↦ \{ y ∈ ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ \} $ : $$ ℕ -> 𝐒𝐞𝐭 $$" *)
+
+(** "MathNotations Test #6" *)
+(* Check (fun x : nat => {'(z, y) | x + 1 = y + 1 /\ z = 1}). *)
+(* "$ x ↦ \{ (z, y) ∈ ℕ × ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ∧ z = ⟦ 1 ⟧ \} $ : $$ ℕ -> 𝐒𝐞𝐭 $$" *)
 
 End MathNotations.
 
