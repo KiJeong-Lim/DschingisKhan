@@ -471,9 +471,9 @@ Module MathClasses.
     : preserves_eqProp1 neg.
   Proof.
     ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_plus neg_right_inv_plus]].
-    rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1). rewrite Semigroup_requiresAssoc.
-    enough (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite claim1; apply left_id.
-    now rewrite <- H_EQ1.
+    rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1).
+    assert (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite <- H_EQ1.
+    now rewrite Semigroup_requiresAssoc, claim1; apply left_id.
   Qed.
 
   End AXIOMS.
