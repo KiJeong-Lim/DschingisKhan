@@ -334,7 +334,7 @@ Module MathNotations.
 (** "Auxiliary Symbols" *)
   Global Notation " t " := t (t ident, in custom math_term_scope at level 0).
   Global Notation " '(' t ')' " := t (in custom math_term_scope at level 0, t custom math_term_scope at level 11).
-  Global Notation " x '↦' t " := (fun x => t) (x as pattern, in custom math_term_scope at level 11, right associativity).
+  Global Notation " x '↦' t " := (fun x => t) (x pattern, in custom math_term_scope at level 11, right associativity).
   Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
   Global Notation " P " := P (P custom math_term_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
@@ -361,7 +361,7 @@ Module MathNotations.
   Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '{'  x '∈' A '|' B  '}' " := {x : A | B}
-    (x as pattern, B custom math_form_scope at level 11, in custom math_term_scope at level 0, no associativity).
+    (x ident, B custom math_form_scope at level 11, in custom math_term_scope at level 0, no associativity).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
     (in custom math_term_scope at level 0, no associativity).
@@ -406,7 +406,7 @@ Module MathNotations.
   Global Notation " s '∪' t " := (union s t)
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " '⋃_{' i  '}' s " := (unions_i (fun i => s))
-    (i as pattern, in custom math_term_scope at level 1, no associativity).
+    (i ident, in custom math_term_scope at level 1, no associativity).
   Global Notation " '⋃' s " := (unions s)
     (in custom math_term_scope at level 1, no associativity).
   Global Notation " f '^{→}' '[' X ']' " := (image f X)
@@ -464,10 +464,10 @@ Module MathNotations.
   Global Notation " P '->' Q " := (P -> Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   (* First-order logic *)
-  Global Notation " '(∀' x ')' P " := (forall x: _, P)
-    (x as pattern, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
-  Global Notation " '(∃' x ')' P " := (exists x: _, P)
-    (x as pattern, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
+  Global Notation " '(∀' x ')' P " := (forall x, P)
+    (x ident, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
+  Global Notation " '(∃' x ')' P " := (exists x, P)
+    (x ident, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
   Global Notation " t '=' s " := (t = s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
@@ -475,17 +475,21 @@ Module MathNotations.
   Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
   Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
 
-(* Notation Test #1 *)
+(* MathNotations Test #1 *)
 (* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
 (* "$ (x ↦ x) ∘ (x ↦ x) $ : $ ℕ → ℕ $" *)
 
-(* Notation Test #2 *)
+(* MathNotations Test #2 *)
 (* Check (Cat.compose Cat.id (fun x : nat => x + 1)). *)
 (* "$ id ∘ (x ↦ ⟦ x + 1 ⟧) $ : $ ℕ → ℕ $" *)
 
-(* Notation Test #3 *)
+(* MathNotations Test #3 *)
 (* Check (fun x : nat => x + 1 = 2). *)
 (* "$ x ↦ ⟪ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ ⟫ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
+
+(** MathNotations Test #4 *)
+(* Check (fun x : nat => exists y : nat, x + 1 = y + 1). *)
+(* "$ x ↦ ⟪ (∃y) ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ⟫ $ : $$ ℕ -> 𝐏𝐫𝐨𝐩 $$" *)
 
 End MathNotations.
 
