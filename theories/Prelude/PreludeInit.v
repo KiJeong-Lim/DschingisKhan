@@ -72,7 +72,7 @@ Module Khan.
 
   (** "\S5" *)
 
-  Global Tactic Notation "memo" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
+  Global Tactic Notation "memo" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine ((fun REF : PROP => _)(PRF)).
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
 
 End Khan.
