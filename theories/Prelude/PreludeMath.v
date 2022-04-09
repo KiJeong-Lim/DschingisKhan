@@ -299,6 +299,10 @@ Module Ensembles.
 
   Global Opaque union unions_i unions image preimage finite intersection full empty complement setminus singleton delete insert.
 
+  Global Create HintDb ensemble_hints.
+  Global Hint Rewrite @in_union_iff @in_unions_i_iff @in_image_iff @in_preimage_iff @in_finite_iff @in_intersection_iff @in_full_iff @in_empty_iff @in_complement_iff @in_setminus_iff @in_singleton_iff @in_delete_iff @in_insert_iff using eauto : ensemble_hints.
+  Ltac ensemble_rewrite := autorewrite with ensemble_hints.
+
   Local Instance Powerset_isCovariantFunctor : isCovariantFunctor ensemble := { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B) }.
   Local Instance Powerset_isContravariantFunctor : isContravariantFunctor ensemble := { contramap {B : Hask.t} {A : Hask.t} := preimage (A := A) (B := B) }.
 

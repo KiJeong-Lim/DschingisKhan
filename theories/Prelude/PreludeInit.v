@@ -54,15 +54,14 @@ Module Khan.
   (** "\S2. Hint Database" *)
 
   Global Create HintDb khan_hints.
+  Global Hint Unfold flip relation_conjunction impl : khan_hints.
 
-  Global Hint Unfold flip relation_conjunction REFERENCE_HOLDER : khan_hints.
+  (** "\S3. Tactics - intro" *)
 
-  (** "\S3. Introduction Tactics" *)
+  Ltac ii := repeat intro; autounfold with khan_hints.
+  Ltac iis := repeat (ii; try esplit); cbn in *.
 
-  Ltac ii := repeat intro.
-  Ltac iis := repeat (ii; esplit).
-
-  (** "\S4. Exploit Tactics" *)
+  (** "\S4. Tactics - exploit" *)
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -70,8 +69,12 @@ Module Khan.
     : CONCLUSION.
   Proof. exact (PREMISE ASSUMPTION). Defined.
 
-  Global Tactic Notation "exploit" constr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
-  Global Tactic Notation "exploit" constr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
+  Global Tactic Notation "exploit" uconstr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
+  Global Tactic Notation "exploit" uconstr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
+
+  (** "\S5. Tactic - assert" *)
+
+  Global Tactic Notation "assert" "(" ident( H ) ":=" uconstr( PRF ) ")" := epose proof (PRF) as H.
 
 End Khan.
 
@@ -420,11 +423,11 @@ Module PreludeInit_main.
 
   Local Instance impl_PreOrder
     : PreOrder impl.
-  Proof. unfold impl; split; ii; tauto. Qed.
+  Proof. iis; tauto. Qed.
 
   Local Instance impl_PartialOrder
     : PartialOrder iff impl.
-  Proof. unfold impl; intros p1 p2; split; unfold relation_conjunction, flip; cbn; tauto. Qed.
+  Proof. iis; tauto. Qed.
 
   Local Instance Prop_isPoset : isPoset Prop :=
     { leProp := impl
