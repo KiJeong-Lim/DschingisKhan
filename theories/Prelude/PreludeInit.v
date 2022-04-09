@@ -56,12 +56,10 @@ Module Khan.
   Global Create HintDb khan_hints.
   Global Hint Unfold flip relation_conjunction impl : khan_hints.
 
-  (** "\S3. Tactics - intro" *)
+  (** "\S3. Tactics" *)
 
   Ltac ii := repeat intro; autounfold with khan_hints.
   Ltac iis := repeat (ii; try esplit); cbn in *.
-
-  (** "\S4. Tactics - exploit" *)
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -72,10 +70,8 @@ Module Khan.
   Global Tactic Notation "exploit" uconstr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
   Global Tactic Notation "exploit" uconstr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
 
-  (** "\S5. Tactic - assert" *)
-
-  Global Tactic Notation "eassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" "as" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
-  Global Tactic Notation "eassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" := refine ((fun REF => _) (PRF)).
+  Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" "into" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
+  Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" := refine ((fun REF => _) (PRF)).
 
 End Khan.
 
