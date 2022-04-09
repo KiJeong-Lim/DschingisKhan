@@ -629,17 +629,17 @@ Module MathClasses.
   .
 
   Definition isUpperBoundOf {D : Type} {requiresPoset : isPoset D} (upper_bound : D) (X : ensemble D) : Prop :=
-    forall x : D, << x_in_X : member x X >> -> x =< upper_bound
+    forall x : D, << H_IN : member x X >> -> x =< upper_bound
   .
 
   Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
-    forall upper_bound : D, << sup_LE_upper_bound : sup_X =< upper_bound >> <-> << UPPER_BOUND : isUpperBoundOf upper_bound X >>
+    forall upper_bound : D, << SUPREMUM_LE_UPPER_BOUND : sup_X =< upper_bound >> <-> << UPPER_BOUND : isUpperBoundOf upper_bound X >>
   .
 
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
-    forall x1 : D, << x1_in_X : member x1 X >> ->
-    forall x2 : D, << x2_in_X : member x2 X >> ->
-    exists x3 : D, << x3_in_X : member x3 X >> /\
+    forall x1 : D, << H_IN1 : member x1 X >> ->
+    forall x2 : D, << H_IN2 : member x2 X >> ->
+    exists x3 : D, << H_IN3 : member x3 X >> /\
     << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
   .
 
