@@ -6,14 +6,13 @@ Require Import Coq.Setoids.Setoid.
 
 Module Khan.
 
-  (** "\S0. Notations" *)
+  (** "\S1" *)
 
   Global Notation compose := compose.
   Global Notation id := id.
   Global Notation " 'id_{' A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
 
-  (** "\S1. Reference Holder" *)
-  (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"*)
+  (** "\S2" *) (* Reference: "https://github.com/snu-sf/sflib/blob/2203ecc62fef14c2204f10329f2cc85f5bc4f108/sflib.v#L177"*)
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
@@ -51,12 +50,12 @@ Module Khan.
   Ltac unnw := unfold REFERENCE_HOLDER in *.
   Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
 
-  (** "\S2. Hint Database" *)
+  (** "\S3" *)
 
   Global Create HintDb khan_hints.
   Global Hint Unfold flip relation_conjunction impl : khan_hints.
 
-  (** "\S3. Tactics" *)
+  (** "\S4" *)
 
   Ltac ii := repeat intro.
   Ltac iis := ii; autounfold with khan_hints; try esplit.
@@ -71,8 +70,12 @@ Module Khan.
   Global Tactic Notation "exploit" uconstr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
   Global Tactic Notation "exploit" uconstr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
 
+  (** "\S5" *)
+
   Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" "into" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
   Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" := refine ((fun REF => _) (PRF)).
+
+  Global Tactic Notation "set" "(" ident( REF ) ":=" uconstr( PRF ) ")" "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
 
 End Khan.
 
