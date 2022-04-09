@@ -114,8 +114,6 @@ Module Cat.
 
   End BasicConceptsOfCategoryTheory.
 
-  Global Arguments component {src_objs} {tgt_objs} {src_cat} {tgt_cat} {F_from} {F_to} (isNaturalTransformation) (obj). 
-
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
 
 End Cat.
@@ -124,15 +122,11 @@ Export Cat.
 
 Module Hask.
 
-  Universe Univ_lv.
-
-  Monomorphic Definition Univ : Type@{Univ_lv + 1} := Type@{Univ_lv}.
-
-  Polymorphic Definition t@{lv} : Hask.Univ := Type@{lv}.
+  Polymorphic Definition t@{lv} : Type@{lv + 1} := Type@{lv}.
 
   Polymorphic Definition arrow@{dom_lv cod_lv arrow_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{arrow_lv} := dom -> cod.
 
-  Global Bind Scope type_scope with Hask.Univ Hask.t Hask.arrow.
+  Global Bind Scope type_scope with Hask.t Hask.arrow.
 
   Global Polymorphic Instance cat : isCategory Hask.t :=
     { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
@@ -567,7 +561,7 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_kleisli.
 
-  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Hask.Univ := Hask.t.
+  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Type := Hask.t.
 
   Variable M : Hask.cat -----> Hask.cat.
 
@@ -575,13 +569,9 @@ Module PreludeInit_MAIN.
 
   Variable requiresMonad : isMonad M.
 
-  Definition kempty {obj : Hask.t} : kleisli obj obj :=
-    fun x => pure x
-  .
+  Definition kempty {obj : Hask.t} : kleisli obj obj := fun x => pure x.
 
-  Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r :=
-    fun x_l => k_l x_l >>= fun x_r => k_r x_r
-  .
+  Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r := fun x_l => k_l x_l >>= fun x_r => k_r x_r.
 
   Local Instance kleisliCategory : isCategory (kleisli_objs M) :=
     { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
@@ -646,10 +636,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} :> M =====> T M
-    }
-  .
+  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type := liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M.
 
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
@@ -705,7 +692,7 @@ Module PreludeInit_MAIN.
   .
 
   Global Polymorphic Instance stateT_ST_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
-    { liftMonad {M : Hask.cat -----> Hask.cat} {M_isMonad : isMonad M} (X : Hask.t) := fun m : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
+    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) := fun m : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
     }
   .
 
@@ -738,9 +725,23 @@ Module PreludeInit_MAIN.
 
   (** "5. Extras" *)
 
+  Section EXTRAS.
+
+  Import ListNotations.
+
   Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
 
   Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
+
+  Definition kconcat {M : Hask.cat -----> Hask.cat} {requiresMonad : isMonad M} {X : Type} : list (kleisli M X X) -> kleisli M X X :=
+    fix kconcat_fix (ks : list (kleisli M X X)) {struct ks} : kleisli M X X :=
+    match ks with
+    | [] => kempty
+    | k :: ks => k <=< kconcat_fix ks
+    end
+  .
+
+  End EXTRAS.
 
 End PreludeInit_MAIN.
 
