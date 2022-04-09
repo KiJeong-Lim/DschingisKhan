@@ -335,30 +335,6 @@ Module MathNotations.
   Global Notation " '⟪' P '⟫' " := P (P custom math_form_scope at level 11, in custom math_term_scope at level 0).
 
 (** "Terms" *)
-  (* Sort *)
-  Global Notation " '𝐏𝐫𝐨𝐩' " := (Prop)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝐒𝐞𝐭' " := (Set)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
-    (in custom math_term_scope at level 0, no associativity).
-  (* Type Constructor *)
-  Global Notation " '𝟘' " := (Empty_set)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝟙' " := (unit)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝟚' " := (bool)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " A '×' B " := (prod A B)
-    (in custom math_term_scope at level 6, no associativity).
-  Global Notation " A '⊔' B " := (sum A B)
-    (in custom math_term_scope at level 6, no associativity).
-  Global Notation " '⨆_{' x '∈' A  '}' B " := (@sigT A (fun x => B))
-    (x pattern, A custom math_term_scope at level 6, B custom math_term_scope at level 1, in custom math_term_scope at level 0).
-  Global Notation " '\{' x '∈' A '|' B '\}' " := (@sig A (fun x => B))
-    (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
-  Global Notation " 'ℕ' " := (nat)
-    (in custom math_term_scope at level 0, no associativity).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
     (in custom math_term_scope at level 0, no associativity).
@@ -450,10 +426,34 @@ Module MathNotations.
     (x binder, A custom math_form_scope at level 0, P custom math_form_scope at level 11, in custom math_form_scope at level 1, no associativity).
   Global Notation " '(∃' x '∈' A ')'  '⟪' P '⟫' " := (exists x : A, P)
     (x binder, A custom math_form_scope at level 0, P custom math_form_scope at level 11, in custom math_form_scope at level 1, no associativity).
-  Global Notation " P '->' Q " := (forall _ : P, Q)
-    (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 11, right associativity).
   Global Notation " t '=' s " := (eq t s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
+
+(** "Type" *)
+  Global Notation " '𝟘' " := (Empty_set)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝟙' " := (unit)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝟚' " := (bool)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " A '×' B " := (prod A B)
+    (in custom math_term_scope at level 6, no associativity).
+  Global Notation " A '⊔' B " := (sum A B)
+    (in custom math_term_scope at level 6, no associativity).
+  Global Notation " '⨆_{' x '∈' A  '}' B " := (@sigT A (fun x => B))
+    (x pattern, A custom math_term_scope at level 6, B custom math_term_scope at level 1, in custom math_term_scope at level 0).
+  Global Notation " '\{' x '∈' A '|' B '\}' " := (@sig A (fun x => B))
+    (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
+  Global Notation " 'ℕ' " := (nat)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐏𝐫𝐨𝐩' " := (Prop)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐒𝐞𝐭' " := (Set)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " P '->' Q " := (forall _ : P, Q)
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 11, right associativity).
 
 (** "Entry Points" *)
   Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
