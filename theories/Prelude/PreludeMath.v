@@ -445,6 +445,8 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
     (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '℘' '(' A ')' " := (ensemble A)
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " P '->' Q " := (forall _ : P, Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 11, right associativity).
 
@@ -602,5 +604,47 @@ Module MathClasses.
     ; Field_mul_comm :> Comm mul
     }
   .
+
+  Class Topology_axiom {A : Hask.t} (isOpen : ensemble A -> Prop) : Prop :=
+    { full_isOpen
+      : isOpen full
+    ; unions_isOpen (Xs : ensemble (ensemble A))
+      (every_member_of_Xs_isOpen : forall X : ensemble A, << X_in_Xs : member X Xs >> -> isOpen X)
+      : isOpen (unions Xs)
+    ; intersection_isOpen (XL : ensemble A) (XR : ensemble A)
+      (XL_isOpen : isOpen XL)
+      (XR_isOpen : isOpen XR)
+      : isOpen (intersection XL XR)
+    ; isOpen_compatWith_eqProp (X : ensemble A) (X' : ensemble A)
+      (X_isOpen : isOpen X)
+      (X_eq_X' : X == X')
+      : isOpen X'
+    }
+  .
+
+  Class isTopologicalSpace (A : Hask.t) : Type :=
+    { isOpen : ensemble A -> Prop
+    ; TopologicalSpace_obeyTopology_axiom :> Topology_axiom isOpen
+    }
+  .
+
+  Definition isUpperBoundOf {D : Type} {requiresPoset : isPoset D} (upper_bound : D) (X : ensemble D) : Prop :=
+    forall x : D, << x_in_X : member x X >> -> x =< upper_bound
+  .
+
+  Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
+    forall upper_bound : D, sup_X =< upper_bound <-> isUpperBoundOf upper_bound X
+  .
+
+  Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    forall x1 : D, << x1_in_X : member x1 X >> ->
+    forall x2 : D, << x2_in_X : member x2 X >> ->
+    forall x3 : D, << x3_in_X : member x3 X >> /\
+    << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
+  .
+
+  Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
+
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
 
 End MathClasses.
