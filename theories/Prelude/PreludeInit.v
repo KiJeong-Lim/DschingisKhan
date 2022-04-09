@@ -59,7 +59,7 @@ Module Khan.
 
   Ltac ii := repeat intro.
   Ltac iis := ii; autounfold with khan_hints; try esplit.
-  Ltac iiss := (repeat iis); cbn in *; desnw; unnw.
+  Ltac iiss := (repeat iis); cbn in *; desnw.
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -72,10 +72,8 @@ Module Khan.
 
   (** "\S5" *)
 
-  Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" "into" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
-  Global Tactic Notation "rassert" "(" ident( REF ) ":=" uconstr( PRF ) ")" := refine ((fun REF => _) (PRF)).
-
-  Global Tactic Notation "set" "(" ident( REF ) ":=" uconstr( PRF ) ")" "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
+  Global Tactic Notation "has" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine ((fun REF : PROP => _) (PRF)).
+  Global Tactic Notation "set" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
 
 End Khan.
 
