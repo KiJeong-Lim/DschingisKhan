@@ -442,11 +442,11 @@ Module MathNotations.
   Global Notation " P '∨' Q " := (or P Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 9, right associativity).
   Global Notation " P '⟶' Q " := (impl P Q)
-    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, right associativity).
   Global Notation " P '⟷' Q " := (iff P Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
   Global Notation " P '->' Q " := (P -> Q)
-    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
+    (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, right associativity).
   (* First-order logic *)
   Global Notation " '(∀' x ')' P " := (forall x, P)
     (x binder, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
