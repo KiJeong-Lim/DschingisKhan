@@ -633,7 +633,7 @@ Module MathClasses.
   .
 
   Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
-    forall upper_bound : D, sup_X =< upper_bound <-> isUpperBoundOf upper_bound X
+    forall upper_bound : D, << sup_LE_upper_bound : sup_X =< upper_bound >> <-> << UPPER_BOUND : isUpperBoundOf upper_bound X >>
   .
 
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
