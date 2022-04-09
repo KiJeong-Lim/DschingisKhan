@@ -19,7 +19,6 @@ Module Khan.
 
   Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE => STATEMENT)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 70, no associativity) : type_scope.
   Global Notation " '<<' STATEMENT '>>' " := (<< _ : STATEMENT >>) (STATEMENT at level 200, at level 0, no associativity) : type_scope.
-
   Global Notation " '⟪' STATEMENT_REFERENCE ':' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
   Global Tactic Notation "rednw" "in" hyp( H ) :=
@@ -49,9 +48,8 @@ Module Khan.
     end
   .
 
-  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
-
-  Global Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
+  Ltac unnw := unfold REFERENCE_HOLDER in *.
+  Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
 
   (** "\S2. Hint Database" *)
 
@@ -61,7 +59,8 @@ Module Khan.
 
   (** "\S3. Introduction Tactics" *)
 
-  Global Ltac ii := repeat intro.
+  Ltac ii := repeat intro.
+  Ltac iis := repeat (ii; esplit).
 
   (** "\S4. Exploit Tactics" *)
 
@@ -71,9 +70,8 @@ Module Khan.
     : CONCLUSION.
   Proof. exact (PREMISE ASSUMPTION). Defined.
 
-  Global Tactic Notation "exploit" constr( PRF ) "as" simple_intropattern( PAT ) :=
-    eapply MODUS_PONENS; [eapply PRF | intros PAT]
-  .
+  Global Tactic Notation "exploit" constr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
+  Global Tactic Notation "exploit" constr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
 
 End Khan.
 
