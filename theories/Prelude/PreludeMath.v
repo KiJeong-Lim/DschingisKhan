@@ -9,8 +9,6 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module MathProps.
 
-  Local Open Scope program_scope.
-
   Class preserves_eqProp1 {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (unary_op : dom -> cod) : Prop :=
     eqProp_lifted1 (lhs1 : dom) (rhs1 : dom)
     (H_EQ1 : lhs1 == rhs1)
@@ -150,8 +148,6 @@ End MathProps.
 Module Ensembles.
 
   Import ListNotations.
-
-  Local Open Scope program_scope.
 
   Inductive _union {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A) (x : A) : Prop :=
   | In_union_l
@@ -490,8 +486,6 @@ End MathNotations.
 Module MathClasses.
 
   Import MathProps.  
-
-  Local Open Scope program_scope.
 
   Section AXIOMS.
 

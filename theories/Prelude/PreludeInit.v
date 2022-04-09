@@ -636,7 +636,10 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type := liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M.
+  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
+    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M
+    }
+  .
 
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
@@ -723,25 +726,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  (** "5. Extras" *)
-
-  Section EXTRAS.
-
-  Import ListNotations.
-
-  Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
-
-  Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
-
-  Definition kconcat {M : Hask.cat -----> Hask.cat} {requiresMonad : isMonad M} {X : Type} : list (kleisli M X X) -> kleisli M X X :=
-    fix kconcat_fix (ks : list (kleisli M X X)) {struct ks} : kleisli M X X :=
-    match ks with
-    | [] => kempty
-    | k :: ks => k <=< kconcat_fix ks
-    end
-  .
-
-  End EXTRAS.
+  Global Open Scope program_scope.
 
 End PreludeInit_MAIN.
 
