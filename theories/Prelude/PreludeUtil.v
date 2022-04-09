@@ -46,11 +46,10 @@ Module SCRATCH.
     : circuit I1 O1 -> circuit I2 O2 -> circuit (I1 * I2) (O1 * O2).
   Proof.
     cofix combineCircuit_cofix.
-    intros circuit1 circuit2. econstructor.
-    intros [x y].
-    destruct (Circuit_observe circuit1 x) as [x_1 x_2].
-    destruct (Circuit_observe circuit2 y) as [y_1 y_2].
-    exact (combineCircuit_cofix x_1 y_1, (x_2, y_2)).
+    intros circuit1 circuit2. econstructor. intros [x1 x2].
+    destruct (Circuit_observe circuit1 x1) as [circuit1' y1].
+    destruct (Circuit_observe circuit2 x2) as [circuit2' y2].
+    exact (combineCircuit_cofix circuit1' circuit2', (y1, y2)).
   Defined.
 
   End SYNCHRONOUS_CIRCUIT.
