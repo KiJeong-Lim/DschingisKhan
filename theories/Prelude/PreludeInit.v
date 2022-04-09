@@ -81,8 +81,8 @@ Export Khan.
 
 Module Cat.
 
-  Polymorphic Class isCategory (objs : Type) : Type :=
-    { hom (dom : objs) (cod : objs) : Type
+  Polymorphic Class isCategory@{objs_lv hom_lv} (objs : Type@{objs_lv}) : Type@{objs_lv} :=
+    { hom (dom : objs) (cod : objs) : Type@{hom_lv}
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
     ; id {obj : objs} : hom obj obj
     }
@@ -130,7 +130,7 @@ Module Hask.
 
   Polymorphic Definition t@{lv} : Hask.Univ := Type@{lv}.
 
-  Polymorphic Definition arrow@{dom_lv cod_lv res_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{res_lv} := dom -> cod.
+  Polymorphic Definition arrow@{dom_lv cod_lv arrow_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{arrow_lv} := dom -> cod.
 
   Global Bind Scope type_scope with Hask.Univ Hask.t Hask.arrow.
 
