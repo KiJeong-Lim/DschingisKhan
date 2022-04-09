@@ -639,7 +639,7 @@ Module MathClasses.
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, << x1_in_X : member x1 X >> ->
     forall x2 : D, << x2_in_X : member x2 X >> ->
-    forall x3 : D, << x3_in_X : member x3 X >> /\
+    exists x3 : D, << x3_in_X : member x3 X >> /\
     << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
   .
 
