@@ -299,15 +299,8 @@ Module Ensembles.
 
   Global Opaque union unions_i unions image preimage finite intersection full empty complement setminus singleton delete insert.
 
-  Local Instance Powerset_isCovariantFunctor : isCovariantFunctor ensemble :=
-    { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B)
-    }
-  .
-
-  Local Instance Powerset_isContravariantFunctor : isContravariantFunctor ensemble :=
-    { contramap {B : Hask.t} {A : Hask.t} := preimage (A := A) (B := B)
-    }
-  .
+  Local Instance Powerset_isCovariantFunctor : isCovariantFunctor ensemble := { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B) }.
+  Local Instance Powerset_isContravariantFunctor : isContravariantFunctor ensemble := { contramap {B : Hask.t} {A : Hask.t} := preimage (A := A) (B := B) }.
 
 End Ensembles.
 

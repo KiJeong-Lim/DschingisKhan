@@ -324,7 +324,7 @@ Module PreludeInit_main.
     - intros H_EQ. constructor.
       + exact (proj1 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
       + exact (proj2 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
-    - intros H_EQ. apply (proj2 (partial_order_equivalence (f x1) (f x2))). constructor.
+    - intros H_EQ. eapply (proj2 (partial_order_equivalence (f x1) (f x2))). constructor.
       + exact (proj1 H_EQ).
       + exact (proj2 H_EQ).
   Defined.
@@ -392,7 +392,7 @@ Module PreludeInit_main.
     - intros H_EQ. constructor.
       + intros x. exact (proj1 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
       + intros x. exact (proj2 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
-    - intros H_EQ x. apply (proj2 (partial_order_equivalence (f1 x) (f2 x))). constructor.
+    - intros H_EQ x. eapply (proj2 (partial_order_equivalence (f1 x) (f2 x))). constructor.
       + exact (proj1 H_EQ x).
       + exact (proj2 H_EQ x).
   Defined.
@@ -542,10 +542,10 @@ Module PreludeInit_main.
         { exact (proj2 (proj1 (partial_order_equivalence (fst p1) (fst p2)) (proj1 H_EQ))). }
         { exact (proj2 (proj1 (partial_order_equivalence (snd p1) (snd p2)) (proj2 H_EQ))). }
     - intros H_EQ. constructor.
-      + apply (proj2 (partial_order_equivalence (fst p1) (fst p2))). constructor.
+      + eapply (proj2 (partial_order_equivalence (fst p1) (fst p2))). constructor.
         { exact (proj1 (proj1 H_EQ)). }
         { exact (proj1 (proj2 H_EQ)). }
-      + apply (proj2 (partial_order_equivalence (snd p1) (snd p2))). constructor.
+      + eapply (proj2 (partial_order_equivalence (snd p1) (snd p2))). constructor.
         { exact (proj2 (proj1 H_EQ)). }
         { exact (proj2 (proj2 H_EQ)). }
   Defined.
@@ -722,8 +722,8 @@ Module PreludeInit_main.
   .
 
   Polymorphic Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
-  | inl1 : FL X -> sum1 FL FR X
-  | inr1 : FR X -> sum1 FL FR X
+  | inl1 (FL_X : FL X) : sum1 FL FR X
+  | inr1 (FR_X : FR X) : sum1 FL FR X
   .
 
   Global Arguments inl1 {FL} {FR} {X}.
@@ -735,6 +735,12 @@ Module PreludeInit_main.
     { fmap {A : Hask.t} {B : Hask.t} := fun f : Hask.arrow A B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap f l)) (fun r : FR A => inr1 (fmap f r))
     }
   .
+
+  (** "5. Extras" *)
+
+  Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
+
+  Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
 
 End PreludeInit_main.
 
