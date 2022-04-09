@@ -519,7 +519,7 @@ Module MathClasses.
     }
   .
 
-  Global Instance neg_preserves_eqProp_inGroup (plus : S -> S -> S) (zero : S) (neg : S -> S)
+  Global Instance neg_preserves_eqProp_inGroup {plus : S -> S -> S} {zero : S} {neg : S -> S}
     (requiresGroup : Group_axiom plus zero neg)
     : preserves_eqProp1 neg.
   Proof.
