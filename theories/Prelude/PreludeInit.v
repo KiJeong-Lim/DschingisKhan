@@ -74,7 +74,7 @@ Module Khan.
 
   (** "\S5. Tactic - assert" *)
 
-  Global Tactic Notation "assert" "(" ident( H ) ":=" uconstr( PRF ) ")" := epose proof (PRF) as H.
+  Global Tactic Notation "eassert" "(" ident( H ) ":=" uconstr( PRF ) ")" := epose proof (PRF) as H.
 
 End Khan.
 
