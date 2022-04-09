@@ -445,13 +445,13 @@ Module MathNotations.
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, right associativity).
   Global Notation " P '⟷' Q " := (iff P Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_form_scope at level 10, no associativity).
-  Global Notation " '(' P '->' Q ')' " := (P -> Q)
+  Global Notation " P '->' Q " := (P -> Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 0, no associativity).
   (* First-order logic *)
-  Global Notation " '(∀' x ')' P " := (forall x, P)
-    (x binder, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
-  Global Notation " '(∃' x ')' P " := (exists x, P)
-    (x binder, P custom math_form_scope, in custom math_form_scope at level 7, right associativity).
+  Global Notation " '(∀' x ')'  '(' P ')' " := (forall x : _, P)
+    (x binder, P custom math_form_scope at level 11, in custom math_term_scope at level 1, no associativity).
+  Global Notation " '(∃' x ')'  '(' P ')' " := (exists x : _, P)
+    (x binder, P custom math_form_scope at level 11, in custom math_term_scope at level 1, no associativity).
   Global Notation " t '=' s " := (t = s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
@@ -469,19 +469,19 @@ Module MathNotations.
 
 (** "MathNotations Test #3" *)
 (* Check (fun x : nat => x + 1 = 2). *)
-(* "$ x ↦ ⟪ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ ⟫ $ : $ (ℕ -> 𝐏𝐫𝐨𝐩) $" *)
+(* "$ x ↦ ⟪ ⟦ x + 1 ⟧ = ⟦ 2 ⟧ ⟫ $ : $ ℕ -> 𝐏𝐫𝐨𝐩 $" *)
 
 (** "MathNotations Test #4" *)
 (* Check (fun x : nat => exists y : nat, x + 1 = y + 1). *)
-(* "$ x ↦ ⟪ (∃y) ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ⟫ $ : $ (ℕ -> 𝐏𝐫𝐨𝐩) $" *)
+(* "$ x ↦ (∃y) (⟦ x + 1 ⟧ = ⟦ y + 1 ⟧) $ : $ ℕ -> 𝐏𝐫𝐨𝐩 $" *)
 
 (** "MathNotations Test #5" *)
 (* Check (fun x : nat => {y : nat | x + 1 = y + 1}). *)
-(* "$ x ↦ \{ y ∈ ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ \} $ : $ (ℕ -> 𝐒𝐞𝐭) $" *)
+(* "$ x ↦ \{ y ∈ ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ \} $ : $ ℕ -> 𝐒𝐞𝐭 $" *)
 
 (** "MathNotations Test #6" *)
 (* Check (fun x : nat => {'(z, y) : nat * nat | x + 1 = y + 1 /\ z = 1}). *)
-(* "$ x ↦ \{ (z, y) ∈ ℕ × ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ∧ z = ⟦ 1 ⟧ \} $ : $ (ℕ -> 𝐒𝐞𝐭) $" *)
+(* "$ x ↦ \{ (z, y) ∈ ℕ × ℕ | ⟦ x + 1 ⟧ = ⟦ y + 1 ⟧ ∧ z = ⟦ 1 ⟧ \} $ : $ ℕ -> 𝐒𝐞𝐭 $" *)
 
 (** "MathNotations Test #7" *)
 (* Check (forall x : nat, x = 1 -> x = 1). *)
