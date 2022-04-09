@@ -115,11 +115,11 @@ Module MathProps.
   Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
 
   Definition isInjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Prop :=
-    forall x1 : dom, forall x2 : dom, ⟪ f_x1_eq_f_x2 : f x1 = f x2 ⟫ -> ⟪ x1_eq_x2 : x1 = x2 ⟫
+    forall x1 : dom, forall x2 : dom, << f_x1_eq_f_x2 : f x1 = f x2 >> -> << x1_eq_x2 : x1 = x2 >>
   .
 
   Definition isSurjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Type :=
-    forall y : cod, {x : dom | ⟪ y_is_f_x : y = f x ⟫}
+    forall y : cod, {x : dom | << y_is_f_x : y = f x >>}
   .
 
   Class HasSameCardinality (dom : Hask.t) (cod : Hask.t) : Type :=
@@ -338,8 +338,8 @@ Module MathNotations.
   Global Notation " '⟦' t '⟧' " := t (t constr, in custom math_term_scope at level 0).
   Global Notation " P " := P (P custom math_term_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '(' P ')' " := P (in custom math_form_scope at level 0, P custom math_form_scope at level 11).
-  Global Notation " '⟪' '_' '⋯' P '⟫' " := ⟪ P ⟫ (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
-  Global Notation " '⟪' H_P '⋯' P '⟫' " := << H_P : P >> (H_P name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
+  Global Notation " '⟪' '_' '⋯' P '⟫' " := << P >> (P custom math_form_scope at level 11, in custom math_form_scope at level 0).
+  Global Notation " '⟪' H_P '⋯' P '⟫' " := ⟪ H_P : P ⟫ (H_P name, P custom math_form_scope at level 11, in custom math_form_scope at level 0).
   Global Notation " '⟪' P '⟫' " := P (P custom math_form_scope at level 11, in custom math_term_scope at level 0).
 
 (** "Terms" *)
