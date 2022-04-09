@@ -128,9 +128,9 @@ Module Hask.
 
   Monomorphic Definition Univ : Type@{Univ_lv + 1} := Type@{Univ_lv}.
 
-  Polymorphic Definition t : Hask.Univ := Type.
+  Polymorphic Definition t@{lv} : Hask.Univ := Type@{lv}.
 
-  Polymorphic Definition arrow (dom : Hask.t) (cod : Hask.t) : Hask.t := dom -> cod.
+  Polymorphic Definition arrow@{dom_lv cod_lv res_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{res_lv} := dom -> cod.
 
   Global Bind Scope type_scope with Hask.Univ Hask.t Hask.arrow.
 
@@ -143,7 +143,7 @@ Module Hask.
 
 End Hask.
 
-Module PreludeInit_main.
+Module PreludeInit_MAIN.
 
   Local Open Scope program_scope.
 
@@ -742,6 +742,6 @@ Module PreludeInit_main.
 
   Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
 
-End PreludeInit_main.
+End PreludeInit_MAIN.
 
-Export PreludeInit_main.
+Export PreludeInit_MAIN.
