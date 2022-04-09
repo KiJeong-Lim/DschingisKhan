@@ -605,14 +605,14 @@ Module MathClasses.
   Class Topology_axiom {A : Hask.t} (isOpen : ensemble A -> Prop) : Prop :=
     { full_isOpen
       : isOpen full
-    ; unions_isOpen (Xs : ensemble (ensemble A))
+    ; unions_isOpen {Xs : ensemble (ensemble A)}
       (every_member_of_Xs_isOpen : forall X : ensemble A, << X_in_Xs : member X Xs >> -> isOpen X)
       : isOpen (unions Xs)
-    ; intersection_isOpen (XL : ensemble A) (XR : ensemble A)
+    ; intersection_isOpen {XL : ensemble A} {XR : ensemble A}
       (XL_isOpen : isOpen XL)
       (XR_isOpen : isOpen XR)
       : isOpen (intersection XL XR)
-    ; isOpen_compatWith_eqProp (X : ensemble A) (X' : ensemble A)
+    ; isOpen_compatWith_eqProp {X : ensemble A} {X' : ensemble A}
       (X_isOpen : isOpen X)
       (X_eq_X' : X == X')
       : isOpen X'
@@ -621,7 +621,7 @@ Module MathClasses.
 
   Class isTopologicalSpace (A : Hask.t) : Type :=
     { isOpen : ensemble A -> Prop
-    ; TopologicalSpace_obeyTopology_axiom :> Topology_axiom isOpen
+    ; TopologicalSpace_obeysTopology_axiom :> Topology_axiom isOpen
     }
   .
 
