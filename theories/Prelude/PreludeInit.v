@@ -22,34 +22,34 @@ Module Khan.
 
   Global Notation " '<<' STATEMENT_REFERENCE ':' STATEMENT '>>' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
-  Global Tactic Notation " rednw " hyp( H ) :=
+  Global Tactic Notation "rednw" "in" hyp( H ) :=
     (match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
     (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
   .
 
-  Global Tactic Notation " desnw " "in" hyp( H ) :=
+  Global Tactic Notation "desnw" "in" hyp( H ) :=
     match type of H with
     | REFERENCE_HOLDER (fun z => _) => rename H into z; red in z
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw x'; rednw y')
+      (destruct H as [x' y']; rednw in x'; rednw in y')
     | ?P \/ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
-      (destruct H as [x' | y']; [rednw x' | rednw y'])
+      (destruct H as [x' | y']; [rednw in x' | rednw in y'])
     | ?P <-> ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw x'; rednw y')
+      (destruct H as [x' y']; rednw in x'; rednw in y')
     | exists x, ?P =>
       let x' := fresh x in
       let y' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
-      (destruct H as [x' y']; rednw y')
+      (destruct H as [x' y']; rednw in y')
     end
   .
 
-  Global Ltac unfold_nw := unfold REFERENCE_HOLDER in *.
+  Global Ltac unnw := unfold REFERENCE_HOLDER in *.
 
   Global Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
 
@@ -71,7 +71,7 @@ Module Khan.
     : CONCLUSION.
   Proof. exact (PREMISE ASSUMPTION). Defined.
 
-  Global Tactic Notation " exploit " constr( PRF ) "as" simple_intropattern( PAT ) :=
+  Global Tactic Notation "exploit" constr( PRF ) "as" simple_intropattern( PAT ) :=
     eapply MODUS_PONENS; [eapply PRF | intros PAT]
   .
 
