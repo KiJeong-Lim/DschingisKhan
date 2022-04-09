@@ -145,14 +145,6 @@ Module MathProps.
 
   Global Instance natEqDec : EqDec nat := { eq_dec := Nat.eq_dec }.
 
-  Class ToBool (B : Hask.t) : Type := to_bool (b : B) : bool.
-
-  Global Arguments to_bool {B} {ToBool} (b) : simpl nomatch.
-
-  Global Instance boolToBool : ToBool bool := { to_bool := id_{ bool } }.
-
-  Global Instance sumboolToBool (P : Prop) (Q : Prop) : ToBool ({P} + {Q}) := { to_bool := fun b : {P} + {Q} => if b then true else false }.
-
 End MathProps.
 
 Module Ensembles.
@@ -343,6 +335,13 @@ Module MathNotations.
   Global Notation " '⟪' P '⟫' " := P (P custom math_form_scope at level 11, in custom math_term_scope at level 0).
 
 (** "Terms" *)
+  (* Sort *)
+  Global Notation " '𝐏𝐫𝐨𝐩' " := (Prop)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐒𝐞𝐭' " := (Set)
+    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
+    (in custom math_term_scope at level 0, no associativity).
   (* Type Constructor *)
   Global Notation " 'ℕ' " := (nat)
     (in custom math_term_scope at level 0, no associativity).
@@ -351,14 +350,6 @@ Module MathNotations.
   Global Notation " '𝟙' " := (unit)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝟚' " := (bool)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝐏𝐫𝐨𝐩' " := (Prop)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝐒𝐞𝐭' " := (Set)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
-    (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '★' " := (Hask.t)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " A '×' B " := (prod A B)
     (in custom math_term_scope at level 6, no associativity).
@@ -378,8 +369,6 @@ Module MathNotations.
   (* Bool *)
   Global Notation " 'if' b 'then' t 'else' s 'end' " := (if b then t else s)
     (in custom math_term_scope at level 0, no associativity, format "'[v' 'if'  b '//' '[' 'then'  t ']' '//' '[' 'else'  s ']' '//' 'end' ']'").
-  Global Notation " t '.asbool' " := (MathProps.to_bool t)
-    (in custom math_term_scope at level 1, left associativity).
   Global Notation " s '≟' t " := (MathProps.eq_dec s t)
     (in custom math_term_scope at level 6, no associativity).
   (* Category *)
@@ -389,25 +378,14 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '→' t " := (Cat.hom s t)
     (in custom math_term_scope at level 10, right associativity).
+  Global Notation " '★' " := (Hask.t)
+    (in custom math_term_scope at level 0, no associativity).
   Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " s '----->' t " := (Cat.Functor_t s t)
     (in custom math_term_scope at level 10, no associativity).
   Global Notation " s '=====>' t " := (Cat.isNaturalTransformation s t)
     (in custom math_term_scope at level 10, no associativity).
-  (* Projection *)
-  Global Notation " t '.unlift' " := (proj1_sig t)
-    (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.property' " := (proj2_sig t)
-    (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.fst' " := (fst t)
-    (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.snd' " := (snd t)
-    (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.1' " := (projT1 t)
-    (in custom math_term_scope at level 1, left associativity).
-  Global Notation " t '.2' " := (projT2 t)
-    (in custom math_term_scope at level 1, left associativity).
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
     (in custom math_term_scope at level 1, left associativity).
@@ -433,9 +411,9 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '\{' s '\}' " := (singleton s)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " s '.delete' t " := (delete t s)
+  Global Notation " t `Set.delete` s " := (delete t s)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " s '.insert' t " := (insert t s)
+  Global Notation " t `Set.insert` s " := (insert t s)
     (in custom math_term_scope at level 1, left associativity).
 
 (** "Atomic Formulas" *)
