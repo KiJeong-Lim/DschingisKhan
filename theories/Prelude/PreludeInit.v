@@ -22,8 +22,7 @@ Module Khan.
   Global Notation " '⟪' STATEMENT_REFERENCE ':' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
   Global Tactic Notation "rednw" "in" hyp( H ) :=
-    (match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
-    (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
+    try ((match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end); (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end))
   .
 
   Global Tactic Notation "desnw" "in" hyp( H ) :=
@@ -58,8 +57,9 @@ Module Khan.
 
   (** "\S3. Tactics" *)
 
-  Ltac ii := repeat intro; autounfold with khan_hints.
-  Ltac iis := repeat (ii; try esplit); cbn in *.
+  Ltac ii := repeat intro.
+  Ltac iis := ii; autounfold with khan_hints; try esplit.
+  Ltac iiss := (repeat iis); cbn in *; desnw; unnw.
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -420,11 +420,11 @@ Module PreludeInit_main.
 
   Local Instance impl_PreOrder
     : PreOrder impl.
-  Proof. iis; tauto. Qed.
+  Proof. iiss; eauto. Qed.
 
   Local Instance impl_PartialOrder
     : PartialOrder iff impl.
-  Proof. iis; tauto. Qed.
+  Proof. iiss; eauto. Qed.
 
   Local Instance Prop_isPoset : isPoset Prop :=
     { leProp := impl
