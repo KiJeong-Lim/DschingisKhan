@@ -343,8 +343,6 @@ Module MathNotations.
   Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
     (in custom math_term_scope at level 0, no associativity).
   (* Type Constructor *)
-  Global Notation " 'ℕ' " := (nat)
-    (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝟘' " := (Empty_set)
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝟙' " := (unit)
@@ -359,6 +357,8 @@ Module MathNotations.
     (x pattern, A custom math_term_scope at level 6, B custom math_term_scope at level 1, in custom math_term_scope at level 0).
   Global Notation " '\{' x '∈' A '|' B '\}' " := (@sig A (fun x => B))
     (x pattern, A custom math_term_scope at level 6, B custom math_form_scope at level 11, in custom math_term_scope at level 0).
+  Global Notation " 'ℕ' " := (nat)
+    (in custom math_term_scope at level 0, no associativity).
   (* Data Constructor *)
   Global Notation " '()' " := (tt)
     (in custom math_term_scope at level 0, no associativity).
@@ -389,7 +389,7 @@ Module MathNotations.
   (* Ensemble *)
   Global Notation " s '∪' t " := (union s t)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " '⋃_{' i ':' t  '}' s " := (unions_i (fun i : t => s))
+  Global Notation " '⋃_{' i '∈' t  '}' s " := (unions_i (fun i : t => s))
     (i pattern, in custom math_term_scope at level 1, no associativity).
   Global Notation " '⋃' s " := (unions s)
     (in custom math_term_scope at level 1, no associativity).
