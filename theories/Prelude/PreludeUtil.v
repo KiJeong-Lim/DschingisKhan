@@ -540,6 +540,16 @@ Module MyData.
       reflexivity.
   Defined.
 
+  Definition evalFin {n : nat} (i : Fin n) : nat := proj1_sig (runFin i).
+
+  Lemma evalFin_unfold {n : nat} (i : Fin n) :
+    evalFin i =
+    match i with
+    | FZ => O
+    | FS i' => S (evalFin i')
+    end.
+  Proof. destruct i; reflexivity. Qed.
+
   Inductive vector (A : Hask.t) : nat -> Hask.t :=
   | VNil : vector A (O)
   | VCons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
