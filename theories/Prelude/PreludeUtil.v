@@ -520,7 +520,7 @@ Module MyData.
   Global Tactic Notation " introVCons " ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply caseOfVCons; intros _hd _tl.
 
   Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
-    match xs in vector _ x return S n = x -> A * vector A (pred x) with
+    match xs in vector _ m return S n = m -> A * vector A (pred m) with
     | VNil => S_n_eq_0_elim
     | VCons n' x' xs' => fun _ : S n = S n' => (x', xs')
     end
