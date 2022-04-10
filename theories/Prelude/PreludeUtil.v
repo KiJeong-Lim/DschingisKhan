@@ -288,6 +288,48 @@ Module NAT_FACTS.
     }
   .
 
+  Theorem Le_unique (n1 : nat) (n2 : nat)
+    (hyp1 : Le n1 n2)
+    (hyp2 : Le n1 n2)
+    : hyp1 = hyp2.
+  Proof.
+    revert n2 hyp1 hyp2.
+    refine (
+      fix Le_unique_fix (n2 : nat) (hyp1 : Le n1 n2) {struct hyp1} : forall hyp2 : Le n1 n2, hyp1 = hyp2 :=
+      match hyp1 as hyp1' in Le _ n2' return forall hyp2 : Le n1 n2', hyp1' = hyp2 with
+      | Le_n _ => fun hyp2 : Le n1 n1 => _
+      | Le_S _ n1' hyp1' => fun hyp2 : Le n1 (S n1') => _
+      end
+    ).
+    { memo (
+        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n1 = n2', eq_rec n1 (Le n1) (Le_n n1) n2' h_eq = hyp2' with
+        | Le_n _ => _
+        | Le_S _ n2' hyp2' => _
+        end
+      ) as claim1.
+      - exact (claim1 (eq_reflexivity n1)).
+      - intros h_eq.
+        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity n1).
+        exact (eq_reflexivity (Le_n n1)).
+      - intros h_eq. contradiction (not_n_lt_n n2').
+        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp2').
+    }
+    { memo (
+        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n2' = S n1', Le_S n1 n1' hyp1' = eq_rec n2' (Le n1) hyp2' (S n1') h_eq with
+        | Le_n _ => _
+        | Le_S _ n2' hyp2' => _
+        end
+      ) as claim2.
+      - exact (claim2 (eq_reflexivity (S n1'))).
+      - intros h_eq. contradiction (not_n_lt_n n1').
+        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp1').
+      - intros h_eq.
+        pose proof (S_n_eq_S_m_elim h_eq) as hyp_eq; subst n2'.
+        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity (S n1')).
+        exact (eq_congruence (Le_S n1 n1') hyp1' hyp2' (Le_unique_fix n1' hyp1' hyp2')).
+    }
+  Qed.
+
   Theorem le_pirrel (n1 : nat) (n2 : nat)
     (hyp1 : n1 <= n2)
     (hyp2 : n1 <= n2)
@@ -330,48 +372,6 @@ Module NAT_FACTS.
     }
   Qed.
 
-  Theorem Le_pirrel (n1 : nat) (n2 : nat)
-    (hyp1 : Le n1 n2)
-    (hyp2 : Le n1 n2)
-    : hyp1 = hyp2.
-  Proof.
-    revert n2 hyp1 hyp2.
-    refine (
-      fix Le_pirrel_fix (n2 : nat) (hyp1 : Le n1 n2) {struct hyp1} : forall hyp2 : Le n1 n2, hyp1 = hyp2 :=
-      match hyp1 as hyp1' in Le _ n2' return forall hyp2 : Le n1 n2', hyp1' = hyp2 with
-      | Le_n _ => fun hyp2 : Le n1 n1 => _
-      | Le_S _ n1' hyp1' => fun hyp2 : Le n1 (S n1') => _
-      end
-    ).
-    { memo (
-        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n1 = n2', eq_rec n1 (Le n1) (Le_n n1) n2' h_eq = hyp2' with
-        | Le_n _ => _
-        | Le_S _ n2' hyp2' => _
-        end
-      ) as claim1.
-      - exact (claim1 (eq_reflexivity n1)).
-      - intros h_eq.
-        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity n1).
-        exact (eq_reflexivity (Le_n n1)).
-      - intros h_eq. contradiction (not_n_lt_n n2').
-        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp2').
-    }
-    { memo (
-        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n2' = S n1', Le_S n1 n1' hyp1' = eq_rec n2' (Le n1) hyp2' (S n1') h_eq with
-        | Le_n _ => _
-        | Le_S _ n2' hyp2' => _
-        end
-      ) as claim2.
-      - exact (claim2 (eq_reflexivity (S n1'))).
-      - intros h_eq. contradiction (not_n_lt_n n1').
-        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp1').
-      - intros h_eq.
-        pose proof (S_n_eq_S_m_elim h_eq) as hyp_eq; subst n2'.
-        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity (S n1')).
-        exact (eq_congruence (Le_S n1 n1') hyp1' hyp2' (Le_pirrel_fix n1' hyp1' hyp2')).
-    }
-  Qed.
-
   End ARITH_WITHOUT_SOLVER.
 
 End NAT_FACTS.
@@ -383,22 +383,36 @@ Module MyData.
   Global Declare Scope vector_scope.
 
   Inductive Fin : nat -> Set :=
-  | FZ (n' : nat) : Fin (S n')
-  | FS (n' : nat) (i' : Fin n') : Fin (S n')
+  | FZ (n : nat) : Fin (S n)
+  | FS (n : nat) (i : Fin n) : Fin (S n)
   .
 
-  Global Arguments FZ {n'}.
-  Global Arguments FS {n'}.
+  Global Arguments FZ {n}.
+  Global Arguments FS {n} (i).
 
-  Inductive Vector (A : Hask.t) : nat -> Hask.t :=
-  | VNil : Vector A (O)
-  | VCons (n : nat) (x : A) (xs : Vector A n) : Vector A (S n)
+  Fixpoint Fin_implies_Lt {n : nat} (i : Fin n) {struct i} : {m : nat & Le (S m) n} :=
+    match i in Fin y return @sigT nat (fun x : nat => Le (S x) y) with
+    | FZ => existT _ O (Le_intro_S_n_le_S_m Le_intro_0_le_n)
+    | FS i' => existT _ (S (projT1 (Fin_implies_Lt i'))) (Le_intro_S_n_le_S_m (projT2 (Fin_implies_Lt i')))
+    end
+  .
+
+  Fixpoint Lt_implies_Fin {m : nat} {n : nat} (hyp_Lt : Le (S m) n) {struct hyp_Lt} : Fin n :=
+    match hyp_Lt in Le _ n' return Fin n' with
+    | Le_n _ => FZ
+    | Le_S _ n' hyp_Lt' => FS (Lt_implies_Fin (n := n') hyp_Lt')
+    end
+  .
+
+  Inductive vector (A : Hask.t) : nat -> Hask.t :=
+  | VNil : vector A (O)
+  | VCons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
   .
 
   Global Arguments VNil {A}.
   Global Arguments VCons {A}.
 
-  Global Bind Scope vector_scope with Vector.
+  Global Bind Scope vector_scope with vector.
 
   Global Notation " '[' ']' " := (@VNil _) : vector_scope.
   Global Notation " x '::' xs " := (@VCons _ _ x xs) : vector_scope.
