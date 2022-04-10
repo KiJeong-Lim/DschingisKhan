@@ -450,9 +450,7 @@ Module MyData.
     end
   .
 
-  Global Instance Fin_equiv_Lts (n : nat) : HasSameCardinality (Fin n) (Lts n).
-   exists Fin_implies_Lts.
-   - intros i1 i2.
+  (* Global Instance Fin_equiv_Lts (n : nat) : HasSameCardinality (Fin n) (Lts n). *)
 
   Inductive vector (A : Hask.t) : nat -> Hask.t :=
   | VNil : vector A (O)
