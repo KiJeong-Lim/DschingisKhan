@@ -149,6 +149,9 @@ Module NAT_FACTS.
 
   Section ARITH_WITHOUT_SOLVER.
 
+  Local Notation suc := S.
+  Local Notation zero := O.
+
   Definition not_S_n_eq_0 {n : nat} (hyp_eq : S n = 0) : False :=
     match hyp_eq in eq _ x return
       match x return Prop with
@@ -160,11 +163,11 @@ Module NAT_FACTS.
     end
   .
 
-  Definition S_n_eq_0_elim {A : Type} {n : nat} (hyp_eq : S n = 0) : A :=
+  Definition suc_n_eq_zero_elim {A : Type} {n : nat} (hyp_eq : S n = 0) : A :=
     False_rect A (not_S_n_eq_0 hyp_eq)
   .
 
-  Definition S_n_eq_S_m_elim {n : nat} {m : nat} (hyp_eq : S n = S m) : n = m :=
+  Definition suc_n_eq_suc_m_elim {n : nat} {m : nat} (hyp_eq : S n = S m) : n = m :=
     eq_congruence Nat.pred (S n) (S m) hyp_eq
   .
 
@@ -240,12 +243,12 @@ Module NAT_FACTS.
       fix eq_dec_fix (n1 : nat) (n2 : nat) {struct n1} : {n1 = n2} + {n1 <> n2} :=
       match n1 as x, n2 as y return {x = y} + {x <> y} with
       | O, O => left (eq_reflexivity O)
-      | O, S n2' => right (fun h_eq : O = S n2' => S_n_eq_0_elim (eq_symmetry O (S n2') h_eq))
-      | S n1', O => right (fun h_eq : S n1' = O => S_n_eq_0_elim h_eq)
+      | O, S n2' => right (fun h_eq : O = S n2' => suc_n_eq_zero_elim (eq_symmetry O (S n2') h_eq))
+      | S n1', O => right (fun h_eq : S n1' = O => suc_n_eq_zero_elim h_eq)
       | S n1', S n2' =>
         match eq_dec_fix n1' n2' with
         | left h_eq => left (eq_congruence S n1' n2' h_eq)
-        | right h_ne => right (fun h_eq : S n1' = S n2' => h_ne (S_n_eq_S_m_elim h_eq))
+        | right h_ne => right (fun h_eq : S n1' = S n2' => h_ne (suc_n_eq_suc_m_elim h_eq))
         end
       end
     }
@@ -287,7 +290,7 @@ Module NAT_FACTS.
       - intros h_eq. contradiction (not_n_lt_n n1').
         unfold "<". now rewrite <- h_eq.
       - intros h_eq.
-        pose proof (S_n_eq_S_m_elim h_eq) as hyp_eq; subst n2'.
+        pose proof (suc_n_eq_suc_m_elim h_eq) as hyp_eq; subst n2'.
         rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity (S n1')).
         exact (eq_congruence (le_S n1 n1') hyp1' hyp2' (le_pirrel_fix n1' hyp1' hyp2')).
     }
@@ -495,7 +498,7 @@ Module MyData.
     - intros xs. exact (claim1 xs (eq_reflexivity (O))).
     - rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (O)).
       exact (hypVNil).
-    - exact (S_n_eq_0_elim hyp_eq).
+    - exact (suc_n_eq_zero_elim hyp_eq).
   Defined.
 
   Lemma caseOfVCons {A : Type} {n : nat} {phi : vector A (S n) -> Type}
@@ -509,8 +512,8 @@ Module MyData.
       end
     ) as claim1.
     - intros xs. exact (claim1 xs (eq_reflexivity (S n))).
-    - exact (S_n_eq_0_elim (eq_symmetry O (S n) hyp_eq)).
-    - pose proof (S_n_eq_S_m_elim hyp_eq) as n_eq_n'; subst n'.
+    - exact (suc_n_eq_zero_elim (eq_symmetry O (S n) hyp_eq)).
+    - pose proof (suc_n_eq_suc_m_elim hyp_eq) as n_eq_n'; subst n'.
       rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (S n)).
       exact (hypVCons x' xs').
   Defined.
@@ -521,7 +524,7 @@ Module MyData.
 
   Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
     match xs in vector _ m return S n = m -> A * vector A (pred m) with
-    | VNil => S_n_eq_0_elim
+    | VNil => suc_n_eq_zero_elim
     | VCons n' x' xs' => fun _ : S n = S n' => (x', xs')
     end
   .
