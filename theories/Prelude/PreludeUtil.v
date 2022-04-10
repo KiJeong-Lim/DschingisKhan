@@ -390,19 +390,69 @@ Module MyData.
   Global Arguments FZ {n}.
   Global Arguments FS {n} (i).
 
-  Fixpoint Fin_implies_Lt {n : nat} (i : Fin n) {struct i} : {m : nat & Le (S m) n} :=
+  Definition Fin_case0 {P : Fin O -> Type} 
+    : forall i : Fin O, P i.
+  Proof.
+    set (fun m : nat =>
+      match m as m' return Fin m' -> Type with
+      | O => fun i : Fin O => forall P' : Fin O -> Type, P' i
+      | S n' => fun i : Fin (S n') => unit
+      end
+    ) as ret.
+    intros i.
+    memo (
+      match i as y in Fin x return ret x y with
+      | @FZ n' => _
+      | @FS n' i' => _
+      end
+    ) as claim1.
+    - exact (claim1 P).
+    - exact (tt).
+    - exact (tt).
+  Defined.
+
+  Definition Fin_caseS {n : nat} {P : Fin (S n) -> Type}
+    (hyp_Z : P FZ)
+    (hyp_S : forall i' : Fin n, P (FS i'))
+    : forall i : Fin (S n), P i.
+  Proof.
+    set (fun m : nat =>
+      match m as m' return Fin m' -> Type with
+      | O => fun i : Fin O => unit
+      | S n' => fun i : Fin (S n') => forall P' : Fin (S n') -> Type, P' (@FZ n') -> (forall i' : Fin n', P' (@FS n' i')) -> P' i
+      end
+    ) as ret.
+    intros i.
+    memo (
+      match i as y in Fin x return ret x y with
+      | @FZ n' => _
+      | @FS n' i' => _
+      end
+    ) as claim1.
+    - exact (claim1 P hyp_Z hyp_S).
+    - intros P' hyp_Z' hyp_S'. exact (hyp_Z').
+    - intros P' hyp_Z' hyp_S'. exact (hyp_S' i').
+  Defined.
+
+  Definition Lts (n : nat) : Set := {m : nat & Le (S m) n}.
+
+  Fixpoint Fin_implies_Lts {n : nat} (i : Fin n) {struct i} : Lts n :=
     match i in Fin y return @sigT nat (fun x : nat => Le (S x) y) with
     | FZ => existT _ O (Le_intro_S_n_le_S_m Le_intro_0_le_n)
-    | FS i' => existT _ (S (projT1 (Fin_implies_Lt i'))) (Le_intro_S_n_le_S_m (projT2 (Fin_implies_Lt i')))
+    | FS i' => existT _ (S (projT1 (Fin_implies_Lts i'))) (Le_intro_S_n_le_S_m (projT2 (Fin_implies_Lts i')))
     end
   .
 
-  Fixpoint Lt_implies_Fin {m : nat} {n : nat} (hyp_Lt : Le (S m) n) {struct hyp_Lt} : Fin n :=
+  Fixpoint Lts_implies_Fin {m : nat} (n : nat) (hyp_Lt : Le (S m) n) {struct hyp_Lt} : Fin n :=
     match hyp_Lt in Le _ n' return Fin n' with
     | Le_n _ => FZ
-    | Le_S _ n' hyp_Lt' => FS (Lt_implies_Fin (n := n') hyp_Lt')
+    | Le_S _ n' hyp_Lt' => FS (Lts_implies_Fin n' hyp_Lt')
     end
   .
+
+  Global Instance Fin_equiv_Lts (n : nat) : HasSameCardinality (Fin n) (Lts n).
+   exists Fin_implies_Lts.
+   - intros i1 i2.
 
   Inductive vector (A : Hask.t) : nat -> Hask.t :=
   | VNil : vector A (O)
