@@ -491,7 +491,7 @@ Module MathClasses.
 
   Context (S : Hask.t) {requireSetoid : isSetoid S}.
 
-  Class Magma_axiom (plus : S -> S -> S) : Prop := Magma_requiresCongruence :> preserves_eqProp2 plus.
+  Class Magma_axiom (bin_op : S -> S -> S) : Prop := Magma_requiresCongruence :> preserves_eqProp2 bin_op.
 
   Class Semigroup_axiom (plus : S -> S -> S) : Prop :=
     { Semigroup_requiresMagma :> Magma_axiom plus
@@ -518,7 +518,7 @@ Module MathClasses.
     ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_plus neg_right_inv_plus]].
     rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1).
     assert (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite <- H_EQ1.
-    now rewrite Semigroup_requiresAssoc, claim1, left_id.
+    now rewrite associativity, claim1, left_id.
   Qed.
 
   End AXIOMS.
@@ -537,8 +537,8 @@ Module MathClasses.
 
   Global Notation " x '+' y " := (add x y) (in custom math_term_scope at level 4, left associativity).
   Global Notation " '0' " := (zero) (in custom math_term_scope at level 0, no associativity).
-  Global Notation " x '-' y " := (add x (neg y)) (in custom math_term_scope at level 4, left associativity).
   Global Notation " '-' x " := (neg x) (in custom math_term_scope at level 2, right associativity).
+  Global Notation " x '-' y " := (add x (neg y)) (in custom math_term_scope at level 4, left associativity).
   Global Notation " x '*' y " := (mul x y) (in custom math_term_scope at level 3, left associativity).
   Global Notation " '1' " := (unity) (in custom math_term_scope at level 0, no associativity).
 
