@@ -204,21 +204,21 @@ Module PreludeInit_MAIN.
   Context {src_objs : Type} {tgt_objs : Type}.
 
   Polymorphic Class CovariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isCovariantFunctor F} : Prop :=
-    { covarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
+    { covarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_r : hom obj obj_r)
       (arr_l : hom obj_l obj)
       : fmap (dom := obj_l) (cod := obj_r) (compose arr_r arr_l) == compose (fmap arr_r) (fmap arr_l)
-    ; covarianceMap_commutes_with_id {obj : src_objs}
+    ; covarianceMap_compatWith_id {obj : src_objs}
       : fmap (dom := obj) (cod := obj) id == id
     }
   .
 
   Polymorphic Class ContravariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isContravariantFunctor F} : Prop :=
-    { contravarianceMap_commutes_with_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
+    { contravarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_l : hom obj_l obj)
       (arr_r : hom obj obj_r)
       : contramap (dom := obj_r) (cod := obj_l) (compose arr_r arr_l) == compose (contramap arr_l) (contramap arr_r)
-    ; contravarianceMap_commutes_with_id {obj : src_objs}
+    ; contravarianceMap_compatWith_id {obj : src_objs}
       : contramap (dom := obj) (cod := obj) id == id
     }
   .
@@ -599,11 +599,11 @@ Module PreludeInit_MAIN.
   .
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
-    { fmap_commutes_with_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
+    { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
       (arr_r : obj -> obj_r)
       (arr_l : obj_l -> obj)
       : fmap (arr_r ∘ arr_l) == (fmap arr_r ∘ fmap arr_l)
-    ; fmap_commutes_with_id {obj : Hask.t}
+    ; fmap_compatWith_id {obj : Hask.t}
       : fmap id_{ obj } == id_{ F obj }
     }
   .
