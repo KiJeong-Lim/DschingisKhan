@@ -390,12 +390,12 @@ Module MyData.
   Global Arguments FZ {n}.
   Global Arguments FS {n} (i).
 
-  Definition Fin_case0 {phi : Fin (O) -> Type} 
+  Lemma Fin_case0 {phi : Fin (O) -> Type} 
     : forall i : Fin (O), phi i.
   Proof.
     keep (fun m : nat =>
-      match m as m' return Fin m' -> Type with
-      | O => fun i : Fin O => forall phi' : Fin O -> Type, phi' i
+      match m as x return Fin x -> Type with
+      | O => fun i : Fin (O) => forall phi' : Fin O -> Type, phi' i
       | S n' => fun i : Fin (S n') => unit
       end
     ) as ret.
@@ -411,14 +411,14 @@ Module MyData.
     - exact (tt).
   Defined.
 
-  Definition Fin_caseS {n : nat} {phi : Fin (S n) -> Type}
+  Lemma Fin_caseS {n : nat} {phi : Fin (S n) -> Type}
     (hyp_Z : phi FZ)
     (hyp_S : forall i' : Fin n, phi (FS i'))
     : forall i : Fin (S n), phi i.
   Proof.
     keep (fun m : nat =>
-      match m as m' return Fin m' -> Type with
-      | O => fun i : Fin O => unit
+      match m as x return Fin x -> Type with
+      | O => fun i : Fin (O) => unit
       | S n' => fun i : Fin (S n') => forall phi' : Fin (S n') -> Type, phi' (@FZ n') -> (forall i' : Fin n', phi' (@FS n' i')) -> phi' i
       end
     ) as ret.
