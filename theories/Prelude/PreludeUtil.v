@@ -5,6 +5,30 @@ Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 
+Module EQ_FACTS.
+
+End EQ_FACTS.
+
+Export EQ_FACTS.
+
+Module NAT_FACTS.
+
+End NAT_FACTS.
+
+Export NAT_FACTS.
+
+Module MyData.
+
+End MyData.
+
+Export MyData.
+
+Module FUN_FACTS.
+
+End FUN_FACTS.
+
+Export FUN_FACTS.
+
 Module SCRATCH.
 
   Import ListNotations.
