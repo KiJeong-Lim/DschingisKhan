@@ -182,6 +182,8 @@ Module MathProps.
 
 End MathProps.
 
+Export MathProps.
+
 Module Ensembles.
 
   Import ListNotations.
