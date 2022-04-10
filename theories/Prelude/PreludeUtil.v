@@ -490,7 +490,7 @@ Module MyData.
     : forall xs : vector A (O), phi xs.
   Proof.
     memo (fun xs : vector A (O) =>
-      match xs as v in vector _ ze return forall hyp_eq : ze = O, phi (vector_casting hyp_eq v) with
+      match xs as v in vector _ m return forall hyp_eq : m = O, phi (vector_casting hyp_eq v) with
       | VNil => fun hyp_eq : O = O => _
       | VCons n' x' xs' => fun hyp_eq : S n' = O => _
       end
@@ -506,7 +506,7 @@ Module MyData.
     : forall xs : vector A (S n), phi xs.
   Proof.
     memo (fun xs : vector A (S n) =>
-      match xs as v in vector _ sc return forall hyp_eq : sc = S n, phi (vector_casting hyp_eq v) with
+      match xs as v in vector _ m return forall hyp_eq : m = S n, phi (vector_casting hyp_eq v) with
       | VNil => fun hyp_eq : O = S n => _
       | VCons n' x' xs' => fun hyp_eq : S n' = S n => _
       end
@@ -519,7 +519,6 @@ Module MyData.
   Defined.
 
   Global Tactic Notation " introVNil " := intro_pattern_revert; eapply caseOfVNil.
-
   Global Tactic Notation " introVCons " ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply caseOfVCons; intros _hd _tl.
 
   Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
