@@ -603,18 +603,18 @@ Module MyVectors.
 
   Global Arguments vec_n_eqProp_iff {n} {A} {xs1} {xs2}.
 
-  Definition vector_zip {A : Type} {B : Type} {n : nat} : vector A n -> vector B n -> vector (A * B) n :=
+  Definition vector_zipWith {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) : vector A n -> vector B n -> vector C n :=
     fun xs : vec_n n A =>
     fun ys : vec_n n B =>
     \do x <- xs;
     \do y <- ys;
-    ret (x, y);
+    ret (f x y);
   .
 
-  Lemma vector_zip_spec {A : Type} {B : Type} {n : nat} (xs : vector A n) (ys : vector B n)
-    : forall i : FinSet n, (xs !! i, ys !! i) = vector_zip xs ys !! i.
+  Lemma vector_zipWith_spec {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n)
+    : forall i : FinSet n, f (xs !! i) (ys !! i) = vector_zipWith f xs ys !! i.
   Proof.
-    cbn; intros i; (repeat reduce_monad_methods_of_vector); exact (eq_reflexivity (xs !! i, ys !! i)).
+    cbn; intros i; (repeat reduce_monad_methods_of_vector); exact (eq_reflexivity (f (xs !! i) (ys !! i))).
   Qed.
 
   Fixpoint vector_range {n : nat} {struct n} : nat -> vector nat n :=
