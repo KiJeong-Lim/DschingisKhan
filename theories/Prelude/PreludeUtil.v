@@ -471,9 +471,9 @@ Module MyData.
         { intros i2'. right. congruence. }
       + intros i1'. intro_pattern_revert; eapply Fin_caseS.
         { right. congruence. }
-        { intros i2'. destruct (IH i1' i2') as [hyp_yes | hyp_no]. 
-          - left. congruence.
-          - right. intros hyp_eq. contradiction hyp_no.
+        { intros i2'. destruct (IH i1' i2') as [hyp_yes | hyp_no]; [left | right].
+          - exact (eq_congruence (@FS n) i1' i2' hyp_yes).
+          - intros hyp_eq. contradiction hyp_no.
             set (
               fun i : Fin (S n) =>
               match i in Fin m return Fin (pred m) -> Fin (pred m) with
@@ -487,23 +487,58 @@ Module MyData.
 
   Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.
 
-  Definition Lts (n : nat) : Set := {m : nat & Le (S m) n}.
+  Definition lts (n : nat) : Set := {x : nat | x < n}.
 
-  Fixpoint Fin_implies_Lts {n : nat} (i : Fin n) {struct i} : Lts n :=
-    match i in Fin y return @sigT nat (fun x : nat => Le (S x) y) with
-    | FZ => existT _ O (Le_intro_S_n_le_S_m Le_intro_0_le_n)
-    | FS i' => existT _ (S (projT1 (Fin_implies_Lts i'))) (Le_intro_S_n_le_S_m (projT2 (Fin_implies_Lts i')))
+  Fixpoint runFin {n : nat} (i : Fin n) {struct i} : lts n :=
+    match i in Fin x return @sig nat (gt x) with
+    | @FZ n' => exist (fun x : nat => lt x (S n')) O (le_intro_S_n_le_S_m le_intro_0_le_n)
+    | @FS n' i' => exist (fun x : nat => lt x (S n')) (S (proj1_sig (runFin i'))) (le_intro_S_n_le_S_m (proj2_sig (runFin i')))
     end
   .
 
-  Fixpoint Lts_implies_Fin {m : nat} (n : nat) (hyp_Lt : Le (S m) n) {struct hyp_Lt} : Fin n :=
-    match hyp_Lt in Le _ n' return Fin n' with
-    | Le_n _ => FZ
-    | Le_S _ n' hyp_Lt' => FS (Lts_implies_Fin n' hyp_Lt')
+  Fixpoint getFin {n : nat} {m : nat} {struct n} : m < n -> Fin n :=
+    match n as x return S m <= x -> Fin x with
+    | O => lt_elim_n_lt_0
+    | S n' =>
+      match m as y return S y <= S n' -> Fin (S n') with
+      | O => fun hyp_lt : O < S n' => FZ
+      | S m' => fun hyp_lt : S m' < S n' => FS (getFin (lt_elim_n_lt_S_m hyp_lt))
+      end
     end
   .
 
-  (* Global Instance Fin_equiv_Lts (n : nat) : HasSameCardinality (Fin n) (Lts n). *)
+  Lemma runFin_getFin_id {m : nat} {n : nat} (hyp_lt : m < n)
+    : runFin (getFin hyp_lt) = exist (gt n) m hyp_lt.
+  Proof.
+    revert n hyp_lt. induction m as [ | m IH]; intros [ | n'] hyp_lt; cbn in *.
+    - exact (lt_elim_n_lt_0 hyp_lt).
+    - eapply eq_congruence, le_pirrel.
+    - exact (lt_elim_n_lt_0 hyp_lt).
+    - rewrite IH; cbn. eapply eq_congruence, le_pirrel.
+  Qed.
+
+  Lemma getFin_runFin_id {n : nat} (i : Fin n)
+    : @getFin n (proj1_sig (runFin i)) (proj2_sig (runFin i)) = i.
+  Proof.
+    induction i as [n' | n' i' IH].
+    - reflexivity.
+    - cbn. eapply eq_congruence. etransitivity; [eapply eq_congruence, le_pirrel | exact IH].
+  Qed.
+
+  Global Instance Fin_equiv_Lts (n : nat)
+    : HasSameCardinality (Fin n) (lts n).
+  Proof.
+    exists (@runFin n).
+    - intros i1 i2 hyp_eq. desnw; unnw.
+      rewrite <- getFin_runFin_id with (i := i1).
+      rewrite <- getFin_runFin_id with (i := i2).
+      rewrite f_x1_eq_f_x2.
+      reflexivity.
+    - intros [m hyp_lt]. unnw.
+      exists (@getFin n m hyp_lt).
+      rewrite runFin_getFin_id.
+      reflexivity.
+  Defined.
 
   Inductive vector (A : Hask.t) : nat -> Hask.t :=
   | VNil : vector A (O)
