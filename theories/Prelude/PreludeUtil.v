@@ -233,43 +233,6 @@ Module NAT_FACTS.
     end
   .
 
-  Inductive Le (n : nat) : nat -> Set :=
-  | Le_n : Le n n
-  | Le_S (m : nat) (hyp_Le : Le n m) : Le n (S m)
-  .
-
-  Fixpoint Le_intro_0_le_n {n : nat} {struct n} : Le 0 n :=
-    match n with
-    | O => Le_n O
-    | S n' => Le_S O n' Le_intro_0_le_n
-    end
-  .
-
-  Fixpoint Le_intro_S_n_le_S_m {n : nat} {m : nat} (hyp_LE : Le n m) {struct hyp_LE} : Le (S n) (S m) :=
-    match hyp_LE in Le _ x return Le (S n) (S x) with
-    | Le_n _ => Le_n (S n)
-    | Le_S _ m' hyp_LE' => Le_S (S n) (S m') (Le_intro_S_n_le_S_m hyp_LE')
-    end
-  .
-
-  Fixpoint le_implies_Le {n : nat} {m : nat} {struct n} : le n m -> Le n m :=
-    match n as x return le x m -> Le x m with
-    | O => fun hyp_le : O <= m => Le_intro_0_le_n
-    | S n' =>
-      match m as y return le (S n') y -> Le (S n') y with
-      | O => fun hyp_le : n' < O => lt_elim_n_lt_0 hyp_le
-      | S m' => fun hyp_le : n' < S m' => Le_intro_S_n_le_S_m (le_implies_Le (lt_elim_n_lt_S_m hyp_le))
-      end
-    end
-  .
-
-  Fixpoint Le_implies_le {n : nat} {m : nat} (hyp_le : Le n m) : le n m :=
-    match hyp_le with
-    | Le_n _ => le_n n
-    | Le_S _ m' hyp_le' => le_S n m' (Le_implies_le hyp_le')
-    end
-  .
-
   Definition not_n_lt_n (n : nat) : ~ n < n := nat_ind (fun x : nat => x < x -> False) (fun hyp_lt : 0 < 0 => lt_elim_n_lt_0 hyp_lt) (fun n' : nat => fun IH : ~ n' < n' => fun hyp_lt : S n' < S n' => IH (lt_elim_n_lt_S_m hyp_lt)) n.
 
   Global Instance natEqDec : EqDec nat :=
@@ -287,48 +250,6 @@ Module NAT_FACTS.
       end
     }
   .
-
-  Theorem Le_unique (n1 : nat) (n2 : nat)
-    (hyp1 : Le n1 n2)
-    (hyp2 : Le n1 n2)
-    : hyp1 = hyp2.
-  Proof.
-    revert n2 hyp1 hyp2.
-    refine (
-      fix Le_unique_fix (n2 : nat) (hyp1 : Le n1 n2) {struct hyp1} : forall hyp2 : Le n1 n2, hyp1 = hyp2 :=
-      match hyp1 as hyp1' in Le _ n2' return forall hyp2 : Le n1 n2', hyp1' = hyp2 with
-      | Le_n _ => fun hyp2 : Le n1 n1 => _
-      | Le_S _ n1' hyp1' => fun hyp2 : Le n1 (S n1') => _
-      end
-    ).
-    { memo (
-        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n1 = n2', eq_rec n1 (Le n1) (Le_n n1) n2' h_eq = hyp2' with
-        | Le_n _ => _
-        | Le_S _ n2' hyp2' => _
-        end
-      ) as claim1.
-      - exact (claim1 (eq_reflexivity n1)).
-      - intros h_eq.
-        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity n1).
-        exact (eq_reflexivity (Le_n n1)).
-      - intros h_eq. contradiction (not_n_lt_n n2').
-        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp2').
-    }
-    { memo (
-        match hyp2 as hyp2' in Le _ n2' return forall h_eq : n2' = S n1', Le_S n1 n1' hyp1' = eq_rec n2' (Le n1) hyp2' (S n1') h_eq with
-        | Le_n _ => _
-        | Le_S _ n2' hyp2' => _
-        end
-      ) as claim2.
-      - exact (claim2 (eq_reflexivity (S n1'))).
-      - intros h_eq. contradiction (not_n_lt_n n1').
-        unfold "<". rewrite <- h_eq. exact (Le_implies_le hyp1').
-      - intros h_eq.
-        pose proof (S_n_eq_S_m_elim h_eq) as hyp_eq; subst n2'.
-        rewrite eq_pirrel_fromEqDec with (hyp_eq1 := h_eq) (hyp_eq2 := eq_reflexivity (S n1')).
-        exact (eq_congruence (Le_S n1 n1') hyp1' hyp2' (Le_unique_fix n1' hyp1' hyp2')).
-    }
-  Qed.
 
   Theorem le_pirrel (n1 : nat) (n2 : nat)
     (hyp1 : n1 <= n2)
@@ -383,22 +304,19 @@ Module MyData.
   Global Declare Scope vector_scope.
 
   Inductive Fin : nat -> Set :=
-  | FZ (n : nat) : Fin (S n)
-  | FS (n : nat) (i : Fin n) : Fin (S n)
+  | FZ {n : nat} : Fin (S n)
+  | FS {n : nat} (i : Fin n) : Fin (S n)
   .
-
-  Global Arguments FZ {n}.
-  Global Arguments FS {n} (i).
 
   Lemma Fin_case0 {phi : Fin (O) -> Type} 
     : forall i : Fin (O), phi i.
   Proof.
     keep (fun m : nat =>
       match m as x return Fin x -> Type with
-      | O => fun i : Fin (O) => forall phi' : Fin O -> Type, phi' i
-      | S n' => fun i : Fin (S n') => unit
+      | O => fun i : Fin (O) => forall phi' : Fin (O) -> Type, phi' i
+      | S m' => fun i : Fin (S m') => unit
       end
-    ) as ret.
+    ) as ret into (forall x : nat, Fin x -> Type).
     intros i.
     memo (
       match i as y in Fin x return ret x y with
@@ -419,9 +337,9 @@ Module MyData.
     keep (fun m : nat =>
       match m as x return Fin x -> Type with
       | O => fun i : Fin (O) => unit
-      | S n' => fun i : Fin (S n') => forall phi' : Fin (S n') -> Type, phi' (@FZ n') -> (forall i' : Fin n', phi' (@FS n' i')) -> phi' i
+      | S m' => fun i : Fin (S m') => forall phi' : Fin (S m') -> Type, phi' (@FZ m') -> (forall i' : Fin m', phi' (@FS m' i')) -> phi' i
       end
-    ) as ret.
+    ) as ret into (forall x : nat, Fin x -> Type).
     intros i.
     memo (
       match i as y in Fin x return ret x y with
@@ -430,8 +348,8 @@ Module MyData.
       end
     ) as claim1.
     - exact (claim1 phi hypZ hypS).
-    - intros phi' hypZ' hypS'. exact (hypZ').
-    - intros phi' hypZ' hypS'. exact (hypS' i').
+    - intros phi' hypZ' hypS'; exact (hypZ').
+    - intros phi' hypZ' hypS'; exact (hypS' i').
   Defined.
 
   Lemma Fin_eq_dec (n : nat)
@@ -453,35 +371,35 @@ Module MyData.
               | @FZ n' => fun x : Fin n' => x
               | @FS n' i' => fun _ : Fin n' => i'
               end
-            ) as f_cong.
+            ) as f_cong into (Fin (S n) -> Fin n -> Fin n).
             exact (hyp_no (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
         }
   Defined.
 
   Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.
 
-  Definition fin (n : nat) : Set := {x : nat | x < n}.
+  Definition fin (n : nat) : Set := @sig nat (gt n).
 
   Fixpoint runFin {n : nat} (i : Fin n) {struct i} : fin n :=
     match i in Fin x return @sig nat (gt x) with
-    | @FZ n' => exist (fun x : nat => lt x (S n')) O (le_intro_S_n_le_S_m le_intro_0_le_n)
-    | @FS n' i' => exist (fun x : nat => lt x (S n')) (S (proj1_sig (runFin i'))) (le_intro_S_n_le_S_m (proj2_sig (runFin i')))
+    | @FZ n' => @exist nat (gt (S n')) O (le_intro_S_n_le_S_m le_intro_0_le_n)
+    | @FS n' i' => @exist nat (gt (S n')) (S (proj1_sig (runFin i'))) (le_intro_S_n_le_S_m (proj2_sig (runFin i')))
     end
   .
 
-  Fixpoint getFin {n : nat} {m : nat} {struct n} : m < n -> Fin n :=
+  Fixpoint getFin {n : nat} (m : nat) {struct n} : m < n -> Fin n :=
     match n as x return S m <= x -> Fin x with
     | O => lt_elim_n_lt_0
     | S n' =>
       match m as y return S y <= S n' -> Fin (S n') with
       | O => fun hyp_lt : O < S n' => FZ
-      | S m' => fun hyp_lt : S m' < S n' => FS (getFin (lt_elim_n_lt_S_m hyp_lt))
+      | S m' => fun hyp_lt : S m' < S n' => FS (getFin m' (lt_elim_n_lt_S_m hyp_lt))
       end
     end
   .
 
   Lemma runFin_getFin_id {m : nat} {n : nat} (hyp_lt : m < n)
-    : runFin (getFin hyp_lt) = exist (gt n) m hyp_lt.
+    : runFin (getFin m hyp_lt) = exist (gt n) m hyp_lt.
   Proof.
     revert n hyp_lt. induction m as [ | m IH]; intros [ | n'] hyp_lt; cbn in *.
     - exact (lt_elim_n_lt_0 hyp_lt).
@@ -491,7 +409,7 @@ Module MyData.
   Qed.
 
   Lemma getFin_runFin_id {n : nat} (i : Fin n)
-    : @getFin n (proj1_sig (runFin i)) (proj2_sig (runFin i)) = i.
+    : getFin (proj1_sig (runFin i)) (proj2_sig (runFin i)) = i.
   Proof.
     induction i as [n' | n' i' IH].
     - reflexivity.
@@ -509,7 +427,7 @@ Module MyData.
       reflexivity.
     - intros [m hyp_lt]. unnw.
       exists (@getFin n m hyp_lt).
-      rewrite runFin_getFin_id.
+      rewrite runFin_getFin_id with (hyp_lt := hyp_lt).
       reflexivity.
   Defined.
 
@@ -557,6 +475,60 @@ Module MyData.
 
   Global Arguments VNil {A}.
   Global Arguments VCons {A}.
+
+  Definition vector_casting {A : Type} {n : nat} {m : nat} (hyp_eq : n = m) : vector A n -> vector A m :=
+    match hyp_eq in eq _ x return vector A n -> vector A x with
+    | eq_refl => fun xs : vector A n => xs
+    end
+  .
+
+  Lemma caseOfVNil {A : Type} {phi : vector A (O) -> Type}
+    (hypVNil : phi VNil)
+    : forall xs : vector A (O), phi xs.
+  Proof.
+    memo (fun xs : vector A (O) =>
+      match xs as v in vector _ ze return forall hyp_eq : ze = O, phi (vector_casting hyp_eq v) with
+      | VNil => fun hyp_eq : O = O => _
+      | VCons n' x' xs' => fun hyp_eq : S n' = O => _
+      end
+    ) as claim1.
+    - intros xs. exact (claim1 xs (eq_reflexivity (O))).
+    - rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (O)).
+      exact (hypVNil).
+    - exact (S_n_eq_0_elim hyp_eq).
+  Defined.
+
+  Lemma caseOfVCons {A : Type} {n : nat} {phi : vector A (S n) -> Type}
+    (hypVCons : forall x : A, forall xs' : vector A n, phi (VCons n x xs'))
+    : forall xs : vector A (S n), phi xs.
+  Proof.
+    memo (fun xs : vector A (S n) =>
+      match xs as v in vector _ sc return forall hyp_eq : sc = S n, phi (vector_casting hyp_eq v) with
+      | VNil => fun hyp_eq : O = S n => _
+      | VCons n' x' xs' => fun hyp_eq : S n' = S n => _
+      end
+    ) as claim1.
+    - intros xs. exact (claim1 xs (eq_reflexivity (S n))).
+    - exact (S_n_eq_0_elim (eq_symmetry O (S n) hyp_eq)).
+    - pose proof (S_n_eq_S_m_elim hyp_eq) as n_eq_n'; subst n'.
+      rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (S n)).
+      exact (hypVCons x' xs').
+  Defined.
+
+  Global Tactic Notation " introVNil " := intro_pattern_revert; eapply caseOfVNil.
+
+  Global Tactic Notation " introVCons " ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply caseOfVCons; intros _hd _tl.
+
+  Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
+    match xs in vector _ x return S n = x -> A * vector A (pred x) with
+    | VNil => S_n_eq_0_elim
+    | VCons n' x' xs' => fun _ : S n = S n' => (x', xs')
+    end
+  .
+
+  Definition vector_head {A : Type} {n : nat} (xs : vector A (S n)) : A := fst (vector_uncons xs eq_refl).
+
+  Definition vector_tail {A : Type} {n : nat} (xs : vector A (S n)) : vector A n := snd (vector_uncons xs eq_refl).
 
   Global Bind Scope vector_scope with vector.
 
