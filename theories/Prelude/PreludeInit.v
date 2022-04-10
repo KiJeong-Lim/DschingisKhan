@@ -139,7 +139,7 @@ End Hask.
 
 Module PreludeInit_MAIN.
 
-  Local Open Scope program_scope.
+  Global Open Scope program_scope.
 
   (** "1. Setoid and Poset" *)
 
@@ -725,8 +725,6 @@ Module PreludeInit_MAIN.
     { fmap {A : Hask.t} {B : Hask.t} := fun f : Hask.arrow A B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap f l)) (fun r : FR A => inr1 (fmap f r))
     }
   .
-
-  Global Open Scope program_scope.
 
 End PreludeInit_MAIN.
 
