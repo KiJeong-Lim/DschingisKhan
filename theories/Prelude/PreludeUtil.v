@@ -487,9 +487,9 @@ Module MyData.
 
   Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.
 
-  Definition lts (n : nat) : Set := {x : nat | x < n}.
+  Definition fin (n : nat) : Set := {x : nat | x < n}.
 
-  Fixpoint runFin {n : nat} (i : Fin n) {struct i} : lts n :=
+  Fixpoint runFin {n : nat} (i : Fin n) {struct i} : fin n :=
     match i in Fin x return @sig nat (gt x) with
     | @FZ n' => exist (fun x : nat => lt x (S n')) O (le_intro_S_n_le_S_m le_intro_0_le_n)
     | @FS n' i' => exist (fun x : nat => lt x (S n')) (S (proj1_sig (runFin i'))) (le_intro_S_n_le_S_m (proj2_sig (runFin i')))
@@ -525,8 +525,8 @@ Module MyData.
     - cbn. eapply eq_congruence. etransitivity; [eapply eq_congruence, le_pirrel | exact IH].
   Qed.
 
-  Global Instance Fin_equiv_Lts (n : nat)
-    : HasSameCardinality (Fin n) (lts n).
+  Global Instance Fin_equiv_fin (n : nat)
+    : HasSameCardinality (Fin n) (fin n).
   Proof.
     exists (@runFin n).
     - intros i1 i2 hyp_eq. desnw; unnw.
