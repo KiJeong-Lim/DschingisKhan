@@ -412,8 +412,8 @@ Module MyData.
   Defined.
 
   Lemma Fin_caseS {n : nat} {phi : Fin (S n) -> Type}
-    (hyp_Z : phi FZ)
-    (hyp_S : forall i' : Fin n, phi (FS i'))
+    (hypZ : phi FZ)
+    (hypS : forall i' : Fin n, phi (FS i'))
     : forall i : Fin (S n), phi i.
   Proof.
     keep (fun m : nat =>
@@ -429,15 +429,13 @@ Module MyData.
       | @FS n' i' => _
       end
     ) as claim1.
-    - exact (claim1 phi hyp_Z hyp_S).
-    - intros phi' hyp_Z' hyp_S'. exact (hyp_Z').
-    - intros phi' hyp_Z' hyp_S'. exact (hyp_S' i').
+    - exact (claim1 phi hypZ hypS).
+    - intros phi' hypZ' hypS'. exact (hypZ').
+    - intros phi' hypZ' hypS'. exact (hypS' i').
   Defined.
 
-  Lemma Fin_eq_dec (n : nat) :
-    forall i1 : Fin n,
-    forall i2 : Fin n,
-    {i1 = i2} + {i1 <> i2}.
+  Lemma Fin_eq_dec (n : nat)
+    : forall i1 : Fin n, forall i2 : Fin n, {i1 = i2} + {i1 <> i2}.
   Proof.
     induction n as [ | n IH].
     - intro_pattern_revert; eapply Fin_case0.
