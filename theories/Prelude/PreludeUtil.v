@@ -434,30 +434,6 @@ Module MyData.
     - intros phi' hyp_Z' hyp_S'. exact (hyp_S' i').
   Defined.
 
-  Definition Fin_rectS {phi : forall n : nat, Fin n -> Type}
-    (hyp_Z : forall n : nat, phi (S n) (FZ))
-    (hyp_S : forall n : nat, forall i : Fin n, phi n i -> phi (S n) (FS i))
-    : forall n : nat, forall i : Fin (S n), phi (S n) i.
-  Proof.
-    refine (
-      fix rectS_fix (n : nat) (i : Fin (S n)) {struct i} : phi (S n) i :=
-      match i as y in Fin x return phi x y with
-      | @FZ n' => _
-      | @FS n' i' => _
-      end
-    ).
-    - exact (hyp_Z n').
-    - revert i'.
-      refine (
-        match n' as m return forall i' : Fin m, phi (S m) (FS i') with
-        | O => _
-        | S m' => _
-        end
-      ).
-      + exact (Fin_case0).
-      + exact (fun i' : Fin (S m') => hyp_S (S m') i' (rectS_fix m' i')).
-  Defined.
-
   Lemma Fin_eq_dec (n : nat) :
     forall i1 : Fin n,
     forall i2 : Fin n,
@@ -473,15 +449,14 @@ Module MyData.
         { right. congruence. }
         { intros i2'. destruct (IH i1' i2') as [hyp_yes | hyp_no]; [left | right].
           - exact (eq_congruence (@FS n) i1' i2' hyp_yes).
-          - intros hyp_eq. contradiction hyp_no.
-            set (
-              fun i : Fin (S n) =>
+          - intros hyp_eq.
+            keep (fun i : Fin (S n) =>
               match i in Fin m return Fin (pred m) -> Fin (pred m) with
               | @FZ n' => fun x : Fin n' => x
               | @FS n' i' => fun _ : Fin n' => i'
               end
             ) as f_cong.
-            exact (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1')).
+            exact (hyp_no (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
         }
   Defined.
 
