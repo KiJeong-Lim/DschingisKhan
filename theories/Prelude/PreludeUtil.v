@@ -235,7 +235,7 @@ Module NAT_FACTS.
 
   Inductive Le (n : nat) : nat -> Set :=
   | Le_n : Le n n
-  | Le_S (m : nat) (H_Le : Le n m) : Le n (S m)
+  | Le_S (m : nat) (hyp_Le : Le n m) : Le n (S m)
   .
 
   Fixpoint Le_intro_0_le_n {n : nat} {struct n} : Le 0 n :=
