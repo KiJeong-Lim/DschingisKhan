@@ -77,6 +77,8 @@ Module Khan.
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) := refine (let REF := PRF in _).
 
+  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+
 End Khan.
 
 Export Khan.

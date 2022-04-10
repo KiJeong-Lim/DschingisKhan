@@ -390,12 +390,12 @@ Module MyData.
   Global Arguments FZ {n}.
   Global Arguments FS {n} (i).
 
-  Definition Fin_case0 {P : Fin O -> Type} 
-    : forall i : Fin O, P i.
+  Definition Fin_case0 {phi : Fin (O) -> Type} 
+    : forall i : Fin (O), phi i.
   Proof.
-    set (fun m : nat =>
+    keep (fun m : nat =>
       match m as m' return Fin m' -> Type with
-      | O => fun i : Fin O => forall P' : Fin O -> Type, P' i
+      | O => fun i : Fin O => forall phi' : Fin O -> Type, phi' i
       | S n' => fun i : Fin (S n') => unit
       end
     ) as ret.
@@ -406,20 +406,20 @@ Module MyData.
       | @FS n' i' => _
       end
     ) as claim1.
-    - exact (claim1 P).
+    - exact (claim1 phi).
     - exact (tt).
     - exact (tt).
   Defined.
 
-  Definition Fin_caseS {n : nat} {P : Fin (S n) -> Type}
-    (hyp_Z : P FZ)
-    (hyp_S : forall i' : Fin n, P (FS i'))
-    : forall i : Fin (S n), P i.
+  Definition Fin_caseS {n : nat} {phi : Fin (S n) -> Type}
+    (hyp_Z : phi FZ)
+    (hyp_S : forall i' : Fin n, phi (FS i'))
+    : forall i : Fin (S n), phi i.
   Proof.
-    set (fun m : nat =>
+    keep (fun m : nat =>
       match m as m' return Fin m' -> Type with
       | O => fun i : Fin O => unit
-      | S n' => fun i : Fin (S n') => forall P' : Fin (S n') -> Type, P' (@FZ n') -> (forall i' : Fin n', P' (@FS n' i')) -> P' i
+      | S n' => fun i : Fin (S n') => forall phi' : Fin (S n') -> Type, phi' (@FZ n') -> (forall i' : Fin n', phi' (@FS n' i')) -> phi' i
       end
     ) as ret.
     intros i.
@@ -429,10 +429,63 @@ Module MyData.
       | @FS n' i' => _
       end
     ) as claim1.
-    - exact (claim1 P hyp_Z hyp_S).
-    - intros P' hyp_Z' hyp_S'. exact (hyp_Z').
-    - intros P' hyp_Z' hyp_S'. exact (hyp_S' i').
+    - exact (claim1 phi hyp_Z hyp_S).
+    - intros phi' hyp_Z' hyp_S'. exact (hyp_Z').
+    - intros phi' hyp_Z' hyp_S'. exact (hyp_S' i').
   Defined.
+
+  Definition Fin_rectS {phi : forall n : nat, Fin n -> Type}
+    (hyp_Z : forall n : nat, phi (S n) (FZ))
+    (hyp_S : forall n : nat, forall i : Fin n, phi n i -> phi (S n) (FS i))
+    : forall n : nat, forall i : Fin (S n), phi (S n) i.
+  Proof.
+    refine (
+      fix rectS_fix (n : nat) (i : Fin (S n)) {struct i} : phi (S n) i :=
+      match i as y in Fin x return phi x y with
+      | @FZ n' => _
+      | @FS n' i' => _
+      end
+    ).
+    - exact (hyp_Z n').
+    - revert i'.
+      refine (
+        match n' as m return forall i' : Fin m, phi (S m) (FS i') with
+        | O => _
+        | S m' => _
+        end
+      ).
+      + exact (Fin_case0).
+      + exact (fun i' : Fin (S m') => hyp_S (S m') i' (rectS_fix m' i')).
+  Defined.
+
+  Lemma Fin_eq_dec (n : nat) :
+    forall i1 : Fin n,
+    forall i2 : Fin n,
+    {i1 = i2} + {i1 <> i2}.
+  Proof.
+    induction n as [ | n IH].
+    - intro_pattern_revert; eapply Fin_case0.
+    - intro_pattern_revert; eapply Fin_caseS.
+      + intro_pattern_revert; eapply Fin_caseS.
+        { left. reflexivity. }
+        { intros i2'. right. congruence. }
+      + intros i1'. intro_pattern_revert; eapply Fin_caseS.
+        { right. congruence. }
+        { intros i2'. destruct (IH i1' i2') as [hyp_yes | hyp_no]. 
+          - left. congruence.
+          - right. intros hyp_eq. contradiction hyp_no.
+            set (
+              fun i : Fin (S n) =>
+              match i in Fin m return Fin (pred m) -> Fin (pred m) with
+              | @FZ n' => fun x : Fin n' => x
+              | @FS n' i' => fun _ : Fin n' => i'
+              end
+            ) as f_cong.
+            exact (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1')).
+        }
+  Defined.
+
+  Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.
 
   Definition Lts (n : nat) : Set := {m : nat & Le (S m) n}.
 
