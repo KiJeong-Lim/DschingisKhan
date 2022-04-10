@@ -128,7 +128,7 @@ Module MathProps.
     }
   .
 
-  Section HASK_IS_SETOID.
+  Section CARDINALITY_EQUIVALENCE.
 
   Let Hask_eqProp := fun lhs : Hask.t => fun rhs : Hask.t => inhabited (HasSameCardinality lhs rhs).
 
@@ -136,29 +136,15 @@ Module MathProps.
     : Equivalence Hask_eqProp.
   Proof.
     split.
-    - intros A.
-      econstructor. exists (fun x : A => x).
-      + intros x1 x2 H_x_EQ.
-        congruence.
-      + intros x. exists (x).
-        exact (@eq_refl A x).
-    - intros A B [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]].
-      econstructor. exists (fun y : B => proj1_sig (bijection_A_to_B_surj y)).
-      + intros y1 y2 H_EQ.
-        destruct (bijection_A_to_B_surj y1) as [x1 y1_is].
-        destruct (bijection_A_to_B_surj y2) as [x2 y2_is].
-        unnw. subst y1 y2. simpl in *. congruence.
-      + intros x. exists (bijection_A_to_B x).
-        destruct (bijection_A_to_B_surj (bijection_A_to_B x)) as [x' H_x_EQ].
-        unnw. simpl in *. exact (bijection_A_to_B_inj x x' H_x_EQ).
-    - intros A B C [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]] [[bijection_B_to_C bijection_B_to_C_inj bijection_B_to_C_surj]].
-      econstructor. exists (fun x : A => bijection_B_to_C (bijection_A_to_B x)).
-      + intros x1 x2 H_EQ.
-        apply bijection_A_to_B_inj, bijection_B_to_C_inj, H_EQ.
-      + intros z.
-        destruct (bijection_B_to_C_surj z) as [y z_is].
-        destruct (bijection_A_to_B_surj y) as [x y_is].
-        unnw. exists (x). congruence.
+    - intros A. econstructor. exists (fun x : A => x).
+      + intros x1 x2 H_x_EQ. congruence.
+      + intros x. exists (x). exact (@eq_refl A x).
+    - intros A B [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]]. econstructor. exists (fun y : B => proj1_sig (bijection_A_to_B_surj y)).
+      + intros y1 y2 H_EQ. destruct (bijection_A_to_B_surj y1) as [x1 y1_is]. destruct (bijection_A_to_B_surj y2) as [x2 y2_is]. unnw. subst y1 y2. simpl in *. congruence.
+      + intros x. exists (bijection_A_to_B x). destruct (bijection_A_to_B_surj (bijection_A_to_B x)) as [x' H_x_EQ]. unnw. simpl in *. exact (bijection_A_to_B_inj x x' H_x_EQ).
+    - intros A B C [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]] [[bijection_B_to_C bijection_B_to_C_inj bijection_B_to_C_surj]]. econstructor. exists (fun x : A => bijection_B_to_C (bijection_A_to_B x)).
+      + intros x1 x2 H_EQ. apply bijection_A_to_B_inj, bijection_B_to_C_inj, H_EQ.
+      + intros z. destruct (bijection_B_to_C_surj z) as [y z_is]. destruct (bijection_A_to_B_surj y) as [x y_is]. unnw. exists (x). congruence.
   Qed.
 
   Global Instance Hask_isSetoid : isSetoid Hask.t :=
@@ -167,7 +153,7 @@ Module MathProps.
     }
   .
 
-  End HASK_IS_SETOID.
+  End CARDINALITY_EQUIVALENCE.
 
   Class Countable (dom : Hask.t) : Type :=
     { enum : nat -> dom
