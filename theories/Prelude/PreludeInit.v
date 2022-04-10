@@ -699,15 +699,22 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Definition sum_prod_distr_l {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : (A + B) * C) : (A * C) + (B * C) :=
-    match it with
-    | (inl x, z) => inl (x, z)
-    | (inr y, z) => inr (y, z)
+  Polymorphic Definition prod_left_distr_sum {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : A * (B + C)) : (A * B) + (A * C) :=
+    match snd it with
+    | inl y => inl (fst it, y)
+    | inr z => inr (fst it, z)
+    end
+  .
+
+  Polymorphic Definition prod_right_distr_sum {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : (A + B) * C) : (A * C) + (B * C) :=
+    match fst it with
+    | inl x => inl (x, snd it)
+    | inr y => inr (y, snd it)
     end
   .
 
   Global Polymorphic Instance stateT_ST_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad (kempty ∘ sum_prod_distr_l <=< uncurry step))
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad (kempty ∘ prod_right_distr_sum <=< uncurry step))
     }
   .
 
