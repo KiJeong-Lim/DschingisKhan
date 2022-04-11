@@ -224,21 +224,26 @@ Module NAT_FACTS.
     end
   .
 
-  Fixpoint le_intro_S_n_le_S_m {n : nat} {m : nat} (hyp_LE : le n m) {struct hyp_LE} : le (S n) (S m) :=
+  Fixpoint le_intro_S_n_le_S_m {n : nat} {m : nat} (hyp_LE : n <= m) {struct hyp_LE} : S n <= S m :=
     match hyp_LE in le _ x return le (S n) (S x) with
     | le_n _ => le_n (S n)
     | le_S _ m' hyp_LE' => le_S (S n) (S m') (le_intro_S_n_le_S_m hyp_LE')
     end
   .
 
-  Fixpoint le_intro_0_le_n {n : nat} {struct n} : le 0 n :=
+  Fixpoint le_intro_0_le_n {n : nat} {struct n} : 0 <= n :=
     match n with
     | O => le_n O
     | S n' => le_S O n' le_intro_0_le_n
     end
   .
 
-  Definition not_n_lt_n (n : nat) : ~ n < n := nat_ind (fun x : nat => x < x -> False) (fun hyp_lt : 0 < 0 => lt_elim_n_lt_0 hyp_lt) (fun n' : nat => fun IH : ~ n' < n' => fun hyp_lt : S n' < S n' => IH (lt_elim_n_lt_S_m hyp_lt)) n.
+  Fixpoint not_n_lt_n (n : nat) : ~ n < n :=
+    match n with
+    | O => lt_elim_n_lt_0
+    | S n' => fun hyp_lt : S n' < S n' => not_n_lt_n n' (lt_elim_n_lt_S_m hyp_lt)
+    end
+  .
 
   Global Instance natEqDec : EqDec nat :=
     { eq_dec :=
