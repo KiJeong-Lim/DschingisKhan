@@ -488,7 +488,7 @@ Module MyData.
   Qed.
 
   Global Instance Fin_equiv_fin (n : nat)
-    : HasSameCardinality (Fin n) (fin n).
+    : Equipotent (Fin n) (fin n).
   Proof.
     exists (@runFin n).
     - intros i1 i2 hyp_eq. desnw; unnw.

@@ -121,7 +121,7 @@ Module MathProps.
     forall y : cod, {x : dom | << y_is_f_x : y = f x >>}
   .
 
-  Class HasSameCardinality (dom : Hask.t) (cod : Hask.t) : Type :=
+  Class Equipotent (dom : Hask.t) (cod : Hask.t) : Type :=
     { bijection : dom -> cod
     ; bijectionInjective : isInjective bijection
     ; bijectionSurjective : isSurjective bijection
@@ -130,9 +130,9 @@ Module MathProps.
 
   Section CARDINALITY_EQUIVALENCE.
 
-  Let Hask_eqProp := fun lhs : Hask.t => fun rhs : Hask.t => inhabited (HasSameCardinality lhs rhs).
+  Let Hask_eqProp := fun lhs : Hask.t => fun rhs : Hask.t => inhabited (Equipotent lhs rhs).
 
-  Local Instance HasSameCardinality_Equivalence
+  Local Instance Equipotent_Equivalence
     : Equivalence Hask_eqProp.
   Proof.
     split.
@@ -149,7 +149,7 @@ Module MathProps.
 
   Global Instance Hask_isSetoid : isSetoid Hask.t :=
     { eqProp := Hask_eqProp
-    ; eqProp_Equivalence := HasSameCardinality_Equivalence
+    ; eqProp_Equivalence := Equipotent_Equivalence
     }
   .
 
