@@ -31,7 +31,7 @@ Module AczelSet.
     end
   .
 
-(** "Equality and Membership" *)
+(** "Relations on Set" *)
 
   Fixpoint equality (lhs : AczelSet) (rhs : AczelSet) : Prop :=
     match lhs in Tree, rhs in Tree return Prop with
@@ -106,7 +106,7 @@ Module AczelSet.
 
   Global Add Parametric Morphism :
     elem with signature (eqProp ==> eqProp ==> iff)
-  as elem_compatWith_eqProp.
+    as elem_compatWith_eqProp.
   Proof with eauto.
     intros x1 y1 hyp_eq1 x2 y2 hyp_eq2.
     transitivity (x1 `elem` y2); split.
@@ -118,7 +118,7 @@ Module AczelSet.
 
   Local Add Parametric Morphism :
     (Acc elem) with signature (eqProp ==> iff)
-  as Acc_elem_compatWith_eqProp.
+    as Acc_elem_compatWith_eqProp.
   Proof.
     enough (to_show : forall lhs : AczelSet, forall rhs : AczelSet, lhs == rhs -> Acc elem lhs -> Acc elem rhs).
     { intros x y h_eq. split; eapply to_show; [exact (h_eq) | symmetry; exact (h_eq)]. }
@@ -158,6 +158,56 @@ Module AczelSet.
         destruct (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x].
         exists (c_x). symmetry. exact (y_c_eq_x).
   Qed.
+
+  Definition subseteq (x : AczelSet) (y : AczelSet) : Prop :=
+    forall z : AczelSet, z `elem` x -> z `elem` y
+  .
+
+  Local Instance subseteq_PreOrder
+    : PreOrder subseteq.
+  Proof with eauto.
+    split.
+    - intros x1 z z_in_x1...
+    - intros x1 x2 x3 x1_subseteq_x2 x2_subseteq_x3 z_in_x1...
+  Qed.
+
+  Local Instance subseteq_PartialOrder
+    : PartialOrder eqProp subseteq.
+  Proof with eauto.
+    intros lhs rhs. simpl. rewrite AczelSet_extensional_equality.
+    unfold relation_conjunction, flip, subseteq. cbn. unnw. firstorder.
+  Qed.
+
+  Global Add Parametric Morphism :
+    subseteq with signature (eqProp ==> eqProp ==> iff)
+    as subseteq_compatWith_eqProp.
+  Proof with eauto.
+    intros x1 x2 h_x_eq y1 y2 h_y_eq.
+    transitivity (subseteq x1 y2); unfold subseteq; split; intros h_subset z h_in.
+    - rewrite <- h_y_eq...
+    - rewrite -> h_y_eq...
+    - rewrite <- h_x_eq in h_in...
+    - rewrite -> h_x_eq in h_in...
+  Qed.
+
+  Definition compatWith_equality (phi : AczelSet -> Prop) : Prop :=
+    forall x : AczelSet, phi x ->
+    forall y : AczelSet, x == y ->
+    phi y
+  .
+
+  Definition equality_closure (phi : AczelSet -> Prop) (x : AczelSet) : Prop :=
+    exists y : AczelSet, x == y /\ phi y
+  .
+
+  Lemma equality_closure_compatWith_equality (phi : AczelSet -> Prop)
+    : compatWith_equality (equality_closure phi).
+  Proof.
+    unfold equality_closure, compatWith_equality. intros x [y [x_eq_y phi_y]] z x_eq_z.
+    exists (y). split; [symmetry; etransitivity; now eauto | exact (phi_y)].
+  Qed.
+
+(** "Set Constructions" *)
 
   Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
     fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
