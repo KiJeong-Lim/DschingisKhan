@@ -480,12 +480,12 @@ Module MyData.
   Global Arguments VCons {A}.
 
   Definition vector_casting {A : Type} {n : nat} {m : nat} (hyp_eq : n = m) : vector A n -> vector A m :=
-    match hyp_eq in eq _ x return vector A n -> vector A x with
+    match hyp_eq in eq _ m' return vector A n -> vector A m' with
     | eq_refl => fun xs : vector A n => xs
     end
   .
 
-  Lemma caseOfVNil {A : Type} {phi : vector A (O) -> Type}
+  Lemma vector_case0 {A : Type} {phi : vector A (O) -> Type}
     (hypVNil : phi VNil)
     : forall xs : vector A (O), phi xs.
   Proof.
@@ -501,7 +501,7 @@ Module MyData.
     - exact (suc_n_eq_zero_elim hyp_eq).
   Defined.
 
-  Lemma caseOfVCons {A : Type} {n : nat} {phi : vector A (S n) -> Type}
+  Lemma vector_caseS {A : Type} {n : nat} {phi : vector A (S n) -> Type}
     (hypVCons : forall x : A, forall xs' : vector A n, phi (VCons n x xs'))
     : forall xs : vector A (S n), phi xs.
   Proof.
@@ -518,8 +518,8 @@ Module MyData.
       exact (hypVCons x' xs').
   Defined.
 
-  Global Tactic Notation " introVNil " := intro_pattern_revert; eapply caseOfVNil.
-  Global Tactic Notation " introVCons " ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply caseOfVCons; intros _hd _tl.
+  Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.
+  Global Tactic Notation "introVCons" ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply vector_caseS; intros _hd _tl.
 
   Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
     match xs in vector _ m return S n = m -> A * vector A (pred m) with

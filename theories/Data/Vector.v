@@ -1,13 +1,16 @@
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
-Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
-Require Import DschingisKhan.Prelude.PreludeMath.
+Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module BasicPosetTheory.
+Module MyFin.
 
-End BasicPosetTheory.
+End MyFin.
 
-Export BasicPosetTheory.
+Module MyVec.
+
+  Global Open Scope vector_scope.
+
+End MyVec.
