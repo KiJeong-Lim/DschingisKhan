@@ -187,7 +187,7 @@ Module NAT_FACTS.
     False_rect A (not_S_n_le_0 hyp_lt)
   .
 
-  Definition S_pred_n_eq_n_if_m_lt_n {n : nat} {m : nat} (hyp_lt : m < n) : S (pred n) = n :=
+  Definition suc_pred_n_eq_n_if_m_lt_n {n : nat} {m : nat} (hyp_lt : m < n) : S (pred n) = n :=
     match hyp_lt in le _ x return S (pred x) = x with
     | le_n _ => eq_reflexivity (S m)
     | le_S _ n' hyp_lt' => eq_reflexivity (S n')
@@ -198,7 +198,7 @@ Module NAT_FACTS.
     fix n_lt_m_elim_fix (m : nat) (hyp_le : S n <= m) {struct hyp_le} : n <= pred m :=
     match hyp_le in le _ x return n <= pred x with
     | le_n _ => le_n n
-    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_lt_m_elim_fix m' hyp_le')) m' (S_pred_n_eq_n_if_m_lt_n hyp_le')
+    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_lt_m_elim_fix m' hyp_le')) m' (suc_pred_n_eq_n_if_m_lt_n hyp_le')
     end
   .
 
@@ -209,7 +209,7 @@ Module NAT_FACTS.
   Fixpoint le_transitivity {n1 : nat} {n2 : nat} {n3 : nat} (hyp1 : n1 <= n2) {struct hyp1} : n2 <= n3 -> n1 <= n3 :=
     match hyp1 in le _ x return x <= n3 -> n1 <= n3 with
     | le_n _ => fun hyp2 : n1 <= n3 => hyp2
-    | le_S _ n2' hyp1' => fun hyp2 : S n2' <= n3 => le_transitivity hyp1' (eq_ind (S (pred n3)) (fun x : nat => n2' <= x) (le_S n2' (pred n3) (n_le_pred_m_if_n_lt_m n2' n3 hyp2)) n3 (S_pred_n_eq_n_if_m_lt_n hyp2))
+    | le_S _ n2' hyp1' => fun hyp2 : S n2' <= n3 => le_transitivity hyp1' (eq_ind (S (pred n3)) (fun x : nat => n2' <= x) (le_S n2' (pred n3) (n_le_pred_m_if_n_lt_m n2' n3 hyp2)) n3 (suc_pred_n_eq_n_if_m_lt_n hyp2))
     end
   .
 
@@ -218,7 +218,7 @@ Module NAT_FACTS.
     | O, O => fun hyp1 : O <= O => fun hyp2 : O <= O => eq_reflexivity 0
     | O, S n2' => fun hyp1 : O <= S n2' => fun hyp2 : S n2' <= O => lt_elim_n_lt_0 hyp2
     | S n1', O => fun hyp1 : S n1' <= O => fun hyp2 : O <= S n1' => lt_elim_n_lt_0 hyp1
-    | S n1', S n2' => fun hyp1 : S n1' <= S n2' => fun hyp2 : S n2' <= S n1' => eq_congruence S n1' n2' (le_antisymmetry (lt_elim_n_lt_S_m hyp1) (lt_elim_n_lt_S_m hyp2))
+    | S n1', S n2' => fun hyp1 : n1' < S n2' => fun hyp2 : n2' < S n1' => eq_congruence S n1' n2' (le_antisymmetry (lt_elim_n_lt_S_m hyp1) (lt_elim_n_lt_S_m hyp2))
     end
   .
 
