@@ -423,28 +423,26 @@ Module MyData.
     - intros phi' hypZ' hypS'; exact (hypS' i').
   Defined.
 
+  Global Tactic Notation "introFin0" := intro_pattern_revert; eapply Fin_case0.
+  Global Tactic Notation "introFinS" ident( i' ) := intro_pattern_revert; eapply Fin_caseS; [ | intros i'].
+
   Lemma Fin_eq_dec (n : nat)
     : forall i1 : Fin n, forall i2 : Fin n, {i1 = i2} + {i1 <> i2}.
   Proof.
-    induction n as [ | n IH].
-    - intro_pattern_revert; eapply Fin_case0.
-    - intro_pattern_revert; eapply Fin_caseS.
-      + intro_pattern_revert; eapply Fin_caseS.
-        { left. reflexivity. }
-        { intros i2'. right. congruence. }
-      + intros i1'. intro_pattern_revert; eapply Fin_caseS.
-        { right. congruence. }
-        { intros i2'. destruct (IH i1' i2') as [hyp_yes | hyp_no]; [left | right].
-          - exact (eq_congruence (@FS n) i1' i2' hyp_yes).
-          - intros hyp_eq.
-            keep (fun i : Fin (S n) =>
-              match i in Fin m return Fin (pred m) -> Fin (pred m) with
-              | @FZ n' => fun x : Fin n' => x
-              | @FS n' i' => fun _ : Fin n' => i'
-              end
-            ) as f_cong into (Fin (S n) -> Fin n -> Fin n).
-            exact (hyp_no (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
-        }
+    induction n as [ | n IH]; [introFin0 | introFinS i1'; introFinS i2'].
+    - left; reflexivity.
+    - right; congruence.
+    - right; congruence.
+    - destruct (IH i1' i2') as [hyp_yes | hyp_no]; [left | right].
+      + exact (eq_congruence (@FS n) i1' i2' hyp_yes).
+      + intros hyp_eq.
+        keep (fun i : Fin (S n) =>
+          match i in Fin m return Fin (pred m) -> Fin (pred m) with
+          | @FZ n' => fun d : Fin n' => d
+          | @FS n' i' => fun d : Fin n' => i'
+          end
+        ) as f_cong into (Fin (S n) -> Fin n -> Fin n).
+        exact (hyp_no (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
   Defined.
 
   Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.
@@ -484,10 +482,10 @@ Module MyData.
   Proof.
     induction i as [n' | n' i' IH].
     - reflexivity.
-    - cbn. eapply eq_congruence. etransitivity; [eapply eq_congruence, le_pirrel | exact IH].
+    - cbn. eapply eq_congruence. etransitivity; [eapply eq_congruence, le_pirrel | exact (IH)].
   Qed.
 
-  Global Instance Fin_equiv_fin (n : nat)
+  Global Instance Fin_equipotent_fin (n : nat)
     : Equipotent (Fin n) (fin n).
   Proof.
     exists (@runFin n).

@@ -80,9 +80,7 @@ Module AczelSet.
   Lemma elem_intro {z : AczelSet} {x : AczelSet} (c_x : getChildren x)
     (z_eq_x_c : z == getChildTrees x c_x)
     : z `elem` x.
-  Proof.
-    exists c_x. exact (z_eq_x_c).
-  Qed.
+  Proof. eexists; exact (z_eq_x_c). Qed.
 
   Lemma eqProp_elem_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_eq_y : x == y)
