@@ -7,9 +7,9 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module AczelSet.
 
-  Universe AczelSet_outer_lv.
+  Universe AczelSetUniv_lv.
 
-  Monomorphic Definition Univ := Type@{AczelSet_outer_lv}.
+  Monomorphic Definition Univ : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
 
   Polymorphic Inductive Tree@{AczelSet_lv} : Univ :=
   | Node (children : Type@{AczelSet_lv}) (childtrees : children -> Tree) : Tree
