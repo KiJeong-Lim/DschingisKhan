@@ -139,11 +139,30 @@ Module AczelSet.
     }
   .
 
+  Theorem AczelSet_extensional_equality (lhs : AczelSet) (rhs : AczelSet) :
+    lhs == rhs <->
+    << EXT_EQ : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
+  Proof.
+    unnw. split.
+    - intros h_eq z. rewrite h_eq. reflexivity.
+    - revert rhs. induction lhs as [x_children x_childtree IH]; intros [y_children y_childtree].
+      intros h_eq. simpl. split; unnw.
+      + intros c_x.
+        assert (claim1 : (x_childtree c_x) `elem` Node x_children x_childtree).
+        { eapply elem_intro. reflexivity. }
+        destruct (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y].
+        exists (c_y). exact (x_c_eq_y).
+      + intros c_y.
+        assert (claim1 : (y_childtree c_y) `elem` Node y_children y_childtree).
+        { eapply elem_intro. reflexivity. }
+        destruct (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x].
+        exists (c_x). symmetry. exact (y_c_eq_x).
+  Qed.
+
   Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
     fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
-    let children : Type := {subtree : A | wfRel subtree tree} in
     match tree_acc with
-    | Acc_intro _ hyp_acc => Node children (fun childtree : children => fromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
+    | Acc_intro _ hyp_acc => Node {subtree : A | wfRel subtree tree} (fun childtree : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
     end
   .
 
@@ -156,9 +175,9 @@ Module AczelSet.
   .
 
   Variant isOrdinal (alpha : AczelSet) : Prop :=
-  | transitive_set_of_transtive_sets_isOrdinal
-    (alpha_isTranstiveSet : isTransitiveSet alpha)
-    (every_member_of_alpha_isTranstiveSet : forall beta, beta `elem` alpha -> isTransitiveSet beta)
+  | transitive_set_of_transitive_sets_isOrdinal
+    (alpha_isTransitiveSet : isTransitiveSet alpha)
+    (every_member_of_alpha_isTransitiveSet : forall beta, beta `elem` alpha -> isTransitiveSet beta)
     : isOrdinal alpha
   .
 
