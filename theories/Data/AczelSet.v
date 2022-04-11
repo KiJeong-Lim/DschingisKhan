@@ -7,8 +7,12 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module AczelSet.
 
-  Inductive Tree : Type :=
-  | Node (children : Hask.t) (childtree : children -> Tree) : Tree
+  Universe AczelSet_outer_lv.
+
+  Monomorphic Definition Univ := Type@{AczelSet_outer_lv}.
+
+  Polymorphic Inductive Tree@{AczelSet_lv} : Univ :=
+  | Node (children : Type@{AczelSet_lv}) (childtrees : children -> Tree) : Tree
   .
 
 End AczelSet.
