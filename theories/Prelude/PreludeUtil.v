@@ -486,7 +486,7 @@ Module MyData.
   .
 
   Lemma vector_case0 {A : Type} {phi : vector A (O) -> Type}
-    (hypVNil : phi VNil)
+    (hypNil : phi VNil)
     : forall xs : vector A (O), phi xs.
   Proof.
     memo (fun xs : vector A (O) =>
@@ -497,12 +497,12 @@ Module MyData.
     ) as claim1.
     - intros xs. exact (claim1 xs (eq_reflexivity (O))).
     - rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (O)).
-      exact (hypVNil).
+      exact (hypNil).
     - exact (suc_n_eq_zero_elim hyp_eq).
   Defined.
 
   Lemma vector_caseS {A : Type} {n : nat} {phi : vector A (S n) -> Type}
-    (hypVCons : forall x : A, forall xs' : vector A n, phi (VCons n x xs'))
+    (hypCons : forall x : A, forall xs : vector A n, phi (VCons n x xs))
     : forall xs : vector A (S n), phi xs.
   Proof.
     memo (fun xs : vector A (S n) =>
@@ -515,7 +515,7 @@ Module MyData.
     - exact (suc_n_eq_zero_elim (eq_symmetry O (S n) hyp_eq)).
     - pose proof (suc_n_eq_suc_m_elim hyp_eq) as n_eq_n'; subst n'.
       rewrite eq_pirrel_fromEqDec with (hyp_eq1 := hyp_eq) (hyp_eq2 := eq_reflexivity (S n)).
-      exact (hypVCons x' xs').
+      exact (hypCons x' xs').
   Defined.
 
   Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.

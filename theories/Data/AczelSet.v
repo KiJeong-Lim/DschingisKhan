@@ -15,4 +15,16 @@ Module AczelSet.
   | Node (children : Type@{AczelSet_lv}) (childtrees : children -> Tree) : Tree
   .
 
+  Polymorphic Definition getChildren@{lv} (root : Tree@{lv}) : Type@{lv} :=
+    match root return Type@{lv} with
+    | Node children childtrees => children
+    end
+  .
+
+  Polymorphic Definition getChildTrees@{lv} (root : Tree@{lv}) : getChildren@{lv} root -> Tree@{lv} :=
+    match root as t return getChildren@{lv} t -> Tree@{lv} with
+    | Node children childtrees => childtrees
+    end
+  .
+
 End AczelSet.
