@@ -27,10 +27,11 @@ Module AczelSet.
     end
   .
 
-  Definition ordinalFromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
+  Polymorphic Definition ordinalFromAcc@{lv} {A : Type@{lv}} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree@{lv} :=
     fix ordinalFromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
+    let children : Type@{lv} := {subtree : A | wfRel subtree tree} in
     match tree_acc with
-    | Acc_intro _ hyp_acc => Node {subtree : A | wfRel subtree tree} (fun childtree : {subtree : A | wfRel subtree tree} => ordinalFromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
+    | Acc_intro _ hyp_acc => Node children (fun childtree : children => ordinalFromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
     end
   .
 
