@@ -147,8 +147,6 @@ Export EQ_FACTS.
 
 Module NAT_FACTS.
 
-  Section ARITH_WITHOUT_SOLVER.
-
   Local Notation suc := S.
   Local Notation zero := O.
 
@@ -238,7 +236,7 @@ Module NAT_FACTS.
     end
   .
 
-  Fixpoint not_n_lt_n (n : nat) : ~ n < n :=
+  Fixpoint not_n_lt_n (n : nat) {struct n} : ~ n < n :=
     match n with
     | O => lt_elim_n_lt_0
     | S n' => fun hyp_lt : S n' < S n' => not_n_lt_n n' (lt_elim_n_lt_S_m hyp_lt)
@@ -302,8 +300,6 @@ Module NAT_FACTS.
         exact (eq_congruence (le_S n1 n1') hyp1' hyp2' (le_pirrel_fix n1' hyp1' hyp2')).
     }
   Qed.
-
-  End ARITH_WITHOUT_SOLVER.
 
 End NAT_FACTS.
 
