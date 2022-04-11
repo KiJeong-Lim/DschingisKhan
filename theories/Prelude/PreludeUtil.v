@@ -195,14 +195,16 @@ Module NAT_FACTS.
   .
 
   Definition n_le_pred_m_if_n_lt_m (n : nat) : forall m : nat, n < m -> n <= pred m :=
-    fix n_lt_m_elim_fix (m : nat) (hyp_le : S n <= m) {struct hyp_le} : n <= pred m :=
+    fix n_le_pred_m_if_n_lt_m_fix (m : nat) (hyp_le : S n <= m) {struct hyp_le} : n <= pred m :=
     match hyp_le in le _ x return n <= pred x with
     | le_n _ => le_n n
-    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_lt_m_elim_fix m' hyp_le')) m' (suc_pred_n_eq_n_if_m_lt_n hyp_le')
+    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_le_pred_m_if_n_lt_m_fix m' hyp_le')) m' (suc_pred_n_eq_n_if_m_lt_n hyp_le')
     end
   .
 
-  Definition lt_elim_n_lt_S_m {n : nat} {m : nat} (hyp_lt : n < S m) : n <= m := n_le_pred_m_if_n_lt_m n (S m) hyp_lt.
+  Definition lt_elim_n_lt_S_m {n : nat} {m : nat} (hyp_lt : n < S m) : n <= m :=
+    n_le_pred_m_if_n_lt_m n (S m) hyp_lt
+  .
 
   Definition le_reflexitivity {n1 : nat} : n1 <= n1 := le_n n1.
 
@@ -213,7 +215,7 @@ Module NAT_FACTS.
     end
   .
 
-  Fixpoint le_antisymmetry {n1 : nat} {n2 : nat} {struct n1} : n1 <= n2 -> n2 <= n1 -> n1 = n2 :=
+  Fixpoint le_antisymmetry {n1 : nat} {n2 : nat} {struct n1} : n1 <= n2 -> n1 >= n2 -> n1 = n2 :=
     match n1 as x, n2 as y return x <= y -> y <= x -> x = y with
     | O, O => fun hyp1 : O <= O => fun hyp2 : O <= O => eq_reflexivity 0
     | O, S n2' => fun hyp1 : O <= S n2' => fun hyp2 : S n2' <= O => lt_elim_n_lt_0 hyp2
