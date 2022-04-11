@@ -150,13 +150,15 @@ Module NAT_FACTS.
   Local Notation suc := S.
   Local Notation zero := O.
 
+  Definition is_suc (n : nat) : Prop :=
+    match n as x return Prop with
+    | O => False
+    | S n' => True
+    end
+  .
+
   Definition not_S_n_eq_0 {n : nat} (hyp_eq : S n = 0) : False :=
-    match hyp_eq in eq _ x return
-      match x return Prop with
-      | O => False
-      | S x' => True
-      end
-    with
+    match hyp_eq in eq _ x return is_suc x with
     | eq_refl => I
     end
   .
@@ -170,14 +172,9 @@ Module NAT_FACTS.
   .
 
   Definition not_S_n_le_0 {n : nat} (hyp_le : S n <= 0) : False :=
-    match hyp_le in le _ x return
-      match x return Prop with
-      | O => False
-      | S x' => True
-      end
-    with
+    match hyp_le in le _ x return is_suc x with
     | le_n _ => I
-    | le_S _ _ _ => I
+    | le_S _ m' hyp_lt' => I
     end
   .
 
@@ -192,16 +189,15 @@ Module NAT_FACTS.
     end
   .
 
-  Definition n_le_pred_m_if_n_lt_m (n : nat) : forall m : nat, n < m -> n <= pred m :=
-    fix n_le_pred_m_if_n_lt_m_fix (m : nat) (hyp_le : S n <= m) {struct hyp_le} : n <= pred m :=
+  Fixpoint n_le_pred_m_if_n_lt_m {n : nat} {m : nat} (hyp_le : S n <= m) {struct hyp_le} : n <= pred m :=
     match hyp_le in le _ x return n <= pred x with
     | le_n _ => le_n n
-    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_le_pred_m_if_n_lt_m_fix m' hyp_le')) m' (suc_pred_n_eq_n_if_m_lt_n hyp_le')
+    | le_S _ m' hyp_le' => eq_ind (S (pred m')) (le n) (le_S n (pred m') (n_le_pred_m_if_n_lt_m hyp_le')) m' (suc_pred_n_eq_n_if_m_lt_n hyp_le')
     end
   .
 
   Definition lt_elim_n_lt_S_m {n : nat} {m : nat} (hyp_lt : n < S m) : n <= m :=
-    n_le_pred_m_if_n_lt_m n (S m) hyp_lt
+    n_le_pred_m_if_n_lt_m hyp_lt
   .
 
   Definition le_reflexitivity {n1 : nat} : n1 <= n1 := le_n n1.
@@ -209,7 +205,7 @@ Module NAT_FACTS.
   Fixpoint le_transitivity {n1 : nat} {n2 : nat} {n3 : nat} (hyp1 : n1 <= n2) {struct hyp1} : n2 <= n3 -> n1 <= n3 :=
     match hyp1 in le _ x return x <= n3 -> n1 <= n3 with
     | le_n _ => fun hyp2 : n1 <= n3 => hyp2
-    | le_S _ n2' hyp1' => fun hyp2 : S n2' <= n3 => le_transitivity hyp1' (eq_ind (S (pred n3)) (fun x : nat => n2' <= x) (le_S n2' (pred n3) (n_le_pred_m_if_n_lt_m n2' n3 hyp2)) n3 (suc_pred_n_eq_n_if_m_lt_n hyp2))
+    | le_S _ n2' hyp1' => fun hyp2 : n2' < n3 => le_transitivity hyp1' (eq_ind (S (pred n3)) (fun x : nat => n2' <= x) (le_S n2' (pred n3) (n_le_pred_m_if_n_lt_m hyp2)) n3 (suc_pred_n_eq_n_if_m_lt_n hyp2))
     end
   .
 
@@ -243,6 +239,29 @@ Module NAT_FACTS.
     end
   .
 
+  Lemma le_iff {n : nat} {m : nat} :
+    n <= m <->
+    match m with
+    | O => n = 0
+    | S m' => n = S m' \/ n <= m'
+    end.
+  Proof.
+    split; destruct m as [ | m'].
+    - intros hyp_le.
+      exact (le_antisymmetry hyp_le le_intro_0_le_n).
+    - intros hyp_le.
+      exact (
+        match hyp_le in le _ x return n = x \/ n <= Nat.pred x with
+        | le_n _ => or_introl (eq_reflexivity n)
+        | le_S _ m' hyp_le' => or_intror hyp_le'
+        end
+      ).
+    - exact (eq_ind n (le n) (le_n n) 0).
+    - intros [hyp_eq | hyp_le].
+      + exact (eq_ind n (le n) (le_n n) (suc m') hyp_eq).
+      + exact (le_S n m' hyp_le).
+  Qed.
+
   Global Instance natEqDec : EqDec nat :=
     { eq_dec :=
       fix eq_dec_fix (n1 : nat) (n2 : nat) {struct n1} : {n1 = n2} + {n1 <> n2} :=
@@ -259,7 +278,7 @@ Module NAT_FACTS.
     }
   .
 
-  Theorem le_pirrel (n1 : nat) (n2 : nat)
+  Theorem le_pirrel {n1 : nat} {n2 : nat}
     (hyp1 : n1 <= n2)
     (hyp2 : n1 <= n2)
     : hyp1 = hyp2.
@@ -301,6 +320,68 @@ Module NAT_FACTS.
     }
   Qed.
 
+  Inductive Le (n : nat) : nat -> Set :=
+  | Le_n : Le n n
+  | Le_S (m : nat) (hyp_Le : Le n m) : Le n (S m)
+  .
+
+  Fixpoint Le_intro_0_le_n {n : nat} {struct n} : Le 0 n :=
+    match n with
+    | O => Le_n O
+    | S n' => Le_S O n' Le_intro_0_le_n
+    end
+  .
+
+  Fixpoint Le_intro_S_n_le_S_m {n : nat} {m : nat} (hyp_LE : Le n m) {struct hyp_LE} : Le (S n) (S m) :=
+    match hyp_LE in Le _ x return Le (S n) (S x) with
+    | Le_n _ => Le_n (S n)
+    | Le_S _ m' hyp_LE' => Le_S (S n) (S m') (Le_intro_S_n_le_S_m hyp_LE')
+    end
+  .
+
+  Fixpoint le_implies_Le {n : nat} {m : nat} {struct n} : le n m -> Le n m :=
+    match n as x return le x m -> Le x m with
+    | O => fun hyp_le : O <= m => Le_intro_0_le_n
+    | S n' =>
+      match m as y return le (S n') y -> Le (S n') y with
+      | O => fun hyp_le : n' < O => lt_elim_n_lt_0 hyp_le
+      | S m' => fun hyp_le : n' < S m' => Le_intro_S_n_le_S_m (le_implies_Le (lt_elim_n_lt_S_m hyp_le))
+      end
+    end
+  .
+
+  Fixpoint Le_implies_le {n : nat} {m : nat} (hyp_le : Le n m) {struct hyp_le} : le n m :=
+    match hyp_le with
+    | Le_n _ => le_n n
+    | Le_S _ m' hyp_le' => le_S n m' (Le_implies_le hyp_le')
+    end
+  .
+
+  Lemma le_unfold {n : nat} {m : nat} (hyp_le : n <= m) :
+    match m with
+    | O => {_ : unit | n = 0}
+    | S m' => {n = S m'} + {n <= m'}
+    end.
+  Proof.
+    destruct m as [ | m'].
+    - exists (tt). exact (le_antisymmetry hyp_le le_intro_0_le_n).
+    - exact (
+        match le_implies_Le hyp_le in Le _ x return {n = x} + {n <= Nat.pred x} with
+        | Le_n _ => left (eq_reflexivity n)
+        | Le_S _ m' hyp_le' => right (Le_implies_le hyp_le')
+        end
+      ).
+  Defined.
+
+  Theorem lt_strong_ind {phi : nat -> Prop}
+    (ind_claim : forall n : nat, << IH : forall m : nat, m < n -> phi m >> -> phi n)
+    : forall n : nat, phi n.
+  Proof.
+    unnw. intros n. eapply ind_claim. induction n as [ | n IH].
+    - intros m. exact (@lt_elim_n_lt_0 (phi m) m).
+    - intros m hyp_m_lt_S_n. eapply ind_claim. intros i hyp_i_lt_m. eapply IH. exact (le_transitivity hyp_i_lt_m (lt_elim_n_lt_S_m hyp_m_lt_S_n)).
+  Defined.
+
 End NAT_FACTS.
 
 Export NAT_FACTS.
@@ -325,7 +406,7 @@ Module MyData.
     ) as ret into (forall x : nat, Fin x -> Type).
     intros i.
     memo (
-      match i as y in Fin x return ret x y with
+      match i as this in Fin x return ret x this with
       | @FZ n' => _
       | @FS n' i' => _
       end
@@ -348,7 +429,7 @@ Module MyData.
     ) as ret into (forall x : nat, Fin x -> Type).
     intros i.
     memo (
-      match i as y in Fin x return ret x y with
+      match i as this in Fin x return ret x this with
       | @FZ n' => _
       | @FS n' i' => _
       end
@@ -474,26 +555,27 @@ Module MyData.
     rewrite evalFin_unfold. eapply eq_congruence...
   Qed.
 
-  Inductive vector (A : Hask.t) : nat -> Hask.t :=
-  | VNil : vector A (O)
-  | VCons (n : nat) (x : A) (xs : vector A n) : vector A (S n)
+  Section VECTOR_ACCESSORIES.
+
+  Variable A : Type.
+
+  Inductive vector : nat -> Hask.t :=
+  | VNil : vector (O)
+  | VCons (n : nat) (x : A) (xs : vector n) : vector (S n)
   .
 
-  Global Arguments VNil {A}.
-  Global Arguments VCons {A}.
-
-  Definition vector_casting {A : Type} {n : nat} {m : nat} (hyp_eq : n = m) : vector A n -> vector A m :=
-    match hyp_eq in eq _ m' return vector A n -> vector A m' with
-    | eq_refl => fun xs : vector A n => xs
+  Definition vector_casting {n : nat} {m : nat} (hyp_eq : n = m) : vector n -> vector m :=
+    match hyp_eq in eq _ m' return vector n -> vector m' with
+    | eq_refl => fun xs : vector n => xs
     end
   .
 
-  Lemma vector_case0 {A : Type} {phi : vector A (O) -> Type}
+  Lemma vector_case0 (phi : vector (O) -> Type)
     (hypNil : phi VNil)
-    : forall xs : vector A (O), phi xs.
+    : forall xs : vector (O), phi xs.
   Proof.
-    memo (fun xs : vector A (O) =>
-      match xs as v in vector _ m return forall hyp_eq : m = O, phi (vector_casting hyp_eq v) with
+    memo (fun xs : vector (O) =>
+      match xs as this in vector m return forall hyp_eq : m = O, phi (vector_casting hyp_eq this) with
       | VNil => fun hyp_eq : O = O => _
       | VCons n' x' xs' => fun hyp_eq : S n' = O => _
       end
@@ -504,12 +586,12 @@ Module MyData.
     - exact (suc_n_eq_zero_elim hyp_eq).
   Defined.
 
-  Lemma vector_caseS {A : Type} {n : nat} {phi : vector A (S n) -> Type}
-    (hypCons : forall x : A, forall xs : vector A n, phi (VCons n x xs))
-    : forall xs : vector A (S n), phi xs.
+  Lemma vector_caseS (n : nat) (phi : vector (S n) -> Type)
+    (hypCons : forall x : A, forall xs : vector n, phi (VCons n x xs))
+    : forall xs : vector (S n), phi xs.
   Proof.
-    memo (fun xs : vector A (S n) =>
-      match xs as v in vector _ m return forall hyp_eq : m = S n, phi (vector_casting hyp_eq v) with
+    memo (fun xs : vector (S n) =>
+      match xs as this in vector m return forall hyp_eq : m = S n, phi (vector_casting hyp_eq this) with
       | VNil => fun hyp_eq : O = S n => _
       | VCons n' x' xs' => fun hyp_eq : S n' = S n => _
       end
@@ -521,19 +603,28 @@ Module MyData.
       exact (hypCons x' xs').
   Defined.
 
-  Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.
-  Global Tactic Notation "introVCons" ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply vector_caseS; intros _hd _tl.
-
-  Definition vector_uncons {A : Type} {n : nat} (xs : vector A (S n)) : S n = S n -> A * vector A n :=
-    match xs in vector _ m return S n = m -> A * vector A (pred m) with
+  Definition vector_uncons {n : nat} (xs : vector (S n)) : S n = S n -> A * vector n :=
+    match xs in vector m return S n = m -> A * vector (pred m) with
     | VNil => suc_n_eq_zero_elim
     | VCons n' x' xs' => fun _ : S n = S n' => (x', xs')
     end
   .
 
-  Definition vector_head {A : Type} {n : nat} (xs : vector A (S n)) : A := fst (vector_uncons xs eq_refl).
+  End VECTOR_ACCESSORIES.
 
-  Definition vector_tail {A : Type} {n : nat} (xs : vector A (S n)) : vector A n := snd (vector_uncons xs eq_refl).
+  Global Arguments VNil {A}.
+  Global Arguments VCons {A}.
+  Global Arguments vector_casting {A} {n} {m} (hyp_eq).
+  Global Arguments vector_case0 {A} {phi} (hypNil).
+  Global Arguments vector_caseS {A} {n} {phi} (hypCons).
+  Global Arguments vector_uncons {A} {n}.
+
+  Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.
+  Global Tactic Notation "introVCons" ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply vector_caseS; intros _hd _tl.
+
+  Definition vector_head {A : Type} {n : nat} (xs : vector A (S n)) : A := fst (vector_uncons xs (eq_reflexivity (S n))).
+
+  Definition vector_tail {A : Type} {n : nat} (xs : vector A (S n)) : vector A n := snd (vector_uncons xs (eq_reflexivity (S n))).
 
   Global Bind Scope vector_scope with vector.
 
@@ -545,6 +636,26 @@ End MyData.
 Export MyData.
 
 Module FUN_FACTS.
+
+  Class isWellFounded (A : Type) : Type :=
+    { wfRel (subtree : A) (tree : A) : Prop
+    ; wfRel_well_founded (root : A) : Acc wfRel root
+    }
+  .
+
+  Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
+    (acc_claim : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
+    : forall root : A, phi root.
+  Proof.
+    unnw. intros root. induction (wfRel_well_founded root) as [tree hyp_acc_tree IH].
+    eapply acc_claim. intros subtree hyp_acc_subtree. exact (IH subtree hyp_acc_subtree).
+  Defined.
+
+  Global Instance nat_isWellFounded : isWellFounded nat :=
+    { wfRel := lt
+    ; wfRel_well_founded := @lt_strong_ind (@Acc nat lt) (@Acc_intro nat lt)
+    }
+  .
 
 End FUN_FACTS.
 
