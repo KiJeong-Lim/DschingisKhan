@@ -130,10 +130,10 @@ Module MathProps.
 
   Section CARDINALITY_EQUIVALENCE.
 
-  Let Hask_eqProp := fun lhs : Hask.t => fun rhs : Hask.t => inhabited (Equipotent lhs rhs).
+  Definition haveSameCard (lhs : Hask.t) (rhs : Hask.t) : Prop := inhabited (Equipotent lhs rhs).
 
   Local Instance Equipotent_Equivalence
-    : Equivalence Hask_eqProp.
+    : Equivalence haveSameCard.
   Proof.
     split.
     - intros A. econstructor. exists (fun x : A => x).
@@ -148,7 +148,7 @@ Module MathProps.
   Qed.
 
   Global Instance Hask_isSetoid : isSetoid Hask.t :=
-    { eqProp := Hask_eqProp
+    { eqProp := haveSameCard
     ; eqProp_Equivalence := Equipotent_Equivalence
     }
   .
@@ -370,7 +370,7 @@ Module Ensembles.
 
   Global Instance ensemble_obeyMonadLaws
     : LawsOfMonad ensemble.
-  Proof with try now firstorder. split; ii. all: vm_compute... all: des... Qed.
+  Proof with try now firstorder. split; vm_compute... all: des... Qed.
 
   End POWERSET_MONAD.
 
