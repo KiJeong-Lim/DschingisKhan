@@ -616,8 +616,16 @@ Module FUN_FACTS.
     }
   .
 
-(*
-  Section LexicographicOrder. (* Reference: "https://github.com/agda/agda-stdlib/blob/456930d31e99ba1669a51a70e0d41e0434a9bb14/src/Induction/WellFounded.agda#L183" *)
+End FUN_FACTS.
+
+Export FUN_FACTS.
+
+Module SCRATCH.
+
+  Import ListNotations.
+
+(* (* Reference: "https://github.com/agda/agda-stdlib/blob/456930d31e99ba1669a51a70e0d41e0434a9bb14/src/Induction/WellFounded.agda#L183" *)
+  Section LexicographicalOrder.
 
   Context {A : Type} {B : A -> Type}.
 
@@ -668,16 +676,8 @@ Module FUN_FACTS.
     exists (indexed_lexicographical_order).
   Defined.
 
-  End LexicographicOrder.
+  End LexicographicalOrder.
 *)
-
-End FUN_FACTS.
-
-Export FUN_FACTS.
-
-Module SCRATCH.
-
-  Import ListNotations.
 
   Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
 

@@ -353,7 +353,7 @@ Module AczelSet.
 
   Section AczelSet_STRONG_COLLECTION.
 
-  (* Advise of "Hanul Jeon" : """A Sketch of the Proof of Strong Collection."""
+  (* Advise of "Hanul Jeon" : << A Sketch of the Proof of Strong Collection >>
     > Aczel의 Strong Collection의 증명을 스케치해보면
       Let's sketch the Aczel's proof of Strong Collection.
     > 우선 forall x:X, exists y phi(x,y)가 성립한다고 합시다

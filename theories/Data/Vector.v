@@ -60,7 +60,7 @@ Module MyVec.
     end
   .
 
-  Global Infix " !! " := vector_indexing (at level 65, left associativity) : program_scope.
+  Global Infix " !! " := vector_indexing (at level 65, left associativity) : vector_scope.
 
   Lemma vector_indexing_unfold {A : Type} {n : nat} (xs : vector A n) :
     forall i : Fin n,
@@ -153,16 +153,16 @@ Module MyVec.
 
   Variable n : nat.
 
-  Definition vec_n (X : Type) : Type := vector X n.
+  Definition vec_n (X : Hask.t) : Hask.t := vector X n.
 
   Global Instance vec_isMonad : isMonad vec_n :=
-    { pure {A : Type} := fun x : A => replicate x
-    ; bind {A : Type} {B : Type} := fun xs : vec_n A => fun k : A -> vec_n B => diagonal (vector_map k xs)
+    { pure {A : Hask.t} := fun x : A => replicate x
+    ; bind {A : Hask.t} {B : Hask.t} := fun xs : vec_n A => fun k : A -> vec_n B => diagonal (vector_map k xs)
     }
   .
 
   Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
-    { liftSetoid1 {A : Type} (requiresSetoid : isSetoid A) := vector_isSetoid A n (requiresSetoid := requiresSetoid)
+    { liftSetoid1 {A : Hask.t} (requiresSetoid : isSetoid A) := vector_isSetoid A n (requiresSetoid := requiresSetoid)
     }
   .
 
@@ -174,7 +174,7 @@ Module MyVec.
 
   Local Existing Instance freeSetoidFromSetoid1.
 
-  Lemma vec_n_eqProp_iff (A : Type) (xs1 : vec_n A) (xs2 : vec_n A)
+  Lemma vec_n_eqProp_iff (A : Hask.t) (xs1 : vec_n A) (xs2 : vec_n A)
     : xs1 == xs2 <-> xs1 = xs2.
   Proof.
     split; intros hyp_eq.
