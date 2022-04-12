@@ -104,7 +104,7 @@ Module EQ_FACTS.
     end
   .
 
-  Let eq_encode (eq_em_x : x = x \/ x <> x) (h_eq : x = x) : x = x :=
+  Let eq_curve (eq_em_x : x = x \/ x <> x) (h_eq : x = x) : x = x :=
     match eq_em_x with
     | or_introl Heq => Heq
     | or_intror Hne => False_ind (x = x) (Hne h_eq)
@@ -112,7 +112,7 @@ Module EQ_FACTS.
   .
 
   Let my_eq_encoder_x_eq_reflexivity_x_is (hyp_eq : x = x) : my_eq_encoder x (eq_reflexivity x) = my_eq_encoder x hyp_eq :=
-    match eq_em x as eq_em_x return eq_encode eq_em_x (eq_reflexivity x) = eq_encode eq_em_x hyp_eq with
+    match eq_em x as eq_em_x return eq_curve eq_em_x (eq_reflexivity x) = eq_curve eq_em_x hyp_eq with
     | or_introl h_eq => eq_reflexivity h_eq
     | or_intror h_ne => False_ind (False_ind (x = x) (h_ne (eq_reflexivity x)) = False_ind (x = x) (h_ne hyp_eq)) (h_ne hyp_eq)
     end
@@ -124,7 +124,7 @@ Module EQ_FACTS.
 
   End EQ_EM_implies_EQ_PIRREL.
 
-  Definition eq_pirrel_fromEqDec {A : Type} {requiresEqDec : EqDec A}
+  Lemma eq_pirrel_fromEqDec {A : Type} {requiresEqDec : EqDec A}
     : forall x : A, forall y : A, forall hyp_eq1 : x = y, forall hyp_eq2 : x = y, hyp_eq1 = hyp_eq2.
   Proof.
     intros x.
@@ -599,8 +599,8 @@ Module MyUtil.
 
   Section NAT_ARITH.
 
-  Lemma greater_than_iff (x : nat) (y : nat) :
-    x > y <-> (exists z : nat, x = S (y + z)).
+  Lemma greater_than_iff (x : nat) (y : nat)
+    : x > y <-> (exists z : nat, x = S (y + z)).
   Proof with try (lia || eauto).
     split.
     - intros Hgt. induction Hgt as [ | m Hgt [z x_eq]]; [exists (0) | rewrite x_eq]...
@@ -610,7 +610,7 @@ Module MyUtil.
   Lemma div_mod_uniqueness a b q r
     (H_DIVISION : a = b * q + r)
     (r_lt_b : r < b)
-    : a / b = q /\ a mod b = r.
+    : (a / b = q /\ a mod b = r)%nat.
   Proof with try (lia || now (firstorder; eauto)).
     assert (claim1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
     assert (claim2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
@@ -625,12 +625,10 @@ Module MyUtil.
     enough (therefore : q = a / b)...
   Qed.
 
-  Theorem div_mod_inv a b q r (H_b_ne_0 : b <> 0) :
-    (a = b * q + r /\ r < b)%nat <->
-    (q = (a - r) / b /\ r = a mod b /\ a >= r)%nat.
+  Theorem div_mod_inv a b q r (H_b_ne_0 : b <> 0)
+    : (a = b * q + r /\ r < b)%nat <-> (q = (a - r) / b /\ r = a mod b /\ a >= r)%nat.
   Proof with lia || eauto.
-    pose (lemma1 := Nat.div_mod).
-    enough (lemma2 : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))). split.
+    pose proof (lemma1 := Nat.div_mod). pose proof (lemma2 := greater_than_iff). split.
     - intros [H_a H_r_bound].
       assert (claim1 : a = b * (a / b) + (a mod b))...
       assert (claim2 : 0 <= a mod b /\ a mod b < b). 
@@ -645,21 +643,16 @@ Module MyUtil.
       assert (claim2 : r < b)... assert (claim3 := Nat.div_mod a b H_b_ne_0).
       rewrite <- H_r in claim3. enough (claim4 : q = a / b)...
       rewrite H_q; symmetry. apply Nat.div_unique with (r := 0)...
-    - intros x y; split.
-      + intros Hgt; induction Hgt as [ | m Hgt [z Hz]]; [exists (0) | rewrite Hz]...
-      + intros [z Hz]...
   Qed.
 
-  Lemma positive_odd n_odd n :
-    (n_odd = 2 * n + 1)%nat <->
-    (n = (n_odd - 1) / 2 /\ n_odd mod 2 = 1 /\ n_odd > 0)%nat.
+  Lemma positive_odd n_odd n
+    : (n_odd = 2 * n + 1)%nat <-> (n = (n_odd - 1) / 2 /\ n_odd mod 2 = 1 /\ n_odd > 0)%nat.
   Proof with lia || eauto.
     pose proof (claim1 := div_mod_inv n_odd 2 n 1)...
   Qed.
 
-  Lemma positive_even n_even n :
-    (n_even = 2 * n + 2)%nat <->
-    (n = (n_even - 2) / 2 /\ n_even mod 2 = 0 /\ n_even > 0)%nat.
+  Lemma positive_even n_even n
+    : (n_even = 2 * n + 2)%nat <-> (n = (n_even - 2) / 2 /\ n_even mod 2 = 0 /\ n_even > 0)%nat.
   Proof with lia || eauto.
     pose proof (claim1 := div_mod_inv (n_even - 2) 2 n 0). split.
     - intros ?; subst.
@@ -680,8 +673,8 @@ Module MyUtil.
         apply Nat.mod_add...
   Qed.
 
-  Lemma plus_a_b_divmod_b a b (H_b_ne_0 : b <> 0) :
-    ((a + b) / b = (a / b) + 1)%nat /\ ((a + b) mod b = a mod b)%nat.
+  Lemma plus_a_b_divmod_b a b (H_b_ne_0 : b <> 0)
+    : ((a + b) / b = (a / b) + 1)%nat /\ ((a + b) mod b = a mod b)%nat.
   Proof with try lia.
     apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
     - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b)...
@@ -807,6 +800,214 @@ Module MyUtil.
     - intros Heq. subst n. symmetry.
       exact (cantor_pairing_is_surjective x y).
   Qed.
+
+  Section LIST_ACCESSORIES.
+
+  Import ListNotations.
+
+  Lemma forallb_true_iff {A : Type} (p : A -> bool)
+    : forall xs : list A, forallb p xs = true <-> (forall x : A, In x xs -> p x = true).
+  Proof with try now firstorder.
+    induction xs as [ | x xs IH]; simpl... rewrite andb_true_iff. split...
+    intros [p_x_true forallb_p_xs_true] y [x_eq_y | y_in_xs]; [rewrite x_eq_y in p_x_true | apply IH]...
+  Qed.
+
+  Definition fold_right_max_0 : list nat -> nat := fold_right max 0.
+
+  Lemma fold_right_max_0_in (ns : list nat) (n : nat) (H_IN : In n ns)
+    : fold_right_max_0 ns >= n.
+  Proof with (lia || eauto).
+    unfold fold_right_max_0. revert n H_IN. induction ns as [ | n' ns IH]; simpl...
+    intros n [H_eq | H_in]... enough (H_suff : fold_right max 0 ns >= n)...
+  Qed.
+
+  Lemma fold_right_max_0_app (ns1 : list nat) (ns2 : list nat)
+    : fold_right_max_0 (ns1 ++ ns2) = max (fold_right_max_0 ns1) (fold_right_max_0 ns2).
+  Proof with (lia || eauto).
+    unfold fold_right_max_0. revert ns2.
+    induction ns1 as [ | n1 ns1 IH]; simpl... 
+    intros n; rewrite IH...
+  Qed.
+
+  Lemma property1_of_fold_right_max_0 (phi : nat -> Prop) (ns : list nat)
+    (phi_dec : forall i : nat, {phi i} + {~ phi i})
+    (phi_implies_in : forall i : nat, phi i -> In i ns)
+    : forall n : nat, phi n -> fold_right max 0 ns >= n.
+  Proof with try now (lia || firstorder; eauto).
+    induction ns as [ | n1 ns1 IH]; simpl... intros n phi_n.
+    destruct (le_gt_dec n n1) as [H_le | H_gt]... enough (claim1 : fold_right max 0 ns1 >= n)...
+    destruct (phi_dec n) as [H_yes | H_no]... destruct (phi_implies_in n H_yes)...
+    enough (claim2 : forall ks : list nat, forall k : nat, In k ks -> fold_right max 0 ks >= k)...
+    induction ks; simpl... intros k [H_eq | H_in]... enough (claim3 : fold_right Init.Nat.max 0 ks >= k)...
+  Qed.
+
+  Lemma property2_of_fold_right_max_0 (ns : list nat) (n : nat)
+    : fold_right max 0 ns > n <-> (exists i : nat, In i ns /\ i > n).
+  Proof with try now (lia || firstorder; eauto).
+    revert n; induction ns as [ | n1 ns1 IH]; simpl... intros n.
+    destruct (le_gt_dec n1 (fold_right Init.Nat.max 0 ns1)); split.
+    - intros H_gt. assert (claim1 : fold_right Init.Nat.max 0 ns1 > n)...
+    - intros [i [[H_eq | H_in] H_gt]]... enough (claim2 : fold_right max 0 ns1 > n)...
+    - intros H_gt. exists (n1)...
+    - intros [i [[H_eq | H_in] H_gt]]... enough (claim3 : fold_right Init.Nat.max 0 ns1 > n)...
+  Qed.
+
+  Lemma property3_of_fold_right_max_0 (ns1 : list nat) (ns2 : list nat)
+    : fold_right max 0 (ns1 ++ ns2) = max (fold_right max 0 ns1) (fold_right max 0 ns2).
+  Proof. exact (fold_right_max_0_app ns1 ns2). Qed.
+
+  Lemma property4_of_fold_right_max_0 (ns : list nat) (n : nat) (H_IN : In n ns)
+    : fold_right max 0 ns >= n.
+  Proof with try now (lia || firstorder; eauto).
+    revert n H_IN; induction ns as [ | n ns IH]; simpl...
+    intros m [H_eq | H_in]... enough (H_suff : fold_right max 0 ns >= m)...
+  Qed.
+
+  Lemma property5_of_fold_right_max_0 (ns1 : list nat) (ns2 : list nat)
+    (H_SUBSET : forall n : nat, In n ns1 -> In n ns2)
+    : fold_right max 0 ns1 <= fold_right max 0 ns2.
+  Proof with try now (lia || firstorder; eauto).
+    revert ns2 H_SUBSET; induction ns1 as [ | n1 ns1 IH]; simpl...
+    intros ns2 H. destruct (le_gt_dec n1 (fold_right max 0 ns1)).
+    - enough (H_suff : fold_right max 0 ns1 <= fold_right max 0 ns2)...
+    - enough (H_suff : n1 <= fold_right max 0 ns2)... apply property4_of_fold_right_max_0...
+  Qed.
+
+  Lemma fold_right_max_0_ext (ns1 : list nat) (ns2 : list nat)
+    (H_EXT_EQ : forall n : nat, In n ns1 <-> In n ns2)
+    : fold_right max 0 ns1 = fold_right max 0 ns2.
+  Proof with try now firstorder.
+    enough (claim1 : fold_right max 0 ns1 <= fold_right max 0 ns2 /\ fold_right max 0 ns2 <= fold_right max 0 ns1) by lia.
+    split; apply property5_of_fold_right_max_0...
+  Qed.
+
+  Lemma in_remove_iff {A : Type} (x0 : A) (xs : list A)
+    (A_eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2})
+    : forall x : A, In x (remove A_eq_dec x0 xs) <-> (In x xs /\ x <> x0).
+  Proof.
+    pose proof (claim1 := in_remove A_eq_dec).
+    pose proof (claim2 := in_in_remove A_eq_dec).
+    now firstorder.
+  Qed.
+
+  Lemma fold_left_unfold {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) (xs : list A) :
+    fold_left f xs z0 =
+    match xs with
+    | [] => z0
+    | hd_xs :: tl_xs => fold_left f tl_xs (f z0 hd_xs)
+    end.
+  Proof. destruct xs; reflexivity. Qed.
+
+  Lemma fold_right_unfold {A : Type} {B : Type} (f : A -> B -> B) (z0 : B) (xs : list A) :
+    fold_right f z0 xs =
+    match xs with
+    | [] => z0
+    | hd_xs :: tl_xs => f hd_xs (fold_right f z0 tl_xs)
+    end.
+  Proof. destruct xs; reflexivity. Qed.
+
+  Definition elemIndex_In {A : Type} (x : A) (x_eq_dec : forall y : A, {x = y} + {x <> y}) : forall xs : list A, In x xs -> nat :=
+    fix elemIndex_In_fix (xs : list A) {struct xs} : In x xs -> nat :=
+    match xs as xs0 return In x xs0 -> nat with
+    | [] => False_rec nat
+    | x' :: xs' =>
+      fun H_In : x' = x \/ In x xs' =>
+      match x_eq_dec x' with
+      | left H_yes => 0
+      | right H_no =>
+        let H_In' : In x xs' := or_ind (fun H : x' = x => False_ind (In x xs') (H_no (eq_symmetry x' x H))) (fun H : In x xs' => H) H_In in
+        1 + elemIndex_In_fix xs' H_In'
+      end
+    end
+  .
+
+  Lemma elemIndex_In_nth_error {A : Type} (x : A) (x_eq_dec : forall y : A, {x = y} + {x <> y}) :
+    forall xs : list A,
+    forall H_In : In x xs,
+    nth_error xs (elemIndex_In x x_eq_dec xs H_In) = Some x.
+  Proof.
+    induction xs as [| x' xs' IH]; simpl.
+    - contradiction.
+    - intros [H_eq | H_In']; destruct (x_eq_dec x') as [H_yes | H_no].
+      + now subst x'.
+      + now contradiction H_no.
+      + now subst x'.
+      + exact (IH H_In').
+  Qed.
+
+  Definition elemIndex {A : Type} (x : A) (x_eq_dec : forall x' : A, {x = x'} + {x <> x'}) : forall xs : list A, option (Fin (length xs)) :=
+    fix elemIndex_fix (xs : list A) {struct xs} : option (Fin (length xs)) :=
+    match xs as xs0 return option (Fin (length xs0)) with
+    | [] => None
+    | x' :: xs' => if x_eq_dec x' then Some (@FZ (length xs')) else option_map (@FS (length xs')) (elemIndex_fix xs')
+    end
+  .
+
+  End LIST_ACCESSORIES.
+
+  Definition Some_inj {A : Type} (x : A) (y : A) : Some x = Some y -> x = y :=
+    eq_congruence (maybe y id) (Some x) (Some y)
+  .
+
+  Definition Some_ne_None {A : Type} (x : A) : Some x <> None :=
+    fun H_eq : Some x = None => @transport (option A) (maybe False (fun _ : A => True)) (Some x) None H_eq I
+  .
+
+  Definition fromJust {A : Type} (Some_x : option A) : Some_x <> None -> A :=
+    match Some_x as Some_x0 return Some_x0 <> None -> A with
+    | None => fun H_no : None <> None => False_rect A (H_no (eq_reflexivity None))
+    | Some x => fun _ : Some x <> None => x
+    end
+  .
+
+  Lemma fromJust_spec {A : Type} (Some_x : option A) (x : A)
+    : Some_x = Some x <-> (exists H_no : Some_x <> None, x = fromJust Some_x H_no).
+  Proof with contradiction || eauto.
+    split.
+    - intros H_yes. subst Some_x. exists (Some_ne_None x)...
+    - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
+  Qed.
+
+  Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
+    fun f : {i : I & prod (A i) (B i)} -> C =>
+    fun i : I =>
+    fun x : A i =>
+    fun y : B i =>
+    f (existT _ i (x, y))
+  .
+
+  Definition uncurry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : (forall i : I, A i -> B i -> C) -> ({i : I & prod (A i) (B i)} -> C) :=
+    fun f : forall i : I, A i -> B i -> C =>
+    fun p : {i : I & prod (A i) (B i)} =>
+    match p with
+    | existT _ i (x, y) => f i x y
+    end
+  .
+
+  Global Ltac red_nat_and_bool :=
+    simpl in *;
+    first
+    [ rewrite in_app_iff in *
+    | rewrite in_remove_iff in *
+    | rewrite orb_false_iff in *
+    | rewrite forallb_app in *
+    | rewrite andb_true_iff in *
+    | rewrite orb_true_iff in *
+    | rewrite negb_true_iff in *
+    | rewrite andb_false_iff in *
+    | rewrite negb_false_iff in *
+    | rewrite Nat.eqb_eq in *
+    | rewrite Nat.eqb_neq in *
+    | rewrite forallb_true_iff in *
+    | rewrite in_map_iff in *
+    | rewrite not_true_iff_false in *
+    | rewrite not_false_iff_true in *
+    ]
+  .
+
+  Global Ltac reds :=
+    repeat red_nat_and_bool; repeat (try intro; try red_nat_and_bool; try now (subst; firstorder))
+  .
 
 End MyUtil.
 
