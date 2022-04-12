@@ -268,7 +268,7 @@ Module AczelSet.
 
   Corollary AczelSet_filter_MainProp (x : AczelSet) (phi : AczelSet -> Prop)
     (phi_compatWith_eqTree : compatWith_eqTree phi)
-    : forall z : AczelSet, z `elem` filter phi x <-> << IN_filter : z `elem` x /\ phi z >>.
+    : forall z : AczelSet, z `elem` filter phi x <-> << FILTER : z `elem` x /\ phi z >>.
   Proof with cbn in *; eauto with *.
     intros z. unfold filter. rewrite AczelSet_subset_spec. unnw; split.
     - intros [c_x [z_eq_x_c phi_z]]...
@@ -333,23 +333,21 @@ Module AczelSet.
 
   Section AczelSet_fromWF.
 
-  Context {A : Type}.
-
-  Definition fromAcc {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
-    fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
+  Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
+    fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : AczelSet :=
     match tree_acc with
     | Acc_intro _ hyp_acc => Node (fun childtree : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
     end
   .
 
-  Lemma fromAcc_unfold {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+  Lemma fromAcc_unfold {A : Type} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
     : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists childtree : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig childtree) (Acc_inv tree_acc (proj2_sig childtree)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
-    all: intros [[c_w hyp_wf] z_eq_w_c]; cbn in *; unfold_eqTree; now exists (exist _ c_w hyp_wf).
+    all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (exist _ c hyp_wf).
   Qed.
 
-  Definition fromWf {requiresWellFounded : isWellFounded A} (root : A) : AczelSet := fromAcc root (wfRel_well_founded root).
+  Definition fromWf (A : Type) {requiresWellFounded : isWellFounded A} : AczelSet := unions_i (fun root : A => fromAcc root (wfRel_well_founded root)).
 
   End AczelSet_fromWF.
 
