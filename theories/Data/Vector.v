@@ -153,9 +153,7 @@ Module MyVec.
 
   Global Instance vec_obeysMonadLaws (n : nat)
     : LawsOfMonad (vec_n n) (requiresSetoid1 := vec_isSetoid1 n) (requiresMonad := vec_isMonad n).
-  Proof.
-    split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
-  Qed.
+  Proof. split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence. Qed.
 
   Local Existing Instance freeSetoidFromSetoid1.
 

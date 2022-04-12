@@ -7,7 +7,7 @@ Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module AczelSet.
+Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Universe AczelSetUniv_lv.
 

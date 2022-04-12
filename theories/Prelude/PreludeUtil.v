@@ -1,3 +1,4 @@
+Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
@@ -593,6 +594,233 @@ Module MyData.
 End MyData.
 
 Export MyData.
+
+Module MyUtil.
+
+  Section NAT_ARITH.
+
+  Lemma greater_than_iff :
+    forall x : nat,
+    forall y : nat,
+    x > y <-> (exists z : nat, x = S (y + z)).
+  Proof with try (lia || eauto).
+    intros x y. split.
+    - intros Hgt. induction Hgt as [ | m Hgt [z x_eq]]; [exists (0) | rewrite x_eq]...
+    - intros [z Heq]...
+  Qed.
+
+  Lemma div_mod_uniqueness :
+    forall a : nat,
+    forall b : nat,
+    forall q : nat,
+    forall r : nat,
+    a = b * q + r ->
+    r < b ->
+    a / b = q /\ a mod b = r.
+  Proof with try (lia || now (firstorder; eauto)).
+    intros a b q r a_eq r_lt_b.
+    assert (claim1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
+    assert (claim2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
+    assert (claim3 : ~ q > a / b).
+    { intros H_false. destruct (proj1 (greater_than_iff q (a / b)) H_false) as [z q_eq].
+      enough (so_we_obatain : b * q + r >= b * S (a / b) + r)...
+    }
+    assert (claim4 : ~ q < a / b).
+    { intros H_false. destruct (proj1 (greater_than_iff (a / b) q) H_false) as [z a_div_b_eq].
+      enough (so_we_obtain : b * q + a mod b >= b * S (a / b) + a mod b)...
+    }
+    enough (therefore : q = a / b)...
+  Qed.
+
+  Theorem div_mod_inv a b q r (H_b_ne_0 : b <> 0) :
+    (a = b * q + r /\ r < b)%nat <->
+    (q = (a - r) / b /\ r = a mod b /\ a >= r)%nat.
+  Proof with lia || eauto.
+    pose (lemma1 := Nat.div_mod).
+    enough (lemma2 : forall x : nat, forall y : nat, x > y <-> (exists z : nat, x = S (y + z))). split.
+    - intros [H_a H_r_bound].
+      assert (claim1 : a = b * (a / b) + (a mod b))...
+      assert (claim2 : 0 <= a mod b /\ a mod b < b). 
+      { apply (Nat.mod_bound_pos a b)... }
+      assert (claim3 : a >= r)...
+      enough (claim4 : ~ q > a / b). enough (claim5 : ~ q < a / b). enough (claim6 : q = a / b)...
+      + split... replace (a - r) with (q * b)... symmetry; apply Nat.div_mul...
+      + intros H_false. destruct (proj1 (lemma2 (a / b) q) H_false) as [x Hx]...
+      + intros H_false. destruct (proj1 (lemma2 q (a / b)) H_false) as [x Hx]...
+    - intros [H_q [H_r H_a_ge_r]].
+      pose proof (claim1 := Nat.mod_bound_pos a b). split...
+      assert (claim2 : r < b)... assert (claim3 := Nat.div_mod a b H_b_ne_0).
+      rewrite <- H_r in claim3. enough (claim4 : q = a / b)...
+      rewrite H_q; symmetry. apply Nat.div_unique with (r := 0)...
+    - intros x y; split.
+      + intros Hgt; induction Hgt as [ | m Hgt [z Hz]]; [exists (0) | rewrite Hz]...
+      + intros [z Hz]...
+  Qed.
+
+  Lemma positive_odd n_odd n :
+    (n_odd = 2 * n + 1)%nat <->
+    (n = (n_odd - 1) / 2 /\ n_odd mod 2 = 1 /\ n_odd > 0)%nat.
+  Proof with lia || eauto.
+    pose proof (claim1 := div_mod_inv n_odd 2 n 1)...
+  Qed.
+
+  Lemma positive_even n_even n :
+    (n_even = 2 * n + 2)%nat <->
+    (n = (n_even - 2) / 2 /\ n_even mod 2 = 0 /\ n_even > 0)%nat.
+  Proof with lia || eauto.
+    pose proof (claim1 := div_mod_inv (n_even - 2) 2 n 0). split.
+    - intros ?; subst.
+      assert (claim2 : n = (2 * n + 2 - 2 - 0) / 2 /\ 0 = (2 * n + 2 - 2) mod 2 /\ 2 * n + 2 - 2 >= 0)...
+      split. rewrite (proj1 claim2) at 1. replace (2 * n + 2 - 2 - 0) with (2 * n + 2 - 2)...
+      split... replace (2 * n + 2) with (2 + n * 2)... rewrite Nat.mod_add...
+    - intros [H_n [H_r H_gt_0]].
+      assert (claim2 : n_even >= 2).
+      { destruct n_even as [ | [ | n_even]]... inversion H_r. }
+      assert (claim3 : n_even = 2 * (n_even / 2) + n_even mod 2).
+      { apply Nat.div_mod... }
+      enough (claim4 : (n_even - 2) mod 2 = 0).
+      + assert (claim5 : n_even - 2 = 2 * n + 0 /\ 0 < 2)...
+        rewrite H_r, Nat.add_0_r in claim3. apply claim1...
+        replace (n_even - 2 - 0) with (n_even - 2)...
+      + transitivity (n_even mod 2)...
+        symmetry; replace (n_even) with ((n_even - 2) + 1 * 2) at 1...
+        apply Nat.mod_add...
+  Qed.
+
+  Lemma plus_a_b_divmod_b a b (H_b_ne_0 : b <> 0) :
+    ((a + b) / b = (a / b) + 1)%nat /\ ((a + b) mod b = a mod b)%nat.
+  Proof with try lia.
+    apply (div_mod_uniqueness (a + b) b ((a / b) + 1) (a mod b)).
+    - replace (b * (a / b + 1) + a mod b) with ((b * (a / b) + a mod b) + b)...
+      enough (claim1 : a = b * (a / b) + a mod b) by congruence.
+      exact (Nat.div_mod a b H_b_ne_0).
+    - assert (claim2 : b > 0)...
+      exact (proj2 (Nat.mod_bound_pos a b le_intro_0_le_n claim2)).
+  Qed.
+
+  Lemma n_div_b_lt_n_if_b_gt_1_and_n_ge_1 (n : nat) (b : nat)
+    (H_b_gt_1 : b > 1)
+    (H_n_ge_1 : n >= 1)
+    : n / b < n.
+  Proof with try lia.
+    assert (claim1 : b <> 0)...
+    pose proof (claim2 := Nat.mod_bound_pos n b le_intro_0_le_n (le_transitivity (le_S 1 1 (le_n 1)) H_b_gt_1)).
+    pose proof (claim3 := Nat.div_mod n b claim1).
+    enough (it_is_sufficient_to_show : n / b < b * (n / b) + n mod b)...
+    assert (claim4 : n mod b > 0 \/ n mod b = 0)...
+    pose proof (claim5 := suc_pred_n_eq_n_if_m_lt_n H_b_gt_1).
+    assert (claim6 : n / b > 0 \/ n / b = 0)...
+  Qed.
+
+  End NAT_ARITH.
+
+  Definition first_nat (p : nat -> bool) : nat -> nat :=
+    fix first_nat_fix (n : nat) {struct n} : nat :=
+    match n with
+    | O => 0
+    | S n' => if p (first_nat_fix n') then first_nat_fix n' else 1 + n'
+    end
+  .
+
+  Theorem well_ordering_principle : 
+    forall p : nat -> bool,
+    forall n : nat,
+    p n = true ->
+    let m : nat := first_nat p n in
+    p m = true /\ (forall i : nat, p i = true -> i >= m).
+  Proof with eauto. (* This proof has been improved by Junyoung Clare Jang. *)
+    intros p n H3 m.
+    assert (forall x : nat, p x = true -> p (first_nat p x) = true).
+    { induction x...
+      simpl.
+      destruct (p (first_nat p x)) eqn: H0...
+    }
+    split...
+    intros i H4.
+    enough (forall x : nat, first_nat p x <= x).
+    enough (forall x : nat, p (first_nat p x) = true -> (forall y : nat, x < y -> first_nat p x = first_nat p y)).
+    enough (forall x : nat, forall y : nat, p y = true -> first_nat p x <= y)...
+    - intros x y H2.
+      destruct (le_gt_dec x y).
+      + eapply Nat.le_trans...
+      + replace (first_nat p x) with (first_nat p y)...
+    - intros x H1 y H2.
+      induction H2; simpl.
+      + rewrite H1...
+      + rewrite <- IHle, H1...
+    - induction x...
+      simpl.
+      destruct (p (first_nat p x)) eqn: H0...
+  Qed.
+
+  Fixpoint sum_from_0_to (n : nat) {struct n} : nat :=
+    match n with
+    | O => 0
+    | S n' => n + sum_from_0_to n'
+    end
+  .
+
+  Lemma sum_from_0_to_is :
+    forall n : nat,
+    2 * sum_from_0_to n = n * (S n).
+  Proof with lia.
+    induction n; simpl in *...
+  Qed.
+
+  Fixpoint cantor_pairing (n : nat) {struct n} : nat * nat :=
+    match n with
+    | O => (0, 0)
+    | S n' =>
+      match cantor_pairing n' with
+      | (O, y) => (S y, 0)
+      | (S x, y) => (x, S y)
+      end
+    end
+  .
+
+  Lemma cantor_pairing_is_surjective x y :
+    (x, y) = cantor_pairing (sum_from_0_to (x + y) + y).
+  Proof with (lia || eauto).
+    remember (x + y) as z eqn: z_is; revert y x z_is.
+    induction z as [ | z IH].
+    - ii. replace (x) with (0)... replace (y) with (0)...
+    - induction y as [ | y IHy]; ii.
+      + assert (x_is_S_z : x = S z) by lia. subst x; simpl.
+        destruct (cantor_pairing (z + sum_from_0_to z + 0)) as [x y] eqn: H_eqn.
+        assert (claim3 : (0, z) = cantor_pairing (sum_from_0_to z + z))...
+        rewrite Nat.add_0_r, Nat.add_comm in H_eqn.
+        rewrite H_eqn in claim3. inversion claim3; subst...
+      + assert (claim4 : (S x, y) = cantor_pairing (sum_from_0_to (S z) + y)) by now apply (IHy (S x)); lia.
+        assert (claim5 : z + sum_from_0_to z + S y = sum_from_0_to (S z) + y) by now simpl.
+        simpl. rewrite claim5, <- claim4...
+  Qed.
+
+  Lemma cantor_pairing_is_injective n x y
+    (H_eq : cantor_pairing n = (x, y))
+    : n = sum_from_0_to (x + y) + y.
+  Proof with (lia || eauto).
+    revert x y H_eq. induction n as [ | n IH]; simpl; ii.
+    - inversion H_eq; subst...
+    - destruct (cantor_pairing n) as [[ | x'] y'] eqn: H_eqn; inversion H_eq; subst.
+      + do 2 rewrite Nat.add_0_r. simpl.
+        rewrite IH with (x := 0) (y := y')...
+        rewrite Nat.add_0_l...
+      + assert (claim1 : forall x' : nat, S x' + y' = x' + S y')...
+        rewrite IH with (x := S x) (y := y')... rewrite claim1 with (x' := x)...
+  Qed.
+
+  Theorem cantor_pairing_spec n x y :
+    cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
+  Proof.
+    split.
+    - exact (cantor_pairing_is_injective n x y).
+    - intros Heq. subst n. symmetry.
+      exact (cantor_pairing_is_surjective x y).
+  Qed.
+
+End MyUtil.
+
+Export MyUtil.
 
 Module FUN_FACTS.
 

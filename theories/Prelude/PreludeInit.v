@@ -67,7 +67,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     | H : ?P \/ ?Q |- _ => destruct H
     | H : ?P <-> ?Q |- _ => destruct H
     | H : exists x, ?P |- _ => destruct H
-    | |- _ => first [intro | split]
+    | |- _ => first [ intro | split ]
     end
   .
   Ltac des := repeat des1.
