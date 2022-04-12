@@ -87,7 +87,7 @@ Module AczelSet.
     : eqTree = (fun lhs : AczelSet => fun rhs : AczelSet => lhs == rhs).
   Proof. reflexivity. Qed.
 
-  Ltac unfold_eqTree := rewrite <- eqTree_unfold in *.
+  Ltac unfold_eqTree := rewrite eqTree_unfold in *.
 
   Definition elem (finger : AczelSet) (hand : AczelSet) : Prop :=
     exists bone : getChildren hand, finger == getChildTrees hand bone
