@@ -345,19 +345,21 @@ Module AczelSet.
 
   Context {A : Type}.
 
-  Definition fromWf {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
-    fix fromWf_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
+  Definition fromAcc {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
+    fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
     match tree_acc with
-    | Acc_intro _ hyp_acc => Node (fun childtree : {subtree : A | wfRel subtree tree} => fromWf_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
+    | Acc_intro _ hyp_acc => Node (fun childtree : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
     end
   .
 
-  Lemma fromWf_unfold {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
-    : forall z : AczelSet, z `elem` fromWf tree tree_acc <-> << EXPANDED : exists child : {subtree : A | wfRel subtree tree}, z == fromWf (proj1_sig child) (Acc_inv tree_acc (proj2_sig child)) >>.
+  Lemma fromAcc_unfold {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+    : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists c : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig c) (Acc_inv tree_acc (proj2_sig c)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
     all: intros [[c_w hyp_wf] z_eq_w_c]; cbn in *; unfold_eqTree; now exists (exist _ c_w hyp_wf).
   Qed.
+
+  Definition fromWf {requiresWellFounded : isWellFounded A} (root : A) : AczelSet := fromAcc root (wfRel_well_founded root).
 
   End AczelSet_fromWF.
 
