@@ -62,15 +62,12 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Ltac iiss := (repeat iis); cbn in *; desnw.
   Ltac des1 :=
     match goal with
-    | H : ?x = ?y |- _ =>
-      tryif is_var x then try subst x else
-      tryif is_var y then try subst y else
-      fail "cannot subst with" H
-    | H : _ /\ _ |- _ => destruct H
-    | H : _ \/ _ |- _ => destruct H
-    | H : _ <-> _ |- _ => destruct H
-    | H : exists x, _ |- _ => destruct H
-    | |- _ => split; ii
+    | H : ?x = ?y |- _ => tryif is_var x then try subst x else tryif is_var y then try subst y else fail "cannot subst with" H
+    | H : ?P /\ ?Q |- _ => destruct H
+    | H : ?P \/ ?Q |- _ => destruct H
+    | H : ?P <-> ?Q |- _ => destruct H
+    | H : exists x, ?P |- _ => destruct H
+    | |- _ => first [intro | split]
     end
   .
   Ltac des := repeat des1.
