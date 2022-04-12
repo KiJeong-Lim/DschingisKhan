@@ -241,7 +241,7 @@ Module AczelSet.
   Qed.
 
   Corollary AczelSet_subset_MainProp (x : AczelSet)
-    : forall z : AczelSet, z `subseteq` x <-> << SUBSET : exists phi : getChildren x -> Prop, z == subset x phi >>.
+    : forall z : AczelSet, z `subseteq` x <-> << IS_A_SUBSET : exists phi : getChildren x -> Prop, z == subset x phi >>.
   Proof with eauto with *.
     intros z. unnw. split.
     - intros z_subset_x. exists (fun c_x : getChildren x => getChildTrees x c_x `elem` z). eapply eqTree_intro.
@@ -425,8 +425,7 @@ Module AczelSet.
 
   Global Coercion unliftOrdinalsToAczelSet : Ordinals >-> AczelSet.
 
-  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop)
-    (phi_compatWith_eqTree : compatWith_eqTree phi)
+  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) (phi_compatWith_eqTree : compatWith_eqTree phi)
     (ind_claim : forall alpha : Ordinals, << IH : forall beta : Ordinals, beta `elem` alpha -> phi beta >> -> phi alpha)
     : forall alpha : Ordinals, phi alpha.
   Proof with eauto with *.
