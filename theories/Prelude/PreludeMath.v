@@ -370,11 +370,7 @@ Module Ensembles.
 
   Global Instance ensemble_obeyMonadLaws
     : LawsOfMonad ensemble.
-  Proof with try now firstorder.
-    split; ii; cbn.
-    all: vm_compute...
-    all: des...
-  Qed.
+  Proof with try now firstorder. split; ii. all: vm_compute... all: des... Qed.
 
   End POWERSET_MONAD.
 

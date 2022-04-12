@@ -4,7 +4,7 @@ Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
 
-Module Khan.
+Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v" *)
 
 (** "\S1" *)
 
@@ -17,7 +17,7 @@ Module Khan.
   Global Create HintDb khan_hints.
   Global Hint Unfold flip relation_conjunction impl : khan_hints.
 
-(** "\S3" *) (* Reference: "https://github.com/snu-sf/sflib/blob/2203ecc62fef14c2204f10329f2cc85f5bc4f108/sflib.v#L177"*)
+(** "\S3" *)
 
   Polymorphic Definition REFERENCE_HOLDER {STATEMENT_Type : Type} (REFERENCED_STATEMENT : unit -> STATEMENT_Type) : STATEMENT_Type := REFERENCED_STATEMENT tt.
 
