@@ -13,21 +13,21 @@ Module AczelSet.
 
   Monomorphic Definition Univ : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
 
-  Polymorphic Inductive Tree@{AczelSet_lv} : Univ :=
-  | Node (children : Type@{AczelSet_lv}) (childtrees : children -> Tree) : Tree
+  Inductive Tree : Univ :=
+  | Node {children : Type} (childtrees : children -> Tree) : Tree
   .
 
-  Polymorphic Definition AczelSet@{lv} : Univ := Tree@{lv}.
+  Definition AczelSet : Univ := Tree.
 
-  Polymorphic Definition getChildren@{lv} (root : AczelSet@{lv}) : Type@{lv} :=
-    match root in Tree return Type@{lv} with
-    | Node children childtrees => children
+  Definition getChildren (root : AczelSet) : Type :=
+    match root in Tree return Type with
+    | @Node children childtrees => children
     end
   .
 
-  Polymorphic Definition getChildTrees@{lv} (root : AczelSet@{lv}) : getChildren@{lv} root -> AczelSet@{lv} :=
-    match root as tree in Tree return getChildren@{lv} tree -> Tree@{lv} with
-    | Node children childtrees => childtrees
+  Polymorphic Definition getChildTrees (root : AczelSet) : getChildren root -> AczelSet :=
+    match root as tree in Tree return getChildren tree -> Tree with
+    | @Node children childtrees => childtrees
     end
   .
 
@@ -35,7 +35,7 @@ Module AczelSet.
 
   Fixpoint eqTree (lhs : AczelSet) (rhs : AczelSet) : Prop :=
     match lhs in Tree, rhs in Tree return Prop with
-    | Node children1 childtrees1, Node children2 childtrees2 => ⟪ lhs_simulates_rhs : forall child1 : children1, exists child2 : children2, eqTree (childtrees1 child1) (childtrees2 child2) ⟫ /\ ⟪ rhs_simulates_lhs : forall child2 : children2, exists child1 : children1, eqTree (childtrees1 child1) (childtrees2 child2) ⟫
+    | Node childtrees1, Node childtrees2 => ⟪ lhs_simulates_rhs : forall child1, exists child2, eqTree (childtrees1 child1) (childtrees2 child2) ⟫ /\ ⟪ rhs_simulates_lhs : forall child2, exists child1, eqTree (childtrees1 child1) (childtrees2 child2) ⟫
     end
   .
 
@@ -46,7 +46,7 @@ Module AczelSet.
     cbn in *; split; unnw; eauto.
   Qed.
 
-  Global Hint Resolve eqTree_Reflexive : khan_hints.
+  Local Hint Resolve eqTree_Reflexive : khan_hints.
 
   Global Instance eqTree_Symmetric
     : Symmetric eqTree.
@@ -57,7 +57,7 @@ Module AczelSet.
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; eauto.
   Qed.
 
-  Global Hint Resolve eqTree_Symmetric : khan_hints.
+  Local Hint Resolve eqTree_Symmetric : khan_hints.
 
   Global Instance eqTree_Transitive
     : Transitive eqTree.
@@ -68,7 +68,7 @@ Module AczelSet.
     - exploit (z_sim_y c_z) as [c_y hyp_eq1]; exploit (y_sim_x c_y) as [c_x hyp_eq2]; eauto.
   Qed.
 
-  Global Hint Resolve eqTree_Transitive : khan_hints.
+  Local Hint Resolve eqTree_Transitive : khan_hints.
 
   Local Instance equality_Equivalence : Equivalence eqTree :=
     { Equivalence_Reflexive := eqTree_Reflexive
@@ -93,7 +93,7 @@ Module AczelSet.
     exists bone : getChildren hand, finger == getChildTrees hand bone
   .
 
-  Global Hint Unfold elem : khan_hints.
+  Local Hint Unfold elem : khan_hints.
 
   Local Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
@@ -125,10 +125,10 @@ Module AczelSet.
     intros x1 y1 hyp_eq1 x2 y2 hyp_eq2.
     transitivity (x1 `elem` y2).
     - split; eapply elem_eqProp_elem...
-    - split; eapply eqProp_elem_elem... 
+    - split; eapply eqProp_elem_elem...
   Qed.
 
-  Global Hint Resolve elem_compatWith_eqProp : khan_hints.
+  Local Hint Resolve elem_compatWith_eqProp : khan_hints.
 
   Local Add Parametric Morphism :
     (Acc elem) with signature (eqProp ==> iff)
@@ -137,7 +137,7 @@ Module AczelSet.
     enough (to_show : forall lhs : AczelSet, forall rhs : AczelSet, lhs == rhs -> Acc elem lhs -> Acc elem rhs).
     { intros x y h_eq. split; eapply to_show... }
     intros lhs rhs x_eq_y acc_x. cbn. pose proof (Acc_inv acc_x) as claim1. econstructor...
-    intros z z_in_y. eapply claim1. rewrite x_eq_y... 
+    intros z z_in_y. eapply claim1. rewrite x_eq_y...
   Qed.
 
   Lemma AczelSet_elem_well_founded
@@ -161,11 +161,11 @@ Module AczelSet.
     - revert rhs. induction lhs as [x_children x_childtree IH]; intros [y_children y_childtree].
       intros h_eq. simpl. split; unnw.
       + intros c_x.
-        assert (claim1 : (x_childtree c_x) `elem` Node x_children x_childtree).
+        assert (claim1 : (x_childtree c_x) `elem` Node x_childtree).
         { eapply elem_intro... }
         destruct (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
       + intros c_y.
-        assert (claim1 : (y_childtree c_y) `elem` Node y_children y_childtree).
+        assert (claim1 : (y_childtree c_y) `elem` Node y_childtree).
         { eapply elem_intro... }
         destruct (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
   Qed.
@@ -174,7 +174,9 @@ Module AczelSet.
     forall z : AczelSet, z `elem` x -> z `elem` y
   .
 
-  Global Hint Unfold subseteq : khan_hints.
+  Local Infix " `subseteq` " := subseteq (at level 70, no associativity) : type_scope.
+
+  Local Hint Unfold subseteq : khan_hints.
 
   Global Instance subseteq_PreOrder
     : PreOrder subseteq.
@@ -187,6 +189,12 @@ Module AczelSet.
     unfold relation_conjunction, flip, subseteq. cbn; unnw. now firstorder.
   Qed.
 
+  Lemma eqTree_intro (lhs : AczelSet) (rhs : AczelSet)
+    (lhs_subseteq_rhs : lhs `subseteq` rhs)
+    (rhs_subseteq_lhs : rhs `subseteq` lhs)
+    : lhs == rhs.
+  Proof. eapply subseteq_PartialOrder; split; eauto with *. Qed.
+
   Global Add Parametric Morphism :
     subseteq with signature (eqProp ==> eqProp ==> iff)
     as subseteq_compatWith_eqProp.
@@ -198,6 +206,8 @@ Module AczelSet.
     - rewrite <- h_x_eq in h_in...
     - rewrite -> h_x_eq in h_in...
   Qed.
+
+  Local Hint Resolve subseteq_compatWith_eqProp : khan_hints.
 
   Definition compatWith_eqTree (phi : AczelSet -> Prop) : Prop :=
     forall x : AczelSet, phi x ->
@@ -218,12 +228,174 @@ Module AczelSet.
 
 (** "Set Constructions" *)
 
-  Definition fromWf {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
+  Section AczelSet_subset.
+
+  Definition subset (x : AczelSet) (phi : getChildren x -> Prop) : AczelSet := Node (fun child : @sig (getChildren x) phi => getChildTrees x (proj1_sig child)).
+
+  Theorem AczelSet_subset_spec (x : AczelSet) (phi : getChildren x -> Prop)
+    : forall z : AczelSet, z `elem` subset x phi <-> << IN_subset : exists c_x : getChildren x, z == getChildTrees x c_x /\ phi c_x >>.
+  Proof with eauto with *.
+    intros z. unnw; split.
+    - intros [[c_x phi_c_x] z_eq_x_c]. simpl in *...
+    - intros [c_x [z_eq_x_c phi_c_x]]. exists (exist _ c_x phi_c_x)...
+  Qed.
+
+  Corollary AczelSet_subset_MainProp (x : AczelSet)
+    : forall z : AczelSet, z `subseteq` x <-> << SUBSET : exists phi : getChildren x -> Prop, z == subset x phi >>.
+  Proof with eauto with *.
+    intros z. unnw. split.
+    - intros z_subset_x. exists (fun c_x : getChildren x => getChildTrees x c_x `elem` z). eapply eqTree_intro.
+      + intros y y_in_z. destruct (z_subset_x y y_in_z) as [c_x y_eq_x_c].
+        rewrite y_eq_x_c. rewrite y_eq_x_c in y_in_z. exists (exist _ c_x y_in_z)...
+      + intros y [[c_x x_c_in_z] y_eq_x_c]. rewrite y_eq_x_c...
+    - intros [phi z_eq]. rewrite z_eq. intros y. rewrite AczelSet_subset_spec. unnw.
+      intros [c_x [z_eq_x_c phi_c_x]]...
+  Qed.
+
+  End AczelSet_subset.
+
+  Local Hint Resolve AczelSet_subset_spec : khan_hints.
+
+  Section AczelSet_filter.
+
+  Definition filter (phi : AczelSet -> Prop) (x : AczelSet) : AczelSet := subset x (fun c_x : getChildren x => phi (getChildTrees x c_x)).
+
+  Theorem AczelSet_filter_spec (x : AczelSet) (phi : AczelSet -> Prop)
+    : forall z : AczelSet, z `elem` filter phi x <-> << IN_filter : exists c_x : getChildren x, phi (getChildTrees x c_x) /\ z == getChildTrees x c_x >>.
+  Proof with eauto with *.
+    intros z. unfold filter. rewrite AczelSet_subset_spec. unnw; split.
+    - intros [c_x [z_eq_x_c phi_z]]...
+    - intros [c_x [phi_x_c z_eq]]...
+  Qed.
+
+  Corollary AczelSet_filter_MainProp (x : AczelSet) (phi : AczelSet -> Prop)
+    (phi_compatWith_eqTree : compatWith_eqTree phi)
+    : forall z : AczelSet, z `elem` filter phi x <-> << IN_filter : z `elem` x /\ phi z >>.
+  Proof with cbn in *; eauto with *.
+    intros z. unfold filter. rewrite AczelSet_subset_spec. unnw; split.
+    - intros [c_x [z_eq_x_c phi_z]]...
+    - intros [[c_x z_eq_x_c] phi_z]...
+  Qed.
+
+  End AczelSet_filter.
+
+  Local Hint Resolve AczelSet_filter_spec : khan_hints.
+
+  Section AczelSet_power.
+
+  Definition power (x : AczelSet) : AczelSet := Node (fun child : getChildren x -> Prop => subset x child).
+
+  Theorem AczelSet_power_spec (x : AczelSet)
+    : forall z : AczelSet, z `elem` power x <-> << IN_power : z `subseteq` x >>.
+  Proof. intros z. unnw. rewrite AczelSet_subset_MainProp. unfold power. eauto with *. Qed.
+
+  End AczelSet_power.
+
+  Local Hint Resolve AczelSet_power_spec : khan_hints.
+
+  Section AczelSet_fromList.
+
+  Definition fromList (xs : list AczelSet) : AczelSet := Node (safe_nth xs).
+
+  Theorem AczelSet_fromList_spec (xs : list AczelSet)
+    : forall z : AczelSet, z `elem` fromList xs <-> << IN_fromList : exists i : Fin (length xs), z == safe_nth xs i >>.
+  Proof with eauto with *.
+    unnw; intros z; split.
+    - intros [c_x z_eq_x_c]...
+    - intros [i z_eq_xs_at_i]...
+  Qed.
+
+  End AczelSet_fromList.
+
+  Local Hint Resolve AczelSet_fromList_spec : khan_hints.
+
+  Section AczelSet_unions_i.
+
+  Definition unions_i {I : Type} (xs : I -> AczelSet) : AczelSet := Node (fun child : {i : I & getChildren (xs i)} => getChildTrees (xs (projT1 child)) (projT2 child)).
+
+  Theorem AczelSet_unions_i_spec {I : Type} (xs : I -> AczelSet)
+    : forall z : AczelSet, z `elem` unions_i xs <-> << IN_unions_i : exists i : I, z `elem` xs i >>.
+  Proof with eauto with *.
+    intros z. unnw; split.
+    - intros [[i c_u] z_eq_u_c]. simpl in *...
+    - intros [i [c_u z_eq_u_c]]. exists (existT _ i c_u)...
+  Qed.
+
+  End AczelSet_unions_i.
+
+  Local Hint Resolve AczelSet_unions_i_spec : khan_hints.
+
+  Section AczelSet_unions.
+
+  Definition unions (x : AczelSet) : AczelSet := @unions_i (getChildren x) (getChildTrees x).
+
+  Theorem AczelSet_unions_spec (x : AczelSet)
+    : forall z : AczelSet, z `elem` unions x <-> << IN_unions : exists y : AczelSet, z `elem` y /\ y `elem` x >>.
+  Proof with eauto with *.
+    intros z. unfold unions. rewrite AczelSet_unions_i_spec. unnw; split.
+    - intros [i [c_x z_eq_x_c]]. exists (getChildTrees x i). split...
+    - intros [y [z_in_y [c_x y_eq_x_c]]]. exists (c_x). rewrite <- y_eq_x_c...
+  Qed.
+
+  End AczelSet_unions.
+
+  Local Hint Resolve AczelSet_unions_spec : khan_hints.
+
+  Section AczelSet_fromWF.
+
+  Context {A : Type}.
+
+  Definition fromWf {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> Tree :=
     fix fromWf_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : Tree :=
     match tree_acc with
-    | Acc_intro _ hyp_acc => Node {subtree : A | wfRel subtree tree} (fun childtree : {subtree : A | wfRel subtree tree} => fromWf_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
+    | Acc_intro _ hyp_acc => Node (fun childtree : {subtree : A | wfRel subtree tree} => fromWf_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
     end
   .
+
+  Lemma fromWf_unfold {wfRel : A -> A -> Prop} (root : A) (root_acc : Acc wfRel root)
+    : forall z : AczelSet, z `elem` fromWf root root_acc <-> << IN_fromWf : exists child : {tree : A | wfRel tree root}, z == fromWf (proj1_sig child) (Acc_inv root_acc (proj2_sig child)) >>.
+  Proof.
+    intros z. destruct root_acc as [hyp_acc]. unnw; split.
+    - intros [[c_w hyp_wf] z_eq_w_c]. cbn in *. unfold_eqTree. now exists (exist _ c_w hyp_wf).
+    - intros [[c_w hyp_wf] z_eq_w_c]. cbn in *. unfold_eqTree. now exists (exist _ c_w hyp_wf).
+  Qed.
+
+  End AczelSet_fromWF.
+
+  Section AczelSet_STRONG_COLLECTION.
+
+  (* Advise of "Hanul Jeon" : """A Sketch of the Proof of Strong Collection."""
+    > Aczel의 Strong Collection의 증명을 스케치해보면
+      Let's sketch the Aczel's proof of Strong Collection.
+    > 우선 forall x:X, exists y phi(x,y)가 성립한다고 합시다
+      First, assume that $forall x \in X, exists y, phi(x, y)$.
+    > 여기서 AC를 적용해서 f : forall x:X, phi(x,f(x))인 f를 찾고
+      By applying AC, find $f$ such that $forall x \in X, phi(x, f(x))$.
+    > base set을 X의 base와 똑같이 잡을 겁니다
+      Now, take the base set as that of $X$.
+    > 그리고 원소는 f(x)에 대응하게끔 잡을 거고요
+      And set the elements corresponding to $f(x)$.
+    > 문제는 AC가 Coq에서 작동할 것 같지 않다는 거네요
+      Although, the problem is that AC may not work on Coq.
+  *)
+
+  Hypothesis AxiomOfChoice : forall A : Type, forall B : Type, forall phi : A -> B -> Prop, << NONEMPTY : forall x : A, exists y : B, phi x y >> -> << CHOICE : exists f : A -> B, forall x : A, phi x (f x) >>.
+
+  Theorem AxiomOfChoice_implies_StrongCollection (X : AczelSet) (phi : AczelSet -> AczelSet -> Prop)
+    (phi_compatWith_eqTree_on_1st_arg : forall y : AczelSet, compatWith_eqTree (fun x : AczelSet => phi x y))
+    (phi_compatWith_eqTree_on_2st_arg : forall x : AczelSet, compatWith_eqTree (fun y : AczelSet => phi x y))
+    (NONEMPTY : forall x : AczelSet, x `elem` X -> exists y : AczelSet, phi x y)
+    : exists Y : AczelSet, ⟪ FST_COLLECTION : forall x : AczelSet, x `elem` X -> exists y : AczelSet, y `elem` Y /\ phi x y ⟫ /\ ⟪ SND_COLLECTION : forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ phi x y ⟫.
+  Proof with eauto with *.
+    set (base_set := getChildren X). unnw.
+    assert (claim1 : exists f : base_set -> AczelSet, forall x : base_set, phi (getChildTrees X x) (f x)).
+    { eapply AxiomOfChoice with (phi := fun x : base_set => fun y : AczelSet => phi (getChildTrees X x) y)... }
+    destruct claim1 as [f claim1]. exists (@Node base_set (fun x : base_set => f x)). split.
+    - intros x [c_X x_eq_X_c]. exists (f c_X). split... eapply phi_compatWith_eqTree_on_1st_arg...
+    - intros x [c_X x_eq_X_c]. exists (getChildTrees X c_X). split... eapply phi_compatWith_eqTree_on_2st_arg...
+  Qed.
+
+  End AczelSet_STRONG_COLLECTION.
 
 (** "Ordinals" *)
 
@@ -240,12 +412,29 @@ Module AczelSet.
     : isOrdinal alpha
   .
 
+  Global Hint Constructors isOrdinal : khan_hints.
+
   Lemma every_member_of_Ordinal_isOrdinal (alpha : AczelSet)
     (alpha_isOrdinal : isOrdinal alpha)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
-  Proof.
-    inversion alpha_isOrdinal; subst.
-    intros beta beta_in_alpha; econstructor; eauto.
+  Proof. inversion alpha_isOrdinal; subst; eauto with *. Qed.
+
+  Definition Ordinals : Type := @sig AczelSet isOrdinal.
+
+  Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
+
+  Global Coercion unliftOrdinalsToAczelSet : Ordinals >-> AczelSet.
+
+  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop)
+    (phi_compatWith_eqTree : compatWith_eqTree phi)
+    (ind_claim : forall alpha : Ordinals, << IH : forall beta : Ordinals, beta `elem` alpha -> phi beta >> -> phi alpha)
+    : forall alpha : Ordinals, phi alpha.
+  Proof with eauto with *.
+    intros [x x_isOrdinal]. induction x as [x_children x_childtree IH]. eapply ind_claim...
+    intros y y_in_x. pose proof (every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal y y_in_x) as y_isOrdinal.
+    destruct (y_in_x) as [c_x y_eq_x_c]. eapply phi_compatWith_eqTree.
+    - eapply IH with (c := c_x) (x_isOrdinal := every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal (x_childtree c_x) (elem_intro c_x (eqTree_Reflexive _))).
+    - simpl...
   Qed.
 
 End AczelSet.

@@ -251,6 +251,24 @@ Module PreludeInit_MAIN.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
+  Lemma eqProp_reflexitivity {A : Type} {requiresSetoid : isSetoid A}
+    : forall x : A, x == x.
+  Proof. eapply Equivalence_Reflexive. Qed.
+
+  Global Hint Resolve eqProp_reflexitivity : khan_hints.
+
+  Lemma eqProp_symmetric {A : Type} {requiresSetoid : isSetoid A}
+    : forall x : A, forall y : A, x == y -> y == x.
+  Proof. eapply Equivalence_Symmetric. Qed.
+
+  Global Hint Resolve eqProp_symmetric : khan_hints.
+
+  Lemma eqProp_transitivity {A : Type} {requiresSetoid : isSetoid A}
+    : forall x : A, forall y : A, forall z : A, x == y -> y == z -> x == z.
+  Proof. eapply Equivalence_Transitive. Qed.
+
+  Global Hint Resolve eqProp_transitivity : khan_hints.
+
   (** "4. Basic Instances" *)
 
   Section ImplFor_eq.

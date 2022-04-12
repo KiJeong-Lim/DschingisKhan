@@ -500,6 +500,20 @@ Module MyData.
       reflexivity.
   Defined.
 
+  Section LIST.
+
+  Import ListNotations.
+
+  Definition safe_nth {A : Type} : forall xs : list A, Fin (length xs) -> A :=
+    fix safe_nth_fix (xs : list A) {struct xs} : Fin (length xs) -> A :=
+    match xs as this return Fin (length this) -> A with
+    | [] => Fin_case0
+    | x :: xs => Fin_caseS x (safe_nth_fix xs)
+    end
+  .
+
+  End LIST.
+
   Section VECTOR.
 
   Variable A : Type.
