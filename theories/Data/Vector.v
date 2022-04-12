@@ -140,7 +140,7 @@ Module MyVec.
 
   Definition vec_n (n : nat) (X : Hask.t) : Hask.t := vector X n.
 
-  Global Instance vec_isMonad {n : nat} : isMonad (vec_n n) :=
+  Global Instance vec_isMonad (n : nat) : isMonad (vec_n n) :=
     { pure {A : Hask.t} := fun x : A => replicate x
     ; bind {A : Hask.t} {B : Hask.t} := fun xs : vec_n n A => fun k : A -> vec_n n B => diagonal (vector_map k xs)
     }
@@ -152,7 +152,7 @@ Module MyVec.
   .
 
   Global Instance vec_obeysMonadLaws (n : nat)
-    : LawsOfMonad (vec_n n) (requiresSetoid1 := vec_isSetoid1 n) (requiresMonad := vec_isMonad).
+    : LawsOfMonad (vec_n n) (requiresSetoid1 := vec_isSetoid1 n) (requiresMonad := vec_isMonad n).
   Proof.
     split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.
@@ -176,7 +176,7 @@ Module MyVec.
   End VectorIsMonad.
 
   Definition vector_zipWith {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n) : vector C n :=
-    bind (isMonad := vec_isMonad) xs (fun x : A => bind (isMonad := vec_isMonad) ys (fun y : B => pure (isMonad := vec_isMonad) (f x y)))
+    bind (isMonad := vec_isMonad n) xs (fun x : A => bind (isMonad := vec_isMonad n) ys (fun y : B => pure (isMonad := vec_isMonad n) (f x y)))
   .
 
   Lemma vector_zipWith_spec {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n)
