@@ -254,8 +254,6 @@ Module AczelSet.
 
   End AczelSet_subset.
 
-  Local Hint Resolve AczelSet_subset_spec : khan_hints.
-
   Section AczelSet_filter.
 
   Definition filter (phi : AczelSet -> Prop) (x : AczelSet) : AczelSet := subset x (fun c_x : getChildren x => phi (getChildTrees x c_x)).
@@ -279,8 +277,6 @@ Module AczelSet.
 
   End AczelSet_filter.
 
-  Local Hint Resolve AczelSet_filter_spec : khan_hints.
-
   Section AczelSet_power.
 
   Definition power (x : AczelSet) : AczelSet := Node (fun child : getChildren x -> Prop => subset x child).
@@ -290,8 +286,6 @@ Module AczelSet.
   Proof. intros z. unnw. rewrite AczelSet_subset_MainProp. unfold power. eauto with *. Qed.
 
   End AczelSet_power.
-
-  Local Hint Resolve AczelSet_power_spec : khan_hints.
 
   Section AczelSet_fromList.
 
@@ -307,8 +301,6 @@ Module AczelSet.
 
   End AczelSet_fromList.
 
-  Local Hint Resolve AczelSet_fromList_spec : khan_hints.
-
   Section AczelSet_unions_i.
 
   Definition unions_i {I : Type} (xs : I -> AczelSet) : AczelSet := Node (fun child : {i : I & getChildren (xs i)} => getChildTrees (xs (projT1 child)) (projT2 child)).
@@ -322,8 +314,6 @@ Module AczelSet.
   Qed.
 
   End AczelSet_unions_i.
-
-  Local Hint Resolve AczelSet_unions_i_spec : khan_hints.
 
   Section AczelSet_unions.
 
@@ -353,7 +343,7 @@ Module AczelSet.
   .
 
   Lemma fromAcc_unfold {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
-    : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists c : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig c) (Acc_inv tree_acc (proj2_sig c)) >>.
+    : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists childtree : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig childtree) (Acc_inv tree_acc (proj2_sig childtree)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
     all: intros [[c_w hyp_wf] z_eq_w_c]; cbn in *; unfold_eqTree; now exists (exist _ c_w hyp_wf).
