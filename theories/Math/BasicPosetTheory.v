@@ -12,7 +12,7 @@ Module BasicPosetTheory.
 
   Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
     (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
-  Global Notation " x '`isUpperBoundOf`' X " := (isUpperBoundOf x X)
+  Global Notation " x '∈' '('  X ')↑' " := (isUpperBoundOf x X)
     (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
@@ -85,12 +85,8 @@ Module BasicPosetTheory.
   Lemma Supremum_in_SupremumMap (X : ensemble D) (sup_X : D) (Xs : ensemble (ensemble D))
     (sup_X_isSupremumOf_X : $$ \sup X = sup_X $$)
     (X_in_Xs : $$ X ∈ Xs $$)
-    : $$ sup_X ∈ \{ \sup Xs_i : Xs_i ∈ Xs \} $$.
-  Proof.
-    exists (X). split.
-    - exact (X_in_Xs).
-    - exact (sup_X_isSupremumOf_X).
-  Qed.
+    : $$ sup_X ∈ \{ \sup X_i : X_i ∈ Xs \} $$.
+  Proof. exists (X); split; [exact (X_in_Xs) | exact (sup_X_isSupremumOf_X)]. Qed.
 
   End ON_SUPREMUM.
 
