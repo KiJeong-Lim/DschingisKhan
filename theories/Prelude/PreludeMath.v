@@ -341,6 +341,47 @@ Module Ensembles.
 
   Ltac ensemble_rewrite := autorewrite with ensemble_hints.
 
+  Global Add Parametric Morphism (A : Type) :
+    (@member A) with signature (eq ==> leProp ==> impl)
+    as member_eq_leProp_with_impl.
+  Proof. ii. cbn in *. unfold isSubsetOf in *. eauto. Qed.
+
+  Global Add Parametric Morphism (A : Type) :
+    (@member A) with signature (eq ==> eqProp ==> iff)
+    as member_eq_eqProp_with_iff.
+  Proof. ii. cbn in *. unfold isSameSetAs in *. eauto. Qed.
+
+  Section POWERSET_MONAD.
+
+  Definition ensemble_pure {A : Hask.t} (x : A) : ensemble A := fun z : A => x = z.
+
+  Definition ensemble_bind {A : Hask.t} {B : Hask.t} (X : ensemble A) (k : A -> ensemble B) : ensemble B := fun z : B => exists x : A, member x X /\ member z (k x).
+
+  Global Instance ensemble_isMonad : isMonad ensemble :=
+    { pure {A : Hask.t} := ensemble_pure (A := A)
+    ; bind {A : Hask.t} {B : Hask.t} := ensemble_bind (A := A) (B := B)
+    }
+  .
+
+  Local Instance ensemble_isSetoid1 : isSetoid1 ensemble :=
+    { liftSetoid1 {X : Hask.t} (_ : isSetoid X) := @ensemble_isSetoid X
+    }
+  .
+
+  Global Instance ensemble_obeyMonadLaws
+    : LawsOfMonad ensemble.
+  Proof with try now firstorder.
+    split; ii; cbn; unfold ensemble_bind, ensemble_pure; vm_compute...
+    - split.
+      + intros [x1 [x_eq_x1 H_k]]. subst...
+      + intros H_k. exists (x)...
+    - split.
+      + intros [x1 [H_k x_eq_x1]]. subst...
+      + intros H_k. exists (x)...
+  Qed.
+
+  End POWERSET_MONAD.
+
 End Ensembles.
 
 Module E := Ensembles.
@@ -423,6 +464,8 @@ Module MathNotations.
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " t `Set.insert` s " := (insert t s)
     (in custom math_term_scope at level 1, left associativity).
+  Global Notation " '\{' t ':' x '∈' s '\}' " := (ensemble_bind s (fun x : _ => t))
+    (in custom math_term_scope at level 0, x name, t constr, s custom math_term_scope at level 5, no associativity).
 
 (** "Atomic Formulas" *)
   (* Setoid *)
@@ -490,8 +533,8 @@ Module MathNotations.
     (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 11, right associativity).
 
 (** "Entry Points" *)
-  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity, only printing) : math_scope.
-  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity, only printing) : math_scope.
+  Global Notation " '$' t '$' " := t (t custom math_term_scope at level 11, at level 0, no associativity) : math_scope.
+  Global Notation " '$$' P '$$' " := P (P custom math_form_scope at level 11, at level 0, no associativity) : math_scope.
 
 (** "MathNotations Test #1" *)
 (* Check (Cat.compose (fun x : nat => x) (fun x : nat => x)). *)
@@ -683,5 +726,53 @@ Module MathClasses.
   Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
 
   Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
+
+  Section BASIC_SETOID_THEORY.
+
+  Context {A : Type} {requireSetoid : isSetoid A}.
+
+  Lemma eqProp_Reflexive (x : A)
+    : x == x.
+  Proof. eapply Equivalence_Reflexive; eauto. Qed.
+
+  Lemma eqProp_Symmetric (x : A) (y : A)
+    (x_eq_y : x == y)
+    : y == x.
+  Proof. eapply Equivalence_Symmetric; eauto. Qed.
+
+  Lemma eqProp_Transitive (x : A) (y : A) (z : A)
+    (x_eq_y : x == y)
+    (y_eq_z : y == z)
+    : x == z.
+  Proof. eapply Equivalence_Transitive; eauto. Qed.
+
+  End BASIC_SETOID_THEORY.
+
+  Section BASIC_POSET_THEORY.
+
+  Context {A : Type} {requiresPoset : isPoset A}.
+
+  Lemma leProp_Reflexive (x : A)
+    : x =< x.
+  Proof. eapply PreOrder_Reflexive; eauto. Qed.
+
+  Lemma leProp_Transitive (x : A) (y : A) (z : A)
+    (x_le_y : x =< y)
+    (y_le_z : y =< z)
+    : x =< z.
+  Proof. eapply PreOrder_Transitive; eauto. Qed.
+
+  Lemma eqProp_implies_leProp (x : A) (y : A)
+    (x_eq_y : x == y)
+    : x =< y.
+  Proof. now rewrite x_eq_y. Qed.
+
+  Lemma leProp_Antisymmetric (x : A) (y : A)
+    (x_le_y : x =< y)
+    (y_le_x : y =< x)
+    : x == y.
+  Proof. now eapply partial_order_equivalence. Qed.
+
+  End BASIC_POSET_THEORY.
 
 End MathClasses.
