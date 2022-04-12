@@ -659,13 +659,13 @@ Module PreludeInit_MAIN.
     ; bind_fst_arg {A : Hask.t} {B : Hask.t}
       (m1 : M A)
       (m2 : M A)
-      (H_FST_ARG : m1 == m2)
+      (HYP_FST_ARG_EQ : m1 == m2)
       (k0 : kleisli M A B)
       : (m1 >>= k0) == (m2 >>= k0)
     ; bind_snd_arg {A : Hask.t} {B : Hask.t}
       (k1 : kleisli M A B)
       (k2 : kleisli M A B)
-      (H_SND_ARG : k1 == k2)
+      (HYP_SND_ARG_EQ : k1 == k2)
       (m0 : M A)
       : (m0 >>= k1) == (m0 >>= k2)
     }
@@ -679,7 +679,7 @@ Module PreludeInit_MAIN.
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> M (I + R)%type) : I -> M R
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : kleisli M I (I + R)%type) : kleisli M I R
     }
   .
 
