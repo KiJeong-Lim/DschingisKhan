@@ -10,13 +10,27 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
-  Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
-    (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
-  Global Notation " x '∈' '('  X ')↑' " := (isUpperBoundOf x X)
-    (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Definition isLowerBound {D : Type} {requiresPoset : isPoset D} (lower_bound : D) (X : ensemble D) : Prop :=
+    forall x : D, << H_IN : member x X >> -> lower_bound =< x
+  .
+
+  Definition isInfimumOf {D : Type} {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
+    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : lower_bound =< inf_X >> <-> << LOWER_BOUND : isLowerBound lower_bound X >>
+  .
+(**
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
+  Global Notation " x '∈' '('  X  ')↑' " := (isUpperBoundOf x X)
+    (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
+    (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Global Notation " x '∈' '('  X  ')↓' " := (isLowerBound x X)
+    (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Global Notation " '\inf' X '=' inf_X " := (isInfimumOf inf_X X)
+    (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
+    (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
+  Global Notation " '\{' '\inf' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun inf => isInfimumOf inf Y))
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Global Create HintDb poset_hints.
@@ -88,11 +102,22 @@ Module BasicPosetTheory.
     : $$ sup_X ∈ \{ \sup X_i : X_i ∈ Xs \} $$.
   Proof. exists (X); split; [exact (X_in_Xs) | exact (sup_X_isSupremumOf_X)]. Qed.
 
+  Local Hint Resolve Supremum_in_SupremumMap : poset_hints.
+
+  Lemma SupremumOfSupremumMap_isGreaterThan (sup : D) (Xs : ensemble (ensemble D)) (sup_X : D) (X : ensemble D)
+    (sup_isSupremumOf : $$ \sup \{ \sup X_i : X_i ∈ Xs \} = sup $$)
+    (X_in_Xs : $$ X ∈ Xs $$)
+    (sup_X_isSupremumOf_X : $$ \sup X = sup_X $$)
+    : $$ sup_X ∈ \{ \sup X_i : X_i ∈ Xs \} $$.
+  Proof. eauto with *. Qed.
+*)
+  Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
+
   End BASIC_FACTS_ON_SUPREMUM.
 
   Global Hint Resolve Supremum_monotonic_wrtEnsembles : poset_hints.
   Global Hint Resolve Supremum_preserves_eqProp_wrtEnsembles : poset_hints.
   Global Hint Resolve Supremum_congruence : poset_hints.
-  Global Hint Resolve Supremum_congruence : poset_hints.
+  Global Hint Resolve Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
 End BasicPosetTheory.
