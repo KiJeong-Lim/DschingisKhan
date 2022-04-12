@@ -706,12 +706,12 @@ Module MathClasses.
     }
   .
 
-  Definition isUpperBoundOf {D : Type} {requiresPoset : isPoset D} (upper_bound : D) (X : ensemble D) : Prop :=
-    forall x : D, << H_IN : member x X >> -> x =< upper_bound
+  Definition UpperBoundOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+    fun upper_bound : D => forall x : D, << H_IN : member x X >> -> x =< upper_bound
   .
 
   Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
-    forall upper_bound : D, << SUPREMUM_LE_UPPER_BOUND : sup_X =< upper_bound >> <-> << UPPER_BOUND : isUpperBoundOf upper_bound X >>
+    forall upper_bound : D, << SUPREMUM_LE_UPPER_BOUND : sup_X =< upper_bound >> <-> << UPPER_BOUND : member upper_bound (UpperBoundOf X) >>
   .
 
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=

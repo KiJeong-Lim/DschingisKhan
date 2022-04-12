@@ -10,22 +10,22 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
-  Definition isLowerBound {D : Type} {requiresPoset : isPoset D} (lower_bound : D) (X : ensemble D) : Prop :=
-    forall x : D, << H_IN : member x X >> -> lower_bound =< x
+  Definition LowerBoundOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+    fun lower_bound : D => forall x : D, << H_IN : member x X >> -> lower_bound =< x
   .
 
   Definition isInfimumOf {D : Type} {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
-    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : lower_bound =< inf_X >> <-> << LOWER_BOUND : isLowerBound lower_bound X >>
+    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : lower_bound =< inf_X >> <-> << LOWER_BOUND : member lower_bound (LowerBoundOf X) >>
   .
 
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
-  Global Notation " x '∈' '('  X  ')↑' " := (isUpperBoundOf x X)
-    (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Global Notation " '('  X  ')↑' " := (UpperBoundOf X)
+    (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
   Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
     (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
-  Global Notation " x '∈' '('  X  ')↓' " := (isLowerBound x X)
-    (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
+  Global Notation " '('  X  ')↓' " := (LowerBoundOf X)
+    (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
   Global Notation " '\inf' X '=' inf_X " := (isInfimumOf inf_X X)
     (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
@@ -34,19 +34,19 @@ Module BasicPosetTheory.
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Global Create HintDb poset_hints.
-  Global Hint Unfold REFERENCE_HOLDER member isUpperBoundOf isSupremumOf isDirectedSubset : poset_hints.
+  Global Hint Unfold REFERENCE_HOLDER member UpperBoundOf LowerBoundOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
   Global Hint Resolve eqProp_Reflexive eqProp_Symmetric eqProp_Transitive : poset_hints.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
   Global Hint Resolve in_unions_iff : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
-    (@isUpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
+    (@UpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp)
     as UpperBound_compatWith_eqProp_wrtEnsembles.
   Proof with eauto with *.
-    intros x y x_eq_y X Y X_eq_Y. split; intros H_upper_bound.
-    - intros z z_in_Y. rewrite <- x_eq_y. eapply H_upper_bound. unnw. rewrite -> X_eq_Y...
-    - intros z z_in_X. rewrite -> x_eq_y. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
+    intros X Y X_eq_Y z. split; intros H_upper_bound.
+    - intros y y_in_Y. eapply H_upper_bound. unnw. rewrite -> X_eq_Y...
+    - intros x x_in_X. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
   Global Hint Resolve UpperBound_compatWith_eqProp_wrtEnsembles : poset_hints.
@@ -141,7 +141,7 @@ Module BasicPosetTheory.
   Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
 
   Proposition InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
-    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (fun upper_bound : D => isUpperBoundOf upper_bound X))
+    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (UpperBoundOf X))
     : isSupremumOf sup_X X.
   Proof.
     intros z. split; ii; desnw.
