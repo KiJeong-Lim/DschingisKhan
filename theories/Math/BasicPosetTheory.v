@@ -25,7 +25,11 @@ Module BasicPosetTheory.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
 
-  Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
+  Section ON_SUPREMUM.
+
+  Context {D : Type} {requiresPoset : isPoset D}.
+
+  Global Add Parametric Morphism :
     (@isUpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
     as UpperBound_compatWith_eqProp_WrtEnsembles.
   Proof with eauto with *.
@@ -34,10 +38,9 @@ Module BasicPosetTheory.
     - intros z z_in_X. rewrite -> x_eq_y. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Global Hint Resolve UpperBound_compatWith_eqProp_WrtEnsembles : poset_hints.
+  Local Hint Resolve UpperBound_compatWith_eqProp_WrtEnsembles : poset_hints.
 
-  Lemma supremum_monotonic_WrtEnsembles {D : Type} {requiresPoset : isPoset D}
-    (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
+  Lemma supremum_monotonic_WrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : $$ \sup X1 = sup_X1 $$)
     (sup_X2_isSupremumOf_X2 : $$ \sup X2 = sup_X2 $$)
     (X1_isSubsetOf_X2 : $$ X1 ⊆ X2 $$)
@@ -47,10 +50,9 @@ Module BasicPosetTheory.
     eapply sup_X2_isSupremumOf_X2; eauto with *.
   Qed.
 
-  Global Hint Resolve supremum_monotonic_WrtEnsembles : poset_hints.
+  Local Hint Resolve supremum_monotonic_WrtEnsembles : poset_hints.
 
-  Lemma supremum_preserves_eqProp_WrtEnsembles {D : Type} {requiresPoset : isPoset D}
-    (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
+  Lemma supremum_preserves_eqProp_WrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : $$ \sup X1 = sup_X1 $$)
     (sup_X2_isSupremumOf_X2 : $$ \sup X2 = sup_X2 $$)
     (X1_eq_X2 : $$ X1 ≡ X2 $$)
@@ -60,10 +62,9 @@ Module BasicPosetTheory.
     pose proof (eqProp_implies_leProp X2 X1 X1_eq_X2) as claim2. eapply leProp_Antisymmetric; eauto with *.
   Qed.
 
-  Global Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
+  Local Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
 
-  Lemma Supremum_congruence {D : Type} {requiresPoset : isPoset D}
-    (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
+  Lemma Supremum_congruence (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
     (sup_X_eq_sup_Y : $$ sup_X ≡ sup_Y $$)
     (X_eq_Y : $$ X ≡ Y $$)
     (x_isSupremumOf_X : $$ \sup X = sup_X $$)
@@ -74,15 +75,14 @@ Module BasicPosetTheory.
     - intros z_isUpperBoundOf_Y. eapply x_isSupremumOf_X. unnw. rewrite -> X_eq_Y...
   Qed.
 
-  Global Hint Resolve Supremum_congruence : poset_hints.
+  Local Hint Resolve Supremum_congruence : poset_hints.
 
-  Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
+  Global Add Parametric Morphism :
     (@isSupremumOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
     as Supremum_compatWith_eqProp_WrtEnsembles.
   Proof. iis; eauto with *. Qed.
 
-  Lemma Supremum_in_SupremumMap {D : Type} {requiresPoset : isPoset D}
-    (X : ensemble D) (sup_X : D) (Xs : ensemble (ensemble D))
+  Lemma Supremum_in_SupremumMap (X : ensemble D) (sup_X : D) (Xs : ensemble (ensemble D))
     (sup_X_isSupremumOf_X : $$ \sup X = sup_X $$)
     (X_in_Xs : $$ X ∈ Xs $$)
     : $$ sup_X ∈ \{ \sup Xs_i : Xs_i ∈ Xs \} $$.
@@ -91,5 +91,7 @@ Module BasicPosetTheory.
     - exact (X_in_Xs).
     - exact (sup_X_isSupremumOf_X).
   Qed.
+
+  End ON_SUPREMUM.
 
 End BasicPosetTheory.
