@@ -352,10 +352,10 @@ Module AczelSet.
     end
   .
 
-  Lemma fromWf_unfold {wfRel : A -> A -> Prop} (root : A) (root_acc : Acc wfRel root)
-    : forall z : AczelSet, z `elem` fromWf root root_acc <-> << EXPANDED : exists child : {tree : A | wfRel tree root}, z == fromWf (proj1_sig child) (Acc_inv root_acc (proj2_sig child)) >>.
+  Lemma fromWf_unfold {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+    : forall z : AczelSet, z `elem` fromWf tree tree_acc <-> << EXPANDED : exists child : {subtree : A | wfRel subtree tree}, z == fromWf (proj1_sig child) (Acc_inv tree_acc (proj2_sig child)) >>.
   Proof.
-    intros z. destruct root_acc as [hyp_acc]. unnw; split.
+    intros z. destruct tree_acc as [hyp_acc]. unnw; split.
     all: intros [[c_w hyp_wf] z_eq_w_c]; cbn in *; unfold_eqTree; now exists (exist _ c_w hyp_wf).
   Qed.
 
