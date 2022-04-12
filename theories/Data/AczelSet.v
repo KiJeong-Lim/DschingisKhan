@@ -279,7 +279,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_power.
 
-  Definition power (x : AczelSet) : AczelSet := Node (fun child : getChildren x -> Prop => subset x child).
+  Definition power (x : AczelSet) : AczelSet := Node (subset x).
 
   Theorem AczelSet_power_spec (x : AczelSet)
     : forall z : AczelSet, z `elem` power x <-> << IN_power : z `subseteq` x >>.
@@ -336,12 +336,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
     fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : AczelSet :=
     match tree_acc with
-    | Acc_intro _ hyp_acc => Node (fun childtree : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig childtree) (hyp_acc (proj1_sig childtree) (proj2_sig childtree)))
+    | Acc_intro _ hyp_acc => Node (fun child : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig child) (hyp_acc (proj1_sig child) (proj2_sig child)))
     end
   .
 
   Lemma fromAcc_unfold {A : Type} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
-    : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists childtree : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig childtree) (Acc_inv tree_acc (proj2_sig childtree)) >>.
+    : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists child : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig child) (Acc_inv tree_acc (proj2_sig child)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
     all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (exist _ c hyp_wf).

@@ -765,4 +765,12 @@ Module MathClasses.
 
   End BASIC_POSET_THEORY.
 
+  Local Notation " x '>=' y " := (leProp y x) (only parsing, at level 70, no associativity) : type_scope.
+
+  Definition PreFixedPoints {D : Type} {requiresPoset : isPoset D} (f : D -> D) : ensemble D := fun x : D => (x >= f x)%type.
+
+  Definition FixedPoints {D : Type} {requiresSetoid : isSetoid D} (f : D -> D) : ensemble D := fun x : D => (x == f x)%type.
+
+  Definition PostFixedPoints {D : Type} {requiresPoset : isPoset D} (f : D -> D) : ensemble D := fun x : D => (x =< f x)%type.
+
 End MathClasses.

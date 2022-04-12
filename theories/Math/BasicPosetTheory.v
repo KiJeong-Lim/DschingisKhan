@@ -10,12 +10,14 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
+  Local Notation " x '>=' y " := (leProp y x) (only parsing, at level 70, no associativity) : type_scope.
+
   Definition LowerBoundOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
-    fun lower_bound : D => forall x : D, << H_IN : member x X >> -> lower_bound =< x
+    fun lower_bound : D => forall x : D, << H_IN : member x X >> -> (x >= lower_bound)%type
   .
 
   Definition isInfimumOf {D : Type} {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
-    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : lower_bound =< inf_X >> <-> << LOWER_BOUND : member lower_bound (LowerBoundOf X) >>
+    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : (inf_X >= lower_bound)%type >> <-> << LOWER_BOUND : member lower_bound (LowerBoundOf X) >>
   .
 
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
