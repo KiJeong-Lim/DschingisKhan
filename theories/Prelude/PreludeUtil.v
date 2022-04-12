@@ -599,26 +599,19 @@ Module MyUtil.
 
   Section NAT_ARITH.
 
-  Lemma greater_than_iff :
-    forall x : nat,
-    forall y : nat,
+  Lemma greater_than_iff (x : nat) (y : nat) :
     x > y <-> (exists z : nat, x = S (y + z)).
   Proof with try (lia || eauto).
-    intros x y. split.
+    split.
     - intros Hgt. induction Hgt as [ | m Hgt [z x_eq]]; [exists (0) | rewrite x_eq]...
     - intros [z Heq]...
   Qed.
 
-  Lemma div_mod_uniqueness :
-    forall a : nat,
-    forall b : nat,
-    forall q : nat,
-    forall r : nat,
-    a = b * q + r ->
-    r < b ->
-    a / b = q /\ a mod b = r.
+  Lemma div_mod_uniqueness a b q r
+    (H_DIVISION : a = b * q + r)
+    (r_lt_b : r < b)
+    : a / b = q /\ a mod b = r.
   Proof with try (lia || now (firstorder; eauto)).
-    intros a b q r a_eq r_lt_b.
     assert (claim1 : a = b * (a / b) + (a mod b)) by now apply (Nat.div_mod a b); lia.
     assert (claim2 : 0 <= a mod b /\ a mod b < b) by now apply (Nat.mod_bound_pos a b); lia.
     assert (claim3 : ~ q > a / b).
@@ -760,12 +753,9 @@ Module MyUtil.
     end
   .
 
-  Lemma sum_from_0_to_is :
-    forall n : nat,
-    2 * sum_from_0_to n = n * (S n).
-  Proof with lia.
-    induction n; simpl in *...
-  Qed.
+  Lemma sum_from_0_to_is n
+    : 2 * sum_from_0_to n = n * (S n).
+  Proof. induction n; simpl in *; lia. Qed.
 
   Fixpoint cantor_pairing (n : nat) {struct n} : nat * nat :=
     match n with
@@ -778,8 +768,8 @@ Module MyUtil.
     end
   .
 
-  Lemma cantor_pairing_is_surjective x y :
-    (x, y) = cantor_pairing (sum_from_0_to (x + y) + y).
+  Lemma cantor_pairing_is_surjective x y
+    : (x, y) = cantor_pairing (sum_from_0_to (x + y) + y).
   Proof with (lia || eauto).
     remember (x + y) as z eqn: z_is; revert y x z_is.
     induction z as [ | z IH].
@@ -809,8 +799,8 @@ Module MyUtil.
         rewrite IH with (x := S x) (y := y')... rewrite claim1 with (x' := x)...
   Qed.
 
-  Theorem cantor_pairing_spec n x y :
-    cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
+  Theorem cantor_pairing_spec n x y
+    : cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
   Proof.
     split.
     - exact (cantor_pairing_is_injective n x y).
