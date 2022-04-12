@@ -649,20 +649,20 @@ Module PreludeInit_MAIN.
       (k1 : kleisli M A B)
       (k2 : kleisli M B C)
       : (m0 >>= k1 >>= k2) == (m0 >>= fun x1 => k1 x1 >>= k2)
-    ; bind_pure_l {A : Hask.t} {B : Hask.t}
+    ; pure_left_id_bind {A : Hask.t} {B : Hask.t}
       (k : kleisli M A B)
       (x : A)
       : (pure x >>= k) == k x
-    ; bind_pure_r {A : Hask.t}
+    ; pure_right_id_bind {A : Hask.t}
       (m : M A)
       : (m >>= pure) == m
-    ; bind_fst_arg {A : Hask.t} {B : Hask.t}
+    ; bind_compatWith_eqProp_on_1st_arg {A : Hask.t} {B : Hask.t}
       (m1 : M A)
       (m2 : M A)
       (HYP_FST_ARG_EQ : m1 == m2)
       (k0 : kleisli M A B)
       : (m1 >>= k0) == (m2 >>= k0)
-    ; bind_snd_arg {A : Hask.t} {B : Hask.t}
+    ; bind_compatWith_eqProp_on_2nd_arg {A : Hask.t} {B : Hask.t}
       (k1 : kleisli M A B)
       (k2 : kleisli M A B)
       (HYP_SND_ARG_EQ : k1 == k2)
@@ -686,7 +686,7 @@ Module PreludeInit_MAIN.
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} {obeysMonadLaws : @LawsOfMonad M requiresSetoid1 requiresMonad} {A : Hask.t} {B : Hask.t} :
     (@bind M requiresMonad A B) with signature (eqProp ==> eqProp ==> eqProp)
     as bind_lifts_eqProp.
-  Proof. ii; etransitivity; [eapply bind_fst_arg | eapply bind_snd_arg]; eauto. Qed.
+  Proof. ii; etransitivity; [eapply bind_compatWith_eqProp_on_1st_arg | eapply bind_compatWith_eqProp_on_2nd_arg]; eauto. Qed.
 
   Local Polymorphic Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
     { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
@@ -710,9 +710,9 @@ Module PreludeInit_MAIN.
         m >>= pure . (f . g)
         map (f . g) m
       *)
-      cbn. rewrite bind_assoc. eapply bind_snd_arg.
-      ii. rewrite bind_pure_l. reflexivity.
-    - ii. eapply bind_pure_r.
+      cbn. rewrite bind_assoc. eapply bind_compatWith_eqProp_on_2nd_arg.
+      ii. rewrite pure_left_id_bind. reflexivity.
+    - ii. eapply pure_right_id_bind.
   Qed.
 
   End TypeclassesForProgrammers.
