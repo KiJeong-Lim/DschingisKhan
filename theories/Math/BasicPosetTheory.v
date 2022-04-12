@@ -10,23 +10,13 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
-  Local Notation " x '>=' y " := (leProp y x) (only parsing, at level 70, no associativity) : type_scope.
-
-  Definition LowerBoundOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
-    fun lower_bound : D => forall x : D, << H_IN : member x X >> -> (x >= lower_bound)%type
-  .
-
-  Definition isInfimumOf {D : Type} {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
-    forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : (inf_X >= lower_bound)%type >> <-> << LOWER_BOUND : member lower_bound (LowerBoundOf X) >>
-  .
-
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
-  Global Notation " '('  X  ')↑' " := (UpperBoundOf X)
+  Global Notation " '('  X  ')↑' " := (UpperBoundsOf X)
     (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
   Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
     (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
-  Global Notation " '('  X  ')↓' " := (LowerBoundOf X)
+  Global Notation " '('  X  ')↓' " := (LowerBoundsOf X)
     (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
   Global Notation " '\inf' X '=' inf_X " := (isInfimumOf inf_X X)
     (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
@@ -36,22 +26,22 @@ Module BasicPosetTheory.
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Global Create HintDb poset_hints.
-  Global Hint Unfold REFERENCE_HOLDER member UpperBoundOf LowerBoundOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
+  Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
   Global Hint Resolve eqProp_Reflexive eqProp_Symmetric eqProp_Transitive : poset_hints.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
   Global Hint Resolve in_unions_iff : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
-    (@UpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp)
-    as UpperBound_compatWith_eqProp_wrtEnsembles.
+    (@UpperBoundsOf D requiresPoset) with signature (eqProp ==> eqProp)
+    as UpperBoundsOf_compatWith_eqProp_wrtEnsembles.
   Proof with eauto with *.
     intros X Y X_eq_Y z. split; intros H_upper_bound.
     - intros y y_in_Y. eapply H_upper_bound. unnw. rewrite -> X_eq_Y...
     - intros x x_in_X. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Global Hint Resolve UpperBound_compatWith_eqProp_wrtEnsembles : poset_hints.
+  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles : poset_hints.
 
   Section BASIC_FACTS_ON_SUPREMUM.
 
@@ -143,7 +133,7 @@ Module BasicPosetTheory.
   Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
 
   Proposition InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
-    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (UpperBoundOf X))
+    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (UpperBoundsOf X))
     : isSupremumOf sup_X X.
   Proof.
     intros z. split; ii; desnw.
