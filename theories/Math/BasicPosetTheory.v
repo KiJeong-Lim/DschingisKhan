@@ -34,10 +34,11 @@ Module BasicPosetTheory.
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Global Create HintDb poset_hints.
-  Global Hint Unfold REFERENCE_HOLDER isUpperBoundOf isSupremumOf isDirectedSubset : poset_hints.
+  Global Hint Unfold REFERENCE_HOLDER member isUpperBoundOf isSupremumOf isDirectedSubset : poset_hints.
   Global Hint Resolve eqProp_Reflexive eqProp_Symmetric eqProp_Transitive : poset_hints.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
+  Global Hint Resolve in_unions_iff : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
     (@isUpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
@@ -138,6 +139,18 @@ Module BasicPosetTheory.
   Qed.
 
   Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
+
+  Lemma InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
+    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (fun upper_bound : D => isUpperBoundOf upper_bound X))
+    : isSupremumOf sup_X X.
+  Proof with eauto with *.
+    intros z. split; ii; desnw.
+    - transitivity (sup_X); trivial.
+      eapply sup_X_isInfimumOfUpperBound. unnw.
+      intros upper_bound upper_bound_in. unnw.
+      exact (upper_bound_in x H_IN).
+    - unnw. eapply sup_X_isInfimumOfUpperBound...
+  Qed.
 
   End BASIC_FACTS_ON_SUPREMUM.
 

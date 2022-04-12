@@ -456,8 +456,6 @@ Module PreludeInit_MAIN.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
-  Global Opaque ensemble member.
-
   Definition isSameSetAs {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
     forall x : A, member x lhs <-> member x rhs
   .
