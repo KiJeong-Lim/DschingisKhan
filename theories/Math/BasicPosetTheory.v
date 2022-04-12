@@ -25,7 +25,7 @@ Module BasicPosetTheory.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
 
-  Section ON_SUPREMUM.
+  Section BASIC_FACTS_ON_SUPREMUM.
 
   Context {D : Type} {requiresPoset : isPoset D}.
 
@@ -88,6 +88,12 @@ Module BasicPosetTheory.
     : $$ sup_X ∈ \{ \sup X_i : X_i ∈ Xs \} $$.
   Proof. exists (X); split; [exact (X_in_Xs) | exact (sup_X_isSupremumOf_X)]. Qed.
 
-  End ON_SUPREMUM.
+  End BASIC_FACTS_ON_SUPREMUM.
+
+  Global Hint Resolve UpperBound_compatWith_eqProp_WrtEnsembles : poset_hints.
+  Global Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
+  Global Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
+  Global Hint Resolve Supremum_congruence : poset_hints.
+  Global Hint Resolve Supremum_congruence : poset_hints.
 
 End BasicPosetTheory.

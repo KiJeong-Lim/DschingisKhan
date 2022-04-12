@@ -464,8 +464,6 @@ Module MathNotations.
     (in custom math_term_scope at level 1, left associativity).
   Global Notation " t `Set.insert` s " := (insert t s)
     (in custom math_term_scope at level 1, left associativity).
-  Global Notation " '\{' t ':' x '∈' s '\}' " := (ensemble_bind s (fun x : _ => t))
-    (in custom math_term_scope at level 0, x name, t constr, s custom math_term_scope at level 5, no associativity).
 
 (** "Atomic Formulas" *)
   (* Setoid *)
