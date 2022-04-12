@@ -60,6 +60,22 @@ Module Khan.
   Ltac ii := repeat intro.
   Ltac iis := ii; autounfold with khan_hints; try esplit.
   Ltac iiss := (repeat iis); cbn in *; desnw.
+  Ltac des1 :=
+    match goal with
+    | H : ?x = ?y |- _ =>
+      tryif is_var x then try subst x else
+      tryif is_var y then try subst y else
+      fail "cannot subst with" H
+    | H : _ /\ _ |- _ => destruct H
+    | H : _ \/ _ |- _ => destruct H
+    | H : _ <-> _ |- _ => destruct H
+    | H : exists x, _ |- _ => destruct H
+    | |- _ => split; ii
+    end
+  .
+  Ltac des := repeat des1.
+
+  (** "\S5" *)
 
   Lemma MODUS_PONENS {HYPOTHESIS : Prop} {CONCLUSION : Prop}
     (ASSUMPTION : HYPOTHESIS)
@@ -70,7 +86,7 @@ Module Khan.
   Global Tactic Notation "exploit" uconstr( PRF ) "as" simple_intropattern( PAT ) := eapply MODUS_PONENS; [eapply PRF | intros PAT].
   Global Tactic Notation "exploit" uconstr( PRF ) := eapply MODUS_PONENS; [eapply PRF | ].
 
-  (** "\S5" *)
+  (** "\S6" *)
 
   Global Tactic Notation "memo" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine ((fun REF : PROP => _)(PRF)).
   Global Tactic Notation "memo" uconstr( PRF ) "as" ident( REF ) := refine ((fun REF => _)(PRF)).
