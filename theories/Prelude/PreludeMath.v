@@ -525,8 +525,8 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " '𝐓𝐲𝐩𝐞' " := (Type)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " '℘' '(' A ')' " := (ensemble A)
-    (in custom math_term_scope at level 0, no associativity).
+  Global Notation " '℘' A " := (ensemble A)
+    (in custom math_term_scope at level 1, no associativity).
   Global Notation " P '->' Q " := (forall _ : P, Q)
     (P custom math_form_scope, Q custom math_form_scope, in custom math_term_scope at level 11, right associativity).
 
