@@ -16,7 +16,7 @@ Module BasicPosetTheory.
     (in custom math_form_scope at level 6, x custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
-  Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup_Y => isSupremumOf sup_Y Y))
+  Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Global Create HintDb poset_hints.
@@ -25,22 +25,22 @@ Module BasicPosetTheory.
   Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
 
-  Section BASIC_FACTS_ON_SUPREMUM.
-
-  Context {D : Type} {requiresPoset : isPoset D}.
-
-  Global Add Parametric Morphism :
+  Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
     (@isUpperBoundOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
-    as UpperBound_compatWith_eqProp_WrtEnsembles.
+    as UpperBound_compatWith_eqProp_wrtEnsembles.
   Proof with eauto with *.
     intros x y x_eq_y X Y X_eq_Y. split; intros H_upper_bound.
     - intros z z_in_Y. rewrite <- x_eq_y. eapply H_upper_bound. unnw. rewrite -> X_eq_Y...
     - intros z z_in_X. rewrite -> x_eq_y. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Local Hint Resolve UpperBound_compatWith_eqProp_WrtEnsembles : poset_hints.
+  Global Hint Resolve UpperBound_compatWith_eqProp_wrtEnsembles : poset_hints.
 
-  Lemma supremum_monotonic_WrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
+  Section BASIC_FACTS_ON_SUPREMUM.
+
+  Context {D : Type} {requiresPoset : isPoset D}.
+
+  Lemma Supremum_monotonic_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : $$ \sup X1 = sup_X1 $$)
     (sup_X2_isSupremumOf_X2 : $$ \sup X2 = sup_X2 $$)
     (X1_isSubsetOf_X2 : $$ X1 ⊆ X2 $$)
@@ -50,9 +50,9 @@ Module BasicPosetTheory.
     eapply sup_X2_isSupremumOf_X2; eauto with *.
   Qed.
 
-  Local Hint Resolve supremum_monotonic_WrtEnsembles : poset_hints.
+  Local Hint Resolve Supremum_monotonic_wrtEnsembles : poset_hints.
 
-  Lemma supremum_preserves_eqProp_WrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
+  Lemma Supremum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : $$ \sup X1 = sup_X1 $$)
     (sup_X2_isSupremumOf_X2 : $$ \sup X2 = sup_X2 $$)
     (X1_eq_X2 : $$ X1 ≡ X2 $$)
@@ -62,7 +62,7 @@ Module BasicPosetTheory.
     pose proof (eqProp_implies_leProp X2 X1 X1_eq_X2) as claim2. eapply leProp_Antisymmetric; eauto with *.
   Qed.
 
-  Local Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
+  Local Hint Resolve Supremum_preserves_eqProp_wrtEnsembles : poset_hints.
 
   Lemma Supremum_congruence (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
     (sup_X_eq_sup_Y : $$ sup_X ≡ sup_Y $$)
@@ -79,7 +79,7 @@ Module BasicPosetTheory.
 
   Global Add Parametric Morphism :
     (@isSupremumOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
-    as Supremum_compatWith_eqProp_WrtEnsembles.
+    as Supremum_compatWith_eqProp_wrtEnsembles.
   Proof. iis; eauto with *. Qed.
 
   Lemma Supremum_in_SupremumMap (X : ensemble D) (sup_X : D) (Xs : ensemble (ensemble D))
@@ -90,9 +90,8 @@ Module BasicPosetTheory.
 
   End BASIC_FACTS_ON_SUPREMUM.
 
-  Global Hint Resolve UpperBound_compatWith_eqProp_WrtEnsembles : poset_hints.
-  Global Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
-  Global Hint Resolve supremum_preserves_eqProp_WrtEnsembles : poset_hints.
+  Global Hint Resolve Supremum_monotonic_wrtEnsembles : poset_hints.
+  Global Hint Resolve Supremum_preserves_eqProp_wrtEnsembles : poset_hints.
   Global Hint Resolve Supremum_congruence : poset_hints.
   Global Hint Resolve Supremum_congruence : poset_hints.
 
