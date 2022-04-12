@@ -151,7 +151,7 @@ Module NAT_FACTS.
   Local Notation zero := O.
 
   Definition is_suc (n : nat) : Prop :=
-    match n as x return Prop with
+    match n return Prop with
     | O => False
     | S n' => True
     end

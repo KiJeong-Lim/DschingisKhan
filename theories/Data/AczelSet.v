@@ -331,7 +331,7 @@ Module AczelSet.
 
   Local Hint Resolve AczelSet_unions_spec : khan_hints.
 
-  Section AczelSet_fromWF.
+  Section AczelSet_fromWf.
 
   Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
     fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : AczelSet :=
@@ -349,7 +349,7 @@ Module AczelSet.
 
   Definition fromWf (A : Type) {requiresWellFounded : isWellFounded A} : AczelSet := unions_i (fun root : A => fromAcc root (wfRel_well_founded root)).
 
-  End AczelSet_fromWF.
+  End AczelSet_fromWf.
 
   Section AczelSet_STRONG_COLLECTION.
 
