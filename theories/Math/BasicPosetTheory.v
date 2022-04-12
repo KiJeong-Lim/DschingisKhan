@@ -140,16 +140,16 @@ Module BasicPosetTheory.
 
   Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
 
-  Lemma InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
+  Proposition InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
     (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (fun upper_bound : D => isUpperBoundOf upper_bound X))
     : isSupremumOf sup_X X.
-  Proof with eauto with *.
+  Proof.
     intros z. split; ii; desnw.
     - transitivity (sup_X); trivial.
       eapply sup_X_isInfimumOfUpperBound. unnw.
       intros upper_bound upper_bound_in. unnw.
       exact (upper_bound_in x H_IN).
-    - unnw. eapply sup_X_isInfimumOfUpperBound...
+    - unnw. eapply sup_X_isInfimumOfUpperBound; eauto with *.
   Qed.
 
   End BASIC_FACTS_ON_SUPREMUM.
