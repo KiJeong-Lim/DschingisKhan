@@ -81,19 +81,6 @@ Module MyVec.
     }
   .
 
-  Theorem vector_extensionality {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
-    (POINTWISE_EQUALITY : forall i : Fin n, xs1 !! i = xs2 !! i)
-    : xs1 = xs2.
-  Proof.
-    revert xs1 xs2 POINTWISE_EQUALITY; induction n as [ | n IH].
-    - introVNil; introVNil; intros hyp_eq.
-      exact (eq_reflexivity (@VNil A)).
-    - introVCons x1 xs1; introVCons x2 xs2; intros hyp_eq.
-      assert (x1_eq_x2 : x1 = x2) by exact (hyp_eq FZ).
-      assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : Fin n => hyp_eq (FS i))).
-      exact (eq_congruence2 (@VCons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
-  Qed.
-
   Fixpoint vector_map {A : Type} {B : Type} {n : nat} (f : A -> B) (xs : vector A n) {struct xs} : vector B n :=
     match xs with
     | [] => []
@@ -151,35 +138,39 @@ Module MyVec.
 
   Section VectorIsMonad.
 
-  Variable n : nat.
+  Definition vec_n (n : nat) (X : Hask.t) : Hask.t := vector X n.
 
-  Definition vec_n (X : Hask.t) : Hask.t := vector X n.
-
-  Global Instance vec_isMonad : isMonad vec_n :=
+  Global Instance vec_isMonad (n : nat) : isMonad (vec_n n) :=
     { pure {A : Hask.t} := fun x : A => replicate x
-    ; bind {A : Hask.t} {B : Hask.t} := fun xs : vec_n A => fun k : A -> vec_n B => diagonal (vector_map k xs)
+    ; bind {A : Hask.t} {B : Hask.t} := fun xs : vec_n n A => fun k : A -> vec_n n B => diagonal (vector_map k xs)
     }
   .
 
-  Local Instance vec_isSetoid1 : isSetoid1 vec_n :=
+  Local Instance vec_isSetoid1 (n : nat) : isSetoid1 (vec_n n) :=
     { liftSetoid1 {A : Hask.t} (requiresSetoid : isSetoid A) := vector_isSetoid A n (requiresSetoid := requiresSetoid)
     }
   .
 
-  Global Instance vec_obeysMonadLaws
-    : LawsOfMonad vec_n (requiresSetoid1 := vec_isSetoid1) (requiresMonad := vec_isMonad).
+  Global Instance vec_obeysMonadLaws (n : nat)
+    : LawsOfMonad (vec_n n) (requiresSetoid1 := vec_isSetoid1 n) (requiresMonad := vec_isMonad n).
   Proof.
     split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence.
   Qed.
 
   Local Existing Instance freeSetoidFromSetoid1.
 
-  Lemma vec_n_eqProp_iff (A : Hask.t) (xs1 : vec_n A) (xs2 : vec_n A)
-    : xs1 == xs2 <-> xs1 = xs2.
+  Theorem vector_extensional_equality {A : Hask.t} (n : nat) (xs1 : vec_n n A) (xs2 : vec_n n A)
+    : xs1 = xs2 <-> ⟪ POINTWISE_EQUALITY : xs1 == xs2 ⟫.
   Proof.
     split; intros hyp_eq.
-    - exact (vector_extensionality xs1 xs2 hyp_eq).
     - now rewrite hyp_eq.
+    - desnw. revert xs1 xs2 POINTWISE_EQUALITY; induction n as [ | n IH].
+      + introVNil; introVNil; intros hyp_eq.
+        exact (eq_reflexivity (@VNil A)).
+      + introVCons x1 xs1; introVCons x2 xs2; intros hyp_eq.
+        assert (x1_eq_x2 : x1 = x2) by exact (hyp_eq FZ).
+        assert (xs1_eq_xs2 : xs1 = xs2) by exact (IH xs1 xs2 (fun i : Fin n => hyp_eq (FS i))).
+        exact (eq_congruence2 (@VCons A n) x1 x2 x1_eq_x2 xs1 xs2 xs1_eq_xs2).
   Qed.
 
   End VectorIsMonad.
@@ -190,9 +181,7 @@ Module MyVec.
 
   Lemma vector_zipWith_spec {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n)
     : forall i : Fin n, f (xs !! i) (ys !! i) = vector_zipWith f xs ys !! i.
-  Proof.
-    cbn; intros i; (repeat reduce_monad_methods_of_vector); exact (eq_reflexivity (f (xs !! i) (ys !! i))).
-  Qed.
+  Proof. cbn; ii; (repeat reduce_monad_methods_of_vector); reflexivity. Qed.
 
   Fixpoint vector_range {n : nat} {struct n} : nat -> vector nat n :=
     match n with
