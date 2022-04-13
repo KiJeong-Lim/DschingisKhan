@@ -10,6 +10,7 @@ theories/Data/Vector.v #
 theories/Data/InteractionTree.v #
 #
 theories/Math/BasicPosetTheory.v #
+theories/Math/BasicGeneralTopology.v #
 #
 theories/Logic/UntypedLambdaCalculus.v #
 theories/Logic/CountableBooleanAlgebra.v #

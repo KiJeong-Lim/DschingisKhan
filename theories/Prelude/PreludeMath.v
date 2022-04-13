@@ -472,6 +472,20 @@ Module Ensembles.
 
   End SUBSET_INTRO.
 
+  Definition isFilterReprOf {A : Hask.t} (phi : A -> Prop) (X_repr : ensemble (@sig A phi)) (X : ensemble A) : Prop :=
+    forall z : @sig A phi, member (proj1_sig z) X <-> member z X_repr
+  .
+
+  Global Hint Unfold isFilterReprOf : khan_hints.
+
+  Theorem isFilterReprOf_iff {A : Hask.t} {phi : A -> Prop} (X : ensemble A)
+    : forall X_repr : ensemble (@sig A phi), << FILTER_REPR : isFilterReprOf phi X_repr X >> <-> << REPR_IS_PREIMAGE : X_repr == preimage (@proj1_sig A phi) X >>.
+  Proof with eauto with *.
+    iis.
+    { intros H_REPR z; desnw. rewrite <- FILTER_REPR, in_preimage_iff. des... }
+    { intros H_preimage z; desnw. rewrite REPR_IS_PREIMAGE, in_preimage_iff; des... }
+  Qed.
+
 End Ensembles.
 
 Module E := Ensembles.
@@ -776,24 +790,40 @@ Module MathClasses.
   Class Topology_axiom {A : Hask.t} (isOpen : ensemble A -> Prop) : Prop :=
     { full_isOpen
       : isOpen full
-    ; unions_isOpen {Xs : ensemble (ensemble A)}
+    ; unions_isOpen (Xs : ensemble (ensemble A))
       (every_member_of_Xs_isOpen : forall X : ensemble A, << X_in_Xs : member X Xs >> -> isOpen X)
       : isOpen (unions Xs)
-    ; intersection_isOpen {XL : ensemble A} {XR : ensemble A}
+    ; intersection_isOpen (XL : ensemble A) (XR : ensemble A)
       (XL_isOpen : isOpen XL)
       (XR_isOpen : isOpen XR)
       : isOpen (intersection XL XR)
-    ; isOpen_compatWith_eqProp {X : ensemble A} {X' : ensemble A}
+    ; isOpen_compatWith_eqProp (X : ensemble A) (X' : ensemble A)
       (X_isOpen : isOpen X)
       (X_eq_X' : X == X')
       : isOpen X'
     }
   .
 
+  Lemma emptyset_isOpen {A : Hask.t} (isOpen : ensemble A -> Prop)
+    (satisfiesAxiomsOfTopology : Topology_axiom isOpen)
+    : isOpen (@empty A).
+  Proof.
+    eapply isOpen_compatWith_eqProp.
+    - eapply unions_isOpen with (Xs := empty). ii; desnw.
+      apply in_empty_iff in X_in_Xs. tauto.
+    - intros z. rewrite in_unions_iff. split.
+      + intros [X [z_in_X []]].
+      + intros [].
+  Qed.
+
   Class isTopologicalSpace (A : Hask.t) : Type :=
     { isOpen : ensemble A -> Prop
     ; TopologicalSpace_obeysTopology_axiom :> Topology_axiom isOpen
     }
+  .
+
+  Definition isContinuousMap {dom : Hask.t} {cod : Hask.t} {dom_isTopology : isTopologicalSpace dom} {cod_isTopology : isTopologicalSpace cod} (f : dom -> cod) : Prop :=
+    forall Y : ensemble cod, << TGT_OPEN : isOpen Y >> -> << SRC_OPEN : isOpen (preimage f Y) >>
   .
 
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=

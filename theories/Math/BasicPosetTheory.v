@@ -452,8 +452,4 @@ Module BasicPosetTheory.
 
   End LEXICOGRAPHICAL_ORDER.
 
-  Section SCOTT_TOPOLOGY.
-
-  End SCOTT_TOPOLOGY.
-
 End BasicPosetTheory.
