@@ -77,10 +77,10 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
       destruct H as [x' H]
     | |- let x : ?A := ?t in ?B =>
       let x' := fresh x in
-      (intros x')
+      intros x'
     | |- forall x : ?A, ?B =>
       let x' := fresh x in
-      (intros x')
+      intros x'
     | |- ?P /\ ?Q => split
     | |- ?P <-> ?Q => split; intro
     end
