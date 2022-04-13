@@ -402,6 +402,76 @@ Module Ensembles.
 
   End POWERSET_MONAD.
 
+  Section WITH_LIST.
+
+  Definition isFinteSubsetOf {A : Type} (xs : list A) (X : ensemble A) : Prop := forall z : A, In z xs -> member z X.
+
+  Definition isListRepOf {A : Type} (xs : list A) (X : ensemble A) : Prop := forall z : A, In z xs <-> member z X.
+
+  Context {A : Type}.
+
+  Lemma isFinteSubsetOf_append (xs1 : list A) (xs2 : list A) (X : ensemble A)
+    (xs1_isFiniteSubsetOf_X : isFinteSubsetOf xs1 X)
+    (xs2_isFiniteSubsetOf_X : isFinteSubsetOf xs2 X)
+    : isFinteSubsetOf (xs1 ++ xs2) X.
+  Proof.
+    unfold isFinteSubsetOf in *. intro.
+    rewrite in_app_iff. now firstorder.
+  Qed.
+
+  Lemma isListRepOf_append (xs1 : list A) (xs2 : list A) (X1 : ensemble A) (X2 : ensemble A)
+    (xs1_isListRepOf_X : isListRepOf xs1 X1)
+    (xs2_isListRepOf_X : isListRepOf xs2 X2)
+    : isListRepOf (xs1 ++ xs2) (union X1 X2).
+  Proof.
+    unfold isListRepOf in *. intro.
+    rewrite in_app_iff. now firstorder.
+  Qed.
+
+  Lemma isFinteSubsetOf_remove {requireEqDec : EqDec A} (x : A) (xs : list A) (X : ensemble A)
+    (xs_isFiniteSubsetOf_insert_x_X : isFinteSubsetOf xs (insert x X))
+    : isFinteSubsetOf (remove eq_dec x xs) X.
+  Proof.
+    unfold isListRepOf in *. intros z z_in.
+    exploit (in_remove eq_dec xs z x z_in) as [z_in_xs z_ne_x].
+    pose proof (xs_isFiniteSubsetOf_insert_x_X z z_in_xs) as claim1.
+    eapply in_insert_iff in claim1. now firstorder.
+  Qed.
+
+  Lemma isListRepOf_remove {requireEqDec : EqDec A} (x : A) (xs : list A) (X : ensemble A)
+    (xs_isListRepOf_insert_x_X : isListRepOf xs X)
+    : isListRepOf (remove eq_dec x xs) (delete x X).
+  Proof.
+    unfold isListRepOf in *. intros z.
+    pose proof (in_remove eq_dec xs z x) as claim1.
+    pose proof (in_in_remove eq_dec xs) as claim2.
+    rewrite in_delete_iff. now firstorder.
+  Qed.
+
+  End WITH_LIST.
+
+  Global Hint Unfold isFinteSubsetOf isListRepOf : khan_hints.
+
+  Section SUBSET_INTRO.
+
+  Context {A : Type}.
+
+  Lemma isSubsetOf_insert_if (x : A) (X1 : ensemble A) (X2 : ensemble A)
+    (X1_isSubsetOf_X2 : isSubsetOf X1 X2)
+    : isSubsetOf (insert x X1) (insert x X2).
+  Proof. intros z. rewrite in_insert_iff. unfold isSubsetOf in *. now firstorder. Qed.
+
+  Lemma isSubsetOf_singleton_if (x : A) (X : ensemble A)
+    (x_in_X : member x X)
+    : isSubsetOf (singleton x) X.
+  Proof. intros z. rewrite in_singleton_iff. des. now firstorder. Qed.
+
+  Lemma isSubsetOf_empty_if (X : ensemble A)
+    : isSubsetOf empty X.
+  Proof. intros z. rewrite in_empty_iff. tauto. Qed.
+
+  End SUBSET_INTRO.
+
 End Ensembles.
 
 Module E := Ensembles.
