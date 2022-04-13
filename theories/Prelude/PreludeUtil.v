@@ -984,7 +984,7 @@ Module MyUtil.
     end
   .
 
-  Global Ltac red_nat_and_bool :=
+  Ltac simpl_data_props_once :=
     simpl in *;
     first
     [ rewrite in_app_iff in *
@@ -1005,8 +1005,8 @@ Module MyUtil.
     ]
   .
 
-  Global Ltac reds :=
-    repeat red_nat_and_bool; repeat (try intro; try red_nat_and_bool; try now (subst; firstorder))
+  Ltac simpl_data_props :=
+    repeat simpl_data_props_once; repeat (try intro; try simpl_data_props_once; try now (subst; firstorder))
   .
 
 End MyUtil.

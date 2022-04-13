@@ -62,7 +62,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Ltac ii := repeat intro.
   Ltac iis := ii; autounfold with khan_hints; try esplit.
   Ltac iiss := (repeat iis); cbn in *; desnw.
-  Ltac des1 :=
+  Ltac des_once :=
     match goal with
     | x := ?t |- _ => subst x
     | H : ?x = ?y |- _ =>
@@ -81,7 +81,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     | |- ?P /\ ?Q => split
     end
   .
-  Ltac des := repeat des1.
+  Ltac des := repeat des_once.
 
 (** "\S5" *)
 
