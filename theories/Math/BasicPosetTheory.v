@@ -27,10 +27,7 @@ Module BasicPosetTheory.
 
   Global Create HintDb poset_hints.
   Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
-  Global Hint Resolve eqProp_Reflexive eqProp_Symmetric eqProp_Transitive : poset_hints.
-  Global Hint Resolve leProp_Reflexive leProp_Transitive eqProp_implies_leProp leProp_Antisymmetric : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
-  Global Hint Resolve in_unions_iff : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
     (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)

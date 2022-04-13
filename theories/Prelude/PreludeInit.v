@@ -264,11 +264,6 @@ Module PreludeInit_MAIN.
 
 (** "3. Accessories" *)
 
-  Global Hint Resolve eqProp_Equivalence : khan_hints.
-  Global Hint Resolve Poset_requiresSetoid : khan_hints.
-  Global Hint Resolve leProp_PreOrder : khan_hints.
-  Global Hint Resolve leProp_PartialOrder : khan_hints.
-
   Global Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
     as compose_lifts_eqProp.
