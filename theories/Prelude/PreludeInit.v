@@ -32,7 +32,9 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
   Global Tactic Notation "desnw" "in" hyp( H ) :=
     match type of H with
-    | REFERENCE_HOLDER (fun z => _) => rename H into z; red in z
+    | REFERENCE_HOLDER (fun z => _) =>
+      let z' := fresh z in
+      rename H into z'; red in z'
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
@@ -62,12 +64,21 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Ltac iiss := (repeat iis); cbn in *; desnw.
   Ltac des1 :=
     match goal with
-    | H : ?x = ?y |- _ => tryif is_var x then try subst x else tryif is_var y then try subst y else fail "cannot subst with" H
+    | x := ?t |- _ => subst x
+    | H : ?x = ?y |- _ =>
+      tryif is_var x then try subst x else
+      tryif is_var y then try subst y else
+      fail "cannot subst using" H
     | H : ?P /\ ?Q |- _ => destruct H
     | H : ?P \/ ?Q |- _ => destruct H
     | H : ?P <-> ?Q |- _ => destruct H
-    | H : exists x, ?P |- _ => destruct H
-    | |- _ => first [ intro | split ]
+    | H : exists x, ?P |- _ =>
+      let x' := fresh x in
+      destruct H as [x' H]
+    | |- forall x : ?A, ?B =>
+      let x' := fresh x in
+      intros x'
+    | |- ?P /\ ?Q => split
     end
   .
   Ltac des := repeat des1.
@@ -92,7 +103,10 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
 (** "\S7" *)
 
-  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+  Ltac intro_pattern_revert :=
+    let x := fresh "x" in
+    intro x; pattern x; revert x
+  .
 
 End Khan.
 
