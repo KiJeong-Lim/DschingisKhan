@@ -478,12 +478,24 @@ Module Ensembles.
 
   Global Hint Unfold isFilterReprOf : khan_hints.
 
-  Theorem isFilterReprOf_iff {A : Hask.t} {phi : A -> Prop} (X : ensemble A)
+  Theorem isFilterReprOf_iff {A : Hask.t} (phi : A -> Prop) (X : ensemble A)
     : forall X_repr : ensemble (@sig A phi), << FILTER_REPR : isFilterReprOf phi X_repr X >> <-> << REPR_IS_PREIMAGE : X_repr == preimage (@proj1_sig A phi) X >>.
   Proof with eauto with *.
     iis.
     { intros H_REPR z; desnw. rewrite <- FILTER_REPR, in_preimage_iff. des... }
     { intros H_preimage z; desnw. rewrite REPR_IS_PREIMAGE, in_preimage_iff; des... }
+  Qed.
+
+  Corollary isFilterReprOf_implies {A : Hask.t} (phi : A -> Prop) (X_repr : ensemble (@sig A phi)) (X : ensemble A)
+    (X_repr_isFilterReprOf_X : isFilterReprOf phi X_repr X)
+    : image (@proj1_sig A phi) X_repr == intersection X phi.
+  Proof with eauto with *.
+    intros z. split.
+    - intros z_in. inversion z_in; subst. econstructor.
+      + eapply X_repr_isFilterReprOf_X...
+      + exact (@proj2_sig A phi x).
+    - intros z_in. apply in_intersection_iff in z_in. destruct z_in as [z_in_X phi_z]. 
+      pose proof (proj1 (X_repr_isFilterReprOf_X (exist _ z phi_z)) z_in_X) as z_in_X_repr...
   Qed.
 
 End Ensembles.
