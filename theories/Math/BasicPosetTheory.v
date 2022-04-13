@@ -11,6 +11,8 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
+  Global Notation isMonotonicMap := preserves_leProp1.
+
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
   Global Notation " '('  X  ')↑' " := (UpperBoundsOf X)
@@ -28,7 +30,7 @@ Module BasicPosetTheory.
 
   Global Create HintDb poset_hints.
   Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
-  Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff : poset_hints.
+  Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff leProp_lifted1 : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
     (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
@@ -40,7 +42,7 @@ Module BasicPosetTheory.
   Qed.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
-    (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
+    (LowerBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
     as LowerBoundsOf_compatWith_eqProp_wrtEnsembles.
   Proof with eauto with *.
     intros X Y X_eq_Y z. split; intros H_lower_bound.
@@ -48,7 +50,13 @@ Module BasicPosetTheory.
     - intros x x_in_X. eapply H_lower_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles : poset_hints.
+  Lemma MonotonicMap_preserves_leProp {D : Type} {requiresPoset : isPoset D} (f : D -> D) (x1 : D) (x2 : D)
+    (f_isMonotonic : isMonotonicMap f)
+    (x1_le_x2 : x1 =< x2)
+    : f x1 =< f x2.
+  Proof. now eapply f_isMonotonic. Qed.
+
+  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles MonotonicMap_preserves_leProp : poset_hints.
 
   Section BASIC_FACTS_ON_SUPREMUM.
 
@@ -81,12 +89,12 @@ Module BasicPosetTheory.
   Lemma Supremum_congruence (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
     (sup_X_eq_sup_Y : sup_X == sup_Y)
     (X_eq_Y : X == Y)
-    (x_isSupremumOf_X : isSupremumOf sup_X X)
+    (sup_x_isSupremumOf_X : isSupremumOf sup_X X)
     : isSupremumOf sup_Y Y.
   Proof with eauto with *.
     intros z. unnw. rewrite <- sup_X_eq_sup_Y. split.
-    - intros sup_X_le_z. rewrite <- X_eq_Y. eapply x_isSupremumOf_X...
-    - intros z_isUpperBoundOf_Y. eapply x_isSupremumOf_X. unnw. rewrite -> X_eq_Y...
+    - intros sup_X_le_z. rewrite <- X_eq_Y. eapply sup_x_isSupremumOf_X...
+    - intros z_isUpperBoundOf_Y. eapply sup_x_isSupremumOf_X. unnw. rewrite -> X_eq_Y...
   Qed.
 
   Local Hint Resolve Supremum_congruence : poset_hints.
@@ -131,9 +139,9 @@ Module BasicPosetTheory.
       apply in_SupremumMap_iff in sup_X_i_in_SupremumMap.
       destruct sup_X_i_in_SupremumMap as [X_i [X_i_in_Xs sup_X_i_isSupremumOf_X_i]].
       eapply sup_X_i_isSupremumOf_X_i. ii. desnw. eapply UPPER_BOUND. eapply in_unions_iff...
-    - eapply in_SupremumMap_iff in H_IN. destruct H_IN as [X [X_in_Xs x_isSupremumOf_X]].
+    - eapply in_SupremumMap_iff in H_IN. destruct H_IN as [X [X_in_Xs sup_x_isSupremumOf_X]].
       rename x into sup_X. enough (to_show : sup_X =< sup) by now transitivity (sup).
-      eapply x_isSupremumOf_X. ii; desnw. eapply H_supremum... eapply in_unions_iff...
+      eapply sup_x_isSupremumOf_X. ii; desnw. eapply H_supremum... eapply in_unions_iff...
     - eapply H_supremum. ii; desnw. apply in_unions_iff in H_IN.
       destruct H_IN as [X [x_in_X X_in_Xs]]. destruct (SUP_EXISTS X X_in_Xs) as [sup_X sup_X_isSupremumOf_X].
       transitivity (sup_X).
@@ -143,16 +151,145 @@ Module BasicPosetTheory.
 
   Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
 
-  Proposition InfimumOfUpperBound_isSupremum (sup_X : D) (X : ensemble D)
-    (sup_X_isInfimumOfUpperBound : isInfimumOf sup_X (UpperBoundsOf X))
-    : isSupremumOf sup_X X.
+  Theorem InfimumOfUpperBounds_isSupremum (sup_X : D) (X : ensemble D)
+    : isSupremumOf sup_X X <-> << sup_X_isInfimumOfUpperBounds : isInfimumOf sup_X (UpperBoundsOf X) >>.
+  Proof with eauto with *.
+    split.
+    - intros sup_X_isSupremumOf_X z. split; ii; desnw.
+      + transitivity (sup_X); trivial.
+        eapply sup_X_isSupremumOf_X...
+      + eapply LOWER_BOUND, sup_X_isSupremumOf_X...
+    - intros H_supremum z. split; ii; desnw.
+      + transitivity (sup_X); trivial.
+        eapply sup_X_isInfimumOfUpperBounds. unnw.
+        intros upper_bound upper_bound_in. unnw.
+        exact (upper_bound_in x H_IN).
+      + unnw. eapply sup_X_isInfimumOfUpperBounds...
+  Qed.
+
+  Theorem SupremumOfLowerBounds_isInfimum (inf_X : D) (X : ensemble D)
+    : isInfimumOf inf_X X <-> << inf_X_isSupremumOfLowerBounds : isSupremumOf inf_X (LowerBoundsOf X) >>.
+  Proof with eauto with *.
+    split.
+    - intros inf_X_isInfimumOf_X z. split; ii; desnw.
+      + transitivity (inf_X); trivial.
+        eapply inf_X_isInfimumOf_X...
+      + eapply UPPER_BOUND, inf_X_isInfimumOf_X...
+    - intros H_infimum z. split; ii; desnw.
+      + transitivity (inf_X); trivial.
+        eapply inf_X_isSupremumOfLowerBounds. unnw.
+        intros lower_bound lower_bound_in. unnw.
+        exact (lower_bound_in x H_IN).
+      + unnw. eapply inf_X_isSupremumOfLowerBounds...
+  Qed.
+
+  Lemma Infimum_monotonic_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (inf_X1 : D) (inf_X2 : D)
+    (inf_X1_isInfimumOf_X1 : isInfimumOf inf_X1 X1)
+    (inf_X2_isInfimumOf_X2 : isInfimumOf inf_X2 X2)
+    (X1_isSubsetOf_X2 : isSubsetOf X1 X2)
+    : inf_X2 =< inf_X1.
   Proof.
-    intros z. split; ii; desnw.
-    - transitivity (sup_X); trivial.
-      eapply sup_X_isInfimumOfUpperBound. unnw.
-      intros upper_bound upper_bound_in. unnw.
-      exact (upper_bound_in x H_IN).
-    - unnw. eapply sup_X_isInfimumOfUpperBound; eauto with *.
+    eapply inf_X1_isInfimumOf_X1; ii.
+    eapply inf_X2_isInfimumOf_X2; eauto with *.
+  Qed.
+
+  Local Hint Resolve Infimum_monotonic_wrtEnsembles : poset_hints.
+
+  Lemma Infimum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (inf1 : D) (inf2 : D)
+    (inf_X1_isInfimumOf_X1 : isInfimumOf inf1 X1)
+    (inf_X2_isInfimumOf_X2 : isInfimumOf inf2 X2)
+    (X1_eq_X2 : X1 == X2)
+    : inf1 == inf2.
+  Proof.
+    pose proof (eqProp_implies_leProp X1 X2 X1_eq_X2) as claim1. symmetry in X1_eq_X2.
+    pose proof (eqProp_implies_leProp X2 X1 X1_eq_X2) as claim2. eapply leProp_Antisymmetric; eauto with *.
+  Qed.
+
+  Lemma Infimum_congruence (inf_X : D) (inf_Y : D) (X : ensemble D) (Y : ensemble D)
+    (inf_X_eq_inf_Y : inf_X == inf_Y)
+    (X_eq_Y : X == Y)
+    (inf_X_isInfimumOf_X : isInfimumOf inf_X X)
+    : isInfimumOf inf_Y Y.
+  Proof with eauto with *.
+    intros z. unnw. rewrite <- inf_X_eq_inf_Y. split.
+    - intros z_le_inf_X. rewrite <- X_eq_Y. eapply inf_X_isInfimumOf_X...
+    - intros z_isLowerBoundOf_Y. eapply inf_X_isInfimumOf_X. unnw. rewrite -> X_eq_Y...
+  Qed.
+
+  Definition isLeastFixedPointOf (lfp : D) (f : D -> D) : Prop :=
+    << IS_FIXED_POINT : member lfp (FixedPoints f) >> /\ << LOWER_BOUND_OF_FIXED_POINTS : member lfp (LowerBoundsOf (FixedPoints f)) >>
+  .
+
+  Definition isGreatestFixedPointOf (gfp : D) (f : D -> D) : Prop :=
+    << IS_FIXED_POINT : member gfp (FixedPoints f) >> /\ << UPPER_BOUND_OF_FIXED_POINTS : member gfp (UpperBoundsOf (FixedPoints f)) >>
+  .
+
+  Local Hint Unfold isLeastFixedPointOf isGreatestFixedPointOf : poset_hints.
+
+  Theorem theLeastFixedPointOfMonotonicMap (f : D -> D) (lfp : D)
+    (f_isMonotonic : isMonotonicMap f)
+    (lfp_isInfimumOfPrefixedPoints : isInfimumOf lfp (PrefixedPoints f))
+    : isLeastFixedPointOf lfp f.
+  Proof with eauto with *.
+    assert (claim1 : forall x : D, member x (FixedPoints f) -> lfp =< x).
+    { intros x H_IN. transitivity (f x).
+      - eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonic...
+      - eapply eqProp_implies_leProp...
+    }
+    assert (claim2 : f lfp =< lfp).
+    { eapply lfp_isInfimumOfPrefixedPoints. ii; desnw. transitivity (f x).
+      - eapply f_isMonotonic, lfp_isInfimumOfPrefixedPoints...
+      - exact (H_IN).
+    }
+    assert (claim3 : lfp =< f lfp).
+    { eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonic... }
+    split... eapply leProp_Antisymmetric...
+  Qed.
+
+  Lemma theGreatestFixedPointOfMonotonicMap (f : D -> D) (gfp : D)
+    (f_isMonotonic : isMonotonicMap f)
+    (gfp_isSupremumOfPostfixedPoints : isSupremumOf gfp (PostfixedPoints f))
+    : isGreatestFixedPointOf gfp f.
+  Proof with eauto with *.
+    assert (claim1 : gfp =< f gfp).
+    { apply gfp_isSupremumOfPostfixedPoints... ii; desnw. transitivity (f x); trivial.
+      eapply f_isMonotonic, gfp_isSupremumOfPostfixedPoints...
+    }
+    assert (claim2 : f gfp =< gfp).
+    { eapply gfp_isSupremumOfPostfixedPoints... eapply f_isMonotonic... }
+    split.
+    - eapply leProp_Antisymmetric...
+    - intros fix_f H_in. desnw.
+      eapply gfp_isSupremumOfPostfixedPoints...
+      eapply eqProp_implies_leProp...
+  Qed.
+
+  Definition isSupremumIn (sup : D) (X : ensemble D) (phi : D -> Prop) : Prop :=
+    ⟪ IN_SUBSET : phi sup ⟫ /\ ⟪ SUPREMUM_OF_SUBSET : forall upper_bound : @sig D phi, << SUPREMUM_LE_UPPER_BOUND : sup =< (proj1_sig upper_bound) >> <-> << UPPER_BOUND : member (proj1_sig upper_bound) (UpperBoundsOf X) >> ⟫
+  .
+
+  Theorem isSupremumIn_iff (phi : D -> Prop) (sup_X : @sig D phi) (X : ensemble (@sig D phi))
+    : isSupremumIn (proj1_sig sup_X) (image (@proj1_sig D phi) X) phi <-> isSupremumOf sup_X X.
+  Proof with eauto with *.
+    split.
+    { intros [? ?] z. desnw; split.
+      - ii; desnw. eapply SUPREMUM_OF_SUBSET...
+        eapply in_image_iff...
+      - ii; desnw. eapply SUPREMUM_OF_SUBSET.
+        intros x H_in_image. unnw. eapply in_image_iff in H_in_image.
+        destruct H_in_image as [[x' phi_x] [x_eq x_in]]. simpl in x_eq; subst x'.
+        change (@exist D phi x phi_x =< z)...
+    }
+    { intros sup_X_isSupremumOf_X. split.
+      - exact (proj2_sig sup_X).
+      - split; ii; desnw.
+        + eapply in_image_iff in H_IN. destruct H_IN as [[x' phi_x] [x_eq x_in]].
+          simpl in x_eq; subst x'. transitivity (proj1_sig sup_X); trivial.
+          change (@exist D phi x phi_x =< sup_X). eapply sup_X_isSupremumOf_X...
+        + change (sup_X =< upper_bound). eapply sup_X_isSupremumOf_X.
+          intros x x_in. change (proj1_sig x =< proj1_sig upper_bound).
+          eapply UPPER_BOUND, in_image_iff...
+    }
   Qed.
 
   End BASIC_FACTS_ON_SUPREMUM.
