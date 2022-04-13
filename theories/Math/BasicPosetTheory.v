@@ -102,6 +102,10 @@ Module BasicPosetTheory.
     fun sup_X_i : D => exists X_i : ensemble D, member X_i Xs /\ isSupremumOf sup_X_i X_i
   .
 
+  Lemma SupremumMap_unfold (Xs : ensemble (ensemble D))
+    : SupremumMap Xs = bind Xs (fun X_i : ensemble D => fun sup_X_i : D => isSupremumOf sup_X_i X_i).
+  Proof. reflexivity. Qed.
+
   Lemma in_SupremumMap_iff (Xs : ensemble (ensemble D)) (sup : D)
     : member sup (SupremumMap Xs) <-> (exists X_i : ensemble D, member X_i Xs /\ isSupremumOf sup X_i).
   Proof. reflexivity. Qed.
