@@ -178,7 +178,7 @@ Module PreludeInit_MAIN.
 
   Global Open Scope program_scope.
 
-  (** "1. Setoid and Poset" *)
+(** "1. Setoid and Poset" *)
 
   Polymorphic Class isSetoid (A : Type) : Type :=
     { eqProp (lhs : A) (rhs : A) : Prop
@@ -203,7 +203,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  (** "2. Category and Functor with Equality" *)
+(** "2. Category and Functor with Equality" *)
 
   Polymorphic Class isCategory_withLaws (objs : Type) : Type :=
     { Category_withLaws_requiresCategory_asSelf :> isCategory objs
@@ -262,7 +262,7 @@ Module PreludeInit_MAIN.
 
   End FUNCTOR_WITH_LAWS.
 
-  (** "3. Accessories" *)
+(** "3. Accessories" *)
 
   Global Hint Resolve eqProp_Equivalence : khan_hints.
   Global Hint Resolve Poset_requiresSetoid : khan_hints.
@@ -284,25 +284,59 @@ Module PreludeInit_MAIN.
 
   Global Infix " >>= " := bind (at level 90, left associativity) : program_scope.
 
-  Lemma eqProp_reflexitivity {A : Type} {requiresSetoid : isSetoid A}
-    : forall x : A, x == x.
-  Proof. eapply Equivalence_Reflexive. Qed.
+  Section SETOID_ACCESSORIES.
 
-  Global Hint Resolve eqProp_reflexitivity : khan_hints.
+  Context {A : Type} {requireSetoid : isSetoid A}.
 
-  Lemma eqProp_symmetric {A : Type} {requiresSetoid : isSetoid A}
-    : forall x : A, forall y : A, x == y -> y == x.
-  Proof. eapply Equivalence_Symmetric. Qed.
+  Lemma eqProp_Reflexive (x : A)
+    : x == x.
+  Proof. eapply Equivalence_Reflexive; eauto. Qed.
 
-  Global Hint Resolve eqProp_symmetric : khan_hints.
+  Lemma eqProp_Symmetric (x : A) (y : A)
+    (x_eq_y : x == y)
+    : y == x.
+  Proof. eapply Equivalence_Symmetric; eauto. Qed.
 
-  Lemma eqProp_transitivity {A : Type} {requiresSetoid : isSetoid A}
-    : forall x : A, forall y : A, forall z : A, x == y -> y == z -> x == z.
-  Proof. eapply Equivalence_Transitive. Qed.
+  Lemma eqProp_Transitive (x : A) (y : A) (z : A)
+    (x_eq_y : x == y)
+    (y_eq_z : y == z)
+    : x == z.
+  Proof. eapply Equivalence_Transitive; eauto. Qed.
 
-  Global Hint Resolve eqProp_transitivity : khan_hints.
+  End SETOID_ACCESSORIES.
 
-  (** "4. Basic Instances" *)
+  Global Hint Resolve eqProp_Reflexive eqProp_Symmetric eqProp_Transitive : khan_hints.
+
+  Section POSET_ACCESSORIES.
+
+  Context {A : Type} {requiresPoset : isPoset A}.
+
+  Lemma leProp_Reflexive (x : A)
+    : x =< x.
+  Proof. eapply PreOrder_Reflexive; eauto. Qed.
+
+  Lemma leProp_Transitive (x : A) (y : A) (z : A)
+    (x_le_y : x =< y)
+    (y_le_z : y =< z)
+    : x =< z.
+  Proof. eapply PreOrder_Transitive; eauto. Qed.
+
+  Lemma eqProp_implies_leProp (x : A) (y : A)
+    (x_eq_y : x == y)
+    : x =< y.
+  Proof. now rewrite x_eq_y. Qed.
+
+  Lemma leProp_Antisymmetric (x : A) (y : A)
+    (x_le_y : x =< y)
+    (y_le_x : y =< x)
+    : x == y.
+  Proof. now eapply partial_order_equivalence. Qed.
+
+  End POSET_ACCESSORIES.
+
+  Global Hint Resolve leProp_Reflexive eqProp_implies_leProp leProp_Antisymmetric : khan_hints.
+
+(** "4. Basic Instances" *)
 
   Section ImplFor_eq.
 
