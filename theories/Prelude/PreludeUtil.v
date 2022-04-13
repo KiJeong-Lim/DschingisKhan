@@ -134,8 +134,7 @@ Module EQ_FACTS.
       | right hyp_no => or_intror hyp_no
       end
     ) as eq_em into (forall y : A, x = y \/ x <> y).
-    exact (
-      fun x' : A => fun hyp_eq1 : x = x' =>
+    exact (fun y : A => fun hyp_eq1 : x = y =>
       match hyp_eq1 as hyp_eq1' in eq _ y' return forall hyp_eq : x = y', hyp_eq1' = hyp_eq with
       | eq_refl => eq_em_implies_eq_pirrel x eq_em x (eq_reflexivity x)
       end
