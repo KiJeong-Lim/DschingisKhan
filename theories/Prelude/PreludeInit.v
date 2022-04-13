@@ -33,8 +33,8 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Global Tactic Notation "desnw" "in" hyp( H ) :=
     match type of H with
     | REFERENCE_HOLDER (fun z => _) =>
-      let z' := fresh z in
-      rename H into z'; red in z'
+      let H' := fresh z in
+      rename H into H'; red in H'
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
