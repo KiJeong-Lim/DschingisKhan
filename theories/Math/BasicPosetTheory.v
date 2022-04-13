@@ -33,7 +33,7 @@ Module BasicPosetTheory.
   Global Hint Resolve in_unions_iff : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
-    (@UpperBoundsOf D requiresPoset) with signature (eqProp ==> eqProp)
+    (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
     as UpperBoundsOf_compatWith_eqProp_wrtEnsembles.
   Proof with eauto with *.
     intros X Y X_eq_Y z. split; intros H_upper_bound.
@@ -41,7 +41,16 @@ Module BasicPosetTheory.
     - intros x x_in_X. eapply H_upper_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles : poset_hints.
+  Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
+    (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
+    as LowerBoundsOf_compatWith_eqProp_wrtEnsembles.
+  Proof with eauto with *.
+    intros X Y X_eq_Y z. split; intros H_lower_bound.
+    - intros y y_in_Y. eapply H_lower_bound. unnw. rewrite -> X_eq_Y...
+    - intros x x_in_X. eapply H_lower_bound. unnw. rewrite <- X_eq_Y...
+  Qed.
+
+  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles : poset_hints.
 
   Section BASIC_FACTS_ON_SUPREMUM.
 
