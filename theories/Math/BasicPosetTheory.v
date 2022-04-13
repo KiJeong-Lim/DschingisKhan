@@ -116,16 +116,16 @@ Module BasicPosetTheory.
     : member sup (SupremumMap Xs) <-> (exists X_i : ensemble D, member X_i Xs /\ isSupremumOf sup X_i).
   Proof. reflexivity. Qed.
 
-  Lemma SupremumOfSupremumMap_isGreaterThan (sup : D) (Xs : ensemble (ensemble D)) (sup_X : D) (X : ensemble D)
+  Lemma SupremumOfSupremumMap_ge_Supremums (sup : D) (Xs : ensemble (ensemble D)) (sup_X : D) (X : ensemble D)
     (sup_isSupremumOf : isSupremumOf sup (SupremumMap Xs))
     (X_in_Xs : member X Xs)
     (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
     : sup_X =< sup.
   Proof with eauto with *. eapply sup_isSupremumOf... eapply in_SupremumMap_iff... Qed.
 
-  Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
+  Local Hint Resolve SupremumOfSupremumMap_ge_Supremums : poset_hints.
 
-  Lemma SupremumOfSupremumMap_isSupremumOfUnions (Xs : ensemble (ensemble D)) (sup : D)
+  Lemma SupremumOfSupremumMap_isSupremumOf_unions (Xs : ensemble (ensemble D)) (sup : D)
     (SUP_EXISTS : forall X : ensemble D, << H_IN : member X Xs >> -> exists sup_X : D, isSupremumOf sup_X X)
     : isSupremumOf sup (SupremumMap Xs) <-> isSupremumOf sup (unions Xs).
   Proof with eauto with *.
@@ -148,8 +148,6 @@ Module BasicPosetTheory.
       + eapply sup_X_isSupremumOf_X...
       + eapply UPPER_BOUND, in_SupremumMap_iff...
   Qed.
-
-  Local Hint Resolve SupremumOfSupremumMap_isGreaterThan : poset_hints.
 
   Theorem InfimumOfUpperBounds_isSupremum (sup_X : D) (X : ensemble D)
     : isSupremumOf sup_X X <-> << sup_X_isInfimumOfUpperBounds : isInfimumOf sup_X (UpperBoundsOf X) >>.
