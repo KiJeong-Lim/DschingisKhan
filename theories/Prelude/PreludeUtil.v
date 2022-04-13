@@ -442,8 +442,8 @@ Module MyData.
           | @FZ n' => fun d : Fin n' => d
           | @FS n' i' => fun d : Fin n' => i'
           end
-        ) as f_cong into (Fin (S n) -> Fin n -> Fin n).
-        exact (hyp_no (eq_congruence2 f_cong (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
+        ) as cool_idea into (Fin (S n) -> Fin n -> Fin n).
+        exact (hyp_no (eq_congruence2 cool_idea (FS i1') (FS i2') hyp_eq i1' i1' (eq_reflexivity i1'))).
   Defined.
 
   Global Instance FinEqDec (n : nat) : EqDec (Fin n) := { eq_dec := Fin_eq_dec n }.

@@ -34,7 +34,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     match type of H with
     | REFERENCE_HOLDER (fun z => _) =>
       let H' := fresh z in
-      rename H into H'; red in H'
+      (rename H into H'; red in H')
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
@@ -75,10 +75,14 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     | H : exists x, ?P |- _ =>
       let x' := fresh x in
       destruct H as [x' H]
+    | |- let x : ?A := ?t in ?B =>
+      let x' := fresh x in
+      (intros x')
     | |- forall x : ?A, ?B =>
       let x' := fresh x in
-      intros x'
+      (intros x')
     | |- ?P /\ ?Q => split
+    | |- ?P <-> ?Q => split; intro
     end
   .
   Ltac des := repeat des_once.
@@ -105,7 +109,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
   Ltac intro_pattern_revert :=
     let x := fresh "x" in
-    intro x; pattern x; revert x
+    (intro x; pattern x; revert x)
   .
 
 End Khan.
