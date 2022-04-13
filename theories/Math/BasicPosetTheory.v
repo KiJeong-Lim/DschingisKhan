@@ -299,13 +299,21 @@ Module BasicPosetTheory.
   Global Hint Resolve Supremum_congruence : poset_hints.
   Global Hint Resolve Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
+  Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
+    { compare : A -> A -> comparison
+    ; compare_LT_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Lt -> lhs =< rhs /\ ~ lhs == rhs
+    ; compare_EQ_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Eq -> lhs == rhs
+    ; compare_GT_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Gt -> rhs =< lhs /\ ~ lhs == rhs
+    }
+  .
+
+  Local Hint Resolve compare_LT_implies compare_EQ_implies compare_GT_implies : poset_hints.
+
   Section LEXICOGRAPHICAL_ORDER.
 
   Import ListNotations.
 
-  Context {A : Type} {requiresPoset : isPoset A}.
-
-  Variable compare : A -> A -> comparison.
+  Context {A : Type} {requiresPoset : isPoset A} {requiresDecidableTotalOrder : isDecidableTotalOrder A (requiresPoset := requiresPoset)}.
 
   Fixpoint lex_compare (xs : list A) (ys : list A) {struct xs} : comparison :=
     match xs, ys with
@@ -328,12 +336,6 @@ Module BasicPosetTheory.
   Definition lex_le (lhs : list A) (rhs : list A) : Prop :=
     lex_compare lhs rhs = Lt \/ lex_compare lhs rhs = Eq
   .
-
-  Hypothesis compare_spec_LT : forall lhs : A, forall rhs : A, compare lhs rhs = Lt -> lhs =< rhs /\ ~ lhs == rhs.
-
-  Hypothesis compare_spec_EQ : forall lhs : A, forall rhs : A, compare lhs rhs = Eq -> lhs == rhs.
-
-  Hypothesis compare_spec_GT : forall lhs : A, forall rhs : A, compare lhs rhs = Gt -> rhs =< lhs /\ ~ lhs == rhs.
 
   Lemma compare_spec (lhs : A) (rhs : A) :
     match compare lhs rhs with
@@ -430,7 +432,7 @@ Module BasicPosetTheory.
     intros lhs rhs; destruct (lex_compare lhs rhs) eqn: H_compare_result; now firstorder.
   Qed.
 
-  Local Polymorphic Instance lex_le_PartialOrder
+  Local Instance lex_le_PartialOrder
     : PartialOrder lex_eq lex_le.
   Proof with discriminate || eauto with *.
     intros xs1 xs2; cbn. unfold flip, lex_eq, lex_le.
@@ -442,13 +444,28 @@ Module BasicPosetTheory.
     - split... intros [[? | ?] ?]...
   Qed.
 
-  Local Polymorphic Instance listLexicographicalOrder : isPoset (list A) :=
+  Local Instance listLexicographicalOrder : isPoset (list A) :=
     { leProp := lex_le
     ; Poset_requiresSetoid := listPointwiseEquivalence
     ; leProp_PreOrder := lex_le_PreOrder
     ; leProp_PartialOrder := lex_le_PartialOrder
     }
   .
+
+  Global Program Instance listLexicographicalOrder_lifts_DecidableTotalOrder : isDecidableTotalOrder (list A) :=
+    { compare := lex_compare
+    }
+  .
+  Local Obligation Tactic := cbn; unfold lex_le, lex_eq; intros lhs rhs.
+  Next Obligation.
+    intros H_lt. rewrite H_lt.
+    split; [now left | congruence].
+  Qed.
+  Next Obligation.
+    intros H_gt. exploit (lex_le_flip_spec lhs rhs).
+    rewrite H_gt. intros H_lt. rewrite H_lt.
+    split; [now left | congruence].
+  Qed.
 
   End LEXICOGRAPHICAL_ORDER.
 
