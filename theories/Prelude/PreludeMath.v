@@ -180,7 +180,7 @@ Module MathProps.
     }
   .
 
-  Section DOMAIN_THEORIC_CONCEPTS.
+  Section ORDER_THEORIC_CONCEPTS.
 
   Local Notation " x '>=' y " := (leProp y x) (only parsing, at level 70, no associativity) : type_scope.
 
@@ -190,9 +190,13 @@ Module MathProps.
 
   Definition PostfixedPoints {D : Type} {requiresPoset : isPoset D} (f : D -> D) : ensemble D := fun x : D => (x =< f x)%type.
 
-  Definition UpperBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D := fun upper_bound : D => forall x : D, << H_IN : member x X >> -> (x =< upper_bound)%type.
+  Definition UpperBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+    fun upper_bound : D => forall x : D, << H_IN : member x X >> -> (x =< upper_bound)%type
+  .
 
-  Definition LowerBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D := fun lower_bound : D => forall x : D, << H_IN : member x X >> -> (x >= lower_bound)%type.
+  Definition LowerBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+    fun lower_bound : D => forall x : D, << H_IN : member x X >> -> (x >= lower_bound)%type
+  .
 
   Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
     forall upper_bound : D, << SUPREMUM_LE_UPPER_BOUND : (sup_X =< upper_bound)%type >> <-> << UPPER_BOUND : member upper_bound (UpperBoundsOf X) >>
@@ -202,7 +206,7 @@ Module MathProps.
     forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : (inf_X >= lower_bound)%type >> <-> << LOWER_BOUND : member lower_bound (LowerBoundsOf X) >>
   .
 
-  End DOMAIN_THEORIC_CONCEPTS.
+  End ORDER_THEORIC_CONCEPTS.
 
 End MathProps.
 
