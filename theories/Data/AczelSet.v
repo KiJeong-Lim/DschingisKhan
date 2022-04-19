@@ -280,7 +280,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_power.
 
-  Definition power (x : AczelSet) : AczelSet := Node (filtering x).
+  Definition power (x : AczelSet) : AczelSet := Node (fun child : getChildren x -> Prop => filtering x child).
 
   Theorem AczelSet_power_spec (x : AczelSet)
     : forall z : AczelSet, z `elem` power x <-> << IN_power : z `subseteq` x >>.
