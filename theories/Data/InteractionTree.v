@@ -8,16 +8,16 @@ Module InteractionTrees.
 
   Global Notation " E -< F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
 
-  Variant itreeF (itree_E_R : Type) (E : Type -> Type) (R : Type) : Type :=
-  | RetF (r : R) : itreeF itree_E_R E R
-  | TauF (t : itree_E_R) : itreeF itree_E_R E R
-  | VisF (X : Type) (e : E X) (k : X -> itree_E_R) : itreeF itree_E_R E R
+  Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
+  | RetF (r : R) : itreeF E R
+  | TauF (t : itree_E_R) : itreeF E R
+  | VisF (X : Type) (e : E X) (k : X -> itree_E_R) : itreeF E R
   .
 
   Set Primitive Projections.
 
   CoInductive itree (E : Type -> Type) (R : Type) : Type :=
-    go { observe : itreeF (itree E R) E R }
+    go { observe : itreeF (itree_E_R := itree E R) E R }
   .
 
   Unset Primitive Projections.
@@ -54,7 +54,7 @@ Module InteractionTrees.
 
   Context {R1 : Type} {R2 : Type}.
 
-  Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF (itree E R1) E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
+  Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
     match ot0 with
     | RetF r => k0 r
     | TauF t => Tau (CIH t)
