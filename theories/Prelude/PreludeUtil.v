@@ -579,7 +579,7 @@ Module MyData.
   Global Arguments vector_uncons {A} {n}.
 
   Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.
-  Global Tactic Notation "introVCons" ident( _hd ) ident( _tl ) := intro_pattern_revert; eapply vector_caseS; intros _hd _tl.
+  Global Tactic Notation "introVCons" ident( HD ) ident( TL ) := intro_pattern_revert; eapply vector_caseS; intros HD TL.
 
   Definition vector_head {A : Type} {n : nat} (xs : vector A (S n)) : A := fst (vector_uncons xs (eq_reflexivity (S n))).
 
