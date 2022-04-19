@@ -26,7 +26,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
-  Polymorphic Definition getChildTrees (root : AczelSet) : getChildren root -> AczelSet :=
+  Definition getChildTrees (root : AczelSet) : getChildren root -> AczelSet :=
     match root as tree in Tree return getChildren tree -> Tree with
     | @Node children childtrees => childtrees
     end
