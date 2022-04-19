@@ -373,7 +373,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Theorem AxiomOfChoice_implies_StrongCollection (X : AczelSet) (phi : AczelSet -> AczelSet -> Prop)
     (phi_compatWith_eqTree_on_1st_arg : forall y : AczelSet, compatWith_eqTree (fun x : AczelSet => phi x y))
-    (phi_compatWith_eqTree_on_2st_arg : forall x : AczelSet, compatWith_eqTree (fun y : AczelSet => phi x y))
+    (phi_compatWith_eqTree_on_2nd_arg : forall x : AczelSet, compatWith_eqTree (fun y : AczelSet => phi x y))
     (NONEMPTY : forall x : AczelSet, x `elem` X -> exists y : AczelSet, phi x y)
     : exists Y : AczelSet, ⟪ FST_COLLECTION : forall x : AczelSet, x `elem` X -> exists y : AczelSet, y `elem` Y /\ phi x y ⟫ /\ ⟪ SND_COLLECTION : forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ phi x y ⟫.
   Proof with eauto with *.
@@ -382,7 +382,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     { eapply AxiomOfChoice with (phi := fun x : base_set => fun y : AczelSet => phi (getChildTrees X x) y)... }
     destruct claim1 as [f claim1]. exists (@Node base_set (fun x : base_set => f x)). split.
     - intros x [c_X x_eq_X_c]. exists (f c_X). split... eapply phi_compatWith_eqTree_on_1st_arg...
-    - intros x [c_X x_eq_X_c]. exists (getChildTrees X c_X). split... eapply phi_compatWith_eqTree_on_2st_arg...
+    - intros x [c_X x_eq_X_c]. exists (getChildTrees X c_X). split... eapply phi_compatWith_eqTree_on_2nd_arg...
   Qed.
 
   End AczelSet_STRONG_COLLECTION.
