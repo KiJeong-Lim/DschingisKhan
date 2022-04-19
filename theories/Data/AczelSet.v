@@ -407,7 +407,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Lemma every_member_of_Ordinal_isOrdinal (alpha : AczelSet)
     (alpha_isOrdinal : isOrdinal alpha)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
-  Proof. inversion alpha_isOrdinal; subst; eauto with *. Qed.
+  Proof. inversion alpha_isOrdinal; eauto with *. Qed.
 
   Definition Ordinals : Type := @sig AczelSet isOrdinal.
 
@@ -419,7 +419,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (ind_claim : forall alpha : Ordinals, << IH : forall beta : Ordinals, beta `elem` alpha -> phi beta >> -> phi alpha)
     : forall alpha : Ordinals, phi alpha.
   Proof with eauto with *.
-    intros [x x_isOrdinal]. induction x as [x_children x_childtree IH]. eapply ind_claim...
+    intros [x x_isOrdinal]. revert x_isOrdinal. induction x as [x_children x_childtree IH]. ii. eapply ind_claim...
     intros y y_in_x. pose proof (every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal y y_in_x) as y_isOrdinal.
     destruct (y_in_x) as [c_x y_eq_x_c]. eapply phi_compatWith_eqTree.
     - eapply IH with (c := c_x) (x_isOrdinal := every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal (x_childtree c_x) (elem_intro c_x (eqTree_Reflexive _))).
