@@ -128,7 +128,7 @@ Module MyVec.
     induction n; [introFin0 | introFinS i]; simpl; eauto.
   Qed.
 
-  Global Ltac reduce_monad_methods_of_vector :=
+  Ltac reduce_monad_methods_of_vector :=
     first
     [ rewrite <- diagonal_spec
     | rewrite <- vector_map_spec
