@@ -229,40 +229,40 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
 (** "Set Constructions" *)
 
-  Section AczelSet_subset.
+  Section AczelSet_filtering.
 
-  Definition subset (x : AczelSet) (phi : getChildren x -> Prop) : AczelSet := Node (fun child : @sig (getChildren x) phi => getChildTrees x (proj1_sig child)).
+  Definition filtering (x : AczelSet) (phi : getChildren x -> Prop) : AczelSet := Node (fun child : @sig (getChildren x) phi => getChildTrees x (proj1_sig child)).
 
-  Theorem AczelSet_subset_spec (x : AczelSet) (phi : getChildren x -> Prop)
-    : forall z : AczelSet, z `elem` subset x phi <-> << IN_subset : exists c_x : getChildren x, z == getChildTrees x c_x /\ phi c_x >>.
+  Theorem AczelSet_filtering_spec (x : AczelSet) (phi : getChildren x -> Prop)
+    : forall z : AczelSet, z `elem` filtering x phi <-> << IN_filtering : exists c_x : getChildren x, z == getChildTrees x c_x /\ phi c_x >>.
   Proof with eauto with *.
     intros z. unnw; split.
     - intros [[c_x phi_c_x] z_eq_x_c]. simpl in *...
     - intros [c_x [z_eq_x_c phi_c_x]]. exists (exist _ c_x phi_c_x)...
   Qed.
 
-  Corollary AczelSet_subset_MainProp (x : AczelSet)
-    : forall z : AczelSet, z `subseteq` x <-> << IS_A_SUBSET : exists phi : getChildren x -> Prop, z == subset x phi >>.
+  Corollary subset_filtering (x : AczelSet)
+    : forall z : AczelSet, z `subseteq` x <-> << IS_A_SUBSET : exists phi : getChildren x -> Prop, z == filtering x phi >>.
   Proof with eauto with *.
     intros z. unnw. split.
     - intros z_subset_x. exists (fun c_x : getChildren x => getChildTrees x c_x `elem` z). eapply eqTree_intro.
       + intros y y_in_z. destruct (z_subset_x y y_in_z) as [c_x y_eq_x_c].
         rewrite y_eq_x_c. rewrite y_eq_x_c in y_in_z. exists (exist _ c_x y_in_z)...
       + intros y [[c_x x_c_in_z] y_eq_x_c]. rewrite y_eq_x_c...
-    - intros [phi z_eq]. rewrite z_eq. intros y. rewrite AczelSet_subset_spec. unnw.
+    - intros [phi z_eq]. rewrite z_eq. intros y. rewrite AczelSet_filtering_spec. unnw.
       intros [c_x [z_eq_x_c phi_c_x]]...
   Qed.
 
-  End AczelSet_subset.
+  End AczelSet_filtering.
 
   Section AczelSet_filter.
 
-  Definition filter (phi : AczelSet -> Prop) (x : AczelSet) : AczelSet := subset x (fun c_x : getChildren x => phi (getChildTrees x c_x)).
+  Definition filter (phi : AczelSet -> Prop) (x : AczelSet) : AczelSet := filtering x (fun c_x : getChildren x => phi (getChildTrees x c_x)).
 
   Theorem AczelSet_filter_spec (x : AczelSet) (phi : AczelSet -> Prop)
     : forall z : AczelSet, z `elem` filter phi x <-> << IN_filter : exists c_x : getChildren x, phi (getChildTrees x c_x) /\ z == getChildTrees x c_x >>.
   Proof with eauto with *.
-    intros z. unfold filter. rewrite AczelSet_subset_spec. unnw; split.
+    intros z. unfold filter. rewrite AczelSet_filtering_spec. unnw; split.
     - intros [c_x [z_eq_x_c phi_z]]...
     - intros [c_x [phi_x_c z_eq]]...
   Qed.
@@ -271,7 +271,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (phi_compatWith_eqTree : compatWith_eqTree phi)
     : forall z : AczelSet, z `elem` filter phi x <-> << FILTER : z `elem` x /\ phi z >>.
   Proof with cbn in *; eauto with *.
-    intros z. unfold filter. rewrite AczelSet_subset_spec. unnw; split.
+    intros z. unfold filter. rewrite AczelSet_filtering_spec. unnw; split.
     - intros [c_x [z_eq_x_c phi_z]]...
     - intros [[c_x z_eq_x_c] phi_z]...
   Qed.
@@ -280,11 +280,11 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_power.
 
-  Definition power (x : AczelSet) : AczelSet := Node (subset x).
+  Definition power (x : AczelSet) : AczelSet := Node (filtering x).
 
   Theorem AczelSet_power_spec (x : AczelSet)
     : forall z : AczelSet, z `elem` power x <-> << IN_power : z `subseteq` x >>.
-  Proof. intros z. unnw. rewrite AczelSet_subset_MainProp. unfold power. eauto with *. Qed.
+  Proof. intros z. unnw. rewrite subset_filtering. unfold power. eauto with *. Qed.
 
   End AczelSet_power.
 
