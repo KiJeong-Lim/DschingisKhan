@@ -397,8 +397,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Variant isOrdinal (alpha : AczelSet) : Prop :=
   | transitive_set_of_transitive_sets_isOrdinal
-    (alpha_isTransitiveSet : isTransitiveSet alpha)
-    (every_member_of_alpha_isTransitiveSet : forall beta, beta `elem` alpha -> isTransitiveSet beta)
+    (IS_TRANSITIVE_SET : isTransitiveSet alpha)
+    (every_member_IS_TRANSITIVE_SET : forall beta, beta `elem` alpha -> isTransitiveSet beta)
     : isOrdinal alpha
   .
 
