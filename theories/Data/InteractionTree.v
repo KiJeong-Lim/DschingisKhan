@@ -67,7 +67,7 @@ Module InteractionTrees.
     itree_bindGuard k (observe t) itree_bindAux_cofix
   .
 
-  Definition itree_bind (t : itree E R1) (k : R1 -> itree E R2) : itree E R2 := itree_bindAux k t.
+  Definition itree_bind (m : itree E R1) (k : R1 -> itree E R2) : itree E R2 := itree_bindAux k m.
 
   Lemma observe_itree_bind (t0 : itree E R1) (k0 : R1 -> itree E R2)
     : observe (itree_bind t0 k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
@@ -156,7 +156,7 @@ Module InteractionTrees.
   Definition itree_app {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
     fun X : Type =>
     fun e : callE I R X =>
-    match e in callE _ _ r return itree E r with
+    match e in callE _ _ x return itree E x with
     | Call arg => callee arg
     end
   .
