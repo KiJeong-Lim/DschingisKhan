@@ -136,10 +136,12 @@ Module MathProps.
     : Equivalence haveSameCard.
   Proof.
     split.
-    - intros A. econstructor. exists (fun x : A => x).
+    - intros A.
+      econstructor. exists (fun x : A => x).
       + intros x1 x2 H_x_EQ. congruence.
       + intros x. exists (x). exact (@eq_refl A x).
-    - intros A B [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]]. econstructor. exists (fun y : B => proj1_sig (bijection_A_to_B_surj y)).
+    - intros A B [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]].
+      econstructor. exists (fun y : B => proj1_sig (bijection_A_to_B_surj y)).
       + intros y1 y2 H_EQ. destruct (bijection_A_to_B_surj y1) as [x1 y1_is]. destruct (bijection_A_to_B_surj y2) as [x2 y2_is]. unnw. subst y1 y2. simpl in *. congruence.
       + intros x. exists (bijection_A_to_B x). destruct (bijection_A_to_B_surj (bijection_A_to_B x)) as [x' H_x_EQ]. unnw. simpl in *. exact (bijection_A_to_B_inj x x' H_x_EQ).
     - intros A B C [[bijection_A_to_B bijection_A_to_B_inj bijection_A_to_B_surj]] [[bijection_B_to_C bijection_B_to_C_inj bijection_B_to_C_surj]].
