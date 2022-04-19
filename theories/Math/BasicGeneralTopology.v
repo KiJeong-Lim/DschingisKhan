@@ -76,10 +76,9 @@ Module BasicGeneralTopology.
     : isOpen_Scott O
   .
 
-  Local Hint Unfold isDirectedSubset : core.
   Local Hint Constructors isOpen_Scott : core.
 
-  Global Instance ScottTopology
+  Local Instance ScottTopology
     : Topology_axiom isOpen_Scott.
   Proof with (now vm_compute; firstorder) || (eauto with *).
     split.

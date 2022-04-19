@@ -949,39 +949,23 @@ Module MyUtil.
   .
 
   Definition Some_ne_None {A : Type} (x : A) : Some x <> None :=
-    fun H_eq : Some x = None => @transport (option A) (maybe False (fun _ : A => True)) (Some x) None H_eq I
+    fun hyp_eq : Some x = None => @transport (option A) (maybe False (fun _ : A => True)) (Some x) None hyp_eq I
   .
 
   Definition fromJust {A : Type} (Some_x : option A) : Some_x <> None -> A :=
     match Some_x as Some_x0 return Some_x0 <> None -> A with
-    | None => fun H_no : None <> None => False_rect A (H_no (eq_reflexivity None))
+    | None => fun hyp_no : None <> None => False_rect A (hyp_no (eq_reflexivity None))
     | Some x => fun _ : Some x <> None => x
     end
   .
 
   Lemma fromJust_spec {A : Type} (Some_x : option A) (x : A)
-    : Some_x = Some x <-> (exists H_no : Some_x <> None, x = fromJust Some_x H_no).
+    : Some_x = Some x <-> (exists hyp_no : Some_x <> None, x = fromJust Some_x hyp_no).
   Proof with contradiction || eauto.
     split.
     - intros H_yes. subst Some_x. exists (Some_ne_None x)...
     - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
   Qed.
-
-  Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
-    fun f : {i : I & prod (A i) (B i)} -> C =>
-    fun i : I =>
-    fun x : A i =>
-    fun y : B i =>
-    f (existT _ i (x, y))
-  .
-
-  Definition uncurry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : (forall i : I, A i -> B i -> C) -> ({i : I & prod (A i) (B i)} -> C) :=
-    fun f : forall i : I, A i -> B i -> C =>
-    fun p : {i : I & prod (A i) (B i)} =>
-    match p with
-    | existT _ i (x, y) => f i x y
-    end
-  .
 
   Ltac simpl_data_props_once :=
     simpl in *;
@@ -1100,6 +1084,22 @@ Module SCRATCH.
   Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
 
   Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
+
+  Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
+    fun f : {i : I & prod (A i) (B i)} -> C =>
+    fun i : I =>
+    fun x : A i =>
+    fun y : B i =>
+    f (existT _ i (x, y))
+  .
+
+  Definition uncurry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : (forall i : I, A i -> B i -> C) -> ({i : I & prod (A i) (B i)} -> C) :=
+    fun f : forall i : I, A i -> B i -> C =>
+    fun p : {i : I & prod (A i) (B i)} =>
+    match p with
+    | existT _ i (x, y) => f i x y
+    end
+  .
 
   Definition kconcat {M : Hask.cat -----> Hask.cat} {requiresMonad : isMonad M} {X : Type} : list (kleisli M X X) -> kleisli M X X :=
     fix kconcat_fix (ks : list (kleisli M X X)) {struct ks} : kleisli M X X :=
