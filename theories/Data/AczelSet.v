@@ -71,7 +71,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Resolve eqTree_Transitive : khan_hints.
 
-  Local Instance equality_Equivalence : Equivalence eqTree :=
+  Local Instance eqTree_Equivalence : Equivalence eqTree :=
     { Equivalence_Reflexive := eqTree_Reflexive
     ; Equivalence_Symmetric := eqTree_Symmetric
     ; Equivalence_Transitive := eqTree_Transitive
@@ -80,7 +80,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance AczelSet_isSetoid : isSetoid AczelSet :=
     { eqProp := eqTree
-    ; eqProp_Equivalence := equality_Equivalence
+    ; eqProp_Equivalence := eqTree_Equivalence
     }
   .
 
