@@ -6,7 +6,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module InteractionTrees.
 
-  Global Notation " E -< F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
+  Global Notation " E '~~>' F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
 
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
@@ -83,14 +83,14 @@ Module InteractionTrees.
 
   Definition itree_tick {E : Type -> Type} : itree E unit := Tau (Ret tt).
 
-  Definition itree_trigger {E : Type -> Type} : E -< itree E := fun R : Type => fun e : E R => Vis R e (fun x : R => Ret x).
+  Definition itree_trigger {E : Type -> Type} : E ~~> itree E := fun R : Type => fun e : E R => Vis R e (fun x : R => Ret x).
 
   Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)%type) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
     itree_bindAux (sum_rect (fun _ : I + R => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
-  Global Polymorphic Instance itree_E_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
+  Global Instance itree_E_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
     { iterMonad {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R)
     }
   .
@@ -141,7 +141,7 @@ Module InteractionTrees.
     itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
   .
 
-  Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E -< itree (E +' E') :=
+  Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E ~~> itree (E +' E') :=
     fun R : Type =>
     fun e : E R =>
     itree_trigger (E := E +' E') R (inl1 e)
@@ -149,7 +149,7 @@ Module InteractionTrees.
 
   Local Notation endo X := (X -> X).
 
-  Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E -< itree (E +' E'))) : E -< itree E' :=
+  Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E ~~> itree (E +' E'))) : E ~~> itree E' :=
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
