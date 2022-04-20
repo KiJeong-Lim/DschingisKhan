@@ -6,8 +6,6 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module InteractionTrees.
 
-  Global Notation " E '~~>' F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
-
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
   | TauF (t : itree_E_R) : itreeF E R

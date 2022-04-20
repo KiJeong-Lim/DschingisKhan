@@ -264,7 +264,9 @@ Module PreludeInit_MAIN.
 
 (** "3. Accessories" *)
 
-  Global Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
+  Global Notation " E '~~>' F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
+
+  Global Polymorphic Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
     as compose_lifts_eqProp.
   Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
@@ -281,18 +283,18 @@ Module PreludeInit_MAIN.
 
   Section SETOID_ACCESSORIES.
 
-  Context {A : Type} {requireSetoid : isSetoid A}.
+  Polymorphic Context {A : Type} {requireSetoid : isSetoid A}.
 
-  Lemma eqProp_Reflexive (x : A)
+  Polymorphic Lemma eqProp_Reflexive (x : A)
     : x == x.
   Proof. eapply Equivalence_Reflexive; eauto. Qed.
 
-  Lemma eqProp_Symmetric (x : A) (y : A)
+  Polymorphic Lemma eqProp_Symmetric (x : A) (y : A)
     (x_eq_y : x == y)
     : y == x.
   Proof. eapply Equivalence_Symmetric; eauto. Qed.
 
-  Lemma eqProp_Transitive (x : A) (y : A) (z : A)
+  Polymorphic Lemma eqProp_Transitive (x : A) (y : A) (z : A)
     (x_eq_y : x == y)
     (y_eq_z : y == z)
     : x == z.
@@ -304,24 +306,24 @@ Module PreludeInit_MAIN.
 
   Section POSET_ACCESSORIES.
 
-  Context {A : Type} {requiresPoset : isPoset A}.
+  Polymorphic Context {A : Type} {requiresPoset : isPoset A}.
 
-  Lemma leProp_Reflexive (x : A)
+  Polymorphic Lemma leProp_Reflexive (x : A)
     : x =< x.
   Proof. eapply PreOrder_Reflexive; eauto. Qed.
 
-  Lemma leProp_Transitive (x : A) (y : A) (z : A)
+  Polymorphic Lemma leProp_Transitive (x : A) (y : A) (z : A)
     (x_le_y : x =< y)
     (y_le_z : y =< z)
     : x =< z.
   Proof. eapply PreOrder_Transitive; eauto. Qed.
 
-  Lemma eqProp_implies_leProp (x : A) (y : A)
+  Polymorphic Lemma eqProp_implies_leProp (x : A) (y : A)
     (x_eq_y : x == y)
     : x =< y.
   Proof. now rewrite x_eq_y. Qed.
 
-  Lemma leProp_Antisymmetric (x : A) (y : A)
+  Polymorphic Lemma leProp_Antisymmetric (x : A) (y : A)
     (x_le_y : x =< y)
     (y_le_x : y =< x)
     : x == y.
@@ -335,7 +337,7 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_eq.
 
-  Local Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
     ; eqProp_Equivalence := eq_equivalence
     }
