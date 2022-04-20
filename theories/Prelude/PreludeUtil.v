@@ -518,7 +518,7 @@ Module MyData.
 
   Variable A : Type.
 
-  Inductive vector : nat -> Hask.t :=
+  Inductive vector : nat -> Type :=
   | VNil : vector (O)
   | VCons (n : nat) (x : A) (xs : vector n) : vector (S n)
   .
