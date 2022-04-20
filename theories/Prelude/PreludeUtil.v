@@ -80,7 +80,7 @@ Module EQ_FACTS.
 
   Variable eq_encoder : forall y : A, x = y -> x = y.
 
-  Let eq_decoder (y : A) : x = y -> x = y := eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x))) .
+  Let eq_decoder (y : A) : x = y -> x = y := eq_transitivity x x y (eq_symmetry x x (eq_encoder x (eq_reflexivity x))).
 
   Let eq_decoder_decodes_properly : forall y : A, forall hyp_eq : x = y, eq_decoder y (eq_encoder y hyp_eq) = hyp_eq :=
     rect_eq_l x (fun y : A => fun hyp_eq : x = y => eq_decoder y (eq_encoder y hyp_eq) = hyp_eq) (eq_round_trip x x (eq_encoder x (eq_reflexivity x)))
@@ -579,7 +579,7 @@ Module MyData.
   Global Arguments vector_uncons {A} {n}.
 
   Global Tactic Notation "introVNil" := intro_pattern_revert; eapply vector_case0.
-  Global Tactic Notation "introVCons" ident( HD ) ident( TL ) := intro_pattern_revert; eapply vector_caseS; intros HD TL.
+  Global Tactic Notation "introVCons" ident( HEAD ) ident( TAIL ) := intro_pattern_revert; eapply vector_caseS; intros HEAD TAIL.
 
   Definition vector_head {A : Type} {n : nat} (xs : vector A (S n)) : A := fst (vector_uncons xs (eq_reflexivity (S n))).
 
