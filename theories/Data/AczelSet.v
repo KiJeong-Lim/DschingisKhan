@@ -8,17 +8,21 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
+Module Univ.
+
+  Monomorphic Universe AczelSetUniv_lv.
+
+  Monomorphic Definition t : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
+
+End Univ.
+
 Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
-  Universe AczelSetUniv_lv.
-
-  Monomorphic Definition V : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
-
-  Inductive Tree : V :=
+  Inductive Tree : Univ.t :=
   | Node {children : Type} (childtrees : children -> Tree) : Tree
   .
 
-  Definition AczelSet : V := Tree.
+  Definition AczelSet : Univ.t := Tree.
 
   Definition getChildren (root : AczelSet) : Type :=
     match root in Tree return Type with
@@ -459,7 +463,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
   Proof. inversion alpha_isOrdinal; eauto with *. Qed.
 
-  Definition Ordinals : V := @sig AczelSet isOrdinal.
+  Definition Ordinals : Univ.t := @sig AczelSet isOrdinal.
 
   Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
