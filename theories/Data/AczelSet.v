@@ -12,13 +12,13 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Universe AczelSetUniv_lv.
 
-  Monomorphic Definition Univ : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
+  Monomorphic Definition V : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
 
-  Inductive Tree : Univ :=
+  Inductive Tree : V :=
   | Node {children : Type} (childtrees : children -> Tree) : Tree
   .
 
-  Definition AczelSet : Univ := Tree.
+  Definition AczelSet : V := Tree.
 
   Definition getChildren (root : AczelSet) : Type :=
     match root in Tree return Type with
@@ -330,8 +330,6 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End AczelSet_unions.
 
-  Local Hint Resolve AczelSet_unions_spec : khan_hints.
-
   Section AczelSet_empty.
 
   Definition empty : AczelSet := Node (fun hyp_false : False => False_rect AczelSet hyp_false).
@@ -454,7 +452,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : isOrdinal alpha
   .
 
-  Global Hint Constructors isOrdinal : khan_hints.
+  Local Hint Constructors isOrdinal : khan_hints.
 
   Lemma every_member_of_Ordinal_isOrdinal (alpha : AczelSet)
     (alpha_isOrdinal : isOrdinal alpha)
