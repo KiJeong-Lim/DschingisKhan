@@ -459,7 +459,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
   Proof. inversion alpha_isOrdinal; eauto with *. Qed.
 
-  Definition Ordinals : Type := @sig AczelSet isOrdinal.
+  Definition Ordinals : V := @sig AczelSet isOrdinal.
 
   Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
