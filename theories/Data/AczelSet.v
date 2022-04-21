@@ -371,10 +371,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_Nat.
 
+  Definition Suc (x : AczelSet) : AczelSet := union x (singleton x).
+
   Fixpoint natToAczelSet (n : nat) {struct n} : AczelSet :=
     match n with
     | O => empty
-    | S n' => union (singleton (natToAczelSet n')) (natToAczelSet n')
+    | S n' => Suc (natToAczelSet n')
     end
   .
 
