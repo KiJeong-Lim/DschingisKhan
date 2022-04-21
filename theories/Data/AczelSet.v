@@ -332,6 +332,56 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Resolve AczelSet_unions_spec : khan_hints.
 
+  Section AczelSet_empty.
+
+  Definition empty : AczelSet := Node (fun hyp_false : False => False_rect AczelSet hyp_false).
+
+  Lemma AczelSet_empty_spec
+    : forall z : AczelSet, z `elem` empty <-> (False).
+  Proof. intros z. unfold empty. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
+
+  End AczelSet_empty.
+
+  Section AczelSet_union.
+
+  Definition union (x1 : AczelSet) (x2 : AczelSet) : AczelSet := unions_i (fun b : bool => if b then x1 else x2).
+
+  Lemma AczelSet_union_spec (x1 : AczelSet) (x2 : AczelSet)
+    : forall z : AczelSet, z `elem` union x1 x2 <-> (z `elem` x1 \/ z `elem` x2).
+  Proof.
+    intros z. unfold union. rewrite AczelSet_unions_i_spec. unnw.
+    split; [intros [[ | ] z_in] | intros [z_in | z_in]; [exists (true) | exists (false)]]; eauto with *.
+  Qed.
+
+  End AczelSet_union.
+
+  Section AczelSet_singleton.
+
+  Definition singleton (x : AczelSet) : AczelSet := fromList (cons x nil).
+
+  Lemma AczelSet_singleton_spec (x : AczelSet)
+    : forall z : AczelSet, z `elem` singleton x <-> (z == x).
+  Proof.
+    intros z. unfold singleton. rewrite AczelSet_fromList_spec. unnw; cbn; unfold_eqTree; split.
+    - intros [i z_eq]. revert i z_eq. now introFinS i.
+    - intros z_eq_x. now exists (FZ).
+  Qed.
+
+  End AczelSet_singleton.
+
+  Section AczelSet_Nat.
+
+  Fixpoint natToAczelSet (n : nat) {struct n} : AczelSet :=
+    match n with
+    | O => empty
+    | S n' => union (singleton (natToAczelSet n')) (natToAczelSet n')
+    end
+  .
+
+  Definition Nat : AczelSet := unions_i natToAczelSet.
+
+  End AczelSet_Nat.
+
   Section AczelSet_fromWf.
 
   Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
