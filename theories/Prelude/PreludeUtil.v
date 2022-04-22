@@ -321,12 +321,12 @@ Module NAT_FACTS.
   Qed.
 
   Theorem lt_strong_ind {phi : nat -> Prop}
-    (ind_claim : forall n : nat, << IH : forall m : nat, m < n -> phi m >> -> phi n)
+    (IND : forall n : nat, << IH : forall m : nat, m < n -> phi m >> -> phi n)
     : forall n : nat, phi n.
   Proof.
-    unnw. intros n. eapply ind_claim. induction n as [ | n IH].
+    unnw. intros n. eapply IND. induction n as [ | n IH].
     - intros m. exact (@lt_elim_n_lt_0 (phi m) m).
-    - intros m hyp_m_lt_S_n. eapply ind_claim. intros i hyp_i_lt_m. eapply IH. exact (le_transitivity hyp_i_lt_m (lt_elim_n_lt_S_m hyp_m_lt_S_n)).
+    - intros m hyp_m_lt_S_n. eapply IND. intros i hyp_i_lt_m. eapply IH. exact (le_transitivity hyp_i_lt_m (lt_elim_n_lt_S_m hyp_m_lt_S_n)).
   Defined.
 
   Inductive Le (n : nat) : nat -> Set :=
