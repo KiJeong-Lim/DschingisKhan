@@ -158,7 +158,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     }
   .
 
-  Theorem AczelSet_rect (phi : AczelSet -> Type)
+  Lemma AczelSet_rect (phi : AczelSet -> Type)
     (IND : forall x : AczelSet, << IH : forall y : AczelSet, y `elem` x -> phi y >> -> phi x)
     : forall x : AczelSet, phi x.
   Proof. eapply NotherianRecursion. exact (IND). Defined.
@@ -170,10 +170,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     - intros h_eq z. rewrite h_eq. reflexivity.
     - revert rhs. induction lhs as [x_children x_childtree IH]; intros [y_children y_childtree].
       intros h_eq. simpl; unnw. split; [intros c_x | intros c_y].
-      + assert (claim1 : (x_childtree c_x) `elem` Node x_childtree).
+      + assert (claim1 : x_childtree c_x `elem` Node x_childtree).
         { eapply elem_intro... }
         pose proof (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
-      + assert (claim1 : (y_childtree c_y) `elem` Node y_childtree).
+      + assert (claim1 : y_childtree c_y `elem` Node y_childtree).
         { eapply elem_intro... }
         pose proof (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
   Qed.
