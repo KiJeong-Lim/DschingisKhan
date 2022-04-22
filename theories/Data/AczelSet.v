@@ -120,8 +120,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof.
     destruct z as [z_children z_childtree]; destruct y as [y_children y_childtree].
     destruct y_eq_z as [y_subset_z_c z_c_subset_y]; destruct x_in_y as [c_y x_eq_y_c].
-    destruct (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
-    Defined.
+    pose proof (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
+  Defined.
 
   Global Add Parametric Morphism :
     elem with signature (eqProp ==> eqProp ==> iff)
@@ -161,7 +161,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Theorem AczelSet_rect (phi : AczelSet -> Type)
     (IND : forall x : AczelSet, << IH : forall y : AczelSet, y `elem` x -> phi y >> -> phi x)
     : forall x : AczelSet, phi x.
-  Proof. eapply NotherianRecursion. exact IND. Defined.
+  Proof. eapply NotherianRecursion. exact (IND). Defined.
 
   Theorem AczelSet_extensional_equality (lhs : AczelSet) (rhs : AczelSet)
     : lhs == rhs <-> << EXT_EQ : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
@@ -172,10 +172,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       intros h_eq. simpl; unnw. split; [intros c_x | intros c_y].
       + assert (claim1 : (x_childtree c_x) `elem` Node x_childtree).
         { eapply elem_intro... }
-        destruct (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
+        pose proof (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
       + assert (claim1 : (y_childtree c_y) `elem` Node y_childtree).
         { eapply elem_intro... }
-        destruct (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
+        pose proof (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
   Qed.
 
   Definition subseteq (x : AczelSet) (y : AczelSet) : Prop :=
@@ -253,7 +253,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     intros z. unnw. split.
     - intros z_subset_x. exists (fun c_x : getChildren x => getChildTrees x c_x `elem` z). eapply eqTree_intro.
-      + intros y y_in_z. destruct (z_subset_x y y_in_z) as [c_x y_eq_x_c].
+      + intros y y_in_z. pose proof (z_subset_x y y_in_z) as [c_x y_eq_x_c].
         rewrite y_eq_x_c. rewrite y_eq_x_c in y_in_z. exists (exist _ c_x y_in_z)...
       + intros y [[c_x x_c_in_z] y_eq_x_c]. rewrite y_eq_x_c...
     - intros [phi z_eq]. rewrite z_eq. intros y. rewrite AczelSet_filtering_spec. unnw.
