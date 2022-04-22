@@ -12,9 +12,9 @@ Module Type InteractionTrees_AXIOMS.
 
 End InteractionTrees_AXIOMS.
 
-Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
+Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
 
-  Import BasicPosetTheory ITREE_AXIOMS.
+  Import BasicPosetTheory.
 
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
@@ -252,8 +252,8 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
   Proof.
     split.
     - intros [HYP_REL]. inversion HYP_REL; subst.
-      pose proof (projT2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
-      pose proof (projT2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
+      pose proof (AXIOMS.projT2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
+      pose proof (AXIOMS.projT2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
       now subst k3 k4.
     - intros HYP_REL. now do 2 econstructor.
   Qed.
