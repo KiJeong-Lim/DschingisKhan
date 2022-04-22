@@ -10,7 +10,30 @@ Require Import DschingisKhan.Math.BasicPosetTheory.
 
 Module BasicGeneralTopology.
 
-  Import MathProps MathClasses.
+  Import MathProps MathClasses BasicPosetTheory.
+
+  Class Topology_axiom {A : Hask.t} (isOpen : ensemble A -> Prop) : Prop :=
+    { full_isOpen
+      : isOpen full
+    ; unions_isOpen (Xs : ensemble (ensemble A))
+      (every_member_of_Xs_isOpen : forall X : ensemble A, << X_in_Xs : member X Xs >> -> isOpen X)
+      : isOpen (unions Xs)
+    ; intersection_isOpen (XL : ensemble A) (XR : ensemble A)
+      (XL_isOpen : isOpen XL)
+      (XR_isOpen : isOpen XR)
+      : isOpen (intersection XL XR)
+    ; isOpen_compatWith_eqProp (X : ensemble A) (X' : ensemble A)
+      (X_isOpen : isOpen X)
+      (X_eq_X' : X == X')
+      : isOpen X'
+    }
+  .
+
+  Class isTopologicalSpace (A : Hask.t) : Type :=
+    { isOpen : ensemble A -> Prop
+    ; TopologicalSpace_obeysTopology_axiom :> Topology_axiom isOpen
+    }
+  .
 
   Lemma fullOpen {A : Hask.t} {requiresTopology : isTopologicalSpace A}
     : isOpen (@full A).
@@ -28,6 +51,22 @@ Module BasicGeneralTopology.
   Proof. eapply intersection_isOpen; eauto. Qed.
 
   Global Hint Resolve fullOpen unionsOpen intersectionOpen : khan_hints.
+
+  Lemma emptyset_isOpen {A : Hask.t} (isOpen : ensemble A -> Prop)
+    (satisfiesAxiomsOfTopology : Topology_axiom isOpen)
+    : isOpen (@empty A).
+  Proof.
+    eapply isOpen_compatWith_eqProp.
+    - eapply unions_isOpen with (Xs := empty). ii; desnw.
+      apply in_empty_iff in X_in_Xs. tauto.
+    - intros z. rewrite in_unions_iff. split.
+      + intros [X [z_in_X []]].
+      + intros [].
+  Qed.
+
+  Definition isContinuousMap {dom : Hask.t} {cod : Hask.t} {dom_isTopology : isTopologicalSpace dom} {cod_isTopology : isTopologicalSpace cod} (f : dom -> cod) : Prop :=
+    forall Y : ensemble cod, << TGT_OPEN : isOpen Y >> -> << SRC_OPEN : isOpen (preimage f Y) >>
+  .
 
   Section SUBTOPOLOGY.
 

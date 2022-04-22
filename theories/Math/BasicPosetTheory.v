@@ -11,6 +11,17 @@ Module BasicPosetTheory.
 
   Import MathProps MathNotations MathClasses.
 
+  Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    forall x1 : D, << H_IN1 : member x1 X >> ->
+    forall x2 : D, << H_IN2 : member x2 X >> ->
+    exists x3 : D, << H_IN3 : member x3 X >> /\
+    << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
+  .
+
+  Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
+
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
+
   Global Notation isMonotonicMap := preserves_leProp1.
 
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
