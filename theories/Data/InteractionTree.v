@@ -3,8 +3,17 @@ Require Import Coq.Lists.List.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
+Require Import DschingisKhan.Math.BasicPosetTheory.
 
-Module InteractionTrees.
+Module Type InteractionTrees_AXIOMS.
+
+  Axiom projT2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2.
+
+End InteractionTrees_AXIOMS.
+
+Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
+
+  Import BasicPosetTheory ITREE_AXIOMS.
 
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
@@ -73,7 +82,7 @@ Module InteractionTrees.
 
   End ITREE_MONAD.
 
-  Global Instance itree_E_isMonad (E : Type -> Type) : isMonad (itree E) :=
+  Global Instance itree_isMonad (E : Type -> Type) : isMonad (itree E) :=
     { pure {R : Type} := itree_pure (E := E) (R := R)
     ; bind {R1 : Type} {R2 : Type} := itree_bind (E := E) (R1 := R1) (R2 := R2)
     }
@@ -88,7 +97,7 @@ Module InteractionTrees.
     itree_bindAux (sum_rect (fun _ : I + R => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
   .
 
-  Global Instance itree_E_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
+  Global Instance itree_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
     { iterMonad {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R)
     }
   .
@@ -106,7 +115,7 @@ Module InteractionTrees.
   .
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E =====> stateT ST (itree E')) : itree E =====> stateT ST (itree E') :=
-    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E')) handle
+    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E') (M_isMonadIter := itree_isMonadIter E')) handle
   .
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
@@ -172,5 +181,90 @@ Module InteractionTrees.
   .
 
   End RECURSION.
+
+(** "BISIMULATION" *)
+
+  Section EQUALITY_ON_INTERACTION_TREES.
+
+  Context {E : Type -> Type}.
+
+  Section BISIMULATION.
+
+  Context {R : Type} {requiresSetoid : isSetoid R}.
+
+  Variant itreeBisimF (bisim : itree E R -> itree E R -> Prop) : itreeF E R -> itreeF E R -> Prop :=
+  | EqRetF (r1 : R) (r2 : R)
+    (HYP_REL : r1 == r2)
+    : itreeBisimF bisim (RetF r1) (RetF r2)
+  | EqTauF (t1 : itree E R) (t2 : itree E R)
+    (HYP_REL : bisim t1 t2)
+    : itreeBisimF bisim (TauF t1) (TauF t2)
+  | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
+    (HYP_REL : forall x : X, bisim (k1 x) (k2 x))
+    : itreeBisimF bisim (VisF X e k1) (VisF X e k2)
+  .
+
+  Local Hint Constructors itreeBisimF : core.
+
+  Set Primitive Projections.
+
+  CoInductive itreeBisim (lhs : itree E R) (rhs : itree E R) : Prop :=
+    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF itreeBisim (observe lhs) (observe rhs) }
+  .
+
+  Unset Primitive Projections.
+
+  Lemma Ret_bisim_iff (r1 : R) (r2 : R)
+    : itreeBisim (Ret r1) (Ret r2) <-> (r1 == r2).
+  Proof.
+    split.
+    - intros [HYP_REL]. now inversion HYP_REL.
+    - intros HYP_REL. now do 2 econstructor.
+  Qed.
+
+  Lemma Tau_bisim_iff (t1 : itree E R) (t2 : itree E R)
+    : itreeBisim (Tau t1) (Tau t2) <-> (itreeBisim t1 t2).
+  Proof.
+    split.
+    - intros [HYP_REL]. now inversion HYP_REL.
+    - intros HYP_REL. now do 2 econstructor.
+  Qed.
+
+  Lemma Vis_bisim_iff (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
+    : itreeBisim (Vis X e k1) (Vis X e k2) <-> (forall x : X, itreeBisim (k1 x) (k2 x)).
+  Proof.
+    split.
+    - intros [HYP_REL]. inversion HYP_REL; subst.
+      pose proof (projT2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
+      pose proof (projT2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
+      now subst k3 k4.
+    - intros HYP_REL. now do 2 econstructor.
+  Qed.
+
+  Definition eqITreeF (bisim : ensemble (itree E R * itree E R)%type) : ensemble (itree E R * itree E R)%type :=
+    uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (curry bisim) (observe lhs) (observe rhs))
+  .
+
+  Lemma eqITreeF_isMonotonic
+    : isMonotonicMap eqITreeF.
+  Proof.
+    exact (
+      fun R1 : ensemble (itree E R * itree E R)%type =>
+      fun R2 : ensemble (itree E R * itree E R)%type =>
+      fun R1_implies_R2 : forall pr : itree E R * itree E R, R1 pr -> R2 pr =>
+      fun lhs_rhs : itree E R * itree E R =>
+      let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
+      fun hypR1 : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
+      match hypR1 in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
+      | EqRetF _ r1 r2 HYP_REL => EqRetF (curry R2) r1 r2 HYP_REL
+      | EqTauF _ t1 t2 HYP_REL => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) HYP_REL)
+      | EqVisF _ X e k1 k2 HYP_REL => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (HYP_REL x))
+      end
+    ).
+  Defined.
+
+  End BISIMULATION.
+
+  End EQUALITY_ON_INTERACTION_TREES.
 
 End InteractionTrees.
