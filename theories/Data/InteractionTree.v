@@ -128,8 +128,7 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
 
   Definition itree_interpret_mrec {E1 : Type -> Type} {E2 : Type -> Type} (ctx : E1 =====> itree (E1 +' E2)) : itree (E1 +' E2) =====> itree E2 :=
     fun R : Type =>
-    itree_iter (E := E2) (I := itree (E1 +' E2) R) (R := R) (
-      fun t0 : itree (E1 +' E2) R =>
+    itree_iter (E := E2) (I := itree (E1 +' E2) R) (R := R) (fun t0 : itree (E1 +' E2) R =>
       match observe t0 with
       | RetF r => Ret (inr r)
       | TauF t => Ret (inl t)
@@ -143,15 +142,11 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
   .
 
   Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E =====> itree (E +' E')) : E =====> itree E' :=
-    fun R : Type =>
-    fun e : E R =>
-    itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
+    fun R : Type => fun e : E R => itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
   .
 
   Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E ~~> itree (E +' E') :=
-    fun R : Type =>
-    fun e : E R =>
-    itree_trigger (E := E +' E') R (inl1 e)
+    fun R : Type => fun e : E R => itree_trigger (E := E +' E') R (inl1 e)
   .
 
   Local Notation endo X := (X -> X).
