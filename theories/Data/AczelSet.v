@@ -473,17 +473,4 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Coercion unliftOrdinalsToAczelSet : Ordinals >-> AczelSet.
 
-  Lemma transfinite_induction_prototype (phi : AczelSet -> Prop) (phi_compatWith_eqTree : compatWith_eqTree phi)
-    (IND : forall alpha : Ordinals, << IH : forall beta : Ordinals, beta `elem` alpha -> phi beta >> -> phi alpha)
-    : forall alpha : Ordinals, phi alpha.
-  Proof with eauto with *.
-    intros [x x_isOrdinal]. revert x_isOrdinal. induction x as [x_children x_childtree IH]. ii. eapply IND...
-    intros y y_in_x. pose proof (every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal y y_in_x) as y_isOrdinal.
-    destruct (y_in_x) as [c_x y_eq_x_c]. eapply phi_compatWith_eqTree with (x := x_childtree c_x).
-    - assert (claim1 : x_childtree c_x `elem` Node x_childtree).
-      { eapply elem_intro... }
-      eapply IH with (c := c_x) (x_isOrdinal := every_member_of_Ordinal_isOrdinal (Node x_childtree) x_isOrdinal (x_childtree c_x) claim1).
-    - simpl...
-  Qed.
-
 End AczelSet.
