@@ -49,7 +49,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof.
     intros x; induction x as [x_children x_childtree IH].
     cbn in *; split; unnw; eauto.
-  Qed.
+  Defined.
 
   Local Hint Resolve eqTree_Reflexive : khan_hints.
 
@@ -60,7 +60,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     cbn in *; split; unnw; [intros c_y | intros c_x].
     - exploit (y_sim_x c_y) as [c_x hyp_eq1]; eauto.
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; eauto.
-  Qed.
+  Defined.
 
   Local Hint Resolve eqTree_Symmetric : khan_hints.
 
@@ -71,7 +71,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     cbn in *; split; unnw; [intros c_x | intros c_z].
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; exploit (y_sim_z c_y) as [c_z hyp_eq2]; eauto.
     - exploit (z_sim_y c_z) as [c_y hyp_eq1]; exploit (y_sim_x c_y) as [c_x hyp_eq2]; eauto.
-  Qed.
+  Defined.
 
   Local Hint Resolve eqTree_Transitive : khan_hints.
 
@@ -90,7 +90,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Lemma eqTree_unfold
     : eqTree = (fun lhs : AczelSet => fun rhs : AczelSet => lhs == rhs).
-  Proof. reflexivity. Qed.
+  Proof. reflexivity. Defined.
 
   Ltac unfold_eqTree := rewrite eqTree_unfold in *.
 
@@ -105,13 +105,13 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Lemma elem_intro {z : AczelSet} {x : AczelSet} (c_x : getChildren x)
     (z_eq_x_c : z == getChildTrees x c_x)
     : z `elem` x.
-  Proof. eauto with *. Qed.
+  Proof. eauto with *. Defined.
 
   Lemma eqProp_elem_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_eq_y : x == y)
     (y_in_z : y `elem` z)
     : x `elem` z.
-  Proof. destruct y_in_z as [c_z y_eq_z_c]. eexists; etransitivity; eauto with *. Qed.
+  Proof. destruct y_in_z as [c_z y_eq_z_c]. eexists; etransitivity; eauto with *. Defined.
 
   Lemma elem_eqProp_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (y_eq_z : y == z)
@@ -121,7 +121,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     destruct z as [z_children z_childtree]; destruct y as [y_children y_childtree].
     destruct y_eq_z as [y_subset_z_c z_c_subset_y]; destruct x_in_y as [c_y x_eq_y_c].
     destruct (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
-  Qed.
+    Defined.
 
   Global Add Parametric Morphism :
     elem with signature (eqProp ==> eqProp ==> iff)
@@ -131,7 +131,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     transitivity (x1 `elem` y2).
     - split; eapply elem_eqProp_elem...
     - split; eapply eqProp_elem_elem...
-  Qed.
+  Defined.
 
   Local Hint Resolve elem_compatWith_eqProp : khan_hints.
 
@@ -143,14 +143,14 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     { intros x y h_eq. split; eapply to_show... }
     intros lhs rhs x_eq_y acc_x. cbn. pose proof (Acc_inv acc_x) as claim1. econstructor...
     intros z z_in_y. eapply claim1. rewrite x_eq_y...
-  Qed.
+  Defined.
 
   Lemma AczelSet_elem_well_founded
     : forall root : AczelSet, Acc elem root.
   Proof.
     induction root as [x_children x_childtree IH]. econstructor.
     intros z [c_x z_eq_x_c]. rewrite z_eq_x_c. exact (IH c_x).
-  Qed.
+  Defined.
 
   Global Instance AczelSet_isWellFounded : isWellFounded AczelSet :=
     { wfRel := elem
@@ -158,19 +158,22 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     }
   .
 
+  Theorem AczelSet_rect (phi : AczelSet -> Type)
+    (IND : forall x : AczelSet, << IH : forall y : AczelSet, y `elem` x -> phi y >> -> phi x)
+    : forall x : AczelSet, phi x.
+  Proof. eapply NotherianRecursion. exact IND. Defined.
+
   Theorem AczelSet_extensional_equality (lhs : AczelSet) (rhs : AczelSet)
     : lhs == rhs <-> << EXT_EQ : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
   Proof with cbn; eauto with *.
     unnw. split.
     - intros h_eq z. rewrite h_eq. reflexivity.
     - revert rhs. induction lhs as [x_children x_childtree IH]; intros [y_children y_childtree].
-      intros h_eq. simpl. split; unnw.
-      + intros c_x.
-        assert (claim1 : (x_childtree c_x) `elem` Node x_childtree).
+      intros h_eq. simpl; unnw. split; [intros c_x | intros c_y].
+      + assert (claim1 : (x_childtree c_x) `elem` Node x_childtree).
         { eapply elem_intro... }
         destruct (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
-      + intros c_y.
-        assert (claim1 : (y_childtree c_y) `elem` Node y_childtree).
+      + assert (claim1 : (y_childtree c_y) `elem` Node y_childtree).
         { eapply elem_intro... }
         destruct (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
   Qed.
