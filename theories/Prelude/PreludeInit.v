@@ -772,13 +772,13 @@ Module PreludeInit_MAIN.
 
   Polymorphic Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id_{ stateT ST M X }.
 
-  Global Polymorphic Instance stateT_ST_M_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
+  Global Polymorphic Instance stateT_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
     { pure _ := StateT ∘ curry kempty
     ; bind _ _ := fun m k => StateT (uncurry (runStateT ∘ k) <=< runStateT m)
     }
   .
 
-  Global Polymorphic Instance stateT_ST_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
+  Global Polymorphic Instance stateT_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
     { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) := fun m : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
     }
   .
@@ -797,7 +797,7 @@ Module PreludeInit_MAIN.
     end
   .
 
-  Global Polymorphic Instance stateT_ST_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+  Global Polymorphic Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad (kempty ∘ prod_right_distr_sum <=< uncurry step))
     }
   .
@@ -812,7 +812,7 @@ Module PreludeInit_MAIN.
 
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
-  Global Instance sum1_FL_FR_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (sum1 FL FR) :=
+  Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (sum1 FL FR) :=
     { fmap {A : Hask.t} {B : Hask.t} := fun f : Hask.arrow A B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap f l)) (fun r : FR A => inr1 (fmap f r))
     }
   .

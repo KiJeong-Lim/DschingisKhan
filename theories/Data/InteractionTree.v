@@ -114,7 +114,7 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
   .
 
   Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E =====> stateT ST (itree E')) : itree E =====> stateT ST (itree E') :=
-    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_ST_isMonadIter ST (itree E') (M_isMonadIter := itree_isMonadIter E')) handle
+    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_isMonadIter ST (itree E') (M_isMonadIter := itree_isMonadIter E')) handle
   .
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
@@ -239,7 +239,7 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
     uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (curry bisim) (observe lhs) (observe rhs))
   .
 
-  Lemma eqITreeF_isMonotonic
+  Global Instance eqITreeF_isMonotonic
     : isMonotonicMap eqITreeF.
   Proof.
     exact (
