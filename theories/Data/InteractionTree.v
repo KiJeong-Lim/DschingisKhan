@@ -104,8 +104,7 @@ Module InteractionTrees (ITREE_AXIOMS : InteractionTrees_AXIOMS).
 
   Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E =====> M) : itree E =====> M :=
     fun R : Type =>
-    iterMonad (M := M) (I := itree E R) (R := R) (
-      fun t0 : itree E R =>
+    iterMonad (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
       match observe t0 with
       | RetF r => pure (inr r)
       | TauF t => pure (inl t)
