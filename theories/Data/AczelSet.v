@@ -270,7 +270,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Definition filter (phi : AczelSet -> Prop) (x : AczelSet) : AczelSet := filtering x (fun c_x : getChildren x => phi (getChildTrees x c_x)).
 
-  Theorem AczelSet_filter_spec (x : AczelSet) (phi : AczelSet -> Prop)
+  Theorem AczelSet_filter_spec (phi : AczelSet -> Prop) (x : AczelSet)
     : forall z : AczelSet, z `elem` filter phi x <-> << IN_filter : exists c_x : getChildren x, phi (getChildTrees x c_x) /\ z == getChildTrees x c_x >>.
   Proof with eauto with *.
     intros z. unfold filter. rewrite AczelSet_filtering_spec. unnw; split.
