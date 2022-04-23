@@ -1008,7 +1008,7 @@ Module FUN_FACTS.
     forall phi_x : phi x, forall hyp_eq : x = x, @eq_rect A x phi phi_x x hyp_eq = phi_x
   .
 
-  Definition pirrel (phi : Prop) : Prop :=
+  Definition pirrel_STMT (phi : Prop) : Prop :=
     forall pf1 : phi, forall pf2 : phi, pf1 = pf2
   .
 
@@ -1018,12 +1018,47 @@ Module FUN_FACTS.
     }
   .
 
-(** "Contents" *)
+(** "Auxiliaries" *)
 
   Inductive BB : Prop := TrueBB | FalseBB.
 
+  Record RETRACT (A : Prop) (B : Prop) : Prop :=
+    { _lam : A -> B
+    ; _app : B -> A
+    ; _beta : forall x : A, _app (_lam x) = x
+    }
+  .
+
+  Global Arguments _lam {A} {B}.
+  Global Arguments _app {A} {B}.
+  Global Arguments _beta {A} {B}.
+
+  Record RETRACT2 (A : Prop) (B : Prop) : Prop :=
+    { _lam2 : A -> B
+    ; _app2 : B -> A
+    ; _beta2 : RETRACT A B -> forall x : A, _app2 (_lam2 x) = x
+    }
+  .
+
+  Global Arguments _lam2 {A} {B}.
+  Global Arguments _app2 {A} {B}.
+  Global Arguments _beta2 {A} {B}.
+
+(** "Contents" *)
+
+  Lemma derive_fixedpoint_combinator (D : Prop)
+    (retract : RETRACT (D -> D) D)
+    : {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
+  Proof.
+    destruct retract as [lam_D app_D beta_D].
+    pose (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
+    exists (Y_combinator_of_Curry). intros f.
+    change (app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x))) = f (Y_combinator_of_Curry f)).
+    now replace (app_D (lam_D (fun x : D => f (app_D x x)))) with (fun x : D => f (app_D x x)).
+  Defined.
+
   Lemma TrueBB_eq_FalseBB_iff_pirrel
-    : TrueBB = FalseBB <-> << PROOF_IRRELEVANCE : forall phi : Prop, pirrel phi >>.
+    : TrueBB = FalseBB <-> << PROOF_IRRELEVANCE : forall phi : Prop, pirrel_STMT phi >>.
   Proof.
     unnw. split.
     - intros hyp_eq phi pf1 pf2.
