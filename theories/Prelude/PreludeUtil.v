@@ -967,7 +967,7 @@ Module MyUtil.
     - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
   Qed.
 
-  Ltac simpl_data_props_once :=
+(*Ltac simpl_data_props_once :=
     simpl in *;
     first
     [ rewrite in_app_iff in *
@@ -986,11 +986,7 @@ Module MyUtil.
     | rewrite not_true_iff_false in *
     | rewrite not_false_iff_true in *
     ]
-  .
-
-  Ltac simpl_data_props :=
-    repeat simpl_data_props_once; repeat (try intro; try simpl_data_props_once; try now (subst; firstorder))
-  .
+  .*)
 
 End MyUtil.
 
@@ -1012,6 +1008,10 @@ Module FUN_FACTS.
     forall phi_x : phi x, forall hyp_eq : x = x, @eq_rect A x phi phi_x x hyp_eq = phi_x
   .
 
+  Definition pirrel (phi : Prop) : Prop :=
+    forall pf1 : phi, forall pf2 : phi, pf1 = pf2
+  .
+
   Polymorphic Class isWellFounded (A : Type) : Type :=
     { wfRel (subtree : A) (tree : A) : Prop
     ; wfRel_well_founded (root : A) : Acc wfRel root
@@ -1019,6 +1019,18 @@ Module FUN_FACTS.
   .
 
 (** "Contents" *)
+
+  Inductive BB : Prop := TrueBB | FalseBB.
+
+  Lemma TrueBB_eq_FalseBB_iff_pirrel
+    : TrueBB = FalseBB <-> << PROOF_IRRELEVANCE : forall phi : Prop, pirrel phi >>.
+  Proof.
+    unnw. split.
+    - intros hyp_eq phi pf1 pf2.
+      exact (eq_congruence (fun b : BB => if b then pf1 else pf2) TrueBB FalseBB hyp_eq).
+    - intros h_pirrel.
+      exact (h_pirrel BB TrueBB FalseBB).
+  Qed.
 
   Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
     (IND : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
