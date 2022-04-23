@@ -407,18 +407,18 @@ Module Ensembles.
 
   Section WITH_LIST.
 
-  Definition isFinteSubsetOf {A : Type} (xs : list A) (X : ensemble A) : Prop := forall z : A, In z xs -> member z X.
+  Definition isFiniteSubsetOf {A : Type} (xs : list A) (X : ensemble A) : Prop := forall z : A, In z xs -> member z X.
 
   Definition isListRepOf {A : Type} (xs : list A) (X : ensemble A) : Prop := forall z : A, In z xs <-> member z X.
 
   Context {A : Type}.
 
-  Lemma isFinteSubsetOf_append (xs1 : list A) (xs2 : list A) (X : ensemble A)
-    (xs1_isFiniteSubsetOf_X : isFinteSubsetOf xs1 X)
-    (xs2_isFiniteSubsetOf_X : isFinteSubsetOf xs2 X)
-    : isFinteSubsetOf (xs1 ++ xs2) X.
+  Lemma isFiniteSubsetOf_append (xs1 : list A) (xs2 : list A) (X : ensemble A)
+    (xs1_isFiniteSubsetOf_X : isFiniteSubsetOf xs1 X)
+    (xs2_isFiniteSubsetOf_X : isFiniteSubsetOf xs2 X)
+    : isFiniteSubsetOf (xs1 ++ xs2) X.
   Proof.
-    unfold isFinteSubsetOf in *. intro.
+    unfold isFiniteSubsetOf in *. intro.
     rewrite in_app_iff. now firstorder.
   Qed.
 
@@ -431,9 +431,9 @@ Module Ensembles.
     rewrite in_app_iff. now firstorder.
   Qed.
 
-  Lemma isFinteSubsetOf_remove {requireEqDec : EqDec A} (x : A) (xs : list A) (X : ensemble A)
-    (xs_isFiniteSubsetOf_insert_x_X : isFinteSubsetOf xs (insert x X))
-    : isFinteSubsetOf (remove eq_dec x xs) X.
+  Lemma isFiniteSubsetOf_remove {requireEqDec : EqDec A} (x : A) (xs : list A) (X : ensemble A)
+    (xs_isFiniteSubsetOf_insert_x_X : isFiniteSubsetOf xs (insert x X))
+    : isFiniteSubsetOf (remove eq_dec x xs) X.
   Proof.
     unfold isListRepOf in *. intros z z_in.
     exploit (in_remove eq_dec xs z x z_in) as [z_in_xs z_ne_x].
@@ -453,7 +453,7 @@ Module Ensembles.
 
   End WITH_LIST.
 
-  Global Hint Unfold isFinteSubsetOf isListRepOf : khan_hints.
+  Global Hint Unfold isFiniteSubsetOf isListRepOf : khan_hints.
 
   Section SUBSET_INTRO.
 
