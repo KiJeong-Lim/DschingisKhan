@@ -36,6 +36,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
+  Lemma AczelSet_eta (x : AczelSet)
+    : x = Node (fun child : getChildren x => getChildTrees x child).
+  Proof. destruct x; reflexivity. Defined.
+
 (** "Relations on Set" *)
 
   Fixpoint eqTree (lhs : AczelSet) (rhs : AczelSet) : Prop :=
@@ -274,7 +278,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     - intros [c_x [phi_x_c z_eq]]...
   Qed.
 
-  Corollary AczelSet_filter_MainProp (x : AczelSet) (phi : AczelSet -> Prop)
+  Corollary in_filter_iff (phi : AczelSet -> Prop) (x : AczelSet)
     (phi_compatWith_eqTree : compatWith_eqTree phi)
     : forall z : AczelSet, z `elem` filter phi x <-> << FILTER : z `elem` x /\ phi z >>.
   Proof with cbn in *; eauto with *.
