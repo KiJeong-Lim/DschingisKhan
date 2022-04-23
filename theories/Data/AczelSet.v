@@ -297,7 +297,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_fromList.
 
-  Definition fromList (xs : list AczelSet) : AczelSet := Node (safe_nth xs).
+  Definition fromList (xs : list AczelSet) : AczelSet := Node (fun child : Fin (length xs) => safe_nth xs child).
 
   Theorem AczelSet_fromList_spec (xs : list AczelSet)
     : forall z : AczelSet, z `elem` fromList xs <-> << IN_fromList : exists i : Fin (length xs), z == safe_nth xs i >>.
@@ -342,8 +342,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition empty : AczelSet := Node (fun hyp_false : False => False_rect AczelSet hyp_false).
 
   Lemma AczelSet_empty_spec
-    : forall z : AczelSet, z `elem` empty <-> (False).
-  Proof. intros z. unfold empty. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
+    : forall z : AczelSet, z `elem` empty <-> << IN_empty : False >>.
+  Proof. unnw. intros z. unfold empty. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
 
   End AczelSet_empty.
 
@@ -352,9 +352,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition union (x1 : AczelSet) (x2 : AczelSet) : AczelSet := unions_i (fun b : bool => if b then x1 else x2).
 
   Lemma AczelSet_union_spec (x1 : AczelSet) (x2 : AczelSet)
-    : forall z : AczelSet, z `elem` union x1 x2 <-> (z `elem` x1 \/ z `elem` x2).
+    : forall z : AczelSet, z `elem` union x1 x2 <-> << IN_union : z `elem` x1 \/ z `elem` x2 >>.
   Proof.
-    intros z. unfold union. rewrite AczelSet_unions_i_spec. unnw.
+    unnw. intros z. unfold union. rewrite AczelSet_unions_i_spec. unnw.
     split; [intros [[ | ] z_in] | intros [z_in | z_in]; [exists (true) | exists (false)]]; eauto with *.
   Qed.
 
@@ -365,9 +365,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition singleton (x : AczelSet) : AczelSet := fromList (cons x nil).
 
   Lemma AczelSet_singleton_spec (x : AczelSet)
-    : forall z : AczelSet, z `elem` singleton x <-> (z == x).
+    : forall z : AczelSet, z `elem` singleton x <-> << IN_singleton : z == x >>.
   Proof.
-    intros z. unfold singleton. rewrite AczelSet_fromList_spec. unnw; cbn; unfold_eqTree; split.
+    unnw. intros z. unfold singleton. rewrite AczelSet_fromList_spec. unnw; cbn; unfold_eqTree; split.
     - intros [i z_eq]. revert i z_eq. now introFinS i.
     - intros z_eq_x. now exists (FZ).
   Qed.
