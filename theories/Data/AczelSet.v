@@ -329,7 +329,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_unions.
 
-  Definition unions (x : AczelSet) : AczelSet := @unions_i (getChildren x) (getChildTrees x).
+  Definition unions (x : AczelSet) : AczelSet := unions_i (I := getChildren x) (getChildTrees x).
 
   Theorem AczelSet_unions_spec (x : AczelSet)
     : forall z : AczelSet, z `elem` unions x <-> << IN_unions : exists y : AczelSet, z `elem` y /\ y `elem` x >>.
