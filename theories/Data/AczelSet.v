@@ -159,7 +159,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   .
 
   Lemma AczelSet_rect (phi : AczelSet -> Type)
-    (IND : forall x : AczelSet, << IH : forall y : AczelSet, y `elem` x -> phi y >> -> phi x)
+    (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
     : forall x : AczelSet, phi x.
   Proof. eapply NotherianRecursion. exact (IND). Defined.
 
