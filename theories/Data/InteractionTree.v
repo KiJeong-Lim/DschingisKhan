@@ -8,7 +8,7 @@ Require Import DschingisKhan.Math.BasicPosetTheory.
 
 Module Type InteractionTrees_AXIOMS.
 
-  Axiom projT2_eq : forall A : Type, forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2.
+  Axiom projT2_eq : projT2_eq_STMT Type.
 
 End InteractionTrees_AXIOMS.
 
@@ -252,8 +252,8 @@ Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
   Proof.
     split.
     - intros [HYP_REL]. inversion HYP_REL; subst.
-      pose proof (AXIOMS.projT2_eq Type (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
-      pose proof (AXIOMS.projT2_eq Type (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
+      pose proof (AXIOMS.projT2_eq (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
+      pose proof (AXIOMS.projT2_eq (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
       now subst k3 k4.
     - intros HYP_REL. now do 2 econstructor.
   Qed.

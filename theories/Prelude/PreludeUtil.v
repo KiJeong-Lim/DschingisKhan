@@ -998,18 +998,26 @@ Export MyUtil.
 
 Module FUN_FACTS.
 
-  Class isWellFounded (A : Type) : Type :=
+(** "Statement" *)
+
+  Polymorphic Definition projT2_eq_STMT (A : Type) : Prop :=
+    forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2
+  .
+
+  Polymorphic Class isWellFounded (A : Type) : Type :=
     { wfRel (subtree : A) (tree : A) : Prop
     ; wfRel_well_founded (root : A) : Acc wfRel root
     }
   .
 
-  Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
-    (acc_claim : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
+(** "Contents" *)
+
+  Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
+    (IND : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
     : forall root : A, phi root.
   Proof.
     unnw. intros root. induction (wfRel_well_founded root) as [tree hyp_acc_tree IH].
-    eapply acc_claim. intros subtree hyp_acc_subtree. exact (IH subtree hyp_acc_subtree).
+    eapply IND. intros subtree hyp_acc_subtree. exact (IH subtree hyp_acc_subtree).
   Defined.
 
   Global Instance nat_isWellFounded : isWellFounded nat :=
