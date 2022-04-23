@@ -1047,10 +1047,10 @@ Module FUN_FACTS.
 (** "Contents" *)
 
   Lemma derive_fixedpoint_combinator (D : Prop)
-    (retract : RETRACT (D -> D) D)
+    (retract_DtoD_D : RETRACT (D -> D) D)
     : {Y : (D -> D) -> D | forall f : D -> D, Y f = f (Y f)}.
   Proof.
-    destruct retract as [lam_D app_D beta_D].
+    destruct retract_DtoD_D as [lam_D app_D beta_D].
     pose (Y_combinator_of_Curry := fun f : D -> D => app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x)))).
     exists (Y_combinator_of_Curry). intros f.
     change (app_D (lam_D (fun x : D => f (app_D x x))) (lam_D (fun x : D => f (app_D x x))) = f (Y_combinator_of_Curry f)).
