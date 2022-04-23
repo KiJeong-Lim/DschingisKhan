@@ -998,10 +998,18 @@ Export MyUtil.
 
 Module FUN_FACTS.
 
-(** "Statement" *)
+(** "Statements" *)
 
-  Polymorphic Definition projT2_eq_STMT (A : Type) : Prop :=
-    forall B : A -> Type, forall x : A, forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2
+  Polymorphic Definition projT2_eq_STMT (A : Type) (B : A -> Type) (x : A) : Prop :=
+    forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2
+  .
+
+  Polymorphic Definition axiomK_STMT (A : Type) (x : A) : Prop :=
+    forall phi : x = x -> Prop, phi (eq_reflexivity x) -> forall hyp_eq : x = x, phi hyp_eq
+  .
+
+  Polymorphic Definition eq_rect_eq_STMT (A : Type) (phi : A -> Type) (x : A) : Prop :=
+    forall phi_x : phi x, forall hyp_eq : x = x, @eq_rect A x phi phi_x x hyp_eq = phi_x
   .
 
   Polymorphic Class isWellFounded (A : Type) : Type :=

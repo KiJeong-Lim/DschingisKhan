@@ -8,7 +8,7 @@ Require Import DschingisKhan.Math.BasicPosetTheory.
 
 Module Type InteractionTrees_AXIOMS.
 
-  Axiom projT2_eq : projT2_eq_STMT Type.
+  Axiom projT2_eq : forall phi : Type -> Type, forall X : Type, projT2_eq_STMT Type phi X.
 
 End InteractionTrees_AXIOMS.
 
