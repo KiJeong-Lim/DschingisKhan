@@ -147,8 +147,8 @@ Export EQ_FACTS.
 
 Module NAT_FACTS.
 
-  Local Notation suc := S.
-  Local Notation zero := O.
+  Global Notation suc := S.
+  Global Notation zero := O.
 
   Definition is_suc (n : nat) : Prop :=
     match n return Prop with
@@ -697,6 +697,19 @@ Module MyUtil.
     assert (claim6 : n / b > 0 \/ n / b = 0)...
   Qed.
 
+  Lemma n_div_b_ge_1_if_n_ge_b_and_b_ge_1 (n : nat) (b : nat) :
+    n >= b ->
+    b >= 1 ->
+    n / b >= 1.
+  Proof with try lia.
+    intros H_n_ge_b H_b_ge_1.
+    assert (claim1 : b <> 0)...
+    pose proof (claim2 := Nat.div_mod n b claim1).
+    assert (claim3 : b * (n / b) + n mod b >= b)...
+    pose proof (claim4 := Nat.mod_bound_pos n b (@le_intro_0_le_n n) H_b_ge_1).
+    assert (therefore : b * (n / b) + b > b)...
+  Qed.
+
   End NAT_ARITH.
 
   Definition first_nat (p : nat -> bool) : nat -> nat :=
@@ -986,6 +999,9 @@ Module MyUtil.
     | rewrite not_true_iff_false in *
     | rewrite not_false_iff_true in *
     ]
+  .
+  Ltac auto_rewrite :=
+    repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
   .*)
 
 End MyUtil.
@@ -1088,6 +1104,47 @@ Export FUN_FACTS.
 Module SCRATCH.
 
   Import ListNotations.
+
+  Section ACKERMANN.
+
+  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
+    { AckermannFunc_spec1 : forall n, ack (0, n) = n + 1
+    ; AckermannFunc_spec2 : forall m, ack (m + 1, 0) = ack (m, 1)
+    ; AckermannFunc_spec3 : forall m n, ack (m + 1, n + 1) = ack (m, ack (m + 1, n))
+    }
+  .
+
+  Let AckermannFunc1_aux1 (kont : nat -> nat) : nat -> nat :=
+    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
+    match n return nat with
+    | zero => kont (suc zero)
+    | suc n' => kont (AckermannFunc1_aux1_fix n')
+    end
+  .
+
+  Let AckermannFunc1_aux2 : nat -> nat -> nat :=
+    fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
+    match m return nat -> nat with
+    | zero => suc
+    | suc m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
+    end
+  .
+
+  Definition AckermannFunc1 (pr : nat * nat) : nat :=
+    AckermannFunc1_aux2 (fst pr) (snd pr)
+  .
+
+  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
+    AckermannFuncSpec AckermannFunc1.
+  Proof with (lia || eauto).
+    split.
+    - intros n; replace (n + 1) with (S n)...
+    - intros m; replace (m + 1) with (S m)...
+    - intros [| m']; induction n as [| n IHn]; cbn in *...
+      all: replace (m' + 1) with (S m') in *...
+  Qed.
+
+  End ACKERMANN.
 
 (* (* Reference: "https://github.com/agda/agda-stdlib/blob/456930d31e99ba1669a51a70e0d41e0434a9bb14/src/Induction/WellFounded.agda#L183" *)
   Section LexicographicalOrder.
