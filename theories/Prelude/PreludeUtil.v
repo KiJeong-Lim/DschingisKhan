@@ -698,12 +698,11 @@ Module MyUtil.
     assert (claim6 : n / b > 0 \/ n / b = 0)...
   Qed.
 
-  Lemma n_div_b_ge_1_if_n_ge_b_and_b_ge_1 (n : nat) (b : nat) :
-    n >= b ->
-    b >= 1 ->
-    n / b >= 1.
+  Lemma n_div_b_ge_1_if_n_ge_b_and_b_ge_1 (n : nat) (b : nat)
+    (H_n_ge_b : n >= b)
+    (H_b_ge_1 : b >= 1)
+    : n / b >= 1.
   Proof with try lia.
-    intros H_n_ge_b H_b_ge_1.
     assert (claim1 : b <> 0)...
     pose proof (claim2 := Nat.div_mod n b claim1).
     assert (claim3 : b * (n / b) + n mod b >= b)...
