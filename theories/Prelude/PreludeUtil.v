@@ -1114,23 +1114,23 @@ Module SCRATCH.
     }
   .
 
-  Let AckermannImpl1_aux1 (kont : nat -> nat) : nat -> nat :=
-    fix AckermannImpl1_aux1_fix (n : nat) {struct n} : nat :=
+  Definition AckermannImpl1Aux1 (kont : nat -> nat) : nat -> nat :=
+    fix AckermannImpl1Aux1_fix (n : nat) {struct n} : nat :=
     match n with
     | zero => kont (suc zero)
-    | suc n' => kont (AckermannImpl1_aux1_fix n')
+    | suc n' => kont (AckermannImpl1Aux1_fix n')
     end
   .
 
-  Let AckermannImpl1_aux2 : nat -> nat -> nat :=
-    fix AckermannImpl1_aux2_fix (m : nat) {struct m} : nat -> nat :=
+  Definition AckermannImpl1Aux2 : nat -> nat -> nat :=
+    fix AckermannImpl1Aux2_fix (m : nat) {struct m} : nat -> nat :=
     match m with
     | zero => suc
-    | suc m' => AckermannImpl1_aux1 (AckermannImpl1_aux2_fix m')
+    | suc m' => AckermannImpl1Aux1 (AckermannImpl1Aux2_fix m')
     end
   .
 
-  Definition AckermannImpl1 (pr : nat * nat) : nat := AckermannImpl1_aux2 (fst pr) (snd pr).
+  Definition AckermannImpl1 (pr : nat * nat) : nat := AckermannImpl1Aux2 (fst pr) (snd pr).
 
   Theorem AckermannImpl1_satisfies_AckermannFuncSpec :
     AckermannFuncSpec AckermannImpl1.
