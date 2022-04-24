@@ -380,12 +380,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_Nat.
 
-  Definition Suc (x : AczelSet) : AczelSet := union x (singleton x).
+  Definition sucOf (x : AczelSet) : AczelSet := union x (singleton x).
 
   Fixpoint natToAczelSet (n : nat) {struct n} : AczelSet :=
     match n with
     | O => empty
-    | S n' => Suc (natToAczelSet n')
+    | S n' => sucOf (natToAczelSet n')
     end
   .
 
