@@ -1114,26 +1114,26 @@ Module SCRATCH.
     }
   .
 
-  Let AckermannFunc1_aux1 (kont : nat -> nat) : nat -> nat :=
-    fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
+  Let AckermannImpl1_aux1 (kont : nat -> nat) : nat -> nat :=
+    fix AckermannImpl1_aux1_fix (n : nat) {struct n} : nat :=
     match n with
     | zero => kont (suc zero)
-    | suc n' => kont (AckermannFunc1_aux1_fix n')
+    | suc n' => kont (AckermannImpl1_aux1_fix n')
     end
   .
 
-  Let AckermannFunc1_aux2 : nat -> nat -> nat :=
-    fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
+  Let AckermannImpl1_aux2 : nat -> nat -> nat :=
+    fix AckermannImpl1_aux2_fix (m : nat) {struct m} : nat -> nat :=
     match m with
     | zero => suc
-    | suc m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
+    | suc m' => AckermannImpl1_aux1 (AckermannImpl1_aux2_fix m')
     end
   .
 
-  Definition AckermannFunc1 (pr : nat * nat) : nat := AckermannFunc1_aux2 (fst pr) (snd pr).
+  Definition AckermannImpl1 (pr : nat * nat) : nat := AckermannImpl1_aux2 (fst pr) (snd pr).
 
-  Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
-    AckermannFuncSpec AckermannFunc1.
+  Theorem AckermannImpl1_satisfies_AckermannFuncSpec :
+    AckermannFuncSpec AckermannImpl1.
   Proof with (lia || eauto).
     split.
     - intros n; replace (n + 1) with (S n)...
