@@ -25,13 +25,13 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition AczelSet : Univ.t := Tree.
 
   Definition getChildren (root : AczelSet) : Type :=
-    match root in Tree return Type with
+    match root with
     | @Node children childtrees => children
     end
   .
 
   Definition getChildTrees (root : AczelSet) : getChildren root -> AczelSet :=
-    match root as tree in Tree return getChildren tree -> Tree with
+    match root with
     | @Node children childtrees => childtrees
     end
   .
@@ -42,7 +42,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
 (** "Relations on Set" *)
 
-  Fixpoint eqTree (lhs : AczelSet) (rhs : AczelSet) : Prop :=
+  Fixpoint eqTree (lhs : AczelSet) (rhs : AczelSet) {struct lhs} : Prop :=
     match lhs in Tree, rhs in Tree return Prop with
     | Node childtrees1, Node childtrees2 => ⟪ lhs_simulates_rhs : forall child1, exists child2, eqTree (childtrees1 child1) (childtrees2 child2) ⟫ /\ ⟪ rhs_simulates_lhs : forall child2, exists child1, eqTree (childtrees1 child1) (childtrees2 child2) ⟫
     end
@@ -104,7 +104,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Unfold elem : khan_hints.
 
-  Local Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
+  Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
   Lemma elem_intro {z : AczelSet} {x : AczelSet} (c_x : getChildren x)
     (z_eq_x_c : z == getChildTrees x c_x)
@@ -190,7 +190,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     forall z : AczelSet, z `elem` x -> z `elem` y
   .
 
-  Local Infix " `subseteq` " := subseteq (at level 70, no associativity) : type_scope.
+  Global Infix " `subseteq` " := subseteq (at level 70, no associativity) : type_scope.
 
   Local Hint Unfold subseteq : khan_hints.
 
