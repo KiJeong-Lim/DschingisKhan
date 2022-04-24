@@ -1083,7 +1083,7 @@ Module FUN_FACTS.
       exact (h_pirrel BB TrueBB FalseBB).
   Qed.
 
-  Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} {phi : A -> Type}
+  Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} (phi : A -> Type)
     (IND : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
     : forall root : A, phi root.
   Proof.
