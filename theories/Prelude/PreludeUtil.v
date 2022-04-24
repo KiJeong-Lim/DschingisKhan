@@ -147,8 +147,8 @@ Export EQ_FACTS.
 
 Module NAT_FACTS.
 
-  Global Notation suc := S.
   Global Notation zero := O.
+  Global Notation suc := S.
 
   Definition is_suc (n : nat) : Prop :=
     match n return Prop with
@@ -1138,7 +1138,7 @@ Module SCRATCH.
     split.
     - intros n; replace (n + 1) with (S n)...
     - intros m; replace (m + 1) with (S m)...
-    - intros [| m']; induction n as [| n IHn]; cbn in *...
+    - intros [ | m']; induction n as [ | n IH]; cbn in *...
       all: replace (m' + 1) with (S m') in *...
   Qed.
 
