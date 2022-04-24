@@ -1116,7 +1116,7 @@ Module SCRATCH.
 
   Let AckermannFunc1_aux1 (kont : nat -> nat) : nat -> nat :=
     fix AckermannFunc1_aux1_fix (n : nat) {struct n} : nat :=
-    match n return nat with
+    match n with
     | zero => kont (suc zero)
     | suc n' => kont (AckermannFunc1_aux1_fix n')
     end
@@ -1124,15 +1124,13 @@ Module SCRATCH.
 
   Let AckermannFunc1_aux2 : nat -> nat -> nat :=
     fix AckermannFunc1_aux2_fix (m : nat) {struct m} : nat -> nat :=
-    match m return nat -> nat with
+    match m with
     | zero => suc
     | suc m' => AckermannFunc1_aux1 (AckermannFunc1_aux2_fix m')
     end
   .
 
-  Definition AckermannFunc1 (pr : nat * nat) : nat :=
-    AckermannFunc1_aux2 (fst pr) (snd pr)
-  .
+  Definition AckermannFunc1 (pr : nat * nat) : nat := AckermannFunc1_aux2 (fst pr) (snd pr).
 
   Theorem AckermannFunc1_satisfies_AckermannFuncSpec :
     AckermannFuncSpec AckermannFunc1.
