@@ -156,11 +156,7 @@ Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
   .
 
   Definition itree_app {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
-    fun X : Type =>
-    fun e : callE I R X =>
-    match e in callE _ _ x return itree E x with
-    | Call arg => callee arg
-    end
+    fun X : Type => callE_rect I R (fun x : Type => fun _ : callE I R x => itree E x) callee X
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
