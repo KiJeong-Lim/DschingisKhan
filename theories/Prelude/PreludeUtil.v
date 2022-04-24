@@ -980,7 +980,8 @@ Module MyUtil.
     - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
   Qed.
 
-(*Ltac simpl_data_props_once :=
+(* "REFACTOR ME!"
+  Ltac repeat_rewrite :=
     simpl in *;
     first
     [ rewrite in_app_iff in *
@@ -1000,9 +1001,8 @@ Module MyUtil.
     | rewrite not_false_iff_true in *
     ]
   .
-  Ltac auto_rewrite :=
-    repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder))
-  .*)
+  Ltac auto_rewrite := repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder)).
+*)
 
 End MyUtil.
 
