@@ -139,6 +139,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Resolve elem_compatWith_eqProp : khan_hints.
 
+  Section SetInduction.
+
   Local Add Parametric Morphism :
     (Acc elem) with signature (eqProp ==> iff)
     as Acc_elem_compatWith_eqProp.
@@ -166,6 +168,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
     : forall x : AczelSet, phi x.
   Proof. eapply NotherianRecursion. exact (IND). Defined.
+
+  End SetInduction.
 
   Theorem AczelSet_extensional_equality (lhs : AczelSet) (rhs : AczelSet)
     : lhs == rhs <-> << EXT_EQ : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
