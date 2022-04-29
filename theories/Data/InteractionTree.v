@@ -48,9 +48,13 @@ Module InteractionTrees.
     end
   .
 
-  Section ITREE_BIND. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
+  Section ITREE_MONAD. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
 
-  Context {E : Type -> Type} {R1 : Type} {R2 : Type}.
+  Context {E : Type -> Type}.
+
+  Definition itree_pure {R : Type} (r : R) : itree E R := Ret r.
+
+  Context {R1 : Type} {R2 : Type}.
 
   Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
     match ot0 with
@@ -65,17 +69,19 @@ Module InteractionTrees.
     itree_bindGuard k (observe t) itree_bindAux_cofix
   .
 
-  End ITREE_BIND.
+  Definition itree_bind (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t.
+
+  Lemma itree_bind_unfold_observed (t0 : itree E R1) (k0 : R1 -> itree E R2)
+    : observe (itree_bind t0 k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
+  Proof. exact (eq_reflexivity (observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)))). Defined.
+
+  End ITREE_MONAD.
 
   Global Instance itree_isMonad (E : Type -> Type) : isMonad (itree E) :=
-    { pure {R : Type} (r : R) := Ret r
-    ; bind {R1 : Type} {R2 : Type} (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t
+    { pure {R : Type} (x : R) := itree_pure x
+    ; bind {R1 : Type} {R2 : Type} (m : itree E R1) (k : R1 -> itree E R2) := itree_bind m k
     }
   .
-
-  Lemma itree_bind_unfold_observed {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2)
-    : observe (t0 >>= k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => t >>= k0)).
-  Proof. exact (eq_reflexivity (observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => t >>= k0)))). Defined.
 
   Definition itree_tick {E : Type -> Type} : itree E unit := Tau (Ret tt).
 
@@ -83,7 +89,7 @@ Module InteractionTrees.
 
   Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)%type) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
-    itree_bindAux (sum_rect (fun _ : I + R => itree E R) (fun l : I => Tau (itree_iter_cofix l)) (fun r : R => Ret r)) (step i)
+    itree_bindAux (@sum_rect I R (fun _ : I + R => itree E R) (fun i' : I => Tau (itree_iter_cofix i')) (fun r : R => Ret r)) (step i)
   .
 
   Global Instance itree_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
