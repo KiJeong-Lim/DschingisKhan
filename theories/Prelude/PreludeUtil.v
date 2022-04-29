@@ -1,8 +1,12 @@
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Relations.Relation_Operators.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 
@@ -1013,11 +1017,11 @@ Module FUN_FACTS.
 (** "Statements" *)
 
   Polymorphic Definition projT2_eq_STMT (A : Type) (B : A -> Type) (x : A) : Prop :=
-    forall y1 : B x, forall y2 : B x, @existT A B x y1 = @existT A B x y2 -> y1 = y2
+    forall y1 : B x, forall y2 : B x, << PAIR_EQ : @existT A B x y1 = @existT A B x y2 >> -> y1 = y2
   .
 
   Polymorphic Definition axiomK_STMT (A : Type) (x : A) : Prop :=
-    forall phi : x = x -> Prop, phi (eq_reflexivity x) -> forall hyp_eq : x = x, phi hyp_eq
+    forall phi : x = x -> Prop, << phi_refl : phi (eq_reflexivity x) >> -> forall hyp_eq : x = x, phi hyp_eq
   .
 
   Polymorphic Definition eq_rect_eq_STMT (A : Type) (phi : A -> Type) (x : A) : Prop :=
@@ -1060,6 +1064,12 @@ Module FUN_FACTS.
   Global Arguments _j2 {A} {B}.
   Global Arguments _inv2 {A} {B}.
 
+  Definition RETRACT_REFL (A : Prop) : RETRACT A A :=
+    {| _i := fun x : A => x; _j := fun x : A => x; _inv := @eq_refl A |}
+  .
+
+  Local Hint Resolve _inv _inv2 RETRACT_REFL : core.
+
 (** "Contents" *)
 
   Lemma derive_fixedpoint_combinator (D : Prop)
@@ -1074,13 +1084,39 @@ Module FUN_FACTS.
   Qed.
 
   Lemma TrueBB_eq_FalseBB_iff_pirrel
-    : TrueBB = FalseBB <-> << PROOF_IRRELEVANCE : forall phi : Prop, pirrel_STMT phi >>.
+    : TrueBB = FalseBB <-> ⟪ PROOF_IRRELEVANCE : forall phi : Prop, pirrel_STMT phi ⟫.
   Proof.
     unnw. split.
     - intros hyp_eq phi pf1 pf2.
       exact (eq_congruence (fun b : BB => if b then pf1 else pf2) TrueBB FalseBB hyp_eq).
     - intros h_pirrel.
       exact (h_pirrel BB TrueBB FalseBB).
+  Qed.
+
+  Polymorphic Lemma pirrel_iff_eq_rect_eq (A : Type) (x : A)
+    : ⟪ PROOF_IRRELEVANCE : pirrel_STMT (x = x) ⟫ <-> ⟪ EQ_RECT_EQ : forall B : A -> Type, eq_rect_eq_STMT A B x ⟫.
+  Proof.
+    iis; ii; desnw.
+    - now rewrite PROOF_IRRELEVANCE with (pf1 := hyp_eq) (pf2 := eq_reflexivity x).
+    - now do 2 (match goal with pf : x = x |- _ => rewrite <- EQ_RECT_EQ with (B := eq x) (phi_x := pf) (hyp_eq := eq_symmetry x x pf); destruct pf end).
+  Qed.
+
+  Polymorphic Lemma pirrel_iff_axiomK (A : Type) (x : A)
+    : ⟪ PROOF_IRRELEVANCE : pirrel_STMT (x = x) ⟫ <-> ⟪ AXIOM_K : axiomK_STMT A x ⟫.
+  Proof.
+    iis; ii; desnw.
+    - now rewrite PROOF_IRRELEVANCE with (pf1 := hyp_eq) (pf2 := eq_reflexivity x).
+    - now do 2 (match goal with pf : x = x |- _ => pattern pf; revert pf; eapply AXIOM_K end).
+  Qed.
+
+  Polymorphic Lemma eq_rect_eq_iff_projT2_eq (A : Type) (B : A -> Type) (x : A)
+    : ⟪ EQ_RECT_EQ : eq_rect_eq_STMT A B x ⟫ <-> ⟪ projT2_eq : projT2_eq_STMT A B x ⟫.
+  Proof.
+    set (phi := fun pr1 : @sigT A B => fun pr2 : @sigT A B => fun projT1_eq : projT1 pr1 = projT1 pr2 => @eq_rect A (projT1 pr1) B (projT2 pr1) (projT1 pr2) projT1_eq = projT2 pr2).
+    iis; ii; desnw.
+    - assert (claim1 : phi (@existT A B x y1) (@existT A B x y2) (eq_congruence (@projT1 A B) (@existT A B x y1) (@existT A B x y2) PAIR_EQ)) by now rewrite <- PAIR_EQ.
+      unfold phi in claim1. rewrite EQ_RECT_EQ in claim1. exact (claim1).
+    - eapply projT2_eq. now destruct hyp_eq.
   Qed.
 
   Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} (phi : A -> Type)
@@ -1096,6 +1132,18 @@ Module FUN_FACTS.
     ; wfRel_well_founded := @lt_strong_ind (@Acc nat lt) (@Acc_intro nat lt)
     }
   .
+
+  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
+    : << IS_PREORDER : PreOrder R >> <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
+  Proof.
+    split; ii; desnw.
+    - split; ii; desnw.
+      + now transitivity (x).
+      + now eapply UNFOLDED.
+    - split; ii; desnw.
+      + now eapply PREORDER_PROPERTY.
+      + now firstorder.
+  Qed.
 
 End FUN_FACTS.
 
