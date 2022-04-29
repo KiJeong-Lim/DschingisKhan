@@ -336,10 +336,10 @@ Module NAT_FACTS.
 
   Fixpoint n_le_m_or_m_lt_n_holds_for_any_n_and_any_m (n : nat) (m : nat) {struct n} : {n <= m} + {m < n} :=
     match n as x return {x <= m} + {m < x} with
-    | zero => left (@le_intro_0_le_n m)
+    | zero => left le_intro_0_le_n
     | suc n' =>
       match m as y return {suc n' <= y} + {y < suc n'} with
-      | zero => right (le_intro_S_n_le_S_m (@le_intro_0_le_n n'))
+      | zero => right (le_intro_S_n_le_S_m le_intro_0_le_n)
       | suc m' =>
         match n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n' m' with
         | left hyp_le => left (le_intro_S_n_le_S_m hyp_le)
