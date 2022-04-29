@@ -1135,9 +1135,9 @@ Module FUN_FACTS.
   Polymorphic Lemma eq_rect_eq_iff_projT2_eq (A : Type) (B : A -> Type) (x : A)
     : ⟪ EQ_RECT_EQ : eq_rect_eq_STMT A B x ⟫ <-> ⟪ projT2_eq : projT2_eq_STMT A B x ⟫.
   Proof.
-    set (phi := fun pr1 : @sigT A B => fun pr2 : @sigT A B => fun projT1_eq : projT1 pr1 = projT1 pr2 => @eq_rect A (projT1 pr1) B (projT2 pr1) (projT1 pr2) projT1_eq = projT2 pr2).
     iis; ii; desnw.
-    - assert (claim1 : phi (@existT A B x y1) (@existT A B x y2) (eq_congruence (@projT1 A B) (@existT A B x y1) (@existT A B x y2) PAIR_EQ)) by now rewrite <- PAIR_EQ.
+    - set (phi := fun pr1 : @sigT A B => fun pr2 : @sigT A B => fun projT1_eq : projT1 pr1 = projT1 pr2 => @eq_rect A (projT1 pr1) B (projT2 pr1) (projT1 pr2) projT1_eq = projT2 pr2).
+      assert (claim1 : phi (@existT A B x y1) (@existT A B x y2) (eq_congruence (@projT1 A B) (@existT A B x y1) (@existT A B x y2) PAIR_EQ)) by now rewrite <- PAIR_EQ.
       unfold phi in claim1. rewrite EQ_RECT_EQ in claim1. exact (claim1).
     - eapply projT2_eq. now destruct hyp_eq.
   Qed.
