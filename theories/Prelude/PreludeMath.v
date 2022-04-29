@@ -618,7 +618,9 @@ Module MathNotations.
     (x binder, A custom math_term_scope at level 0, P custom math_form_scope at level 11, in custom math_form_scope at level 1, no associativity).
   Global Notation " '(∃' x '∈' A ')'  '⟪' P '⟫' " := (exists x : A, P)
     (x binder, A custom math_term_scope at level 0, P custom math_form_scope at level 11, in custom math_form_scope at level 1, no associativity).
-  Global Notation " t '=' s " := (eq t s)
+  Global Notation " t '=' s " := (t = s)
+    (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
+  Global Notation " t '≠' s " := (t <> s)
     (t custom math_term_scope at level 6, s custom math_term_scope at level 6, in custom math_form_scope at level 7, no associativity).
 
 (** "Type" *)

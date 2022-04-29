@@ -461,14 +461,17 @@ Module BasicPosetTheory.
     }
   .
 
+  Local Obligation Tactic := cbn; unfold lex_le, lex_eq; intros lhs rhs.
   Global Program Instance listLexicographicalOrder_lifts_DecidableTotalOrder : isDecidableTotalOrder (list A) :=
     { compare := lex_compare
     }
   .
-  Local Obligation Tactic := cbn; unfold lex_le, lex_eq; intros lhs rhs.
   Next Obligation.
     intros H_lt. rewrite H_lt.
     split; [now left | congruence].
+  Qed.
+  Next Obligation.
+    tauto.
   Qed.
   Next Obligation.
     intros H_gt. exploit (lex_le_flip_spec lhs rhs).
