@@ -334,6 +334,21 @@ Module NAT_FACTS.
       intros i hyp_i_lt_m. eapply IH with (m := i). exact (le_transitivity hyp_i_lt_m (lt_elim_n_lt_S_m hyp_m_lt_S_n)).
   Defined.
 
+  Fixpoint n_le_m_or_m_lt_n_holds_for_any_n_and_any_m (n : nat) (m : nat) {struct n} : {n <= m} + {m < n} :=
+    match n as x return {x <= m} + {m < x} with
+    | zero => left (@le_intro_0_le_n m)
+    | suc n' =>
+      match m as y return {suc n' <= y} + {y < suc n'} with
+      | zero => right (le_intro_S_n_le_S_m (@le_intro_0_le_n n'))
+      | suc m' =>
+        match n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n' m' with
+        | left hyp_le => left (le_intro_S_n_le_S_m hyp_le)
+        | right hyp_lt => right (le_intro_S_n_le_S_m hyp_lt)
+        end
+      end
+    end
+  .
+
   Inductive Le (n : nat) : nat -> Set :=
   | Le_n : Le n n
   | Le_S (m : nat) (hyp_Le : Le n m) : Le n (S m)
@@ -1070,6 +1085,14 @@ Module FUN_FACTS.
 
   Local Hint Resolve _inv _inv2 RETRACT_REFL : core.
 
+  Definition isMinimalNum (phi : nat -> Prop) (n : nat) : Prop :=
+    phi n /\ (forall m : nat, phi m -> n <= m)
+  .
+
+  Polymorphic Definition isChoicable (A : Type) : Type :=
+    forall phi : A -> Prop, << UNIQUE : exists x : A, forall y : A, phi y <-> x = y >> -> {x : A | phi x}
+  .
+
 (** "Contents" *)
 
   Lemma derive_fixedpoint_combinator (D : Prop)
@@ -1118,6 +1141,177 @@ Module FUN_FACTS.
       unfold phi in claim1. rewrite EQ_RECT_EQ in claim1. exact (claim1).
     - eapply projT2_eq. now destruct hyp_eq.
   Qed.
+
+  Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
+
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
+
+  Let POW (P : Prop) : Prop := P -> BB.
+
+  Let RETRACT2_POW_A_POW_B (A : Prop) (B : Prop)
+    : RETRACT2 (POW A) (POW B).
+  Proof.
+    destruct (exclusive_middle (RETRACT (POW A) (POW B))) as [hyp_yes | hyp_no].
+    - exact ({| _i2 := _i hyp_yes; _j2 := _j hyp_yes; _inv2 := fun _ : RETRACT (POW A) (POW B) => _inv hyp_yes |}).
+    - exact ({| _i2 := fun _ : POW A => fun _ : B => FalseBB; _j2 := fun _ : POW B => fun _ : A => FalseBB; _inv2 := fun r : RETRACT (POW A) (POW B) => False_ind (forall pa : POW A, (fun _ : A => FalseBB) = pa) (hyp_no r) |}).
+  Qed.
+
+  Let UNIV : Prop := forall P : Prop, POW P.
+
+  Let SET_BUILDER_NOTATION (phi : UNIV -> BB) : UNIV :=
+    fun P : Prop =>
+    let LEFT : POW UNIV -> POW P := _j2 (RETRACT2_POW_A_POW_B P UNIV) in
+    let RIGHT : POW UNIV -> POW UNIV := _i2 (RETRACT2_POW_A_POW_B UNIV UNIV) in
+    LEFT (RIGHT phi)
+  .
+
+  Local Notation " ⦃ x | P ⦄ " := (SET_BUILDER_NOTATION (fun x : UNIV => P)) (x binder, at level 0, no associativity) : type_scope.
+
+  Let HAS_AS_AN_ELEMENT (x : UNIV) : UNIV -> BB := x UNIV.
+
+  Local Notation " z ∈ x " := (HAS_AS_AN_ELEMENT x z) (at level 70, no associativity) : type_scope.
+
+  Let SET_BUILDER_NOTATION_SPEC (phi : UNIV -> BB)
+    : (fun z : UNIV => z ∈ ⦃ x | phi x ⦄) = phi.
+  Proof with eauto.
+    unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT.
+    destruct (RETRACT2_POW_A_POW_B UNIV UNIV); simpl in *...
+  Qed.
+
+  Let NAIVE_SET_THEORY : RETRACT (POW UNIV) UNIV := {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}.
+
+  Let NotBB (b : BB) : BB :=
+    match exclusive_middle (b = TrueBB) return BB with
+    | or_introl if_b_eq_TRUE_BB => FalseBB
+    | or_intror if_b_ne_TRUE_BB => TrueBB
+    end
+  .
+
+  Local Notation " ¬ b " := (NotBB b) (at level 55, right associativity) : type_scope.
+
+  Let NOT_BB_SPEC1 (b : BB)
+    (if_b_eq_TrueBB : b = TrueBB)
+    : (¬ b) = FalseBB.
+  Proof. cbv; destruct (exclusive_middle (b = TrueBB)); tauto. Qed.
+
+  Let NOT_BB_SPEC2 (b : BB)
+    (if_b_ne_TrueBB : b <> TrueBB)
+    : (¬ b) = TrueBB.
+  Proof. cbv; destruct (exclusive_middle (b = TrueBB)); tauto. Qed.
+
+  Let russell (r : UNIV) : BB := ¬ (r ∈ r).
+
+  Let R : UNIV := ⦃ r | russell r ⦄.
+
+  Let RUSSELL : BB := R ∈ R.
+
+  Let PARADOX_OF_BERARDI
+    : RUSSELL = ¬ RUSSELL.
+  Proof with eauto.
+    enough (it_is_sufficient_to_show : RUSSELL = russell R)...
+    replace (russell) with (fun r : UNIV => r ∈ R)...
+  Qed.
+
+  Theorem exclusive_middle_implies_proof_irrelevance (P : Prop)
+    : pirrel_STMT P.
+  Proof.
+    eapply TrueBB_eq_FalseBB_iff_pirrel.
+    destruct (exclusive_middle (RUSSELL = TrueBB)) as [RUSSELL_eq_TrueBB | RUSSELL_ne_TrueBB].
+    - rewrite <- RUSSELL_eq_TrueBB. rewrite PARADOX_OF_BERARDI. now eapply NOT_BB_SPEC1.
+    - contradiction (RUSSELL_ne_TrueBB). rewrite PARADOX_OF_BERARDI. now eapply NOT_BB_SPEC2.
+  Qed.
+
+  End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
+
+  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
+
+  Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
+
+  Let NotBB (b : BB) : BB :=
+    match b return BB with
+    | TrueBB => FalseBB
+    | FalseBB => TrueBB
+    end
+  .
+
+  Theorem untyped_lambda_calculus_for_BB_implies_paradox_of_russell
+    : TrueBB = FalseBB.
+  Proof.
+    exploit (derive_fixedpoint_combinator BB untyped_lambda_calculus_for_BB) as [Y Y_spec]. set (RUSSELL := Y NotBB).
+    assert (PARADOX_OF_RUSSELL : RUSSELL = NotBB RUSSELL) by exact (Y_spec NotBB). now destruct RUSSELL.
+  Qed.
+
+  End UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
+
+  Section PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.ClassicalFacts.html" *)
+
+  Hypothesis propositional_extensionality : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) -> (P1 = P2).
+
+  Let D_coerce_D_ARROW_D_for_any_inhabited_Prop_D (D : Prop)
+    (D_inhabited : inhabited D)
+    : D = (D -> D).
+  Proof.
+    destruct D_inhabited as [D_holds].
+    eapply propositional_extensionality; tauto.
+  Qed.
+
+  Let UNTYPED_LAMBDA_CALCULUS_for_any_inhabited_Prop (D : Prop)
+    (D_inhabited : inhabited D)
+    : RETRACT (D -> D) D.
+  Proof. replace (D -> D) with (D); eauto. Qed.
+
+  Theorem propositional_extensionality_implies_proof_irrelevance (P : Prop)
+    : pirrel_STMT P.
+  Proof.
+    assert (BB_inhabited : inhabited BB) by now constructor; exact (FalseBB).
+    eapply TrueBB_eq_FalseBB_iff_pirrel, untyped_lambda_calculus_for_BB_implies_paradox_of_russell; eauto.
+  Qed.
+
+  End PROPOSITIONAL_EXTENSIONALITY_implies_PROOF_IRRELEVANCE.
+
+  Lemma propositional_extensionality_implies_proof_irrelevance_beautiful_ver
+    (PROPOSITIONAL_EXTENSIONALITY : forall P1 : Prop, forall P2 : Prop, (P1 <-> P2) -> (P1 = P2))
+    : forall P : Prop, pirrel_STMT P.
+  Proof. (* Thanks to Minki Cho *)
+    intros P p. assert (P_is_True : P = True) by now eapply PROPOSITIONAL_EXTENSIONALITY; tauto.
+    revert p. subst P. now intros [] [].
+  Qed.
+
+  Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
+
+  Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
+
+  Theorem exclusive_middle_implies_Prop_level_unrestricted_minimization (phi : nat -> Prop)
+    (not_forall_n_not_phi_n : ~ forall n : nat, ~ phi n)
+    : exists n_min : nat, isMinimalNum phi n_min.
+  Proof.
+    assert (claim1 : exists n : nat, phi n) by now destruct (EXCLUSIVE_MIDDLE (exists n : nat, phi n)); firstorder.
+    destruct claim1 as [n phi_n].
+    destruct (EXCLUSIVE_MIDDLE (forall x : nat, ~ isMinimalNum phi x)) as [H_yes | H_no].
+    - enough (it_is_sufficient_to_show : ~ phi n) by contradiction (it_is_sufficient_to_show phi_n).
+      induction n as [n IH] using @lt_strong_ind. contradiction (H_yes n). split.
+      + exact (phi_n).
+      + intros m phi_m. destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n m) as [n_le_m | m_lt_n].
+        { exact (n_le_m). }
+        { contradiction (IH m). }
+    - now destruct (EXCLUSIVE_MIDDLE (exists m : nat, isMinimalNum phi m)); firstorder.
+  Qed.
+
+  End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
+
+  Section CLASSICAL_IF_THEN_ELSE.
+
+  Hypothesis bool_isChoicable : isChoicable bool.
+
+  Theorem classical_if_then_else (P : Prop)
+    (P_EXCLUSIVE_MIDDLE : P \/ ~ P)
+    : {P} + {~ P}.
+  Proof.
+    enough (claim1 : {b : bool | if b then P else ~ P}) by exact ((if proj1_sig claim1 as b return (if b then P else ~ P) -> ({P} + {~ P}) then left else right) (proj2_sig claim1)).
+    eapply bool_isChoicable; destruct P_EXCLUSIVE_MIDDLE as [hyp_yes | hyp_no]; [exists (true) | exists (false)]; now intros [ | ].
+  Qed.
+
+  End CLASSICAL_IF_THEN_ELSE.
 
   Polymorphic Theorem NotherianRecursion {A : Type} {requiresWellFounded : isWellFounded A} (phi : A -> Type)
     (IND : forall tree : A, << IH : forall subtree : A, wfRel subtree tree -> phi subtree >> -> phi tree)
