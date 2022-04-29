@@ -1328,7 +1328,7 @@ Module FUN_FACTS.
   .
 
   Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
-    : << IS_PREORDER : PreOrder R >> <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
+    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
   Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
 End FUN_FACTS.
