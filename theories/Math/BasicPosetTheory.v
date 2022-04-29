@@ -9,7 +9,7 @@ Require Import DschingisKhan.Prelude.PreludeMath.
 
 Module BasicPosetTheory.
 
-  Import MathProps MathNotations MathClasses.
+  Import ListNotations MathProps MathNotations MathClasses.
 
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, << H_IN1 : member x1 X >> ->
@@ -297,10 +297,7 @@ Module BasicPosetTheory.
 
   End BASIC_FACTS_ON_SUPREMUM.
 
-  Global Hint Resolve Supremum_monotonic_wrtEnsembles : poset_hints.
-  Global Hint Resolve Supremum_preserves_eqProp_wrtEnsembles : poset_hints.
-  Global Hint Resolve Supremum_congruence : poset_hints.
-  Global Hint Resolve Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
+  Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_preserves_eqProp_wrtEnsembles Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
   Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
     { compare : A -> A -> comparison
@@ -313,8 +310,6 @@ Module BasicPosetTheory.
   Local Hint Resolve compare_LT_implies compare_EQ_implies compare_GT_implies : poset_hints.
 
   Section LEXICOGRAPHICAL_ORDER.
-
-  Import ListNotations.
 
   Context {A : Type} {requiresPoset : isPoset A} {requiresDecidableTotalOrder : isDecidableTotalOrder A (requiresPoset := requiresPoset)}.
 
@@ -332,13 +327,9 @@ Module BasicPosetTheory.
     end
   .
 
-  Definition lex_eq (lhs : list A) (rhs : list A) : Prop :=
-    lex_compare lhs rhs = Eq
-  .
+  Definition lex_eq (lhs : list A) (rhs : list A) : Prop := lex_compare lhs rhs = Eq.
 
-  Definition lex_le (lhs : list A) (rhs : list A) : Prop :=
-    lex_compare lhs rhs = Lt \/ lex_compare lhs rhs = Eq
-  .
+  Definition lex_le (lhs : list A) (rhs : list A) : Prop := lex_compare lhs rhs = Lt \/ lex_compare lhs rhs = Eq.
 
   Lemma compare_spec (lhs : A) (rhs : A) :
     match compare lhs rhs with
@@ -348,7 +339,7 @@ Module BasicPosetTheory.
     end.
   Proof. destruct (compare lhs rhs) eqn: H_compare_result; eauto with *. Qed.
 
-  Local Polymorphic Instance lex_eq_Equivalence
+  Local Instance lex_eq_Equivalence
     : Equivalence lex_eq.
   Proof with discriminate || eauto with *.
     unfold lex_eq. split.
@@ -366,13 +357,13 @@ Module BasicPosetTheory.
       all: contradiction (proj2 claim3)...
   Qed.
 
-  Local Polymorphic Instance listPointwiseEquivalence : isSetoid (list A) :=
+  Local Instance listPointwiseEquivalence : isSetoid (list A) :=
     { eqProp := lex_eq
     ; eqProp_Equivalence := lex_eq_Equivalence
     }
   .
 
-  Local Polymorphic Instance lex_le_PreOrder
+  Local Instance lex_le_PreOrder
     : PreOrder lex_le.
   Proof with discriminate || eauto with *.
     assert (lemma1 : forall x1 : A, forall x2 : A, x1 =< x2 -> x2 =< x1 -> x1 == x2). { ii... }
