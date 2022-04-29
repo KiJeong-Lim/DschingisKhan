@@ -61,13 +61,7 @@ Module BasicPosetTheory.
     - intros x x_in_X. eapply H_lower_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Lemma MonotonicMap_preserves_leProp {D : Type} {requiresPoset : isPoset D} (f : D -> D) (x1 : D) (x2 : D)
-    (f_isMonotonic : isMonotonicMap f)
-    (x1_le_x2 : x1 =< x2)
-    : f x1 =< f x2.
-  Proof. now eapply f_isMonotonic. Qed.
-
-  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles MonotonicMap_preserves_leProp : poset_hints.
+  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles monotonic_if_eqProp_lifted1 monotonic_if_eqProp_lifted2 : poset_hints.
 
   Section BASIC_FACTS_ON_SUPREMUM.
 
