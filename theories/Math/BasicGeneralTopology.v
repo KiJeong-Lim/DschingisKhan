@@ -12,6 +12,8 @@ Module BasicGeneralTopology.
 
   Import MathProps MathClasses BasicPosetTheory.
 
+  Create HintDb topology_hints.
+
   Class Topology_axiom {A : Hask.t} (isOpen : ensemble A -> Prop) : Prop :=
     { full_isOpen
       : isOpen full
@@ -50,7 +52,7 @@ Module BasicGeneralTopology.
     : isOpen (intersection O1 O2).
   Proof. eapply intersection_isOpen; eauto. Qed.
 
-  Global Hint Resolve fullOpen unionsOpen intersectionOpen : khan_hints.
+  Global Hint Resolve fullOpen unionsOpen intersectionOpen : topology_hints.
 
   Lemma emptyset_isOpen {A : Hask.t} (isOpen : ensemble A -> Prop)
     (satisfiesAxiomsOfTopology : Topology_axiom isOpen)

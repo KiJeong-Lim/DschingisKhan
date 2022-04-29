@@ -14,7 +14,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
 (** "\S2" *)
 
-  Global Create HintDb khan_hints.
+  Create HintDb khan_hints.
   Global Hint Unfold flip relation_conjunction impl : khan_hints.
 
 (** "\S3" *)
