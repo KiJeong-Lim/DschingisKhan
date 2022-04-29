@@ -1110,10 +1110,8 @@ Module FUN_FACTS.
     : TrueBB = FalseBB <-> ⟪ PROOF_IRRELEVANCE : forall phi : Prop, pirrel_STMT phi ⟫.
   Proof.
     unnw. split.
-    - intros hyp_eq phi pf1 pf2.
-      exact (eq_congruence (fun b : BB => if b then pf1 else pf2) TrueBB FalseBB hyp_eq).
-    - intros h_pirrel.
-      exact (h_pirrel BB TrueBB FalseBB).
+    - intros hyp_eq phi pf1 pf2. exact (eq_congruence (fun b : BB => if b then pf1 else pf2) TrueBB FalseBB hyp_eq).
+    - intros h_pirrel. exact (h_pirrel BB TrueBB FalseBB).
   Qed.
 
   Polymorphic Lemma pirrel_iff_eq_rect_eq (A : Type) (x : A)
@@ -1279,22 +1277,21 @@ Module FUN_FACTS.
 
   Section EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
 
-  Hypothesis EXCLUSIVE_MIDDLE : forall P : Prop, P \/ ~ P.
+  Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
   Theorem exclusive_middle_implies_Prop_level_unrestricted_minimization (phi : nat -> Prop)
     (not_forall_n_not_phi_n : ~ forall n : nat, ~ phi n)
     : exists n_min : nat, isMinimalNum phi n_min.
   Proof.
-    assert (claim1 : exists n : nat, phi n) by now destruct (EXCLUSIVE_MIDDLE (exists n : nat, phi n)); firstorder.
-    destruct claim1 as [n phi_n].
-    destruct (EXCLUSIVE_MIDDLE (forall x : nat, ~ isMinimalNum phi x)) as [H_yes | H_no].
+    assert (claim1 : exists n : nat, phi n) by now destruct (exclusive_middle (exists n : nat, phi n)); firstorder.
+    destruct claim1 as [n phi_n]. destruct (exclusive_middle (forall x : nat, ~ isMinimalNum phi x)) as [H_yes | H_no].
     - enough (it_is_sufficient_to_show : ~ phi n) by contradiction (it_is_sufficient_to_show phi_n).
       induction n as [n IH] using @lt_strong_ind. contradiction (H_yes n). split.
       + exact (phi_n).
       + intros m phi_m. destruct (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n m) as [n_le_m | m_lt_n].
         { exact (n_le_m). }
         { contradiction (IH m). }
-    - now destruct (EXCLUSIVE_MIDDLE (exists m : nat, isMinimalNum phi m)); firstorder.
+    - now destruct (exclusive_middle (exists m : nat, isMinimalNum phi m)); firstorder.
   Qed.
 
   End EXCLUSIVE_MIDDLE_implies_UNRESTRICTED_MINIMIZATION.
