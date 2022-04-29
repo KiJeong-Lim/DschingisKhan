@@ -111,7 +111,7 @@ Module BasicGeneralTopology.
   Variant isOpen_Scott (O : ensemble D) : Prop :=
   | ScottTopologyOpen
     (UPWARD_CLOSED : forall x : D, forall y : D, << H_IN : member x O >> -> << H_LE : x =< y >> -> member y O)
-    (LIMIT : forall X : ensemble D, << H_NONEMPTY : exists x : D, member x X >> -> << IS_DIRECTED : isDirectedSubset X >> -> forall sup_X : D, << IS_SUPREMUM : isSupremumOf sup_X X >> -> << SUPREMUM_IN : member sup_X O >> -> << INTERSECTION_NONEMPTY : exists x : D, member x X /\ member x O >>)
+    (LIMIT : forall X : ensemble D, << NONEMPTY : exists x : D, member x X >> -> << IS_DIRECTED : isDirectedSubset X >> -> forall sup_X : D, << IS_SUPREMUM : isSupremumOf sup_X X >> -> << SUPREMUM_IN : member sup_X O >> -> exists x : D, member x X /\ member x O)
     : isOpen_Scott O
   .
 
@@ -126,7 +126,7 @@ Module BasicGeneralTopology.
       apply in_unions_iff in SUPREMUM_IN.
       destruct SUPREMUM_IN as [X_i [sup_X_in_X_i X_i_in_Xs]].
       exploit (every_member_of_Xs_isOpen X_i X_i_in_Xs) as [? ?].
-      pose proof (LIMIT X H_NONEMPTY IS_DIRECTED sup_X IS_SUPREMUM sup_X_in_X_i) as [x [x_in_X x_in_X_i]]...
+      pose proof (LIMIT X NONEMPTY IS_DIRECTED sup_X IS_SUPREMUM sup_X_in_X_i) as [x [x_in_X x_in_X_i]]...
     - ii. econstructor; ii; desnw; unnw...
       apply in_intersection_iff in SUPREMUM_IN.
       destruct SUPREMUM_IN as [SUPREMUM_IN1 SUPREMUM_IN2].
