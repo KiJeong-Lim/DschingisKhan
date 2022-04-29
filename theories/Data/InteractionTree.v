@@ -48,13 +48,9 @@ Module InteractionTrees.
     end
   .
 
-  Section ITREE_MONAD. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
+  Section ITREE_BIND. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Core/ITreeMonad.v" *)
 
-  Context {E : Type -> Type}.
-
-  Definition itree_pure {R : Type} (r : R) : itree E R := Ret r.
-
-  Context {R1 : Type} {R2 : Type}.
+  Context {E : Type -> Type} {R1 : Type} {R2 : Type}.
 
   Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
     match ot0 with
@@ -69,19 +65,17 @@ Module InteractionTrees.
     itree_bindGuard k (observe t) itree_bindAux_cofix
   .
 
-  Definition itree_bind (m : itree E R1) (k : R1 -> itree E R2) : itree E R2 := itree_bindAux k m.
-
-  Lemma itree_bind_unfold_observed (t0 : itree E R1) (k0 : R1 -> itree E R2)
-    : observe (itree_bind t0 k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
-  Proof. exact (eq_reflexivity (observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)))). Defined.
-
-  End ITREE_MONAD.
+  End ITREE_BIND.
 
   Global Instance itree_isMonad (E : Type -> Type) : isMonad (itree E) :=
-    { pure {R : Type} := itree_pure (E := E) (R := R)
-    ; bind {R1 : Type} {R2 : Type} := itree_bind (E := E) (R1 := R1) (R2 := R2)
+    { pure {R : Type} (r : R) := Ret r
+    ; bind {R1 : Type} {R2 : Type} (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t
     }
   .
+
+  Lemma itree_bind_unfold_observed {E : Type -> Type} {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2)
+    : observe (t0 >>= k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => t >>= k0)).
+  Proof. exact (eq_reflexivity (observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => t >>= k0)))). Defined.
 
   Definition itree_tick {E : Type -> Type} : itree E unit := Tau (Ret tt).
 
@@ -175,13 +169,13 @@ Module InteractionTrees.
 
   Variant itreeBisimF (bisim : itree E R -> itree E R -> Prop) : itreeF E R -> itreeF E R -> Prop :=
   | EqRetF (r1 : R) (r2 : R)
-    (HYP_REL : r1 == r2)
+    (hypRel : r1 == r2)
     : itreeBisimF bisim (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
-    (HYP_REL : bisim t1 t2)
+    (hypE : bisim t1 t2)
     : itreeBisimF bisim (TauF t1) (TauF t2)
   | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    (HYP_REL : forall x : X, bisim (k1 x) (k2 x))
+    (hypE : forall x : X, bisim (k1 x) (k2 x))
     : itreeBisimF bisim (VisF X e k1) (VisF X e k2)
   .
 
@@ -202,9 +196,9 @@ Module InteractionTrees.
       let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
       fun hypR1 : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
       match hypR1 in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
-      | EqRetF _ r1 r2 HYP_REL => EqRetF (curry R2) r1 r2 HYP_REL
-      | EqTauF _ t1 t2 HYP_REL => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) HYP_REL)
-      | EqVisF _ X e k1 k2 HYP_REL => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (HYP_REL x))
+      | EqRetF _ r1 r2 hypE => EqRetF (curry R2) r1 r2 hypE
+      | EqTauF _ t1 t2 hypE => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) hypE)
+      | EqVisF _ X e k1 k2 hypE => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (hypE x))
       end
     ).
   Defined.
