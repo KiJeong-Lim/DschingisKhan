@@ -19,4 +19,5 @@ theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/ConstructiveMetaTheoryOfPropositionalLogic.v #
 theories/Logic/ClassicalDomainTheory.v #
 theories/Logic/ClassicalMetaTheoryOfPropositionalLogic.v #
+theories/Logic/InteractionTreeTheory.v #
 #

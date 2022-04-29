@@ -6,13 +6,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Math.BasicPosetTheory.
 
-Module Type InteractionTrees_AXIOMS.
-
-  Axiom projT2_eq : forall phi : Type -> Type, forall X : Type, projT2_eq_STMT Type phi X.
-
-End InteractionTrees_AXIOMS.
-
-Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
+Module InteractionTrees.
 
   Import BasicPosetTheory.
 
@@ -175,13 +169,9 @@ Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
 
 (** "BISIMULATION" *)
 
-  Section EQUALITY_ON_INTERACTION_TREES.
-
-  Context {E : Type -> Type}.
-
   Section BISIMULATION.
 
-  Context {R : Type} {requiresSetoid : isSetoid R}.
+  Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
   Variant itreeBisimF (bisim : itree E R -> itree E R -> Prop) : itreeF E R -> itreeF E R -> Prop :=
   | EqRetF (r1 : R) (r2 : R)
@@ -227,35 +217,6 @@ Module InteractionTrees (AXIOMS : InteractionTrees_AXIOMS).
 
   Unset Primitive Projections.
 
-  Lemma itreeBisim_Ret_iff (r1 : R) (r2 : R)
-    : itreeBisim (Ret r1) (Ret r2) <-> (r1 == r2).
-  Proof.
-    split.
-    - intros [HYP_REL]. now inversion HYP_REL.
-    - intros HYP_REL. now do 2 econstructor.
-  Qed.
-
-  Lemma itreeBisim_Tau_iff (t1 : itree E R) (t2 : itree E R)
-    : itreeBisim (Tau t1) (Tau t2) <-> (itreeBisim t1 t2).
-  Proof.
-    split.
-    - intros [HYP_REL]. now inversion HYP_REL.
-    - intros HYP_REL. now do 2 econstructor.
-  Qed.
-
-  Lemma itreeBisim_Vis_iff (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    : itreeBisim (Vis X e k1) (Vis X e k2) <-> (forall x : X, itreeBisim (k1 x) (k2 x)).
-  Proof.
-    split.
-    - intros [HYP_REL]. inversion HYP_REL; subst.
-      pose proof (AXIOMS.projT2_eq (fun X : Type => X -> itree E R) X k3 k1 H2) as claim1.
-      pose proof (AXIOMS.projT2_eq (fun X : Type => X -> itree E R) X k4 k2 H4) as claim2.
-      now subst k3 k4.
-    - intros HYP_REL. now do 2 econstructor.
-  Qed.
-
   End BISIMULATION.
-
-  End EQUALITY_ON_INTERACTION_TREES.
 
 End InteractionTrees.
