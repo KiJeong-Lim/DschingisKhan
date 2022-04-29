@@ -149,12 +149,12 @@ Module InteractionTrees.
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition itree_app {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
-    fun X : Type => callE_rect I R (fun x : Type => fun _ : callE I R x => itree E x) callee X
+  Definition itree_ap {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
+    callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
-    itree_mrec (E := callE I R) (E' := E) (itree_app body) R (Call arg)
+    itree_mrec (E := callE I R) (E' := E) (itree_ap body) R (Call arg)
   .
 
   Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
