@@ -150,7 +150,7 @@ Module InteractionTrees.
   .
 
   Definition itree_ap {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
-    callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
+    @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
