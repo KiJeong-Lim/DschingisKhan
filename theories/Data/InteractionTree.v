@@ -175,13 +175,13 @@ Module InteractionTrees.
 
   Variant itreeBisimF (bisim : itree E R -> itree E R -> Prop) : itreeF E R -> itreeF E R -> Prop :=
   | EqRetF (r1 : R) (r2 : R)
-    (hypRel : r1 == r2)
+    (hypEq : r1 == r2)
     : itreeBisimF bisim (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
-    (hypE : bisim t1 t2)
+    (hypEq : bisim t1 t2)
     : itreeBisimF bisim (TauF t1) (TauF t2)
   | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    (hypE : forall x : X, bisim (k1 x) (k2 x))
+    (hypEq : forall x : X, bisim (k1 x) (k2 x))
     : itreeBisimF bisim (VisF X e k1) (VisF X e k2)
   .
 
@@ -202,9 +202,9 @@ Module InteractionTrees.
       let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
       fun hypR1 : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
       match hypR1 in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
-      | EqRetF _ r1 r2 hypE => EqRetF (curry R2) r1 r2 hypE
-      | EqTauF _ t1 t2 hypE => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) hypE)
-      | EqVisF _ X e k1 k2 hypE => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (hypE x))
+      | EqRetF _ r1 r2 hypEq => EqRetF (curry R2) r1 r2 hypEq
+      | EqTauF _ t1 t2 hypEq => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) hypEq)
+      | EqVisF _ X e k1 k2 hypEq => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (hypEq x))
       end
     ).
   Defined.
