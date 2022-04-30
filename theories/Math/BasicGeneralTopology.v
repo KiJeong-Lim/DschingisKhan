@@ -72,9 +72,7 @@ Module BasicGeneralTopology.
 
   Section SUBTOPOLOGY.
 
-  Context {A : Hask.t}.
-
-  Variable phi : A -> Prop.
+  Context {A : Hask.t} (phi : A -> Prop).
 
   Let Subspace : Hask.t := @sig A phi.
 
@@ -98,7 +96,7 @@ Module BasicGeneralTopology.
 
   End SUBTOPOLOGY.
 
-  Local Instance SubspaceTopology {A : Type} (phi : A -> Prop) {requiresTopology : isTopologicalSpace A} : isTopologicalSpace (@sig A phi) :=
+  Local Instance SubspaceTopology {A : Type} {requiresTopology : isTopologicalSpace A} (phi : A -> Prop) : isTopologicalSpace (@sig A phi) :=
     { isOpen := isOpen_inSubspace phi
     ; TopologicalSpace_obeysTopology_axiom := Subtopology phi
     }

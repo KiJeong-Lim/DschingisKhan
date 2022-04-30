@@ -1,7 +1,10 @@
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Bool.Bool.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 
 Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v" *)
@@ -55,7 +58,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   .
 
   Ltac unnw := unfold REFERENCE_HOLDER in *.
-  Ltac desnw := repeat (match goal with H : _ |- _ => desnw in H end).
+  Ltac desnw := repeat (match goal with [H : _ |- _] => desnw in H end).
 
 (** "\S4" *)
 
@@ -64,25 +67,25 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Ltac iiss := (repeat iis); cbn in *; desnw.
   Ltac des_once :=
     match goal with
-    | x := ?t |- _ => subst x
-    | H : ?x = ?y |- _ =>
+    | [x := ?t |- _] => subst x
+    | [H : ?x = ?y |- _] =>
       tryif is_var x then try subst x else
       tryif is_var y then try subst y else
       fail "cannot subst using" H
-    | H : ?P /\ ?Q |- _ => destruct H
-    | H : ?P \/ ?Q |- _ => destruct H
-    | H : ?P <-> ?Q |- _ => destruct H
-    | H : exists x, ?P |- _ =>
+    | [H : ?P /\ ?Q |- _] => destruct H
+    | [H : ?P \/ ?Q |- _] => destruct H
+    | [H : ?P <-> ?Q |- _] => destruct H
+    | [H : exists x, ?P |- _] =>
       let x' := fresh x in
       destruct H as [x' H]
-    | |- let x : ?A := ?t in ?B =>
+    | [ |- let x : ?A := ?t in ?B] =>
       let x' := fresh x in
       intros x'
-    | |- forall x : ?A, ?B =>
+    | [ |- forall x : ?A, ?B] =>
       let x' := fresh x in
       intros x'
-    | |- ?P /\ ?Q => split
-    | |- ?P <-> ?Q => split; intro
+    | [ |- ?P /\ ?Q] => split
+    | [ |- ?P <-> ?Q] => split; intro
     end
   .
   Ltac des := repeat des_once.
@@ -110,6 +113,16 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Ltac intro_pattern_revert :=
     let x := fresh "x" in
     (intro x; pattern x; revert x)
+  .
+
+(** "\S8" *)
+
+  Ltac remove_eqn_if_trivial H :=
+    repeat (
+      match goal with
+      | [H : ?x = ?y |- _] => tryif unify x y then clear H else idtac
+      end
+    )
   .
 
 End Khan.

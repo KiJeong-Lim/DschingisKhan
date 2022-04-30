@@ -380,8 +380,6 @@ Module Ensembles.
   Create HintDb ensemble_hints.
   Global Hint Rewrite @in_union_iff @in_unions_i_iff @in_image_iff @in_preimage_iff @in_finite_iff @in_intersection_iff @in_full_iff @in_empty_iff @in_complement_iff @in_setminus_iff @in_singleton_iff @in_delete_iff @in_insert_iff using eauto : ensemble_hints.
 
-  Ltac ensemble_rewrite := autorewrite with ensemble_hints.
-
   Global Add Parametric Morphism (A : Type) :
     (@member A) with signature (eq ==> leProp ==> impl)
     as member_eq_leProp_with_impl.
@@ -510,6 +508,10 @@ Module Ensembles.
     - intros z_in. apply in_intersection_iff in z_in. destruct z_in as [z_in_X phi_z]. 
       pose proof (proj1 (X_repr_isFilterReprOf_X (exist _ z phi_z)) z_in_X) as z_in_X_repr...
   Qed.
+
+(** "Ensemble Tactics" *)
+
+  Ltac ensemble_rewrite := autorewrite with ensemble_hints.
 
 End Ensembles.
 

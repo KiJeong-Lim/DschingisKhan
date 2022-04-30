@@ -1117,7 +1117,7 @@ Module FUN_FACTS.
   Proof.
     iis; ii; desnw.
     - now rewrite PROOF_IRRELEVANCE with (pf1 := hyp_eq) (pf2 := eq_reflexivity x).
-    - now do 2 (match goal with pf : x = x |- _ => rewrite <- EQ_RECT_EQ with (B := eq x) (phi_x := pf) (hyp_eq := eq_symmetry x x pf); destruct pf end).
+    - now do 2 (match goal with [pf : x = x |- _] => rewrite <- EQ_RECT_EQ with (B := eq x) (phi_x := pf) (hyp_eq := eq_symmetry x x pf); destruct pf end).
   Qed.
 
   Polymorphic Lemma pirrel_iff_axiomK (A : Type) (x : A)
@@ -1125,7 +1125,7 @@ Module FUN_FACTS.
   Proof.
     iis; ii; desnw.
     - now rewrite PROOF_IRRELEVANCE with (pf1 := hyp_eq) (pf2 := eq_reflexivity x).
-    - now do 2 (match goal with pf : x = x |- _ => pattern pf; revert pf; eapply AXIOM_K end).
+    - now do 2 (match goal with [pf : x = x |- _] => pattern pf; revert pf; eapply AXIOM_K end).
   Qed.
 
   Polymorphic Lemma eq_rect_eq_iff_projT2_eq (A : Type) (B : A -> Type) (x : A)
