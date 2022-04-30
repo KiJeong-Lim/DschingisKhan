@@ -11,6 +11,14 @@ Module BasicPosetTheory.
 
   Import ListNotations MathProps MathNotations MathClasses.
 
+  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
+    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
+  Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
+
+  Lemma leProp_unfold {D : Type} {requiresPoset : isPoset D}
+    : forall x : D, forall y : D, x =< y <-> (forall z : D, z =< x -> z =< y).
+  Proof. exact (proj1 (PreOrder_iff leProp) (@leProp_PreOrder D requiresPoset)). Qed.
+
   Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, << H_IN1 : member x1 X >> ->
     forall x2 : D, << H_IN2 : member x2 X >> ->
@@ -41,7 +49,7 @@ Module BasicPosetTheory.
 
   Create HintDb poset_hints.
   Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
-  Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff leProp_lifted1 : poset_hints.
+  Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff leProp_lifted1 leProp_unfold : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
     (UpperBoundsOf (requiresPoset := requiresPoset)) with signature (eqProp ==> eqProp)
