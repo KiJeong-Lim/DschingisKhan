@@ -6,14 +6,11 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
+Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module BasicPosetTheory.
 
   Import ListNotations MathProps MathNotations MathClasses.
-
-  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
-    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
-  Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
   Lemma leProp_unfold {D : Type} {requiresPoset : isPoset D}
     : forall x : D, forall y : D, x =< y <-> (forall z : D, z =< x -> z =< y).

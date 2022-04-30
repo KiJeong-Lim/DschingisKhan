@@ -1169,9 +1169,9 @@ Module FUN_FACTS.
 
   Let SET_BUILDER_NOTATION_SPEC (phi : UNIV -> BB)
     : (fun z : UNIV => z ∈ ⦃ x | phi x ⦄) = phi.
-  Proof with eauto.
+  Proof.
     unfold SET_BUILDER_NOTATION, HAS_AS_AN_ELEMENT.
-    destruct (RETRACT2_POW_A_POW_B UNIV UNIV); simpl in *...
+    destruct (RETRACT2_POW_A_POW_B UNIV UNIV); cbn in *; eauto.
   Qed.
 
   Let NAIVE_SET_THEORY : RETRACT (POW UNIV) UNIV := {| _i := SET_BUILDER_NOTATION; _j := HAS_AS_AN_ELEMENT; _inv := SET_BUILDER_NOTATION_SPEC |}.
@@ -1203,9 +1203,9 @@ Module FUN_FACTS.
 
   Let PARADOX_OF_BERARDI
     : RUSSELL = ¬ RUSSELL.
-  Proof.
+  Proof with eauto.
     enough (it_is_sufficient_to_show : RUSSELL = russell R)...
-    replace (russell) with (fun r : UNIV => r ∈ R); eauto.
+    replace (russell) with (fun r : UNIV => r ∈ R)...
   Qed.
 
   Theorem exclusive_middle_implies_proof_irrelevance (P : Prop)
@@ -1321,6 +1321,10 @@ Module FUN_FACTS.
     ; wfRel_well_founded := @lt_strong_ind (@Acc nat lt) (@Acc_intro nat lt)
     }
   .
+
+  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
+    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
+  Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
 End FUN_FACTS.
 
