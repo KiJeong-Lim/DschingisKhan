@@ -3,7 +3,7 @@
 theories/Prelude/PreludeInit.v #
 theories/Prelude/PreludeMath.v #
 theories/Prelude/PreludeUtil.v #
-theories/Prelude/LawOfExclusiveMiddle.v #
+theories/Prelude/PreludeClassic.v #
 #
 theories/Data/AczelSet.v #
 theories/Data/Vector.v #

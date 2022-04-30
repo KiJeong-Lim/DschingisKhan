@@ -26,8 +26,8 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Global Notation " '⟪' STATEMENT_REFERENCE ':' STATEMENT '⟫' " := (REFERENCE_HOLDER (fun STATEMENT_REFERENCE : unit => match STATEMENT_REFERENCE with tt => STATEMENT end)) (STATEMENT_REFERENCE name, STATEMENT at level 200, at level 0, no associativity) : type_scope.
 
   Global Tactic Notation "rednw" "in" hyp( H ) :=
-    (match type of H with | REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
-    (match type of H with | _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
+    (match type of H with REFERENCE_HOLDER _ -> _ => unfold REFERENCE_HOLDER at 1 in H | _ => idtac end);
+    (match type of H with _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
   .
 
   Global Tactic Notation "desnw" "in" hyp( H ) :=
