@@ -141,8 +141,8 @@ Module MyVec.
   Definition vec_n (n : nat) (X : Hask.t) : Hask.t := vector X n.
 
   Global Instance vec_isMonad (n : nat) : isMonad (vec_n n) :=
-    { pure {A : Hask.t} := fun x : A => replicate x
-    ; bind {A : Hask.t} {B : Hask.t} := fun xs : vec_n n A => fun k : A -> vec_n n B => diagonal (vector_map k xs)
+    { pure {A : Hask.t} (x : A) := replicate x
+    ; bind {A : Hask.t} {B : Hask.t} (xs : vec_n n A) (k : A -> vec_n n B) := diagonal (vector_map k xs)
     }
   .
 
@@ -155,14 +155,12 @@ Module MyVec.
     : LawsOfMonad (vec_n n) (requiresSetoid1 := vec_isSetoid1 n) (requiresMonad := vec_isMonad n).
   Proof. split; cbn; intros; (repeat reduce_monad_methods_of_vector); congruence. Qed.
 
-  Local Existing Instance freeSetoidFromSetoid1.
-
-  Theorem vector_extensional_equality {A : Hask.t} (n : nat) (xs1 : vec_n n A) (xs2 : vec_n n A)
-    : xs1 = xs2 <-> ⟪ POINTWISE_EQUALITY : xs1 == xs2 ⟫.
+  Theorem vector_extensional_equality {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
+    : xs1 = xs2 <-> ⟪ POINTWISE_EQUALITY : forall i : Fin n, xs1 !! i = xs2 !! i ⟫.
   Proof.
-    split; intros hyp_eq.
-    - now rewrite hyp_eq.
-    - desnw. revert xs1 xs2 POINTWISE_EQUALITY; induction n as [ | n IH].
+    change (xs1 = xs2 <-> eqProp (isSetoid := @freeSetoidFromSetoid1 (vec_n n) A (vec_isSetoid1 n)) xs1 xs2); split.
+    - congruence.
+    - revert xs1 xs2; induction n as [ | n IH].
       + introVNil; introVNil; intros hyp_eq.
         exact (eq_reflexivity (@VNil A)).
       + introVCons x1 xs1; introVCons x2 xs2; intros hyp_eq.
@@ -195,7 +193,7 @@ Module MyVec.
     - reflexivity.
     - rewrite evalFin_unfold; simpl.
       rewrite <- IH with (m := S m) (i := i).
-      apply Nat.add_succ_comm.
+      eapply Nat.add_succ_comm.
   Qed.
 
 End MyVec.
