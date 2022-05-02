@@ -10,10 +10,10 @@ theories/Data/Vector.v #
 theories/Data/InteractionTree.v #
 #
 theories/Math/BasicPosetTheory.v #
+theories/Math/CountableBooleanAlgebra.v #
 theories/Math/BasicGeneralTopology.v #
 #
 theories/Logic/UntypedLambdaCalculus.v #
-theories/Logic/CountableBooleanAlgebra.v #
 theories/Logic/PreludeOfPropositionalLogic.v #
 theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/ConstructiveMetaTheoryOfPropositionalLogic.v #

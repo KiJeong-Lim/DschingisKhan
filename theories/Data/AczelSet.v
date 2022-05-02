@@ -440,9 +440,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       Although, the problem is that AC may not work on Coq.
   *)
 
-  Hypothesis AxiomOfChoice : forall A : Type, forall B : Type, forall phi : A -> B -> Prop, << NONEMPTY : forall x : A, exists y : B, phi x y >> -> << CHOICE : exists f : A -> B, forall x : A, phi x (f x) >>.
+  Hypothesis AxiomOfChoice : forall A : AczelSetUniv.t, forall B : AczelSetUniv.t, forall phi : A -> B -> Prop, << NONEMPTY : forall x : A, exists y : B, phi x y >> -> << CHOICE : exists f : A -> B, forall x : A, phi x (f x) >>.
 
-  Theorem AxiomOfChoice_implies_StrongCollection (X : AczelSet) (phi : AczelSet -> AczelSet -> Prop)
+  Theorem AxiomOfChoice_implies_StrongCollection (phi : AczelSet -> AczelSet -> Prop) (X : AczelSet)
     (phi_compatWith_eqTree_on_1st_arg : forall y : AczelSet, compatWith_eqTree (fun x : AczelSet => phi x y))
     (phi_compatWith_eqTree_on_2nd_arg : forall x : AczelSet, compatWith_eqTree (fun y : AczelSet => phi x y))
     (NONEMPTY : forall x : AczelSet, x `elem` X -> exists y : AczelSet, phi x y)
