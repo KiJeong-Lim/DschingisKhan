@@ -1,3 +1,4 @@
+Require Import Coq.Bool.Bool.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
@@ -14,7 +15,27 @@ Module BooleanAlgebra.
 
   Import ListNotations MathProps MathNotations MathClasses BasicPosetTheory.
 
-  Class BooleanAlgebra_axiom (BA : Type) {requiresSetoid : isSetoid BA} (andBA : BA -> BA -> BA) (orBA : BA -> BA -> BA) (notBA : BA -> BA) (trueBA : BA) (falseBA : BA) : Prop :=
+  Create HintDb boolalg_hints.
+
+  Class BooleanAlgebra_sig (BA : Type) : Type :=
+    { andBA : BA -> BA -> BA
+    ; orBA : BA -> BA -> BA
+    ; notBA : BA -> BA
+    ; trueBA : BA
+    ; falseBA : BA
+    }
+  .
+
+  Local Instance bool_hasBooleanAlgebraMethods : BooleanAlgebra_sig bool :=
+    { andBA := andb
+    ; orBA := orb
+    ; notBA := negb
+    ; trueBA := true
+    ; falseBA := false
+    }
+  .
+
+  Class BooleanAlgebra_axiom (BA : Type) {requiresSetoid : isSetoid BA} {requiresBooleanAlgebraMethods : BooleanAlgebra_sig BA} : Prop :=
     { andBA_congru :> preserves_eqProp2 andBA
     ; orBA_congru :> preserves_eqProp2 orBA
     ; notBA_congru :> preserves_eqProp1 notBA
@@ -38,18 +59,9 @@ Module BooleanAlgebra.
     }
   .
 
-  Class BooleanAlgebra_sig (BA : Type) : Type :=
-    { andBA : BA -> BA -> BA
-    ; orBA : BA -> BA -> BA
-    ; notBA : BA -> BA
-    ; trueBA : BA
-    ; falseBA : BA
-    }
-  .
-
   Class isBooleanAlgebra (BA : Type) {requiresSetoid : isSetoid BA} : Type :=
-    { BooleanAlgebra_methods :> BooleanAlgebra_sig BA
-    ; BooleanAlgebra_obeysBooleanAlgebra_axiom :> BooleanAlgebra_axiom BA andBA orBA notBA trueBA falseBA
+    { hasBooleanAlgebraMethods :> BooleanAlgebra_sig BA
+    ; BooleanAlgebra_obeysBooleanAlgebra_axiom :> BooleanAlgebra_axiom BA (requiresSetoid := requiresSetoid) (requiresBooleanAlgebraMethods := hasBooleanAlgebraMethods)
     }
   .
 
