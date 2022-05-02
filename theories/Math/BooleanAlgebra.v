@@ -56,7 +56,7 @@ Module BooleanAlgebra.
     }
   .
 
-  Section bool_isAnInstanceOfBooleanAlgebra.
+  Section BasicInstancesOfBooleanAlgebra.
 
   Local Instance bool_hasBooleanAlgebraMethods : BooleanAlgebra_sig bool :=
     { andBA := andb
@@ -66,8 +66,6 @@ Module BooleanAlgebra.
     ; falseBA := false
     }
   .
-
-  Local Existing Instance theFinestSetoidOf.
 
   Local Instance bool_obeysBooleanAlgebra_axiom
     : BooleanAlgebra_axiom bool (requiresSetoid := theFinestSetoidOf bool) (requiresBooleanAlgebraMethods := bool_hasBooleanAlgebraMethods).
@@ -79,7 +77,7 @@ Module BooleanAlgebra.
     }
   .
 
-  End bool_isAnInstanceOfBooleanAlgebra.
+  End BasicInstancesOfBooleanAlgebra.
 
   Section BooleanAlgebraAsPoset.
 
