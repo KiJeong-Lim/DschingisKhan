@@ -821,14 +821,34 @@ Module MyUtil.
         rewrite IH with (x := S x) (y := y')... rewrite claim1 with (x' := x)...
   Qed.
 
+  Definition cantor_pairing_inv (x : nat) (y : nat) : nat := sum_from_0_to (x + y) + y.
+
   Theorem cantor_pairing_spec n x y
-    : cantor_pairing n = (x, y) <-> n = sum_from_0_to (x + y) + y.
+    : cantor_pairing n = (x, y) <-> n = cantor_pairing_inv x y.
   Proof.
     split.
     - exact (cantor_pairing_is_injective n x y).
     - intros Heq. subst n. symmetry.
       exact (cantor_pairing_is_surjective x y).
   Qed.
+
+  Definition pair_enum {fsts : Type} {snds : Type} {fsts_requiresCountable : isCountable fsts} {snds_requiresCountable : isCountable snds} (n : nat) : fsts * snds :=
+    let '(a, b) := cantor_pairing n in (enum a, enum b)
+  .
+
+  Lemma pair_enum_isSurjective {fsts : Type} {snds : Type} {fsts_requiresCountable : isCountable fsts} {snds_requiresCountable : isCountable snds}
+    : isSurjective (cod := (fsts * snds)%type) pair_enum.
+  Proof.
+    intros [x y]. exploit (enum_isSurjective x) as [a x_is_enum_a]. exploit (enum_isSurjective y) as [b y_is_enum_b].
+    exists (cantor_pairing_inv a b). unnw. subst x y. remember (cantor_pairing_inv a b) as c eqn: c_is. rewrite <- cantor_pairing_spec in c_is.
+    unfold pair_enum. rewrite c_is. reflexivity. 
+  Qed.
+
+  Global Instance pair_isCountable {fsts : Type} {snds : Type} (fsts_requiresCountable : isCountable fsts) (snds_requiresCountable : isCountable snds) : isCountable (fsts * snds)%type :=
+    { enum := pair_enum
+    ; enum_isSurjective := pair_enum_isSurjective
+    }
+  .
 
   Section LIST_ACCESSORIES.
 

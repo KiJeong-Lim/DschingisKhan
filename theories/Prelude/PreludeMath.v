@@ -117,24 +117,35 @@ Module MathProps.
     }
   .
 
+  Class Annihilator (a : A) (bin_op : A -> A -> A) : Prop :=
+    { leftAnnihilator : forall x : A, bin_op x a == a
+    ; rightAnnihilator : forall x : A, bin_op a x == a
+    }
+  .
+
   End STATEMENTS_FOR_OPERATION_PROPERTIES.
 
   Global Infix " `distributesOver` " := Distr (at level 70, no associativity) : type_scope.
   Global Infix " `isIdentityOf` " := IdElemOf (at level 70, no associativity) : type_scope.
   Global Infix " `isInverseOpFor` " := InvOpOf (at level 70, no associativity) : type_scope.
+  Global Infix " `isAnnihilatorFor` " := Annihilator (at level 70, no associativity) : type_scope.
 
   Definition isInjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Prop :=
     forall x1 : dom, forall x2 : dom, << f_x1_eq_f_x2 : f x1 = f x2 >> -> << x1_eq_x2 : x1 = x2 >>
   .
 
-  Definition isSurjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Type :=
+  Definition isSurjection {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Type :=
     forall y : cod, {x : dom | << y_is_f_x : y = f x >>}
+  .
+
+  Definition isSurjective {dom : Hask.t} {cod : Hask.t} (f : Hask.arrow dom cod) : Prop :=
+    forall y : cod, exists x : dom, << y_is_f_x : y = f x >>
   .
 
   Class Equipotent (dom : Hask.t) (cod : Hask.t) : Type :=
     { bijection : dom -> cod
     ; bijectionInjective : isInjective bijection
-    ; bijectionSurjective : isSurjective bijection
+    ; bijectionSurjective : isSurjection bijection
     }
   .
 
@@ -168,9 +179,15 @@ Module MathProps.
 
   End CARDINALITY_EQUIVALENCE.
 
-  Class Countable (dom : Hask.t) : Type :=
+  Class isCountable (dom : Hask.t) : Type :=
     { enum : nat -> dom
-    ; requiresRecursivelyEnumerable : isSurjective enum
+    ; enum_isSurjective : isSurjective enum
+    }
+  .
+
+  Class isRecursivelyEnumerable (dom : Hask.t) : Type :=
+    { RecursivelyEnumerable_requiresCountable :> isCountable dom
+    ; enum_isSurjection : isSurjection enum
     }
   .
 
