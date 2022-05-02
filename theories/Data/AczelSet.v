@@ -422,7 +422,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End AczelSet_fromWf.
 
-  Section AczelSet_STRONG_COLLECTION.
+  Section AczelSet_StrongCollection.
 
   (* << A Sketch of the Proof of Strong Collection >>
     -- Advice of "Hanul Jeon"
@@ -446,7 +446,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (phi_compatWith_eqTree_on_1st_arg : forall y : AczelSet, compatWith_eqTree (fun x : AczelSet => phi x y))
     (phi_compatWith_eqTree_on_2nd_arg : forall x : AczelSet, compatWith_eqTree (fun y : AczelSet => phi x y))
     (NONEMPTY : forall x : AczelSet, x `elem` X -> exists y : AczelSet, phi x y)
-    : exists Y : AczelSet, ⟪ FST_COLLECTION : forall x : AczelSet, x `elem` X -> exists y : AczelSet, y `elem` Y /\ phi x y ⟫ /\ ⟪ SND_COLLECTION : forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ phi x y ⟫.
+    : exists Y : AczelSet, ⟪ collects_for_1st_arg : forall x : AczelSet, x `elem` X -> exists y : AczelSet, y `elem` Y /\ phi x y ⟫ /\ ⟪ collects_for_2nd_arg : forall y : AczelSet, elem y Y -> exists x : AczelSet, elem x X /\ phi x y ⟫.
   Proof with eauto with *.
     set (base_set := getChildren X). unnw.
     assert (claim1 : exists f : base_set -> AczelSet, forall x : base_set, phi (getChildTrees X x) (f x)).
@@ -456,7 +456,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     - intros x [c_X x_eq_X_c]. exists (getChildTrees X c_X). split... eapply phi_compatWith_eqTree_on_2nd_arg...
   Qed.
 
-  End AczelSet_STRONG_COLLECTION.
+  End AczelSet_StrongCollection.
 
 (** "Ordinals" *)
 
