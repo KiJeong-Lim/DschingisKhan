@@ -26,15 +26,6 @@ Module BooleanAlgebra.
     }
   .
 
-  Local Instance bool_hasBooleanAlgebraMethods : BooleanAlgebra_sig bool :=
-    { andBA := andb
-    ; orBA := orb
-    ; notBA := negb
-    ; trueBA := true
-    ; falseBA := false
-    }
-  .
-
   Class BooleanAlgebra_axiom (BA : Type) {requiresSetoid : isSetoid BA} {requiresBooleanAlgebraMethods : BooleanAlgebra_sig BA} : Prop :=
     { andBA_congru :> preserves_eqProp2 andBA
     ; orBA_congru :> preserves_eqProp2 orBA
@@ -52,10 +43,10 @@ Module BooleanAlgebra.
     ; andBA_idem :> Idem andBA
     ; orBA_idem :> Idem orBA
     ; Absorption_andBA_orBA :> Absorption andBA orBA
-    ; andBA_notBA_falseBA (b : BA)
-      : andBA b (notBA b) == falseBA
-    ; orBA_notBA_trueBA (b : BA)
-      : orBA b (notBA b) == trueBA
+    ; andBA_notBA_falseBA (x : BA)
+      : andBA x (notBA x) == falseBA
+    ; orBA_notBA_trueBA (x : BA)
+      : orBA x (notBA x) == trueBA
     }
   .
 
@@ -64,6 +55,31 @@ Module BooleanAlgebra.
     ; BooleanAlgebra_obeysBooleanAlgebra_axiom :> BooleanAlgebra_axiom BA (requiresSetoid := requiresSetoid) (requiresBooleanAlgebraMethods := hasBooleanAlgebraMethods)
     }
   .
+
+  Section bool_isAnInstanceOfBooleanAlgebra.
+
+  Local Instance bool_hasBooleanAlgebraMethods : BooleanAlgebra_sig bool :=
+    { andBA := andb
+    ; orBA := orb
+    ; notBA := negb
+    ; trueBA := true
+    ; falseBA := false
+    }
+  .
+
+  Local Existing Instance theFinestSetoidOf.
+
+  Local Instance bool_obeysBooleanAlgebra_axiom
+    : BooleanAlgebra_axiom bool (requiresSetoid := theFinestSetoidOf bool) (requiresBooleanAlgebraMethods := bool_hasBooleanAlgebraMethods).
+  Proof. (repeat (try split; repeat intros [ | ])); now cbn in *. Qed.
+
+  Local Instance bool_isBooleanAlgebra : isBooleanAlgebra bool (requiresSetoid := theFinestSetoidOf bool) :=
+    { hasBooleanAlgebraMethods := bool_hasBooleanAlgebraMethods
+    ; BooleanAlgebra_obeysBooleanAlgebra_axiom := bool_obeysBooleanAlgebra_axiom
+    }
+  .
+
+  End bool_isAnInstanceOfBooleanAlgebra.
 
   Section BooleanAlgebraAsPoset.
 
