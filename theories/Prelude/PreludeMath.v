@@ -212,27 +212,35 @@ Module MathProps.
 
   Section ORDER_THEORIC_CONCEPTS.
 
-  Local Notation " x '>=' y " := (leProp y x) (only parsing, at level 70, no associativity) : type_scope.
+  Local Notation " x '>=' y " := (leProp y x) (only parsing) : type_scope.
 
-  Definition PrefixedPoints {D : Type} {requiresPoset : isPoset D} (f : D -> D) : ensemble D := fun x : D => (x >= f x)%type.
+  Context {D : Type}.
 
-  Definition FixedPoints {D : Type} {requiresSetoid : isSetoid D} (f : D -> D) : ensemble D := fun x : D => (x == f x)%type.
+  Definition PrefixedPoints {requiresPoset : isPoset D} (f : D -> D) : ensemble D :=
+    fun x : D => (x >= f x)%type
+  .
 
-  Definition PostfixedPoints {D : Type} {requiresPoset : isPoset D} (f : D -> D) : ensemble D := fun x : D => (x =< f x)%type.
+  Definition FixedPoints {requiresSetoid : isSetoid D} (f : D -> D) : ensemble D :=
+    fun x : D => (x == f x)%type
+  .
 
-  Definition UpperBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+  Definition PostfixedPoints {requiresPoset : isPoset D} (f : D -> D) : ensemble D :=
+    fun x : D => (x =< f x)%type
+  .
+
+  Definition UpperBoundsOf {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
     fun upper_bound : D => forall x : D, << H_IN : member x X >> -> (x =< upper_bound)%type
   .
 
-  Definition LowerBoundsOf {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
+  Definition LowerBoundsOf {requiresPoset : isPoset D} (X : ensemble D) : ensemble D :=
     fun lower_bound : D => forall x : D, << H_IN : member x X >> -> (x >= lower_bound)%type
   .
 
-  Definition isSupremumOf {D : Type} {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
+  Definition isSupremumOf {requiresPoset : isPoset D} (sup_X : D) (X : ensemble D) : Prop :=
     forall upper_bound : D, << SUPREMUM_LE_UPPER_BOUND : (sup_X =< upper_bound)%type >> <-> << UPPER_BOUND : member upper_bound (UpperBoundsOf X) >>
   .
 
-  Definition isInfimumOf {D : Type} {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
+  Definition isInfimumOf {requiresPoset : isPoset D} (inf_X : D) (X : ensemble D) : Prop :=
     forall lower_bound : D, << LOWER_BOUND_LE_INFIMUM : (inf_X >= lower_bound)%type >> <-> << LOWER_BOUND : member lower_bound (LowerBoundsOf X) >>
   .
 

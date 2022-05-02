@@ -31,17 +31,24 @@ Module BooleanAlgebra.
     ; andBA_idem :> Idem andBA
     ; orBA_idem :> Idem orBA
     ; Absorption_andBA_orBA :> Absorption andBA orBA
-    ; andBA_notBA_falseBA : forall b : BA, andBA b (notBA b) == falseBA
-    ; orBA_notBA_trueBA : forall b : BA, orBA b (notBA b) == trueBA
+    ; andBA_notBA_falseBA (b : BA)
+      : andBA b (notBA b) == falseBA
+    ; orBA_notBA_trueBA (b : BA)
+      : orBA b (notBA b) == trueBA
     }
   .
 
-  Class isBooleanAlgebra (BA : Type) {requiresSetoid : isSetoid BA} : Type :=
+  Class BooleanAlgebra_sig (BA : Type) : Type :=
     { andBA : BA -> BA -> BA
     ; orBA : BA -> BA -> BA
     ; notBA : BA -> BA
     ; trueBA : BA
     ; falseBA : BA
+    }
+  .
+
+  Class isBooleanAlgebra (BA : Type) {requiresSetoid : isSetoid BA} : Type :=
+    { BooleanAlgebra_methods :> BooleanAlgebra_sig BA
     ; BooleanAlgebra_obeysBooleanAlgebra_axiom :> BooleanAlgebra_axiom BA andBA orBA notBA trueBA falseBA
     }
   .
@@ -54,17 +61,11 @@ Module BooleanAlgebra.
 
   Global Instance leBA_Reflexive
     : Reflexive leBA.
-  Proof.
-    intros x. eapply andBA_idem with (x := x).
-  Qed.
+  Proof. intros x. eapply andBA_idem with (x := x). Qed.
 
   Global Instance leBA_Transitive
     : Transitive leBA.
-  Proof.
-    intros x y z x_le_y y_le_z. unfold leBA in *.
-    rewrite <- x_le_y at 2. rewrite <- y_le_z.
-    now rewrite andBA_assoc, x_le_y.
-  Qed.
+  Proof. intros x y z x_le_y y_le_z. unfold leBA in *. rewrite <- x_le_y at 2. rewrite <- y_le_z. now rewrite andBA_assoc, x_le_y. Qed.
 
   Global Instance leBA_PreOrder : PreOrder leBA :=
     { PreOrder_Reflexive := leBA_Reflexive
