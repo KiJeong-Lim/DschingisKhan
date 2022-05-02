@@ -8,23 +8,25 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module Univ.
+Module AczelSetUniv.
 
   Monomorphic Universe AczelSetUniv_lv.
 
   Monomorphic Definition t : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
 
-End Univ.
+End AczelSetUniv.
 
 Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
-  Inductive Tree : Univ.t :=
-  | Node {children : Type} (childtrees : children -> Tree) : Tree
+  Monomorphic Universe AczelSet_children_lv.
+
+  Inductive Tree : AczelSetUniv.t :=
+  | Node {children : Type@{AczelSet_children_lv}} (childtrees : children -> Tree) : Tree
   .
 
-  Definition AczelSet : Univ.t := Tree.
+  Definition AczelSet : AczelSetUniv.t := Tree.
 
-  Definition getChildren (root : AczelSet) : Type :=
+  Definition getChildren (root : AczelSet) : Type@{AczelSet_children_lv} :=
     match root with
     | @Node children childtrees => children
     end
@@ -48,12 +50,36 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
+  Lemma AczelSet_well_founded
+    : forall root : AczelSet, Acc (fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)) root.
+  Proof.
+    enough (eqTree_refl : forall x : AczelSet, eqTree x x).
+    enough (eqTree_sym : forall x : AczelSet, forall y : AczelSet, eqTree x y -> eqTree y x).
+    enough (eqTree_trans : forall y : AczelSet, forall x : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
+    set (elem := fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)).
+    enough (Acc_compatWith_eqTree : forall lhs : AczelSet, forall rhs : AczelSet, eqTree lhs rhs -> Acc elem lhs -> Acc elem rhs).
+    - induction root as [x_children x_childtree IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_sym; exact (y_eq_x_c)| exact (IH c_x)].
+    - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
+      econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
+      destruct lhs as [x_children x_childtree]; destruct rhs as [y_children y_childtree]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
+      unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_trans; [exact (z_eq_y_c) | eapply eqTree_sym; exact (x_c_eq_y_c)].
+    - induction y as [y_children y_childtree IH]; destruct x as [x_children x_childtree]; destruct z as [z_children z_childtree]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
+      + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
+      + intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
+    - induction x as [x_children x_childtree IH]; destruct y as [y_children y_childtree]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
+      + intros c_y. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
+      + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
+    - induction x as [x_children x_childtree IH]. simpl; unnw. split.
+      + intros c_x. exists (c_x). eapply IH.
+      + intros c_x. exists (c_x). eapply IH.
+  Defined.
+
   Global Instance eqTree_Reflexive
     : Reflexive eqTree.
   Proof.
     intros x; induction x as [x_children x_childtree IH].
     cbn in *; split; unnw; eauto.
-  Defined.
+  Qed.
 
   Local Hint Resolve eqTree_Reflexive : khan_hints.
 
@@ -64,7 +90,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     cbn in *; split; unnw; [intros c_y | intros c_x].
     - exploit (y_sim_x c_y) as [c_x hyp_eq1]; eauto.
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; eauto.
-  Defined.
+  Qed.
 
   Local Hint Resolve eqTree_Symmetric : khan_hints.
 
@@ -75,7 +101,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     cbn in *; split; unnw; [intros c_x | intros c_z].
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; exploit (y_sim_z c_y) as [c_z hyp_eq2]; eauto.
     - exploit (z_sim_y c_z) as [c_y hyp_eq1]; exploit (y_sim_x c_y) as [c_x hyp_eq2]; eauto.
-  Defined.
+  Qed.
 
   Local Hint Resolve eqTree_Transitive : khan_hints.
 
@@ -104,12 +130,23 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Unfold elem : khan_hints.
 
+  Global Instance AczelSet_isWellFounded : isWellFounded AczelSet :=
+    { wfRel := elem
+    ; wfRel_well_founded := AczelSet_well_founded
+    }
+  .
+
   Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
-  Lemma elem_intro {z : AczelSet} {x : AczelSet} (c_x : getChildren x)
+  Lemma AczelSet_rect (phi : AczelSet -> Type)
+    (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
+    : forall x : AczelSet, phi x.
+  Proof. eapply NotherianRecursion. exact (IND). Defined.
+
+  Lemma elem_intro (z : AczelSet) (x : AczelSet) (c_x : getChildren x)
     (z_eq_x_c : z == getChildTrees x c_x)
     : z `elem` x.
-  Proof. eauto with *. Defined.
+  Proof. eauto with *. Qed.
 
   Lemma eqProp_elem_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_eq_y : x == y)
@@ -125,7 +162,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     destruct z as [z_children z_childtree]; destruct y as [y_children y_childtree].
     destruct y_eq_z as [y_subset_z_c z_c_subset_y]; destruct x_in_y as [c_y x_eq_y_c].
     pose proof (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
-  Defined.
+  Qed.
 
   Global Add Parametric Morphism :
     elem with signature (eqProp ==> eqProp ==> iff)
@@ -135,44 +172,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     transitivity (x1 `elem` y2).
     - split; eapply elem_eqProp_elem...
     - split; eapply eqProp_elem_elem...
-  Defined.
+  Qed.
 
   Local Hint Resolve elem_compatWith_eqProp : khan_hints.
 
-  Section SetInduction.
-
-  Local Add Parametric Morphism :
-    (Acc elem) with signature (eqProp ==> iff)
-    as Acc_elem_compatWith_eqProp.
-  Proof with eauto with *.
-    enough (to_show : forall lhs : AczelSet, forall rhs : AczelSet, lhs == rhs -> Acc elem lhs -> Acc elem rhs).
-    { intros x y h_eq. split; eapply to_show... }
-    intros lhs rhs x_eq_y acc_x. cbn. pose proof (Acc_inv acc_x) as claim1. econstructor...
-    intros z z_in_y. eapply claim1. rewrite x_eq_y...
-  Defined.
-
-  Lemma AczelSet_elem_well_founded
-    : forall root : AczelSet, Acc elem root.
-  Proof.
-    induction root as [x_children x_childtree IH]. econstructor.
-    intros z [c_x z_eq_x_c]. rewrite z_eq_x_c. exact (IH c_x).
-  Defined.
-
-  Global Instance AczelSet_isWellFounded : isWellFounded AczelSet :=
-    { wfRel := elem
-    ; wfRel_well_founded := AczelSet_elem_well_founded
-    }
-  .
-
-  Lemma AczelSet_rect (phi : AczelSet -> Type)
-    (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
-    : forall x : AczelSet, phi x.
-  Proof. eapply NotherianRecursion. exact (IND). Defined.
-
-  End SetInduction.
-
   Theorem AczelSet_extensional_equality (lhs : AczelSet) (rhs : AczelSet)
-    : lhs == rhs <-> << EXT_EQ : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
+    : lhs == rhs <-> << EXTENSIONAL_EQUALITY : forall z : AczelSet, z `elem` lhs <-> z `elem` rhs >>.
   Proof with cbn; eauto with *.
     unnw. split.
     - intros h_eq z. rewrite h_eq. reflexivity.
@@ -420,7 +425,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Section AczelSet_STRONG_COLLECTION.
 
   (* << A Sketch of the Proof of Strong Collection >>
-    -- Advise of "Hanul Jeon"
+    -- Advice of "Hanul Jeon"
     > Aczel의 Strong Collection의 증명을 스케치해보면
       Let's sketch the Aczel's proof of Strong Collection.
     > 우선 forall x:X, exists y phi(x,y)가 성립한다고 합시다
@@ -475,7 +480,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
   Proof. inversion alpha_isOrdinal; eauto with *. Qed.
 
-  Definition Ordinals : Univ.t := @sig AczelSet isOrdinal.
+  Definition Ordinals : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
   Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
