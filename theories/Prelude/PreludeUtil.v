@@ -737,35 +737,25 @@ Module MyUtil.
     end
   .
 
-  Theorem well_ordering_principle : 
-    forall p : nat -> bool,
-    forall n : nat,
-    p n = true ->
-    let m : nat := first_nat p n in
-    p m = true /\ (forall i : nat, p i = true -> i >= m).
+  Theorem well_ordering_principle (p : nat -> bool) (n : nat)
+    (WITNESS : p n = true)
+    : p (first_nat p n) = true /\ (forall i : nat, p i = true -> i >= first_nat p n).
   Proof with eauto. (* This proof has been improved by Junyoung Clare Jang. *)
-    intros p n H3 m.
-    assert (forall x : nat, p x = true -> p (first_nat p x) = true).
-    { induction x...
-      simpl.
-      destruct (p (first_nat p x)) eqn: H0...
-    }
-    split...
-    intros i H4.
-    enough (forall x : nat, first_nat p x <= x).
-    enough (forall x : nat, p (first_nat p x) = true -> (forall y : nat, x < y -> first_nat p x = first_nat p y)).
-    enough (forall x : nat, forall y : nat, p y = true -> first_nat p x <= y)...
-    - intros x y H2.
-      destruct (le_gt_dec x y).
+    set (m := first_nat p n).
+    assert (claim1 : forall x : nat, p x = true -> p (first_nat p x) = true).
+    { induction x as [ | x IH]... simpl. destruct (p (first_nat p x)) as [ | ] eqn: ?... }
+    split... intros i p_i_eq_true.
+    enough (claim2 : forall x : nat, first_nat p x <= x).
+    enough (claim3 : forall x : nat, p (first_nat p x) = true -> (forall y : nat, x < y -> first_nat p x = first_nat p y)).
+    enough (claim4 : forall x : nat, forall y : nat, p y = true -> first_nat p x <= y)...
+    - intros x y p_y_eq_true. destruct (le_gt_dec x y) as [x_le_y | x_gt_y].
       + eapply Nat.le_trans...
       + replace (first_nat p x) with (first_nat p y)...
-    - intros x H1 y H2.
-      induction H2; simpl.
-      + rewrite H1...
-      + rewrite <- IHle, H1...
-    - induction x...
-      simpl.
-      destruct (p (first_nat p x)) eqn: H0...
+    - intros x p_first_nat_p_x_eq_true y x_gt_y. induction x_gt_y as [ | y x_gt_y IH]; simpl.
+      + rewrite p_first_nat_p_x_eq_true...
+      + rewrite <- IH, p_first_nat_p_x_eq_true...
+    - induction x as [ | x IH]... simpl.
+      destruct (p (first_nat p x)) as [ | ]...
   Qed.
 
   Fixpoint sum_from_0_to (n : nat) {struct n} : nat :=

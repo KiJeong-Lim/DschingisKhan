@@ -72,7 +72,7 @@ Module BasicGeneralTopology.
 
   Section SUBTOPOLOGY.
 
-  Context {A : Type} {phi : A -> Prop}.
+  Context {A : Type} (phi : A -> Prop).
 
   Let Subspace : Type := @sig A phi.
 
@@ -101,5 +101,9 @@ Module BasicGeneralTopology.
     ; TopologicalSpace_obeysTopology_axiom := @Subtopology A phi requiresTopology
     }
   .
+
+  Lemma proj1_sig_isContinuousMap_fromSubspaceTopology {A : Type} {requiresTopology : isTopologicalSpace A} (X : ensemble A)
+    : isContinuousMap (dom := @sig A X) (cod := A) (@proj1_sig A X).
+  Proof with eauto with *. ii; desnw; unnw. exists (Y). split... eapply isFilterReprOf_iff... Qed.
 
 End BasicGeneralTopology.
