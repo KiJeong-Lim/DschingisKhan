@@ -52,10 +52,7 @@ Module BasicGeneralTopology.
     : isOpen (intersection O1 O2).
   Proof. eapply intersection_isOpen; eauto. Qed.
 
-  Global Hint Resolve fullOpen unionsOpen intersectionOpen : topology_hints.
-
-  Lemma emptyset_isOpen {A : Type} (isOpen : ensemble A -> Prop)
-    (satisfiesAxiomsOfTopology : Topology_axiom isOpen)
+  Lemma emptyset_isOpen {A : Type} {requiresTopology : isTopologicalSpace A}
     : isOpen (@empty A).
   Proof.
     eapply isOpen_compatWith_eqProp.
@@ -65,6 +62,8 @@ Module BasicGeneralTopology.
       + intros [X [z_in_X []]].
       + intros [].
   Qed.
+
+  Global Hint Resolve fullOpen unionsOpen intersectionOpen emptyset_isOpen : topology_hints.
 
   Definition isContinuousMap {dom : Type} {cod : Type} {dom_isTopology : isTopologicalSpace dom} {cod_isTopology : isTopologicalSpace cod} (f : dom -> cod) : Prop :=
     forall Y : ensemble cod, << TGT_OPEN : isOpen Y >> -> << SRC_OPEN : isOpen (preimage f Y) >>

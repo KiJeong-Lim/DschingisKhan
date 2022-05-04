@@ -428,7 +428,7 @@ Module Ensembles.
   .
 
   Local Instance ensemble_isSetoid1 : isSetoid1 ensemble :=
-    { liftSetoid1 {X : Hask.t} (_ : isSetoid X) := @ensemble_isSetoid X
+    { liftSetoid1 {X : Hask.t} (X_isSetoid : isSetoid X) := @ensemble_isSetoid X
     }
   .
 
