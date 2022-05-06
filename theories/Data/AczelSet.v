@@ -58,18 +58,18 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     enough (eqTree_trans : forall y : AczelSet, forall x : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
     set (elem := fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)).
     enough (Acc_compatWith_eqTree : forall lhs : AczelSet, forall rhs : AczelSet, eqTree lhs rhs -> Acc elem lhs -> Acc elem rhs).
-    - induction root as [x_children x_childtree IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_sym; exact (y_eq_x_c)| exact (IH c_x)].
+    - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_sym; exact (y_eq_x_c)| exact (IH c_x)].
     - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
       econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
-      destruct lhs as [x_children x_childtree]; destruct rhs as [y_children y_childtree]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
+      destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtree]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
       unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_trans; [exact (z_eq_y_c) | eapply eqTree_sym; exact (x_c_eq_y_c)].
-    - induction y as [y_children y_childtree IH]; destruct x as [x_children x_childtree]; destruct z as [z_children z_childtree]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
+    - induction y as [y_children y_childtrees IH]; destruct x as [x_children x_childtree]; destruct z as [z_children z_childtree]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
       + intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
-    - induction x as [x_children x_childtree IH]; destruct y as [y_children y_childtree]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
+    - induction x as [x_children x_childtrees IH]; destruct y as [y_children y_childtree]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
       + intros c_y. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
-    - induction x as [x_children x_childtree IH]. simpl; unnw. split.
+    - induction x as [x_children x_childtrees IH]. simpl; unnw. split.
       + intros c_x. exists (c_x). eapply IH.
       + intros c_x. exists (c_x). eapply IH.
   Defined.
@@ -77,7 +77,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Global Instance eqTree_Reflexive
     : Reflexive eqTree.
   Proof.
-    intros x; induction x as [x_children x_childtree IH].
+    intros x; induction x as [x_children x_childtrees IH].
     cbn in *; split; unnw; eauto.
   Qed.
 
@@ -86,7 +86,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Global Instance eqTree_Symmetric
     : Symmetric eqTree.
   Proof.
-    intros x; induction x as [x_children x_childtree IH]; intros [y_children y_childtree] [x_sim_y y_sim_x].
+    intros x; induction x as [x_children x_childtrees IH]; intros [y_children y_childtrees] [x_sim_y y_sim_x].
     cbn in *; split; unnw; [intros c_y | intros c_x].
     - exploit (y_sim_x c_y) as [c_x hyp_eq1]; eauto.
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; eauto.
@@ -97,7 +97,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Global Instance eqTree_Transitive
     : Transitive eqTree.
   Proof.
-    intros x y; revert x; induction y as [y_children y_childtree IH]; intros [x_children x_childtree] [z_children z_childtree] [x_sim_y y_sim_x] [y_sim_z z_sim_y].
+    intros x y; revert x; induction y as [y_children y_childtrees IH]; intros [x_children x_childtrees] [z_children z_childtrees] [x_sim_y y_sim_x] [y_sim_z z_sim_y].
     cbn in *; split; unnw; [intros c_x | intros c_z].
     - exploit (x_sim_y c_x) as [c_y hyp_eq1]; exploit (y_sim_z c_y) as [c_z hyp_eq2]; eauto.
     - exploit (z_sim_y c_z) as [c_y hyp_eq1]; exploit (y_sim_x c_y) as [c_x hyp_eq2]; eauto.
@@ -138,15 +138,24 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
+  Global Instance mkWfRelFromAczelSet (alpha : AczelSet) : isWellFounded (getChildren alpha) :=
+    { wfRel (lhs : getChildren alpha) (rhs : getChildren alpha) := getChildTrees alpha lhs `elem` getChildTrees alpha rhs
+    ; wfRel_well_founded := well_founded_relation_by_image (getChildTrees alpha) elem AczelSet_well_founded
+    }
+  .
+
   Lemma AczelSet_rect (phi : AczelSet -> Type)
     (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
     : forall x : AczelSet, phi x.
   Proof. eapply NotherianRecursion. exact (IND). Defined.
 
-  Lemma elem_intro (z : AczelSet) (x : AczelSet) (c_x : getChildren x)
-    (z_eq_x_c : z == getChildTrees x c_x)
-    : z `elem` x.
-  Proof. eauto with *. Qed.
+  Lemma elem_intro (x : AczelSet) (c_x : getChildren x)
+    : getChildTrees x c_x `elem` x.
+  Proof.
+    exists (c_x). generalize (getChildTrees x c_x) as z. clear x c_x.
+    induction z as [z_children z_childtrees IH]. split.
+    all: intros c_z; exists (c_z); exact (IH c_z).
+  Defined.
 
   Lemma eqProp_elem_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_eq_y : x == y)
@@ -159,7 +168,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (x_in_y : x `elem` y)
     : x `elem` z.
   Proof.
-    destruct z as [z_children z_childtree]; destruct y as [y_children y_childtree].
+    destruct z as [z_children z_childtrees]; destruct y as [y_children y_childtree].
     destruct y_eq_z as [y_subset_z_c z_c_subset_y]; destruct x_in_y as [c_y x_eq_y_c].
     pose proof (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
   Qed.
@@ -181,14 +190,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with cbn; eauto with *.
     unnw. split.
     - intros h_eq z. rewrite h_eq. reflexivity.
-    - revert rhs. induction lhs as [x_children x_childtree IH]; intros [y_children y_childtree].
+    - revert rhs. induction lhs as [x_children x_childtrees IH]; intros [y_children y_childtrees].
       intros h_eq. simpl; unnw. split; [intros c_x | intros c_y].
-      + assert (claim1 : x_childtree c_x `elem` Node x_childtree).
-        { eapply elem_intro... }
-        pose proof (proj1 (h_eq (x_childtree c_x)) claim1) as [c_y x_c_eq_y]...
-      + assert (claim1 : y_childtree c_y `elem` Node y_childtree).
-        { eapply elem_intro... }
-        pose proof (proj2 (h_eq (y_childtree c_y)) claim1) as [c_x y_c_eq_x]...
+      + assert (claim1 : x_childtrees c_x `elem` Node x_childtrees) by eapply elem_intro.
+        pose proof (proj1 (h_eq (x_childtrees c_x)) claim1) as [c_y x_c_eq_y]...
+      + assert (claim1 : y_childtrees c_y `elem` Node y_childtrees) by eapply elem_intro.
+        pose proof (proj2 (h_eq (y_childtrees c_y)) claim1) as [c_x y_c_eq_x]...
   Qed.
 
   Definition subseteq (x : AczelSet) (y : AczelSet) : Prop :=
@@ -461,15 +468,15 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 (** "Ordinals" *)
 
   Definition isTransitiveSet (x : AczelSet) : Prop :=
-    forall y : AczelSet, y `elem` x ->
-    forall z : AczelSet, z `elem` y ->
+    forall y : AczelSet, << y_in : y `elem` x >> ->
+    forall z : AczelSet, << z_in : z `elem` y >> ->
     z `elem` x
   .
 
-  Inductive isOrdinal (alpha : AczelSet) : Prop :=
+  Variant isOrdinal (alpha : AczelSet) : Prop :=
   | transitive_set_of_transitive_sets_isOrdinal
     (IS_TRANSITIVE_SET : isTransitiveSet alpha)
-    (every_member_IS_TRANSITIVE_SET : forall beta, beta `elem` alpha -> isTransitiveSet beta)
+    (every_member_IS_TRANSITIVE_SET : forall beta, << H_IN : beta `elem` alpha >> -> isTransitiveSet beta)
     : isOrdinal alpha
   .
 
@@ -478,7 +485,35 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Lemma every_member_of_Ordinal_isOrdinal (alpha : AczelSet)
     (alpha_isOrdinal : isOrdinal alpha)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
-  Proof. inversion alpha_isOrdinal; eauto with *. Qed.
+  Proof.
+    destruct alpha_isOrdinal as [alpha_is_transitive_set every_member_of_alpha_is_transitive_set].
+    intros beta beta_in_alpha. econstructor.
+    - eapply every_member_of_alpha_is_transitive_set. exact (beta_in_alpha).
+    - intros gamma gamma_in_beta; unnw. ii; desnw.
+      eapply every_member_of_alpha_is_transitive_set.
+      + eapply alpha_is_transitive_set; [exact (beta_in_alpha) | exact (gamma_in_beta)].
+      + exact (y_in).
+      + exact (z_in).
+  Defined.
+
+  Section EXAMPLES_OF_ORDINAL.
+
+  Lemma unions_i_of_Ordinals_isOrdinal {I : Type} (alpha_i : I -> AczelSet)
+    (alpha_i_isOrdinal : forall i : I, isOrdinal (alpha_i i))
+    : isOrdinal (unions_i alpha_i).
+  Proof with eauto with *.
+    econstructor.
+    - ii; desnw. apply AczelSet_unions_i_spec in y_in. desnw.
+      destruct IN_unions_i as [i y_in_alpha_i_i].
+      apply AczelSet_unions_i_spec.
+      exists (i). exploit (alpha_i_isOrdinal i) as [? ?]...
+    - ii; desnw. apply AczelSet_unions_i_spec in H_IN. desnw.
+      destruct IN_unions_i as [i beta_in_alpha_i_i].
+      exploit (alpha_i_isOrdinal i) as [? ?].
+      eapply every_member_IS_TRANSITIVE_SET...
+  Qed.
+
+  End EXAMPLES_OF_ORDINAL.
 
   Definition Ordinals : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
