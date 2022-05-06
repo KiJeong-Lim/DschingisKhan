@@ -476,7 +476,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Variant isOrdinal (alpha : AczelSet) : Prop :=
   | transitive_set_of_transitive_sets_isOrdinal
     (IS_TRANSITIVE_SET : isTransitiveSet alpha)
-    (every_member_IS_TRANSITIVE_SET : forall beta, << H_IN : beta `elem` alpha >> -> isTransitiveSet beta)
+    (EVERY_ELEMENT_IS_TRANSITIVE_SET : forall beta, << IS_ELEMENT : beta `elem` alpha >> -> isTransitiveSet beta)
     : isOrdinal alpha
   .
 
@@ -505,12 +505,11 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     econstructor.
     - ii; desnw. apply AczelSet_unions_i_spec in y_in. desnw.
       destruct IN_unions_i as [i y_in_alpha_i_i].
-      apply AczelSet_unions_i_spec.
-      exists (i). exploit (alpha_i_isOrdinal i) as [? ?]...
-    - ii; desnw. apply AczelSet_unions_i_spec in H_IN. desnw.
-      destruct IN_unions_i as [i beta_in_alpha_i_i].
-      exploit (alpha_i_isOrdinal i) as [? ?].
-      eapply every_member_IS_TRANSITIVE_SET...
+      eapply AczelSet_unions_i_spec. exists (i).
+      exploit (alpha_i_isOrdinal i) as [? ?]...
+    - ii; desnw. apply AczelSet_unions_i_spec in IS_ELEMENT. desnw.
+      destruct IN_unions_i as [i beta_in_alpha_i_i]. exploit (alpha_i_isOrdinal i) as [? ?].
+      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
   Qed.
 
   End EXAMPLES_OF_ORDINAL.
