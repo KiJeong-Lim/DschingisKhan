@@ -425,6 +425,32 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (exist _ c hyp_wf).
   Qed.
 
+  Lemma fromAcc_proof_irrelevance {A : Type} {wfRel : A -> A -> Prop} (root : A) (root_acc1 : Acc wfRel root) (root_acc2 : Acc wfRel root)
+    : fromAcc root root_acc1 == fromAcc root root_acc2.
+  Proof with eauto with *.
+    revert root root_acc1 root_acc2.
+    enough (it_suffices_to_show : forall tree : A, Acc wfRel tree -> forall tree_acc1 : Acc wfRel tree, forall tree_acc2 : Acc wfRel tree, fromAcc tree tree_acc1 `subseteq` fromAcc tree tree_acc2).
+    { ii. eapply subseteq_PartialOrder. split; eapply it_suffices_to_show... }
+    intros tree tree_acc. induction tree_acc as [tree tree_acc_inv IH]. intros [tree_acc1_inv] [tree_acc2_inv].
+    intros z [[subtree subtree_R_tree] z_eq]. simpl in *; unfold_eqTree. exists (exist _ subtree subtree_R_tree).
+    simpl; unfold_eqTree. rewrite z_eq. eapply subseteq_PartialOrder; split...
+  Qed.
+
+  Lemma fromAcc_lifts_lt {A : Type} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
+    (subtree_R_tree : wfRel subtree tree)
+    : fromAcc subtree subtree_acc `elem` fromAcc tree tree_acc.
+  Proof. eapply fromAcc_unfold. exists (exist _ subtree subtree_R_tree). simpl; unfold_eqTree. eapply fromAcc_proof_irrelevance. Qed.
+
+  Lemma fromAcc_subseteq_iff {A : Type} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+    : forall x : AczelSet, fromAcc tree tree_acc `subseteq` x <-> << LT_ELEM : forall subtree : A, forall subtree_R_tree : wfRel subtree tree, fromAcc subtree (Acc_inv tree_acc subtree_R_tree) `elem` x >>.
+  Proof with eauto with *.
+    intros x. split.
+    - intros subseteq_x subtree subtree_R_tree. eapply subseteq_x, fromAcc_lifts_lt...
+    - destruct tree_acc as [tree_acc_inv]. intros LT_ELEM z z_in; unnw.
+      apply fromAcc_unfold in z_in. unnw. destruct z_in as [[subtree subtree_R_tree] z_eq].
+      simpl in *; unfold_eqTree. rewrite z_eq...
+  Qed.
+
   Definition fromWf (A : Type) {requiresWellFounded : isWellFounded A} : AczelSet := unions_i (fun root : A => fromAcc root (wfRel_well_founded root)).
 
   End AczelSet_fromWf.
