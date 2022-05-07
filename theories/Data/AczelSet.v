@@ -712,7 +712,7 @@ Module OrdinalImpl.
   Definition transfinite_recursion {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
-    | @Node alpha_base alpha_elems => fun alpha_i_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
 
@@ -742,7 +742,9 @@ Module OrdinalImpl.
     }
   .
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
+    @sig Dom WellFormeds
+  .
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
