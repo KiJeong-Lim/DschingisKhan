@@ -238,7 +238,7 @@ Module BooleanAlgebra.
   .
 
   Definition cl (X : ensemble BA) : ensemble BA :=
-    fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf_cl : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le : andsBA xs =< x ⟫
+    fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le : andsBA xs =< x ⟫
   .
 
   Definition isElementCompleteFor (X : ensemble BA) (b : BA) : Prop :=
