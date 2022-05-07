@@ -678,7 +678,7 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " =< " := (@leProp Ord Ord_isSetoid) : Ordinal_scope.
+  Global Infix " =< " := (@leProp Ord Ord_isPoset) : Ordinal_scope.
 
   Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
     unliftOrdinalToAczelSet lhs `elem` unliftOrdinalToAczelSet rhs
