@@ -138,6 +138,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     }
   .
 
+  Corollary elem_Irreflexive (x : AczelSet)
+    : ~ elem x x.
+  Proof. exact (wfRel_Irreflexive (requiresWellFounded := AczelSet_isWellFounded) x). Qed.
+
   Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
   Lemma AczelSet_rect (phi : AczelSet -> Type)
