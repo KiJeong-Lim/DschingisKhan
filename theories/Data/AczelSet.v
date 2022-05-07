@@ -742,7 +742,7 @@ Module OrdinalImpl.
     }
   .
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
     @sig Dom WellFormeds
   .
 
@@ -752,19 +752,19 @@ Module OrdinalImpl.
 
   Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
 
-  Global Instance PartialSetoidOfDomainWithOrdering : isSetoid (WellFormedPartOf Dom) :=
+  Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
-    ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithOrdering
+    ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithPartialOrder
     }
   .
 
-  Global Instance PartialPosetOfDomainWithOrdering : isPoset (WellFormedPartOf Dom) :=
+  Global Instance partialPosetOfDomainWithPartialOrder : isPoset (WellFormedPartOf Dom) :=
     { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dLe (proj1_sig lhs) (proj1_sig rhs)
-    ; Poset_requiresSetoid := PartialSetoidOfDomainWithOrdering
-    ; leProp_PreOrder := @dLe_PreOrder Dom methods requiresDomainWithOrdering
-    ; leProp_PartialOrder := @dLe_PartialOrder Dom methods requiresDomainWithOrdering
+    ; Poset_requiresSetoid := partialSetoidOfDomainWithPartialOrder
+    ; leProp_PreOrder := @dLe_PreOrder Dom methods requiresDomainWithPartialOrder
+    ; leProp_PartialOrder := @dLe_PartialOrder Dom methods requiresDomainWithPartialOrder
     }
   .
 
@@ -786,7 +786,7 @@ Module OrdinalImpl.
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : Prop :=
+  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : Prop :=
     { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
       (d_le_d' : d =< d')
       : dsucc d =< dsucc d'
@@ -800,15 +800,15 @@ Module OrdinalImpl.
     }
   .
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} {hasGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} {hasGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithPartialOrder := requiresDomainWithPartialOrder)}.
 
   Global Add Parametric Morphism :
-    dsucc with signature (leProp (isPoset := PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
+    dsucc with signature (leProp (isPoset := partialPosetOfDomainWithPartialOrder) ==> leProp (isPoset := partialPosetOfDomainWithPartialOrder))
     as dsucc_monotonic.
   Proof. exact (dsucc_lifts_leProp). Defined.
 
   Global Add Parametric Morphism (I : smallUniv) :
-    djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
+    djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) partialPosetOfDomainWithPartialOrder) ==> leProp (isPoset := partialPosetOfDomainWithPartialOrder))
     as djoin_monotonic.
   Proof. exact (djoin_lifts_leProp). Defined.
 
