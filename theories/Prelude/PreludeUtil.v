@@ -1336,9 +1336,9 @@ Module FUN_FACTS.
     : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
   Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
-  Lemma well_founded_relation_by_image {A : Type} {B : Type} (f : A -> B) (R : B -> B -> Prop)
+  Lemma well_founded_relation_on_image {A : Type} {B : Type} (f : A -> B) (R : B -> B -> Prop)
     (R_wf : forall y : B, Acc R y)
-    : forall x : A, Acc (fun subtree : A => fun tree : A => R (f subtree) (f tree)) x.
+    : forall x : A, Acc (binary_relation_on_image R f) x.
   Proof.
     intros x. remember (f x) as y eqn: y_eq_f_x.
     revert x y_eq_f_x. induction (R_wf y) as [y0 hyp_wf IH].

@@ -279,7 +279,7 @@ Module PreludeInit_MAIN.
 
   Global Notation " E '~~>' F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
 
-  Global Polymorphic Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
+  Global Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
     as compose_lifts_eqProp.
   Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
@@ -382,15 +382,17 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_image.
 
+  Polymorphic Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
+
   Context {dom : Hask.t} {cod : Hask.t}.
 
-  Definition im_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs == f rhs.
+  Definition im_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := binary_relation_on_image eqProp f lhs rhs.
 
-  Definition im_leProp {cod_isPoset : isPoset cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := f lhs =< f rhs.
+  Definition im_leProp {cod_isPoset : isPoset cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := binary_relation_on_image leProp f lhs rhs.
 
   Variable f : Hask.arrow dom cod.
 
-  Local Instance equivalence_relation_by_image
+  Local Instance equivalence_relation_on_image
     (cod_isSetoid : isSetoid cod)
     : Equivalence (im_eqProp f).
   Proof.
@@ -400,7 +402,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Local Instance preorder_relation_by_image
+  Local Instance preorder_relation_on_image
     (cod_isPoset : isPoset cod)
     : PreOrder (im_leProp f).
   Proof.
@@ -409,7 +411,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Local Instance partialorder_relation_by_image
+  Local Instance partialorder_relation_on_image
     (cod_isPoset : isPoset cod)
     : PartialOrder (im_eqProp f) (im_leProp f).
   Proof.
@@ -426,15 +428,15 @@ Module PreludeInit_MAIN.
 
   Global Instance subSetoid (A : Hask.t) {requiresSetoid : isSetoid A} {P : A -> Prop} : isSetoid (@sig A P) :=
     { eqProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs == proj1_sig rhs
-    ; eqProp_Equivalence := equivalence_relation_by_image (@proj1_sig A P) requiresSetoid
+    ; eqProp_Equivalence := equivalence_relation_on_image (@proj1_sig A P) requiresSetoid
     }
   .
 
   Global Instance subPoset (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isPoset (@sig A P) :=
     { leProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs =< proj1_sig rhs
     ; Poset_requiresSetoid := subSetoid A
-    ; leProp_PreOrder := preorder_relation_by_image (@proj1_sig A P) requiresPoset
-    ; leProp_PartialOrder := partialorder_relation_by_image (@proj1_sig A P) requiresPoset
+    ; leProp_PreOrder := preorder_relation_on_image (@proj1_sig A P) requiresPoset
+    ; leProp_PartialOrder := partialorder_relation_on_image (@proj1_sig A P) requiresPoset
     }
   .
 

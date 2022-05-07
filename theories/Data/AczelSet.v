@@ -140,7 +140,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance mkWfRelFromAczelSet (alpha : AczelSet) : isWellFounded (getChildren alpha) :=
     { wfRel (lhs : getChildren alpha) (rhs : getChildren alpha) := getChildTrees alpha lhs `elem` getChildTrees alpha rhs
-    ; wfRel_well_founded := well_founded_relation_by_image (getChildTrees alpha) elem AczelSet_well_founded
+    ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem AczelSet_well_founded
     }
   .
 
@@ -540,6 +540,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End EXAMPLES_OF_ORDINAL.
 
+End AczelSet.
+
+Module OrdinalImpl.
+
+  Import AczelSet.
+
   Definition Ordinals : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
   Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
@@ -551,25 +557,113 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Record TransRecMethodsOf (Dom : Type) : Type :=
     { dZero : Dom
     ; dSucc : Dom -> Dom
-    ; dLims {I : Type} : (I -> Dom) -> Dom
+    ; dJoin {Idx : Type} : (Idx -> Dom) -> Dom
     }
   .
 
   Global Arguments dZero {Dom} {methods}          : rename.
   Global Arguments dSucc {Dom} {methods} (d_pred) : rename.
-  Global Arguments dLims {Dom} {methods} {I} (ds) : rename.
+  Global Arguments dJoin {Dom} {methods} {I} (ds) : rename.
 
-  Definition dJoin {Dom : Type} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
-    methods.(dLims) (fun b : bool => if b then d_left else d_right)
+  Definition dUnion {Dom : Type} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
+    methods.(dJoin) (fun b : bool => if b then d_left else d_right)
   .
 
-  Definition trans_rec {Dom : Type} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+  Definition trans_rec {Dom : Type} {methods : TransRecMethodsOf Dom} : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
     | @Node alpha_base alpha_elems =>
       fun alpha_i_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) =>
-      dJoin (methods := methods) (dZero (methods := methods)) (dLims (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+      dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
 
-End AczelSet.
+  Class isDomainWithOrdering (Dom : Type) {methods : TransRecMethodsOf Dom} : Type :=
+    { WellFormeds : ensemble Dom
+    ; dEq (lhs : Dom) (rhs : Dom) : Prop
+    ; dLe (lhs : Dom) (rhs : Dom) : Prop
+    ; dEq_Equivalence :> @Equivalence (@sig Dom WellFormeds) (binary_relation_on_image dEq (@proj1_sig Dom WellFormeds))
+    ; dLe_PreOrder :> @PreOrder (@sig Dom WellFormeds) (binary_relation_on_image dLe (@proj1_sig Dom WellFormeds))
+    ; dLe_PartialOrder :> @PartialOrder (@sig Dom WellFormeds) (binary_relation_on_image dEq (@proj1_sig Dom WellFormeds)) dEq_Equivalence (binary_relation_on_image dLe (@proj1_sig Dom WellFormeds)) dLe_PreOrder
+    ; dZero_wf
+      : methods.(dZero) \in WellFormeds
+    ; dSucc_wf (d_pred : Dom)
+      (wf_d_pred : d_pred \in WellFormeds)
+      : methods.(dSucc) d_pred \in WellFormeds
+    ; dJoin_wf {I : Type} (ds : I -> Dom)
+      (wf_ds : forall i : I, ds i \in WellFormeds)
+      : methods.(dJoin) ds \in WellFormeds
+    }
+  .
+
+  Definition WellFormedPartOf (Dom : Type) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Type := @sig Dom WellFormeds.
+
+  Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
+
+  Context {Dom : Type}.
+
+  Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
+
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)}.
+
+  Global Instance PartialSetoidOfDomainWithOrdering : isSetoid (WellFormedPartOf Dom) :=
+    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
+    ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithOrdering
+    }
+  .
+
+  Global Instance PartialPosetOfDomainWithOrdering : isPoset (WellFormedPartOf Dom) :=
+    { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dLe (proj1_sig lhs) (proj1_sig rhs)
+    ; Poset_requiresSetoid := PartialSetoidOfDomainWithOrdering
+    ; leProp_PreOrder := @dLe_PreOrder Dom methods requiresDomainWithOrdering
+    ; leProp_PartialOrder := @dLe_PartialOrder Dom methods requiresDomainWithOrdering
+    }
+  .
+
+  Definition dzero : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds dZero dZero_wf
+  .
+
+  Definition dsucc (d_pred : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds (dSucc (proj1_sig d_pred)) (dSucc_wf (proj1_sig d_pred) (proj2_sig d_pred))
+  .
+
+  Definition djoin {I : Type} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_wf (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
+  .
+
+  Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_wf (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+  .
+
+  End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
+
+  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Prop :=
+    { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
+      (d_le_d' : d =< d')
+      : dsucc d =< dsucc d'
+    ; djoin_lifts_leProp {I : Type} (ds : I -> WellFormedPartOf Dom) (ds' : I -> WellFormedPartOf Dom)
+      (ds_le_ds' : forall i : I, ds i =< ds' i)
+      : djoin ds =< djoin ds'
+    ; dsucc_ge (d : WellFormedPartOf Dom)
+      : d =< dsucc d
+    ; djoin_sup {I : Type} (ds : I -> WellFormedPartOf Dom)
+      : isSupremumOf (djoin ds) (fromSequence ds)
+    }
+  .
+
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} {requiresGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
+
+  Global Add Parametric Morphism :
+    dsucc with signature (leProp ==> leProp)
+    as dsucc_monotonic.
+  Proof. exact (dsucc_lifts_leProp). Defined.
+
+  Global Add Parametric Morphism (I : Type) :
+    djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp)
+    as djoin_monotonic.
+  Proof. exact (djoin_lifts_leProp). Defined.
+
+  End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
+
+End OrdinalImpl.
