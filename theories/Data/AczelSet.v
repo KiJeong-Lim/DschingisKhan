@@ -658,6 +658,8 @@ Module OrdinalImpl.
 
   Global Bind Scope Ordinal_scope with Ord.
 
+  Global Open Scope Ordinal_scope.
+
   Definition unliftOrdinalToAczelSet : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
@@ -686,8 +688,8 @@ Module OrdinalImpl.
 
   Global Coercion unliftOrdinalToAczelSet : Ord >-> AczelSet.
 
-  Definition getChildTrees_Ord (alpha : Ord) (alpha_child : getChildren alpha) : {beta : Ord | beta `elem` alpha} :=
-    @exist Ord (fun beta : Ord => beta `elem` alpha) (@exist AczelSet isOrdinal (getChildTrees alpha alpha_child) (every_member_of_Ordinal_isOrdinal alpha (proj2_sig alpha) (getChildTrees alpha alpha_child) (elem_intro alpha alpha_child))) (elem_intro alpha alpha_child)
+  Definition getChildTrees_Ord (alpha : Ord) (alpha_child : getChildren alpha) : {beta : Ord | beta < alpha} :=
+    @exist Ord (fun beta : Ord => beta `elem` alpha) (@exist AczelSet isOrdinal (getChildTrees alpha alpha_child) (every_member_of_Ordinal_isOrdinal (proj1_sig alpha) (proj2_sig alpha) (getChildTrees alpha alpha_child) (elem_intro alpha alpha_child))) (elem_intro alpha alpha_child)
   .
 
 (** "Transfinite Recursion" *)
@@ -729,13 +731,13 @@ Module OrdinalImpl.
     ; dEq_Equivalence :> @Equivalence (@sig Dom WellFormeds) (binary_relation_on_image dEq (@proj1_sig Dom WellFormeds))
     ; dLe_PreOrder :> @PreOrder (@sig Dom WellFormeds) (binary_relation_on_image dLe (@proj1_sig Dom WellFormeds))
     ; dLe_PartialOrder :> @PartialOrder (@sig Dom WellFormeds) (binary_relation_on_image dEq (@proj1_sig Dom WellFormeds)) dEq_Equivalence (binary_relation_on_image dLe (@proj1_sig Dom WellFormeds)) dLe_PreOrder
-    ; dZero_wf
+    ; dZero_well_formed
       : methods.(dZero) \in WellFormeds
-    ; dSucc_wf (d : Dom)
-      (wf_d : d \in WellFormeds)
+    ; dSucc_well_formed (d : Dom)
+      (d_well_formed : d \in WellFormeds)
       : methods.(dSucc) d \in WellFormeds
-    ; dJoin_wf {I : smallUniv} (ds : I -> Dom)
-      (wf_ds : forall i : I, ds i \in WellFormeds)
+    ; dJoin_well_formed {I : smallUniv} (ds : I -> Dom)
+      (ds_well_formed : forall i : I, ds i \in WellFormeds)
       : methods.(dJoin) ds \in WellFormeds
     }
   .
@@ -765,19 +767,19 @@ Module OrdinalImpl.
   .
 
   Definition dzero : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds dZero dZero_wf
+    @exist Dom WellFormeds dZero dZero_well_formed
   .
 
   Definition dsucc (d : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dSucc (proj1_sig d)) (dSucc_wf (proj1_sig d) (proj2_sig d))
+    @exist Dom WellFormeds (dSucc (proj1_sig d)) (dSucc_well_formed (proj1_sig d) (proj2_sig d))
   .
 
   Definition djoin {I : smallUniv} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_wf (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
+    @exist Dom WellFormeds (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_well_formed (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
   .
 
   Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_wf (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+    @exist Dom WellFormeds (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
   .
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
