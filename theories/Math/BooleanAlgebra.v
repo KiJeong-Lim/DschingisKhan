@@ -178,19 +178,14 @@ Module BooleanAlgebra.
   .
 
   Lemma isFilter_intro (F : ensemble BA)
-    (Filter_nonempty : exists x0 : BA, member x0 F)
-    (closed_on_andBA : forall x1 : BA, forall x2 : BA, ⟪ x1_inFilter : member x1 F ⟫ -> ⟪ x2_inFilter : member x2 F ⟫ -> member (andBA x1 x2) F)
-    (closed_upward : forall x : BA, ⟪ x_inFilter : member x F ⟫ -> forall x' : BA, ⟪ x_le_x' : x =< x' ⟫ -> member x' F)
+    (NONEMPTY : exists x0 : BA, member x0 F)
+    (CLOSED_MEET : forall x1 : BA, forall x2 : BA, ⟪ x1_inFilter : member x1 F ⟫ -> ⟪ x2_inFilter : member x2 F ⟫ -> member (andBA x1 x2) F)
+    (CLOSED_UPWARD : forall x : BA, ⟪ x_inFilter : member x F ⟫ -> forall x' : BA, ⟪ x_le_x' : x =< x' ⟫ -> member x' F)
     : isFilter F.
-  Proof with eauto with *.
-    split.
-    - induction xs as [ | x xs IH]; simpl; ii; desnw.
-      + des. eapply closed_upward with (x := x0); trivial.
-        cbn. eapply trueBA_id_andBA.
-      + eapply closed_on_andBA.
-        { eapply xs_isFiniteSubsetOfFilter... }
-        { eapply IH... }
-    - exact (closed_upward).
+  Proof.
+    split; trivial. induction xs as [ | x xs IH]; simpl; ii; desnw.
+    - des. eapply CLOSED_UPWARD with (x := x0); trivial. cbn. eapply trueBA_id_andBA.
+    - eapply CLOSED_MEET; [eapply CLOSED_UPWARD | eapply IH]; eauto with *.
   Qed.
 
   Lemma isFilter_compatWith_eqProp (F : ensemble BA) (F' : ensemble BA)
