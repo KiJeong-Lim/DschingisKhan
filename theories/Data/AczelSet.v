@@ -405,7 +405,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
-  Definition Nat : AczelSet := unions_i natToAczelSet.
+  Definition Nat : AczelSet := unions_i (I := nat) natToAczelSet.
 
   End AczelSet_Nat.
 
@@ -545,5 +545,31 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
   Global Coercion unliftOrdinalsToAczelSet : Ordinals >-> AczelSet.
+
+(** "Transfinite Recursion" *)
+
+  Record TransRecMethodsOf (Dom : Type) : Type :=
+    { dZero : Dom
+    ; dSucc : Dom -> Dom
+    ; dLims {I : Type} : (I -> Dom) -> Dom
+    }
+  .
+
+  Global Arguments dZero {Dom} {methods}          : rename.
+  Global Arguments dSucc {Dom} {methods} (d_pred) : rename.
+  Global Arguments dLims {Dom} {methods} {I} (ds) : rename.
+
+  Definition dJoin {Dom : Type} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
+    methods.(dLims) (fun b : bool => if b then d_left else d_right)
+  .
+
+  Definition trans_rec {Dom : Type} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+    fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
+    match alpha with
+    | @Node alpha_base alpha_elems =>
+      fun alpha_i_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) =>
+      dJoin (methods := methods) (dZero (methods := methods)) (dLims (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    end
+  .
 
 End AczelSet.
