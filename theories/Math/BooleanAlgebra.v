@@ -223,8 +223,35 @@ Module BooleanAlgebra.
     << IS_FILTER : isFilter F >> /\ << IS_CONSISTENT : ~ inconsistent F >>
   .
 
+  Lemma isProperFilter_compatWith_eqProp (F : ensemble BA) (F' : ensemble BA)
+    (F_isProperFilter : isProperFilter F)
+    (F_eq_F' : F == F')
+    : isProperFilter F'.
+  Proof.
+    destruct F_isProperFilter; desnw. split; unnw.
+    - eapply isFilter_compatWith_eqProp; eauto.
+    - intros H_inconsistent. contradiction (IS_CONSISTENT).
+      now eapply inconsistent_compatWith_eqProp with (X := F').
+  Qed.
+
+  Definition equiconsistent (X : ensemble BA) (X' : ensemble BA) : Prop :=
+    inconsistent X <-> inconsistent X'
+  .
+
+  Global Instance equiconsistent_Equivalence : Equivalence equiconsistent :=
+    relation_on_image_liftsEquivalence inconsistent iff_equivalence
+  .
+
   Definition cl (X : ensemble BA) : ensemble BA :=
     fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf_X : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le_x : andsBA xs =< x ⟫
+  .
+
+  Definition isElementCompleteFor (X : ensemble BA) (b : BA) : Prop :=
+    equiconsistent X (cl (insert b X)) -> member b X
+  .
+
+  Definition isComplete (X : ensemble BA) : Prop :=
+    forall b : BA, isElementCompleteFor X b
   .
 
   End section_2_of_chapter_1.
