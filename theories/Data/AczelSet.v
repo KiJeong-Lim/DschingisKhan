@@ -138,10 +138,6 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     }
   .
 
-  Corollary elem_Irreflexive (x : AczelSet)
-    : ~ elem x x.
-  Proof. exact (wfRel_Irreflexive (requiresWellFounded := AczelSet_isWellFounded) x). Qed.
-
   Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
   Lemma AczelSet_rect (phi : AczelSet -> Type)
@@ -805,14 +801,18 @@ Module OrdinalImpl.
   Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} {requiresGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
 
   Global Add Parametric Morphism :
-    dsucc with signature (leProp ==> leProp)
+    dsucc with signature (leProp (isPoset := PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
     as dsucc_monotonic.
-  Proof. exact (dsucc_lifts_leProp). Defined.
+  Proof.
+    exact (dsucc_lifts_leProp).
+  Defined.
 
   Global Add Parametric Morphism (I : smallUniv) :
-    djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp)
+    djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
     as djoin_monotonic.
-  Proof. exact (djoin_lifts_leProp). Defined.
+  Proof.
+    exact (djoin_lifts_leProp).
+  Defined.
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
