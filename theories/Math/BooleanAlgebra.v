@@ -126,17 +126,13 @@ Module BooleanAlgebra.
   Local Notation andBA := (andBA (BA := BA)).
   Local Notation andsBA := (andsBA (BA := BA)).
 
-  Lemma andBA_intro_l (x1 : BA) (x2 : BA)
+  Lemma andBA_le_intro_l (x1 : BA) (x2 : BA)
     : andBA x1 x2 =< x1.
-  Proof.
-    rewrite andBA_comm. cbn. now rewrite <- andBA_assoc, andBA_idem.
-  Qed.
+  Proof. rewrite andBA_comm. cbn. now rewrite <- andBA_assoc, andBA_idem. Qed.
 
-  Lemma andBA_intro_r (x1 : BA) (x2 : BA)
+  Lemma andBA_le_intro_r (x1 : BA) (x2 : BA)
     : andBA x1 x2 =< x2.
-  Proof.
-    rewrite andBA_comm. eapply andBA_intro_l.
-  Qed.
+  Proof. rewrite andBA_comm. eapply andBA_le_intro_l. Qed.
 
   Global Instance andBA_preserves_leProp2
     : preserves_leProp2 andBA.
