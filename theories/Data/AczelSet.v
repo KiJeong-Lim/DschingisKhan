@@ -20,13 +20,15 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Monomorphic Universe AczelSet_children_lv.
 
+  Definition smallUniv : AczelSetUniv.t := Type@{AczelSet_children_lv}.
+
   Inductive Tree : AczelSetUniv.t :=
-  | Node {children : Type@{AczelSet_children_lv}} (childtrees : children -> Tree) : Tree
+  | Node {children : smallUniv} (childtrees : children -> Tree) : Tree
   .
 
   Definition AczelSet : AczelSetUniv.t := Tree.
 
-  Definition getChildren (root : AczelSet) : Type@{AczelSet_children_lv} :=
+  Definition getChildren (root : AczelSet) : smallUniv :=
     match root with
     | @Node children childtrees => children
     end
@@ -331,9 +333,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_unions_i.
 
-  Definition unions_i {I : Type} (xs : I -> AczelSet) : AczelSet := Node (fun child : {i : I & getChildren (xs i)} => getChildTrees (xs (projT1 child)) (projT2 child)).
+  Definition unions_i {I : smallUniv} (xs : I -> AczelSet) : AczelSet := Node (fun child : {i : I & getChildren (xs i)} => getChildTrees (xs (projT1 child)) (projT2 child)).
 
-  Theorem AczelSet_unions_i_spec {I : Type} (xs : I -> AczelSet)
+  Theorem AczelSet_unions_i_spec {I : smallUniv} (xs : I -> AczelSet)
     : forall z : AczelSet, z `elem` unions_i xs <-> << IN_unions_i : exists i : I, z `elem` xs i >>.
   Proof with eauto with *.
     intros z. unnw; split.
@@ -554,10 +556,10 @@ Module OrdinalImpl.
 
 (** "Transfinite Recursion" *)
 
-  Record TransRecMethodsOf (Dom : Type) : Type :=
+  Record TransRecMethodsOf (Dom : AczelSetUniv.t) : AczelSetUniv.t :=
     { dZero : Dom
     ; dSucc : Dom -> Dom
-    ; dJoin {Idx : Type} : (Idx -> Dom) -> Dom
+    ; dJoin {Idx : smallUniv} : (Idx -> Dom) -> Dom
     }
   .
 
@@ -565,11 +567,11 @@ Module OrdinalImpl.
   Global Arguments dSucc {Dom} {methods} (d_pred) : rename.
   Global Arguments dJoin {Dom} {methods} {I} (ds) : rename.
 
-  Definition dUnion {Dom : Type} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
+  Definition dUnion {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
     methods.(dJoin) (fun b : bool => if b then d_left else d_right)
   .
 
-  Definition trans_rec {Dom : Type} {methods : TransRecMethodsOf Dom} : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+  Definition trans_rec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
     | @Node alpha_base alpha_elems =>
@@ -578,7 +580,13 @@ Module OrdinalImpl.
     end
   .
 
-  Class isDomainWithOrdering (Dom : Type) {methods : TransRecMethodsOf Dom} : Type :=
+(* The Main Idea on "trans_rec":
+  trans_rec (\empty) = dZero
+  trans_rec (\suc x) = dSucc (trans_rec x)
+  trans_rec (\lim X) = dJoin {trans_rec x : x \in X}
+*)
+
+  Class isDomainWithOrdering (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : Type :=
     { WellFormeds : ensemble Dom
     ; dEq (lhs : Dom) (rhs : Dom) : Prop
     ; dLe (lhs : Dom) (rhs : Dom) : Prop
@@ -590,17 +598,17 @@ Module OrdinalImpl.
     ; dSucc_wf (d_pred : Dom)
       (wf_d_pred : d_pred \in WellFormeds)
       : methods.(dSucc) d_pred \in WellFormeds
-    ; dJoin_wf {I : Type} (ds : I -> Dom)
+    ; dJoin_wf {I : smallUniv} (ds : I -> Dom)
       (wf_ds : forall i : I, ds i \in WellFormeds)
       : methods.(dJoin) ds \in WellFormeds
     }
   .
 
-  Definition WellFormedPartOf (Dom : Type) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Type := @sig Dom WellFormeds.
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Type := @sig Dom WellFormeds.
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
-  Context {Dom : Type}.
+  Context {Dom : AczelSetUniv.t}.
 
   Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
@@ -628,7 +636,7 @@ Module OrdinalImpl.
     @exist Dom WellFormeds (dSucc (proj1_sig d_pred)) (dSucc_wf (proj1_sig d_pred) (proj2_sig d_pred))
   .
 
-  Definition djoin {I : Type} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
+  Definition djoin {I : smallUniv} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
     @exist Dom WellFormeds (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_wf (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
   .
 
@@ -642,12 +650,12 @@ Module OrdinalImpl.
     { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
       (d_le_d' : d =< d')
       : dsucc d =< dsucc d'
-    ; djoin_lifts_leProp {I : Type} (ds : I -> WellFormedPartOf Dom) (ds' : I -> WellFormedPartOf Dom)
+    ; djoin_lifts_leProp {I : smallUniv} (ds : I -> WellFormedPartOf Dom) (ds' : I -> WellFormedPartOf Dom)
       (ds_le_ds' : forall i : I, ds i =< ds' i)
       : djoin ds =< djoin ds'
     ; dsucc_ge (d : WellFormedPartOf Dom)
       : d =< dsucc d
-    ; djoin_sup {I : Type} (ds : I -> WellFormedPartOf Dom)
+    ; djoin_sup {I : smallUniv} (ds : I -> WellFormedPartOf Dom)
       : isSupremumOf (djoin ds) (fromSequence ds)
     }
   .
@@ -659,7 +667,7 @@ Module OrdinalImpl.
     as dsucc_monotonic.
   Proof. exact (dsucc_lifts_leProp). Defined.
 
-  Global Add Parametric Morphism (I : Type) :
+  Global Add Parametric Morphism (I : smallUniv) :
     djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp)
     as djoin_monotonic.
   Proof. exact (djoin_lifts_leProp). Defined.
