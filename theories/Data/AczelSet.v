@@ -699,8 +699,8 @@ Module OrdinalImpl.
     }
   .
 
-  Global Arguments dZero {Dom} {methods}          : rename.
-  Global Arguments dSucc {Dom} {methods} (d_pred) : rename.
+  Global Arguments dZero {Dom} {methods} : rename.
+  Global Arguments dSucc {Dom} {methods} (d) : rename.
   Global Arguments dJoin {Dom} {methods} {I} (ds) : rename.
 
   Definition dUnion {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
@@ -716,7 +716,7 @@ Module OrdinalImpl.
 
   Definition trans_rec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfinite_recursion methods (proj1_sig alpha) (proj2_sig alpha).
 
-(* The Main Idea on "trans_rec":
+(* The Main Idea of "trans_rec":
   trans_rec (\empty) = dZero
   trans_rec (\suc x) = dSucc (trans_rec x)
   trans_rec (\lim X) = dJoin {trans_rec x : x \in X}
@@ -731,18 +731,16 @@ Module OrdinalImpl.
     ; dLe_PartialOrder :> @PartialOrder (@sig Dom WellFormeds) (binary_relation_on_image dEq (@proj1_sig Dom WellFormeds)) dEq_Equivalence (binary_relation_on_image dLe (@proj1_sig Dom WellFormeds)) dLe_PreOrder
     ; dZero_wf
       : methods.(dZero) \in WellFormeds
-    ; dSucc_wf (d_pred : Dom)
-      (wf_d_pred : d_pred \in WellFormeds)
-      : methods.(dSucc) d_pred \in WellFormeds
+    ; dSucc_wf (d : Dom)
+      (wf_d : d \in WellFormeds)
+      : methods.(dSucc) d \in WellFormeds
     ; dJoin_wf {I : smallUniv} (ds : I -> Dom)
       (wf_ds : forall i : I, ds i \in WellFormeds)
       : methods.(dJoin) ds \in WellFormeds
     }
   .
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : AczelSetUniv.t :=
-    @sig Dom WellFormeds
-  .
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
@@ -770,8 +768,8 @@ Module OrdinalImpl.
     @exist Dom WellFormeds dZero dZero_wf
   .
 
-  Definition dsucc (d_pred : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dSucc (proj1_sig d_pred)) (dSucc_wf (proj1_sig d_pred) (proj2_sig d_pred))
+  Definition dsucc (d : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds (dSucc (proj1_sig d)) (dSucc_wf (proj1_sig d) (proj2_sig d))
   .
 
   Definition djoin {I : smallUniv} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
@@ -798,21 +796,17 @@ Module OrdinalImpl.
     }
   .
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} {requiresGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} {hasGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
 
   Global Add Parametric Morphism :
     dsucc with signature (leProp (isPoset := PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
     as dsucc_monotonic.
-  Proof.
-    exact (dsucc_lifts_leProp).
-  Defined.
+  Proof. exact (dsucc_lifts_leProp). Defined.
 
   Global Add Parametric Morphism (I : smallUniv) :
     djoin with signature (leProp (isPoset := @arrow_isPoset I (WellFormedPartOf Dom) PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
     as djoin_monotonic.
-  Proof.
-    exact (djoin_lifts_leProp).
-  Defined.
+  Proof. exact (djoin_lifts_leProp). Defined.
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
