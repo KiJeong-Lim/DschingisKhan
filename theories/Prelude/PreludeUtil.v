@@ -1332,6 +1332,11 @@ Module FUN_FACTS.
     }
   .
 
+  Global Instance wfRel_Irreflexive {A : Type}
+    {requiresWellFounded : isWellFounded A}
+    : Irreflexive wfRel.
+  Proof. intros x hyp_lt. induction x as [x IH] using NotherianRecursion. eapply IH; exact (hyp_lt). Defined.
+
   Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
     : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
   Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
@@ -1341,9 +1346,9 @@ Module FUN_FACTS.
     : forall x : A, Acc (binary_relation_on_image R f) x.
   Proof.
     intros x. remember (f x) as y eqn: y_eq_f_x.
-    revert x y_eq_f_x. induction (R_wf y) as [y0 hyp_wf IH].
-    intros x0 y0_eq_f_x0. econstructor. intros x f_x_R_f_x0.
-    subst y0. eapply IH; [exact (f_x_R_f_x0) | reflexivity].
+    revert x y_eq_f_x. induction (R_wf y) as [y' hyp_wf IH].
+    intros x' hyp_eq. econstructor. intros x f_x_R_f_x'.
+    subst y'. eapply IH; [exact (f_x_R_f_x') | reflexivity].
   Defined.
 
 End FUN_FACTS.

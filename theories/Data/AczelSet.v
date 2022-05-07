@@ -140,12 +140,6 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Infix " `elem` " := elem (at level 70, no associativity) : type_scope.
 
-  Global Instance mkWfRelFromAczelSet (alpha : AczelSet) : isWellFounded (getChildren alpha) :=
-    { wfRel (lhs : getChildren alpha) (rhs : getChildren alpha) := getChildTrees alpha lhs `elem` getChildTrees alpha rhs
-    ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem AczelSet_well_founded
-    }
-  .
-
   Lemma AczelSet_rect (phi : AczelSet -> Type)
     (IND : forall x : AczelSet, ⟪ IH : forall y : AczelSet, y `elem` x -> phi y ⟫ -> phi x)
     : forall x : AczelSet, phi x.
@@ -255,6 +249,16 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     unfold eqTree_closure, compatWith_eqTree. intros x [y [x_eq_y phi_y]] z x_eq_z.
     exists (y). split; [symmetry; etransitivity; now eauto | exact (phi_y)].
   Qed.
+
+  Definition ltProp_on_the_base_set_of (alpha : AczelSet) (lhs : getChildren alpha) (rhs : getChildren alpha) : Prop :=
+    getChildTrees alpha lhs `elem` getChildTrees alpha rhs
+  .
+
+  Global Instance the_base_set_of_alpha_isWellFounded {alpha : AczelSet} : isWellFounded (getChildren alpha) :=
+    { wfRel := ltProp_on_the_base_set_of alpha
+    ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem AczelSet_well_founded
+    }
+  .
 
 (** "Set Constructions" *)
 
@@ -411,23 +415,52 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End AczelSet_Nat.
 
+  Section AczelSet_intersection.
+
+  Definition intersections_i {I : smallUniv} {default_of_I : I} (x_i : I -> AczelSet) : AczelSet :=
+    filter (fun z : AczelSet => forall i : I, z `elem` x_i i) (x_i default_of_I)
+  .
+
+  Lemma AczelSet_intersections_i_spec {I : smallUniv} (default_of_I : I) (x_i : I -> AczelSet)
+    : forall z : AczelSet, z `elem` intersections_i (default_of_I := default_of_I) x_i <-> << IN_intersections_i : forall i : I, z `elem` x_i i >>.
+  Proof with eauto with *.
+    unfold intersections_i. intros z. rewrite AczelSet_filter_spec. unnw. split.
+    - intros [c_x [hyp_in z_eq]] i. rewrite z_eq...
+    - intros z_in. exploit (z_in default_of_I) as [c z_eq]. exists (c). split...
+      intros i. rewrite <- z_eq...
+  Qed.
+
+  Definition intersection (x1 : AczelSet) (x2 : AczelSet) : AczelSet :=
+    intersections_i (I := bool) (default_of_I := true) (fun b : bool => if b then x1 else x2)
+  .
+
+  Lemma AczelSet_intersection (x1 : AczelSet) (x2 : AczelSet)
+    : forall z : AczelSet, z `elem` intersection x1 x2 <-> << IN_intersection : z `elem` x1 /\ z `elem` x2 >>.
+  Proof.
+    intros z. unfold intersection. rewrite AczelSet_intersections_i_spec. split; intros z_in.
+    - split; [exact (z_in true) | exact (z_in false)].
+    - unnw. intros [ | ]; tauto.
+  Qed.
+
+  End AczelSet_intersection.
+
   Section AczelSet_fromWf.
 
-  Definition fromAcc {A : Type} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
+  Definition fromAcc {A : smallUniv} {wfRel : A -> A -> Prop} : forall root : A, Acc wfRel root -> AczelSet :=
     fix fromAcc_fix (tree : A) (tree_acc : Acc wfRel tree) {struct tree_acc} : AczelSet :=
     match tree_acc with
     | Acc_intro _ hyp_acc => Node (fun child : {subtree : A | wfRel subtree tree} => fromAcc_fix (proj1_sig child) (hyp_acc (proj1_sig child) (proj2_sig child)))
     end
   .
 
-  Lemma fromAcc_unfold {A : Type} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+  Lemma fromAcc_unfold {A : smallUniv} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
     : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists child : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig child) (Acc_inv tree_acc (proj2_sig child)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
     all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (exist _ c hyp_wf).
   Qed.
 
-  Lemma fromAcc_proof_irrelevance {A : Type} {wfRel : A -> A -> Prop} (root : A) (root_acc1 : Acc wfRel root) (root_acc2 : Acc wfRel root)
+  Lemma fromAcc_proof_irrelevance {A : smallUniv} {wfRel : A -> A -> Prop} (root : A) (root_acc1 : Acc wfRel root) (root_acc2 : Acc wfRel root)
     : fromAcc root root_acc1 == fromAcc root root_acc2.
   Proof with eauto with *.
     revert root root_acc1 root_acc2.
@@ -438,12 +471,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     simpl; unfold_eqTree. rewrite z_eq. eapply subseteq_PartialOrder; split...
   Qed.
 
-  Corollary fromAcc_elem_fromAcc_intro {A : Type} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
+  Corollary fromAcc_elem_fromAcc_intro {A : smallUniv} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
     (subtree_R_tree : wfRel subtree tree)
     : fromAcc subtree subtree_acc `elem` fromAcc tree tree_acc.
   Proof. eapply fromAcc_unfold. exists (exist _ subtree subtree_R_tree). simpl; unfold_eqTree. eapply fromAcc_proof_irrelevance. Qed.
 
-  Lemma fromAcc_subseteq_iff {A : Type} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
+  Lemma fromAcc_subseteq_iff {A : smallUniv} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
     : forall x : AczelSet, fromAcc tree tree_acc `subseteq` x <-> << LT_ELEM : forall subtree : A, forall subtree_R_tree : wfRel subtree tree, fromAcc subtree (Acc_inv tree_acc subtree_R_tree) `elem` x >>.
   Proof with eauto with *.
     intros x. split.
@@ -453,7 +486,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       simpl in *; unfold_eqTree. rewrite z_eq...
   Qed.
 
-  Definition fromWf (A : Type) {requiresWellFounded : isWellFounded A} : AczelSet := unions_i (fun root : A => fromAcc root (wfRel_well_founded root)).
+  Definition fromWf (A : smallUniv) {requiresWellFounded : isWellFounded A} : AczelSet := unions_i (fun root : A => fromAcc root (wfRel_well_founded root)).
 
   End AczelSet_fromWf.
 
@@ -501,6 +534,16 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     z `elem` x
   .
 
+  Local Hint Unfold isTransitiveSet : core.
+
+  Lemma isTransitiveSet_compatWith_eqTree
+    : compatWith_eqTree isTransitiveSet.
+  Proof.
+    intros alpha alpha_isTranstiveSet beta alpha_eq_beta.
+    unfold isTransitiveSet in *; ii; desnw.
+    rewrite <- alpha_eq_beta in *; eauto.
+  Qed.
+
   Variant isOrdinal (alpha : AczelSet) : Prop :=
   | transitive_set_of_transitive_sets_isOrdinal
     (IS_TRANSITIVE_SET : isTransitiveSet alpha)
@@ -524,9 +567,55 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       + exact (z_in).
   Defined.
 
+  Lemma isOrdinal_compatWith_eqTree
+    : compatWith_eqTree isOrdinal.
+  Proof with eauto with *.
+    intros alpha [? ?] beta alpha_eq_beta. split.
+    - eapply isTransitiveSet_compatWith_eqTree...
+    - intros gamma gamm_in_beta; unnw.
+      rewrite <- alpha_eq_beta in gamm_in_beta.
+      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
+  Qed.
+
+  Global Instance ltProp_on_the_base_set_of_alpha_isStrictOrder_if_alpha_isOrdinal {alpha : AczelSet}
+    {alpha_isOrdinal : isOrdinal alpha}
+    : StrictOrder (ltProp_on_the_base_set_of alpha).
+  Proof.
+    pose proof (@elem_intro) as claim1. split.
+    - exact (wfRel_Irreflexive (requiresWellFounded := the_base_set_of_alpha_isWellFounded (alpha := alpha))).
+    - intros x y z x_lt_y y_lt_z. unfold ltProp_on_the_base_set_of in *.
+      destruct alpha_isOrdinal as [? ?]. eapply EVERY_ELEMENT_IS_TRANSITIVE_SET; unnw; eauto.
+  Qed.
+
   Section EXAMPLES_OF_ORDINAL.
 
-  Lemma unions_i_of_Ordinals_isOrdinal {I : Type} (alpha_i : I -> AczelSet)
+  Lemma empty_isOrdinal
+    : isOrdinal empty.
+  Proof.
+    econstructor; ii; desnw.
+    - apply AczelSet_empty_spec in y_in. unnw. tauto.
+    - apply AczelSet_empty_spec in IS_ELEMENT. unnw. tauto.
+  Qed.
+
+  Lemma sucOf_isOrdinal (alpha : AczelSet)
+    (alpha_isOrdinal : isOrdinal alpha)
+    : isOrdinal (sucOf alpha).
+  Proof with eauto with *.
+    unfold sucOf. econstructor; ii; desnw.
+    - apply AczelSet_union_spec in y_in.
+      destruct y_in as [y_in_alpha | y_eq_alpha].
+      + eapply AczelSet_union_spec; left.
+        inversion alpha_isOrdinal...
+      + apply AczelSet_singleton_spec in y_eq_alpha. unnw.
+        eapply AczelSet_union_spec; left. rewrite <- y_eq_alpha...
+    - apply AczelSet_union_spec in IS_ELEMENT.
+      destruct IS_ELEMENT as [beta_in_alpha | beta_eq_alpha].
+      + exploit (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal) as [? ?]...
+      + apply AczelSet_singleton_spec in beta_eq_alpha. unnw.
+        exploit (isOrdinal_compatWith_eqTree alpha alpha_isOrdinal beta) as [? ?]...
+  Qed.
+
+  Lemma unions_i_isOrdinal {I : smallUniv} (alpha_i : I -> AczelSet)
     (alpha_i_isOrdinal : forall i : I, isOrdinal (alpha_i i))
     : isOrdinal (unions_i alpha_i).
   Proof with eauto with *.
@@ -540,6 +629,21 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
   Qed.
 
+  Lemma intersections_i_isOrdinal {I : smallUniv} {default_of_I : I} (alpha_i : I -> AczelSet)
+    (alpha_i_isOrdinal : forall i : I, isOrdinal (alpha_i i))
+    : isOrdinal (intersections_i (default_of_I := default_of_I) alpha_i).
+  Proof with eauto with *.
+    split; ii; desnw.
+    - eapply AczelSet_intersections_i_spec. ii.
+      exploit (alpha_i_isOrdinal i) as [? ?].
+      apply AczelSet_intersections_i_spec in y_in.
+      exploit (y_in i) as y_in_alpha_i_i...
+    - eapply AczelSet_intersections_i_spec in IS_ELEMENT.
+      exploit (IS_ELEMENT default_of_I) as beta_in_alpha_i_i.
+      exploit (alpha_i_isOrdinal default_of_I) as [? ?].
+      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET with (beta := beta)...
+  Qed.
+
   End EXAMPLES_OF_ORDINAL.
 
 End AczelSet.
@@ -548,11 +652,43 @@ Module OrdinalImpl.
 
   Import AczelSet.
 
-  Definition Ordinals : AczelSetUniv.t := @sig AczelSet isOrdinal.
+  Definition Ord : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
-  Definition unliftOrdinalsToAczelSet : Ordinals -> AczelSet := @proj1_sig AczelSet isOrdinal.
+  Global Declare Scope Ordinal_scope.
 
-  Global Coercion unliftOrdinalsToAczelSet : Ordinals >-> AczelSet.
+  Global Bind Scope Ordinal_scope with Ord.
+
+  Definition unliftOrdinalToAczelSet : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
+
+  Global Instance Ord_isSetoid : isSetoid Ord :=
+    { eqProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs == unliftOrdinalToAczelSet rhs
+    ; eqProp_Equivalence := equivalence_relation_on_image unliftOrdinalToAczelSet AczelSet_isSetoid
+    }
+  .
+
+  Global Infix " == " := (@eqProp Ord Ord_isSetoid) : Ordinal_scope.
+
+  Global Instance Ord_isPoset : isPoset Ord :=
+    { leProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `subseteq` unliftOrdinalToAczelSet rhs
+    ; Poset_requiresSetoid := Ord_isSetoid
+    ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrdinalToAczelSet subseteq_PreOrder
+    ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrdinalToAczelSet subseteq_PartialOrder
+    }
+  .
+
+  Global Infix " =< " := (@leProp Ord Ord_isSetoid) : Ordinal_scope.
+
+  Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
+    unliftOrdinalToAczelSet lhs `elem` unliftOrdinalToAczelSet rhs
+  .
+
+  Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
+
+  Global Coercion unliftOrdinalToAczelSet : Ord >-> AczelSet.
+
+  Definition getChildTrees_Ord (alpha : Ord) (alpha_child : getChildren alpha) : {beta : Ord | beta `elem` alpha} :=
+    @exist Ord (fun beta : Ord => beta `elem` alpha) (@exist AczelSet isOrdinal (getChildTrees alpha alpha_child) (every_member_of_Ordinal_isOrdinal alpha (proj2_sig alpha) (getChildTrees alpha alpha_child) (elem_intro alpha alpha_child))) (elem_intro alpha alpha_child)
+  .
 
 (** "Transfinite Recursion" *)
 
@@ -571,14 +707,14 @@ Module OrdinalImpl.
     methods.(dJoin) (fun b : bool => if b then d_left else d_right)
   .
 
-  Definition trans_rec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+  Definition transfinite_recursion {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
-    | @Node alpha_base alpha_elems =>
-      fun alpha_i_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) =>
-      dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    | @Node alpha_base alpha_elems => fun alpha_i_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_i_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
+
+  Definition trans_rec {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) (alpha : Ord) : Dom := transfinite_recursion (methods := methods) (proj1_sig alpha) (proj2_sig alpha).
 
 (* The Main Idea on "trans_rec":
   trans_rec (\empty) = dZero
@@ -586,7 +722,7 @@ Module OrdinalImpl.
   trans_rec (\lim X) = dJoin {trans_rec x : x \in X}
 *)
 
-  Class isDomainWithOrdering (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : Type :=
+  Class isDomainWithPartialOrdering (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
     { WellFormeds : ensemble Dom
     ; dEq (lhs : Dom) (rhs : Dom) : Prop
     ; dLe (lhs : Dom) (rhs : Dom) : Prop
@@ -604,7 +740,9 @@ Module OrdinalImpl.
     }
   .
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Type := @sig Dom WellFormeds.
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : AczelSetUniv.t :=
+    @sig Dom WellFormeds
+  .
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
@@ -612,7 +750,7 @@ Module OrdinalImpl.
 
   Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)}.
 
   Global Instance PartialSetoidOfDomainWithOrdering : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
@@ -646,7 +784,7 @@ Module OrdinalImpl.
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} : Prop :=
+  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : Prop :=
     { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
       (d_le_d' : d =< d')
       : dsucc d =< dsucc d'
@@ -660,7 +798,7 @@ Module OrdinalImpl.
     }
   .
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithOrdering Dom (methods := methods)} {requiresGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} {requiresGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
 
   Global Add Parametric Morphism :
     dsucc with signature (leProp ==> leProp)
