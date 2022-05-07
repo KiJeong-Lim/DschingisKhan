@@ -242,7 +242,7 @@ Module BooleanAlgebra.
   .
 
   Definition isElementCompleteFor (X : ensemble BA) (b : BA) : Prop :=
-    equiconsistent X (cl (insert b X)) -> member b X
+    forall EQUICONSISTENT : equiconsistent X (cl (insert b X)), member b X
   .
 
   Definition isComplete (X : ensemble BA) : Prop :=
