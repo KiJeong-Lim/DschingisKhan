@@ -722,7 +722,7 @@ Module OrdinalImpl.
   trans_rec (\lim X) = dJoin {trans_rec x : x \in X}
 *)
 
-  Class isDomainWithPartialOrdering (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
+  Class isDomainWithPartialOrder (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
     { WellFormeds : ensemble Dom
     ; dEq (lhs : Dom) (rhs : Dom) : Prop
     ; dLe (lhs : Dom) (rhs : Dom) : Prop
@@ -740,7 +740,7 @@ Module OrdinalImpl.
     }
   .
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
@@ -748,7 +748,7 @@ Module OrdinalImpl.
 
   Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)}.
 
   Global Instance PartialSetoidOfDomainWithOrdering : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
@@ -782,7 +782,7 @@ Module OrdinalImpl.
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} : Prop :=
+  Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} : Prop :=
     { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
       (d_le_d' : d =< d')
       : dsucc d =< dsucc d'
@@ -796,7 +796,7 @@ Module OrdinalImpl.
     }
   .
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrdering Dom (methods := methods)} {hasGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
+  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithOrdering : isDomainWithPartialOrder Dom (methods := methods)} {hasGoodTransRecMethods : areGoodTransRecMethods methods (requiresDomainWithOrdering := requiresDomainWithOrdering)}.
 
   Global Add Parametric Morphism :
     dsucc with signature (leProp (isPoset := PartialPosetOfDomainWithOrdering) ==> leProp (isPoset := PartialPosetOfDomainWithOrdering))
