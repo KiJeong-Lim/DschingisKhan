@@ -436,7 +436,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     simpl; unfold_eqTree. rewrite z_eq. eapply subseteq_PartialOrder; split...
   Qed.
 
-  Lemma fromAcc_lifts_lt {A : Type} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
+  Corollary fromAcc_elem_fromAcc_intro {A : Type} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
     (subtree_R_tree : wfRel subtree tree)
     : fromAcc subtree subtree_acc `elem` fromAcc tree tree_acc.
   Proof. eapply fromAcc_unfold. exists (exist _ subtree subtree_R_tree). simpl; unfold_eqTree. eapply fromAcc_proof_irrelevance. Qed.
@@ -445,7 +445,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall x : AczelSet, fromAcc tree tree_acc `subseteq` x <-> << LT_ELEM : forall subtree : A, forall subtree_R_tree : wfRel subtree tree, fromAcc subtree (Acc_inv tree_acc subtree_R_tree) `elem` x >>.
   Proof with eauto with *.
     intros x. split.
-    - intros subseteq_x subtree subtree_R_tree. eapply subseteq_x, fromAcc_lifts_lt...
+    - intros subseteq_x subtree subtree_R_tree. eapply subseteq_x, fromAcc_elem_fromAcc_intro...
     - destruct tree_acc as [tree_acc_inv]. intros LT_ELEM z z_in; unnw.
       apply fromAcc_unfold in z_in. unnw. destruct z_in as [[subtree subtree_R_tree] z_eq].
       simpl in *; unfold_eqTree. rewrite z_eq...
