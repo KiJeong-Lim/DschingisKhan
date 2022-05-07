@@ -171,7 +171,7 @@ Module BooleanAlgebra.
   Proof. replace ([x1; x2]) with ([x1] ++ [x2]); trivial. rewrite andsBA_app. now do 2 rewrite andsBA_one. Qed.
 
   Variant isFilter (F : ensemble BA) : Prop :=
-  | isFilterIff
+  | isFilterIf
     (CLOSED_andsBA : forall xs : list BA, ⟪ xs_isFiniteSubsetOfFilter : isFiniteSubsetOf xs F ⟫ -> member (andsBA xs) F)
     (CLOSED_UPWARD : forall x : BA, ⟪ x_inFilter : member x F ⟫ -> forall x' : BA, ⟪ x_le_x' : x =< x' ⟫ -> member x' F)
     : isFilter F
@@ -238,7 +238,7 @@ Module BooleanAlgebra.
   .
 
   Definition cl (X : ensemble BA) : ensemble BA :=
-    fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf_X : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le_x : andsBA xs =< x ⟫
+    fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf_cl : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le : andsBA xs =< x ⟫
   .
 
   Definition isElementCompleteFor (X : ensemble BA) (b : BA) : Prop :=
