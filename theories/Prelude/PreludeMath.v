@@ -534,7 +534,7 @@ Module Ensembles.
       pose proof (proj1 (X_repr_isFilterReprOf_X (exist _ z phi_z)) z_in_X) as z_in_X_repr...
   Qed.
 
-  Definition fromSequence {I : Type} {A : Type} (x_i : I -> A) : ensemble A :=
+  Polymorphic Definition fromSequence {I : Type} {A : Type} (x_i : I -> A) : ensemble A :=
     fun x : A => exists i : I, x = x_i i
   .
 

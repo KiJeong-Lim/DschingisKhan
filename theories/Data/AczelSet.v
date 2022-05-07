@@ -721,7 +721,7 @@ Module OrdinalImpl.
 (* The Main Idea of "trans_rec":
   trans_rec (\empty) = dZero
   trans_rec (\suc x) = dSucc (trans_rec x)
-  trans_rec (\lim X) = dJoin {trans_rec x : x \in X}
+  trans_rec (\lim X) = dJoin {trans_rec x | x \in X}
 *)
 
   Class isDomainWithPartialOrder (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
