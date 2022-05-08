@@ -709,9 +709,7 @@ Module PreludeInit_MAIN.
     Cat.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) :=
-    liftSetoid1 (F := F) (theFinestSetoidOf X)
-  .
+  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 (theFinestSetoidOf X).
 
   Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
     { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
