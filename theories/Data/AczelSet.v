@@ -690,6 +690,11 @@ Module OrdinalImpl.
     }
   .
 
+  Lemma Ord_strong_induction (phi : Ord -> Prop)
+    (IND : forall alpha : Ord, << IH : forall beta : Ord, beta < alpha -> phi beta >> -> phi alpha)
+    : forall alpha : Ord, phi alpha.
+  Proof. eapply NotherianRecursion. exact (IND). Qed.
+
 (** "Transfinite Recursion" *)
 
   Record TransRecMethodsOf (Dom : AczelSetUniv.t) : AczelSetUniv.t :=
