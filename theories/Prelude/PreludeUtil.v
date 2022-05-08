@@ -108,7 +108,7 @@ Module EQ_FACTS.
     end
   .
 
-  Let eq_curve (eq_em_x : x = x \/ x <> x) (h_eq : x = x) : x = x :=
+  Let my_eq_encoder_ret (eq_em_x : x = x \/ x <> x) (h_eq : x = x) : x = x :=
     match eq_em_x with
     | or_introl Heq => Heq
     | or_intror Hne => False_ind (x = x) (Hne h_eq)
@@ -116,7 +116,7 @@ Module EQ_FACTS.
   .
 
   Let my_eq_encoder_x_eq_reflexivity_x_is (hyp_eq : x = x) : my_eq_encoder x (eq_reflexivity x) = my_eq_encoder x hyp_eq :=
-    match eq_em x as eq_em_x return eq_curve eq_em_x (eq_reflexivity x) = eq_curve eq_em_x hyp_eq with
+    match eq_em x as eq_em_x return my_eq_encoder_ret eq_em_x (eq_reflexivity x) = my_eq_encoder_ret eq_em_x hyp_eq with
     | or_introl h_eq => eq_reflexivity h_eq
     | or_intror h_ne => False_ind (False_ind (x = x) (h_ne (eq_reflexivity x)) = False_ind (x = x) (h_ne hyp_eq)) (h_ne hyp_eq)
     end

@@ -834,7 +834,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
+  Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
   | inl1 (FL_X : FL X) : sum1 FL FR X
   | inr1 (FR_X : FR X) : sum1 FL FR X
   .
