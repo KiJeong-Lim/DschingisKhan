@@ -434,7 +434,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     intersections_i (I := bool) (default_of_I := true) (fun b : bool => if b then x1 else x2)
   .
 
-  Lemma AczelSet_intersection (x1 : AczelSet) (x2 : AczelSet)
+  Lemma AczelSet_intersection_spec (x1 : AczelSet) (x2 : AczelSet)
     : forall z : AczelSet, z `elem` intersection x1 x2 <-> << IN_intersection : z `elem` x1 /\ z `elem` x2 >>.
   Proof.
     intros z. unfold intersection. rewrite AczelSet_intersections_i_spec. split; intros z_in.
@@ -576,6 +576,14 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
   Qed.
 
+  Lemma elem_implies_subseteq_forOrdinal (alpha : AczelSet) (beta : AczelSet)
+    (alpha_isOrdinal : isOrdinal alpha)
+    (beta_in_alpha : beta `elem` alpha)
+    : beta `subseteq` alpha.
+  Proof. inversion alpha_isOrdinal. exact (IS_TRANSITIVE_SET beta beta_in_alpha). Qed.
+
+  Local Hint Resolve elem_intro every_member_of_Ordinal_isOrdinal elem_implies_subseteq_forOrdinal : core.
+
   Global Instance ltProp_on_the_base_set_of_alpha_isStrictOrder_if_alpha_isOrdinal {alpha : AczelSet}
     {alpha_isOrdinal : isOrdinal alpha}
     : StrictOrder (ltProp_on_the_base_set_of alpha).
@@ -645,8 +653,6 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End EXAMPLES_OF_ORDINAL.
 
-  Local Hint Resolve every_member_of_Ordinal_isOrdinal elem_intro : core.
-
   Fixpoint lePropOnRank (lhs : AczelSet) (rhs : AczelSet) {struct lhs} : Prop :=
     match lhs, rhs with
     | Node lhs_elems, Node rhs_elems => forall lhs_child, exists rhs_child, lePropOnRank (lhs_elems lhs_child) (rhs_elems rhs_child)
@@ -695,7 +701,30 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Instance lePropOnRank_PartialOrder
     : PartialOrder eqPropOnRank lePropOnRank.
-  Proof. ii; red. reflexivity. Qed.
+  Proof. ii; red; reflexivity. Qed.
+
+(*Theorem lePropOnRank_iff_subseteq_forOrdinals (lhs : AczelSet) (rhs : AczelSet)
+    (lhs_isOrdinal : isOrdinal lhs)
+    (rhs_isOrdinal : isOrdinal rhs)
+    : lePropOnRank lhs rhs <-> lhs `subseteq` rhs.
+  Proof with eauto with *.
+    revert lhs rhs lhs_isOrdinal rhs_isOrdinal.
+    enough (to_show :
+      forall x : AczelSet,
+      forall y : AczelSet,
+      forall alpha : AczelSet,
+      forall x_isOrdinal : isOrdinal x,
+      forall y_isOrdinal : isOrdinal y,
+      forall alpha_isOrdinal : isOrdinal alpha,
+      forall x_le_alpha : lePropOnRank x alpha,
+      forall alpha_subseteq_y : alpha `subseteq` y,
+      lePropOnRank x y <-> x `subseteq` y
+    ).
+    { ii. split; [intros lhs_le_rhs | intros lhs_subseteq_rhs].
+      - eapply to_show with (alpha := rhs)...
+      - eapply to_show with (alpha := lhs)...
+    }
+  Qed.*)
 
   End RANK_OF_ACZEL_SET.
 
