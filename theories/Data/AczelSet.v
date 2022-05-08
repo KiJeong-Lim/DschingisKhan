@@ -686,12 +686,6 @@ Module OrdinalImpl.
 
   Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
 
-  Global Coercion unliftOrdinalToAczelSet : Ord >-> AczelSet.
-
-  Definition getChildTrees_Ord (alpha : Ord) (alpha_child : getChildren alpha) : {beta : Ord | beta < alpha} :=
-    @exist Ord (fun beta : Ord => beta `elem` alpha) (@exist AczelSet isOrdinal (getChildTrees alpha alpha_child) (every_member_of_Ordinal_isOrdinal (proj1_sig alpha) (proj2_sig alpha) (getChildTrees alpha alpha_child) (elem_intro alpha alpha_child))) (elem_intro alpha alpha_child)
-  .
-
 (** "Transfinite Recursion" *)
 
   Record TransRecMethodsOf (Dom : AczelSetUniv.t) : AczelSetUniv.t :=
@@ -754,6 +748,10 @@ Module OrdinalImpl.
 
   Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
 
+  Definition mkWF (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom :=
+    @exist Dom WellFormeds d d_well_formed
+  .
+
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
     ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithPartialOrder
@@ -769,19 +767,19 @@ Module OrdinalImpl.
   .
 
   Definition dzero : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds dZero dZero_well_formed
+    mkWF dZero dZero_well_formed
   .
 
   Definition dsucc (d : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dSucc (proj1_sig d)) (dSucc_well_formed (proj1_sig d) (proj2_sig d))
+    mkWF (dSucc (proj1_sig d)) (dSucc_well_formed (proj1_sig d) (proj2_sig d))
   .
 
   Definition djoin {I : smallUniv} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_well_formed (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
+    mkWF (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_well_formed (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
   .
 
   Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+    mkWF (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
   .
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
@@ -812,6 +810,42 @@ Module OrdinalImpl.
     as djoin_monotonic.
   Proof. exact (djoin_lifts_leProp). Defined.
 
+  Lemma dLe_refl (d1 : Dom)
+    (d1_well_formed : d1 \in WellFormeds)
+    : dLe d1 d1.
+  Proof.
+    change (mkWF d1 d1_well_formed =< mkWF d1 d1_well_formed).
+    reflexivity.
+  Qed.
+
+  Lemma dLe_trans (d1 : Dom) (d2 : Dom) (d3 : Dom)
+    (d1_well_formed : d1 \in WellFormeds)
+    (d2_well_formed : d2 \in WellFormeds)
+    (d3_well_formed : d3 \in WellFormeds)
+    (d1_le_d2 : dLe d1 d2)
+    (d2_le_d3 : dLe d2 d3)
+    : dLe d1 d3.
+  Proof.
+    change (mkWF d1 d1_well_formed =< mkWF d3 d3_well_formed).
+    transitivity (mkWF d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
+  Qed.
+
+  Local Notation trans_rec := (trans_rec (methods := methods)).
+
+  Variant BasicPropertiesOf_trans_rec (alpha : Ord) : Prop :=
+  | BasicPropertiesOf_trans_rec_alpha_are_the_followings
+    (trans_rec_alpha_well_formed : trans_rec alpha \in WellFormeds)
+    (trans_rec_alpha_monotonic : forall beta : Ord, beta =< alpha -> dLe (trans_rec beta) (trans_rec alpha))
+    (trans_rec_alpha_empty : dLe methods.(dZero) (trans_rec alpha))
+    (trans_rec_alpha_sucOf : forall beta : Ord, beta < alpha -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
+    (trans_rec_alpha_limit : forall I : smallUniv, forall default_of_I : I, forall beta_i : I -> Ord, (forall i : I, beta_i i < alpha) -> dLe (methods.(dJoin) (fun i : I => trans_rec (beta_i i))) (trans_rec alpha))
+    : BasicPropertiesOf_trans_rec alpha
+  .
+
+  Global Arguments BasicPropertiesOf_trans_rec_alpha_are_the_followings {alpha}.
+
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
+
+  Global Coercion unliftOrdinalToAczelSet : Ord >-> AczelSet.
 
 End OrdinalImpl.
