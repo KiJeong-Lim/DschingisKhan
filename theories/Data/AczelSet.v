@@ -768,13 +768,13 @@ Module OrdinalImpl.
   .
 
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
-    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dEq (proj1_sig lhs) (proj1_sig rhs)
+    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dle` proj1_sig rhs
     ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithPartialOrder
     }
   .
 
   Global Instance partialPosetOfDomainWithPartialOrder : isPoset (WellFormedPartOf Dom) :=
-    { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := dLe (proj1_sig lhs) (proj1_sig rhs)
+    { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dle` proj1_sig rhs
     ; Poset_requiresSetoid := partialSetoidOfDomainWithPartialOrder
     ; leProp_PreOrder := @dLe_PreOrder Dom methods requiresDomainWithPartialOrder
     ; leProp_PartialOrder := @dLe_PartialOrder Dom methods requiresDomainWithPartialOrder
@@ -782,7 +782,7 @@ Module OrdinalImpl.
   .
 
   Definition dzero : WellFormedPartOf Dom :=
-    mkWF dZero dZero_well_formed
+    mkWF (dZero) (dZero_well_formed)
   .
 
   Definition dsucc (d : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
@@ -827,7 +827,7 @@ Module OrdinalImpl.
 
   Lemma dLe_refl (d1 : Dom)
     (d1_well_formed : d1 \in WellFormeds)
-    : dLe d1 d1.
+    : d1 `dle` d1.
   Proof.
     change (mkWF d1 d1_well_formed =< mkWF d1 d1_well_formed).
     reflexivity.
@@ -837,9 +837,9 @@ Module OrdinalImpl.
     (d1_well_formed : d1 \in WellFormeds)
     (d2_well_formed : d2 \in WellFormeds)
     (d3_well_formed : d3 \in WellFormeds)
-    (d1_le_d2 : dLe d1 d2)
-    (d2_le_d3 : dLe d2 d3)
-    : dLe d1 d3.
+    (d1_le_d2 : d1 `dle` d2)
+    (d2_le_d3 : d2 `dle` d3)
+    : d1 `dle` d3.
   Proof.
     change (mkWF d1 d1_well_formed =< mkWF d3 d3_well_formed).
     transitivity (mkWF d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
