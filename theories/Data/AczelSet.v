@@ -63,12 +63,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_sym; exact (y_eq_x_c)| exact (IH c_x)].
     - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
       econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
-      destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtree]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
+      destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtrees]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
       unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_trans; [exact (z_eq_y_c) | eapply eqTree_sym; exact (x_c_eq_y_c)].
-    - induction y as [y_children y_childtrees IH]; destruct x as [x_children x_childtree]; destruct z as [z_children z_childtree]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
+    - induction y as [y_children y_childtrees IH]; destruct x as [x_children x_childtrees]; destruct z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
       + intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
-    - induction x as [x_children x_childtrees IH]; destruct y as [y_children y_childtree]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
+    - induction x as [x_children x_childtrees IH]; destruct y as [y_children y_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
       + intros c_y. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
     - induction x as [x_children x_childtrees IH]. simpl; unnw. split.
@@ -164,7 +164,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (x_in_y : x `elem` y)
     : x `elem` z.
   Proof.
-    destruct z as [z_children z_childtrees]; destruct y as [y_children y_childtree].
+    destruct z as [z_children z_childtrees]; destruct y as [y_children y_childtrees].
     destruct y_eq_z as [y_subset_z_c z_c_subset_y]; destruct x_in_y as [c_y x_eq_y_c].
     pose proof (y_subset_z_c c_y) as [c_z c_y_eq_c_z]. eexists; etransitivity; eauto with *.
   Qed.
@@ -645,11 +645,72 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End EXAMPLES_OF_ORDINAL.
 
+  Local Hint Resolve every_member_of_Ordinal_isOrdinal elem_intro : core.
+
+  Fixpoint lePropOnRank (lhs : AczelSet) (rhs : AczelSet) {struct lhs} : Prop :=
+    match lhs, rhs with
+    | Node lhs_elems, Node rhs_elems => forall lhs_child, exists rhs_child, lePropOnRank (lhs_elems lhs_child) (rhs_elems rhs_child)
+    end
+  .
+
+  Definition eqPropOnRank (lhs : AczelSet) (rhs : AczelSet) : Prop :=
+    lePropOnRank lhs rhs /\ lePropOnRank rhs lhs
+  .
+
+  Variant ltPropOnRank (lhs : AczelSet) (rhs : AczelSet) : Prop :=
+  | lhs_ltOnRank_rhs_if (rhs_child : getChildren rhs)
+    (RANK_LE : lePropOnRank lhs (getChildTrees rhs rhs_child))
+    : ltPropOnRank lhs rhs
+  .
+
+  Global Arguments lhs_ltOnRank_rhs_if {lhs} {rhs}.
+
+  Section RANK_OF_ACZEL_SET.
+
+  Local Instance lePropOnRank_Reflexive
+    : Reflexive lePropOnRank.
+  Proof.
+    intros x. induction x as [x_children x_childtrees IH]; simpl; eauto with *.
+  Qed.
+
+  Local Instance lePropOnRank_Transitive
+    : Transitive lePropOnRank.
+  Proof.
+    intros x y z x_le_y y_le_z. revert x x_le_y z y_le_z. induction y as [y_children y_childtrees IH].
+    intros [x_children x_childtrees] x_le_y [z_children z_childtrees] y_le_z. simpl in *.
+    intros c_x. exploit (x_le_y c_x) as [c_y ?]. exploit (y_le_z c_y) as [c_z ?]; eauto with *.
+  Qed.
+
+  Local Instance lePropOnRank_PreOrder : PreOrder lePropOnRank :=
+    { PreOrder_Reflexive := lePropOnRank_Reflexive
+    ; PreOrder_Transitive := lePropOnRank_Transitive
+    }
+  .
+
+  Local Instance eqPropOnRank_Equivalence
+    : Equivalence eqPropOnRank.
+  Proof with eauto with *.
+    unfold eqPropOnRank. split; ii; des... all: transitivity (y)...
+  Qed.
+
+  Local Instance lePropOnRank_PartialOrder
+    : PartialOrder eqPropOnRank lePropOnRank.
+  Proof. red. reflexivity. Qed.
+
+  End RANK_OF_ACZEL_SET.
+
 End AczelSet.
 
 Module OrdinalImpl.
 
   Import AczelSet.
+
+  Class ord_sig (t : AczelSetUniv.t) : AczelSetUniv.t :=
+    { bot_ord : t
+    ; suc_ord : t -> t
+    ; lim_ord {I : smallUniv} : (I -> t) -> t
+    }
+  .
 
   Definition Ord : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
@@ -658,6 +719,8 @@ Module OrdinalImpl.
   Global Open Scope Ordinal_scope.
 
   Definition unliftOrdinalToAczelSet : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
+
+  Definition guarantee {alpha : Ord} : isOrdinal (unliftOrdinalToAczelSet alpha) := proj2_sig alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
     { eqProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs == unliftOrdinalToAczelSet rhs
@@ -683,7 +746,7 @@ Module OrdinalImpl.
 
   Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
 
-  Section ORDINAL_STRONG_INDUCTION.
+  Section BASIC_FACTS_ON_ORDINAL.
 
   Local Instance Ord_isWellFounded : isWellFounded Ord :=
     { wfRel := ltProp_Ordinal
@@ -696,7 +759,23 @@ Module OrdinalImpl.
     : forall alpha : Ord, phi alpha.
   Proof. eapply NotherianRecursion. exact (IND). Qed.
 
-  End ORDINAL_STRONG_INDUCTION.
+  Local Instance implementationOf_ord_sig_forAczelSet : ord_sig AczelSet :=
+    { bot_ord := AczelSet.empty
+    ; suc_ord := AczelSet.sucOf
+    ; lim_ord {I : smallUniv} := AczelSet.unions_i (I := I)
+    }
+  .
+
+  Let mkOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
+
+  Global Instance implementationOf_ord_sig_forOrd : ord_sig Ord :=
+    { bot_ord := mkOrd empty empty_isOrdinal
+    ; suc_ord (alpha : Ord) := mkOrd (sucOf (unliftOrdinalToAczelSet alpha)) (sucOf_isOrdinal (unliftOrdinalToAczelSet alpha) guarantee)
+    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := mkOrd (unions_i (fun i : I => unliftOrdinalToAczelSet (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrdinalToAczelSet (alpha_i i)) (fun i : I => guarantee))
+    }
+  .
+
+  End BASIC_FACTS_ON_ORDINAL.
 
 (** "Transfinite Recursion" *)
 
@@ -763,9 +842,7 @@ Module OrdinalImpl.
 
   Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
 
-  Definition mkWF (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom :=
-    @exist Dom WellFormeds d d_well_formed
-  .
+  Definition mkWF (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom := @exist Dom WellFormeds d d_well_formed.
 
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `deq` proj1_sig rhs
@@ -857,12 +934,22 @@ Module OrdinalImpl.
 
   Global Arguments BasicPropertiesOf_transRec_alpha_areTheFollowings {transRec} {alpha}.
 
-(* "HOMEWORK"
-  Lemma transRec_spec (alpha : Ord)
+(*Lemma transRec_spec (alpha : Ord)
     : BasicPropertiesOf_transRec (transRec (methods := methods)) alpha.
   Proof with eauto with *.
-  Qed.
-*)
+    induction alpha as [[[alpha_base alpha_elems] alpha_isOrdinal] IH] using Ord_strong_induction; unnw.
+    assert (claim1 :
+      forall beta_base : smallUniv,
+      forall beta_elems : beta_base -> AczelSet,
+      forall LE : forall beta_child : beta_base, exists alpha_child : alpha_base, beta_elems beta_child `subseteq` alpha_elems alpha_child,
+      forall beta_child : beta_base,
+      forall IS_ORDINAL : isOrdinal (beta_elems beta_child),
+      BasicPropertiesOf_transRec (transRec (methods := methods)) (exist isOrdinal (beta_elems beta_child) IS_ORDINAL)
+    ).
+    { ii. eapply IH. red; simpl. exploit (LE beta_child) as [alpha_child SUBSETEQ].
+      
+    }
+  Qed. *)
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
