@@ -100,20 +100,8 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
 (** "\S7" *)
 
-  Ltac intro_pattern_revert :=
-    let x := fresh "x" in
-    (intro x; pattern x; revert x)
-  .
-
-(** "\S8" *)
-
-  Ltac remove_eqn_if_trivial H :=
-    repeat (
-      match goal with
-      | [ H : ?x = ?y |- _ ] => tryif unify x y then clear H else idtac
-      end
-    )
-  .
+  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+  Ltac remove_eqn_if_trivial H := repeat (match goal with [ H : ?x = ?y |- _ ] => tryif unify x y then clear H else idtac end).
 
 End Khan.
 
