@@ -748,7 +748,7 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " `deq` " := dLe (at level 70, no associativity) : type_scope.
+  Global Infix " `deq` " := dEq (at level 70, no associativity) : type_scope.
   Global Infix " `dle` " := dLe (at level 70, no associativity) : type_scope.
 
   Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
