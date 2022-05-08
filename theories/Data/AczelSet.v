@@ -702,18 +702,18 @@ Module OrdinalImpl.
   .
 
   Definition transfinite_recursion {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
-    fix trans_rec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
+    fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
-    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (trans_rec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
 
-  Definition trans_rec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfinite_recursion methods (proj1_sig alpha) (proj2_sig alpha).
+  Definition transRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfinite_recursion methods (proj1_sig alpha) (proj2_sig alpha).
 
-(* The Main Idea of "trans_rec":
-  trans_rec (\empty) = dZero
-  trans_rec (\suc x) = dSucc (trans_rec x)
-  trans_rec (\lim X) = dJoin {trans_rec x | x \in X}
+(* The Main Idea of "transRec":
+  transRec (\empty) = dZero
+  transRec (\suc x) = dSucc (transRec x)
+  transRec (\lim X) = dJoin {transRec x | x \in X}
 *)
 
   Class isDomainWithPartialOrder (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
@@ -828,21 +828,21 @@ Module OrdinalImpl.
     transitivity (mkWF d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
   Qed.
 
-  Variant BasicPropertiesOf_trans_rec (trans_rec : Ord -> Dom) (alpha : Ord) : Prop :=
-  | BasicPropertiesOf_trans_rec_alpha_are_the_followings
-    (trans_rec_alpha_well_formed : trans_rec alpha \in WellFormeds)
-    (trans_rec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> dLe (trans_rec beta) (trans_rec alpha))
-    (trans_rec_alpha_ge_empty : dLe methods.(dZero) (trans_rec alpha))
-    (trans_rec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
-    (trans_rec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> dLe (methods.(dJoin) (fun i : I => trans_rec (beta_i i))) (trans_rec alpha))
-    : BasicPropertiesOf_trans_rec trans_rec alpha
+  Variant BasicPropertiesOf_transRec (transRec : Ord -> Dom) (alpha : Ord) : Prop :=
+  | BasicPropertiesOf_transRec_alpha_areTheFollowings
+    (transRec_alpha_well_formed : transRec alpha \in WellFormeds)
+    (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> dLe (transRec beta) (transRec alpha))
+    (transRec_alpha_ge_empty : dLe methods.(dZero) (transRec alpha))
+    (transRec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> dLe (methods.(dSucc) (transRec beta)) (transRec alpha))
+    (transRec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> dLe (methods.(dJoin) (fun i : I => transRec (beta_i i))) (transRec alpha))
+    : BasicPropertiesOf_transRec transRec alpha
   .
 
-  Global Arguments BasicPropertiesOf_trans_rec_alpha_are_the_followings {trans_rec} {alpha}.
+  Global Arguments BasicPropertiesOf_transRec_alpha_areTheFollowings {transRec} {alpha}.
 
 (* "HOMEWORK"
-  Lemma trans_rec_spec (alpha : Ord)
-    : BasicPropertiesOf_trans_rec (trans_rec (methods := methods)) alpha.
+  Lemma transRec_spec (alpha : Ord)
+    : BasicPropertiesOf_transRec (transRec (methods := methods)) alpha.
   Proof with eauto with *.
   Qed.
 *)
