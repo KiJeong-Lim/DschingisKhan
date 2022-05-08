@@ -830,19 +830,24 @@ Module OrdinalImpl.
     transitivity (mkWF d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
   Qed.
 
-  Local Notation trans_rec := (trans_rec (methods := methods)).
-
-  Variant BasicPropertiesOf_trans_rec (alpha : Ord) : Prop :=
+  Variant BasicPropertiesOf_trans_rec (trans_rec : Ord -> Dom) (alpha : Ord) : Prop :=
   | BasicPropertiesOf_trans_rec_alpha_are_the_followings
     (trans_rec_alpha_well_formed : trans_rec alpha \in WellFormeds)
-    (trans_rec_alpha_monotonic : forall beta : Ord, beta =< alpha -> dLe (trans_rec beta) (trans_rec alpha))
-    (trans_rec_alpha_empty : dLe methods.(dZero) (trans_rec alpha))
-    (trans_rec_alpha_sucOf : forall beta : Ord, beta < alpha -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
-    (trans_rec_alpha_limit : forall I : smallUniv, forall default_of_I : I, forall beta_i : I -> Ord, (forall i : I, beta_i i < alpha) -> dLe (methods.(dJoin) (fun i : I => trans_rec (beta_i i))) (trans_rec alpha))
-    : BasicPropertiesOf_trans_rec alpha
+    (trans_rec_alpha_ge_image : forall beta : Ord, beta =< alpha -> dLe (trans_rec beta) (trans_rec alpha))
+    (trans_rec_alpha_ge_empty : dLe methods.(dZero) (trans_rec alpha))
+    (trans_rec_alpha_ge_sucOf : forall beta : Ord, << BETA_LT_ALPHA : beta < alpha >> -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
+    (trans_rec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << BETA_LT_ALPHA : forall i : I, beta_i i < alpha >> -> dLe (methods.(dJoin) (fun i : I => trans_rec (beta_i i))) (trans_rec alpha))
+    : BasicPropertiesOf_trans_rec trans_rec alpha
   .
 
-  Global Arguments BasicPropertiesOf_trans_rec_alpha_are_the_followings {alpha}.
+  Global Arguments BasicPropertiesOf_trans_rec_alpha_are_the_followings {trans_rec} {alpha}.
+
+(* "HOMEWORK"
+  Lemma trans_rec_spec (alpha : Ord)
+    : BasicPropertiesOf_trans_rec (trans_rec (methods := methods)) alpha.
+  Proof with eauto with *.
+  Qed.
+*)
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
