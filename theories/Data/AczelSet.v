@@ -695,7 +695,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Instance lePropOnRank_PartialOrder
     : PartialOrder eqPropOnRank lePropOnRank.
-  Proof. red. reflexivity. Qed.
+  Proof. ii; red. reflexivity. Qed.
 
   End RANK_OF_ACZEL_SET.
 
@@ -842,7 +842,7 @@ Module OrdinalImpl.
 
   Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
 
-  Definition mkWF (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom := @exist Dom WellFormeds d d_well_formed.
+  Definition mkWellFormed (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom := @exist Dom WellFormeds d d_well_formed.
 
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
     { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `deq` proj1_sig rhs
@@ -859,19 +859,19 @@ Module OrdinalImpl.
   .
 
   Definition dzero : WellFormedPartOf Dom :=
-    mkWF (dZero) (dZero_well_formed)
+    mkWellFormed (dZero) (dZero_well_formed)
   .
 
   Definition dsucc (d : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    mkWF (dSucc (proj1_sig d)) (dSucc_well_formed (proj1_sig d) (proj2_sig d))
+    mkWellFormed (dSucc (proj1_sig d)) (dSucc_well_formed (proj1_sig d) (proj2_sig d))
   .
 
   Definition djoin {I : smallUniv} (ds : I -> WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    mkWF (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_well_formed (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
+    mkWellFormed (dJoin (fun i : I => (proj1_sig (ds i)))) (dJoin_well_formed (fun i : I => proj1_sig (ds i)) (fun i : I => proj2_sig (ds i)))
   .
 
   Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    mkWF (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+    mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
   .
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
@@ -906,7 +906,7 @@ Module OrdinalImpl.
     (d1_well_formed : d1 \in WellFormeds)
     : d1 `dle` d1.
   Proof.
-    change (mkWF d1 d1_well_formed =< mkWF d1 d1_well_formed).
+    change (mkWellFormed d1 d1_well_formed =< mkWellFormed d1 d1_well_formed).
     reflexivity.
   Qed.
 
@@ -918,8 +918,8 @@ Module OrdinalImpl.
     (d2_le_d3 : d2 `dle` d3)
     : d1 `dle` d3.
   Proof.
-    change (mkWF d1 d1_well_formed =< mkWF d3 d3_well_formed).
-    transitivity (mkWF d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
+    change (mkWellFormed d1 d1_well_formed =< mkWellFormed d3 d3_well_formed).
+    transitivity (mkWellFormed d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
   Qed.
 
   Variant BasicPropertiesOf_transRec (transRec : Ord -> Dom) (alpha : Ord) : Prop :=
