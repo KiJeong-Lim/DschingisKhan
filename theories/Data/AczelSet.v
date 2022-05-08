@@ -748,6 +748,9 @@ Module OrdinalImpl.
     }
   .
 
+  Global Infix " `deq` " := dLe (at level 70, no associativity) : type_scope.
+  Global Infix " `dle` " := dLe (at level 70, no associativity) : type_scope.
+
   Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
     @sig Dom WellFormeds
   .
@@ -845,10 +848,10 @@ Module OrdinalImpl.
   Variant BasicPropertiesOf_transRec (transRec : Ord -> Dom) (alpha : Ord) : Prop :=
   | BasicPropertiesOf_transRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : transRec alpha \in WellFormeds)
-    (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> dLe (transRec beta) (transRec alpha))
+    (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> transRec beta `dle` transRec alpha)
     (transRec_alpha_ge_empty : dLe methods.(dZero) (transRec alpha))
-    (transRec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> dLe (methods.(dSucc) (transRec beta)) (transRec alpha))
-    (transRec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> dLe (methods.(dJoin) (fun i : I => transRec (beta_i i))) (transRec alpha))
+    (transRec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (transRec beta) `dle` transRec alpha)
+    (transRec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => transRec (beta_i i)) `dle` transRec alpha)
     : BasicPropertiesOf_transRec transRec alpha
   .
 
