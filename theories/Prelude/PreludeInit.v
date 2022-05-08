@@ -80,11 +80,11 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     | [ |- let x : ?A := ?t in ?B ] =>
       let x' := fresh x in
       intros x'
-    | [ |- forall x : ?A, ?B] =>
+    | [ |- forall x : ?A, ?B ] =>
       let x' := fresh x in
       intros x'
-    | [ |- ?P /\ ?Q] => split
-    | [ |- ?P <-> ?Q] => split; intro
+    | [ |- ?P /\ ?Q ] => split
+    | [ |- ?P <-> ?Q ] => split; intro
     end
   .
   Ltac des := repeat des_once.
