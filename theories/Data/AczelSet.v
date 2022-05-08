@@ -768,7 +768,7 @@ Module OrdinalImpl.
   .
 
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
-    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dle` proj1_sig rhs
+    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `deq` proj1_sig rhs
     ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithPartialOrder
     }
   .
