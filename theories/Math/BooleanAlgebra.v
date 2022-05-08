@@ -119,7 +119,7 @@ Module BooleanAlgebra.
 
   End BooleanAlgebraAsPoset.
 
-  Section section_2_of_chapter_1. (* Reference: << Constructive Completeness Proofs and Delimited Control >> written by "Danko Ilik" *)
+  Section section_2_of_chapter_1_PART1. (* Reference: << Constructive Completeness Proofs and Delimited Control >> written by "Danko Ilik" *)
 
   Context {BA : Type} {requiresSetoid : isSetoid BA} {requiresBooleanAlgebra : isBooleanAlgebra BA (requiresSetoid := requiresSetoid)}.
 
@@ -245,7 +245,7 @@ Module BooleanAlgebra.
     forall b : BA, isElementCompleteFor X b
   .
 
-  End section_2_of_chapter_1.
+  End section_2_of_chapter_1_PART1.
 
 End BooleanAlgebra.
 

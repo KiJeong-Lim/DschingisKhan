@@ -16,18 +16,13 @@ Module BasicPosetTheory.
     : forall x : D, forall y : D, x =< y <-> (forall z : D, z =< x -> z =< y).
   Proof. exact (proj1 (PreOrder_iff leProp) (@leProp_PreOrder D requiresPoset)). Qed.
 
-  Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
-    forall x1 : D, << H_IN1 : member x1 X >> ->
-    forall x2 : D, << H_IN2 : member x2 X >> ->
-    exists x3 : D, << H_IN3 : member x3 X >> /\
-    << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
+  Definition isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod) : Prop :=
+    forall x : dom, forall x' : dom, x =< x' -> f x =< f x'
   .
 
-  Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := CoLa_isCompleteLattice (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
-
-  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := CPO_isCompletePartialOrder (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
-
-  Global Notation isMonotonicMap := preserves_leProp1.
+  Lemma isMonotonicMap_iff_preserves_leProp1 {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+    : isMonotonicMap f <-> preserves_leProp1 f.
+  Proof. reflexivity. Qed.
 
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
@@ -45,7 +40,7 @@ Module BasicPosetTheory.
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
 
   Create HintDb poset_hints.
-  Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isDirectedSubset : poset_hints.
+  Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isMonotonicMap : poset_hints.
   Global Hint Resolve member_eq_leProp_with_impl member_eq_eqProp_with_iff leProp_lifted1 leProp_unfold : poset_hints.
 
   Global Add Parametric Morphism (D : Type) (requiresPoset : isPoset D) :
@@ -468,3 +463,34 @@ Module BasicPosetTheory.
   End LEXICOGRAPHICAL_ORDER.
 
 End BasicPosetTheory.
+
+Module DomainTheoryHelper.
+
+  Import BasicPosetTheory.
+
+  Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCoLa (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
+
+  Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    forall x1 : D, << H_IN1 : member x1 X >> ->
+    forall x2 : D, << H_IN2 : member x2 X >> ->
+    exists x3 : D, << H_IN3 : member x3 X >> /\
+    << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
+  .
+
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
+
+  Global Reserved Notation " '⟬' X '⟶' Y '⟭' " (X at level 60, Y at level 60, at level 0, no associativity).
+
+  Global Hint Unfold isDirectedSubset : poset_hints.
+
+  Lemma MonotonicMap_preservesDirected {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+    (f_isMonotonic : isMonotonicMap f)
+    : forall X : ensemble dom, << X_isDirected : isDirectedSubset X >> -> isDirectedSubset (image f X).
+  Proof.
+    intros X ? y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
+    destruct H_IN1 as [x1 [y1_eq x1_in]]; destruct H_IN2 as [x2 [y2_eq x2_in]]; subst y1 y2.
+    exploit (X_isDirected x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
+    exists (f x3). rewrite in_image_iff. split; eauto with *.
+  Qed.
+
+End DomainTheoryHelper.

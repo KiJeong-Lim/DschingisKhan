@@ -120,6 +120,8 @@ Module InteractionTrees.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
+  Local Notation endo X := (X -> X).
+
   Definition itree_interpret_mrec {E1 : Type -> Type} {E2 : Type -> Type} (ctx : E1 =====> itree (E1 +' E2)) : itree (E1 +' E2) =====> itree E2 :=
     fun R : Type =>
     itree_iter (E := E2) (I := itree (E1 +' E2) R) (R := R) (fun t0 : itree (E1 +' E2) R =>
@@ -142,8 +144,6 @@ Module InteractionTrees.
   Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E ~~> itree (E +' E') :=
     fun R : Type => fun e : E R => itree_trigger (E := E +' E') R (inl1 e)
   .
-
-  Local Notation endo X := (X -> X).
 
   Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E ~~> itree (E +' E'))) : E ~~> itree E' :=
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
@@ -171,22 +171,20 @@ Module InteractionTrees.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
-  Variant itreeBisimF (bisim : itree E R -> itree E R -> Prop) : itreeF E R -> itreeF E R -> Prop :=
+  Variant itreeBisimF {bisim : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
   | EqRetF (r1 : R) (r2 : R)
     (hypEq : r1 == r2)
-    : itreeBisimF bisim (RetF r1) (RetF r2)
+    : itreeBisimF (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
     (hypEq : bisim t1 t2)
-    : itreeBisimF bisim (TauF t1) (TauF t2)
+    : itreeBisimF (TauF t1) (TauF t2)
   | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
     (hypEq : forall x : X, bisim (k1 x) (k2 x))
-    : itreeBisimF bisim (VisF X e k1) (VisF X e k2)
+    : itreeBisimF (VisF X e k1) (VisF X e k2)
   .
 
-  Local Hint Constructors itreeBisimF : core.
-
   Definition eqITreeF (bisim : ensemble (itree E R * itree E R)%type) : ensemble (itree E R * itree E R)%type :=
-    uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (curry bisim) (observe lhs) (observe rhs))
+    uncurry (fun lhs : itree E R => fun rhs : itree E R => @itreeBisimF (curry bisim) (observe lhs) (observe rhs))
   .
 
   Lemma eqITreeF_monotonic (R1 : ensemble (itree E R * itree E R)%type) (R2 : ensemble (itree E R * itree E R)%type)
@@ -196,11 +194,11 @@ Module InteractionTrees.
     exact (
       fun lhs_rhs : itree E R * itree E R =>
       let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
-      fun hyp_in : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
-      match hyp_in in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
-      | EqRetF _ r1 r2 hypEq => EqRetF (curry R2) r1 r2 hypEq
-      | EqTauF _ t1 t2 hypEq => EqTauF (curry R2) t1 t2 (R1_isSubsetOf_R2 (t1, t2) hypEq)
-      | EqVisF _ X e k1 k2 hypEq => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_isSubsetOf_R2 (k1 x, k2 x) (hypEq x))
+      fun hyp_in : itreeBisimF (observe lhs) (observe rhs) =>
+      match hyp_in in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
+      | EqRetF r1 r2 hypEq => EqRetF r1 r2 hypEq
+      | EqTauF t1 t2 hypEq => EqTauF t1 t2 (R1_isSubsetOf_R2 (t1, t2) hypEq)
+      | EqVisF X e k1 k2 hypEq => EqVisF X e k1 k2 (fun x : X => R1_isSubsetOf_R2 (k1 x, k2 x) (hypEq x))
       end
     ).
   Defined.
@@ -208,11 +206,13 @@ Module InteractionTrees.
   Set Primitive Projections.
 
   CoInductive itreeBisim (lhs : itree E R) (rhs : itree E R) : Prop :=
-    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF itreeBisim (observe lhs) (observe rhs) }
+    Fold_itreeBisim { unfold_itreeBisim : @itreeBisimF itreeBisim (observe lhs) (observe rhs) }
   .
 
   Unset Primitive Projections.
 
   End BISIMULATION.
+
+  Global Arguments itreeBisimF {E} {R} {requiresSetoid} (bisim) (lhs) (rhs).
 
 End InteractionTrees.

@@ -5,7 +5,7 @@ Require Import DschingisKhan.Math.BasicGeneralTopology.
 
 Module ScottTopology.
 
-  Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology.
+  Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper.
 
   Section BUILD_SCOTT_TOPOLOGY.
 
@@ -20,7 +20,7 @@ Module ScottTopology.
 
   Local Hint Constructors isOpen_Scott : core.
 
-  Local Instance ScottTopology
+  Local Instance theScottTopology
     : Topology_axiom isOpen_Scott.
   Proof with (now vm_compute; firstorder) || (eauto with *).
     split.
@@ -45,4 +45,26 @@ Module ScottTopology.
 
   End BUILD_SCOTT_TOPOLOGY.
 
+  Global Instance TopologyOfDanaScott (D : Type) {requiresPoset : isPoset D} : isTopologicalSpace D :=
+    { isOpen := isOpen_Scott (requiresPoset := requiresPoset)
+    ; TopologicalSpace_obeysTopology_axiom := theScottTopology (requiresPoset := requiresPoset)
+    }
+  .
+
 End ScottTopology.
+
+Module BasicCpoTheory.
+
+  Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology.
+
+  Definition ScottContinuousMaps (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : Type :=
+    @sig (Hask.arrow dom cod) (fun f : dom -> cod => isContinuousMap (dom_isTopology := TopologyOfDanaScott dom) (cod_isTopology := TopologyOfDanaScott cod) f)
+  .
+
+  Local Instance MonotonicMaps_isPoset (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : isPoset (ScottContinuousMaps dom cod) :=
+    subPoset (Hask.arrow dom cod) (requiresPoset := arrow_isPoset cod_requiresPoset)
+  .
+
+  Local Notation " '⟬' dom '⟶' cod '⟭' " := (ScottContinuousMaps dom cod) : type_scope.
+
+End BasicCpoTheory.
