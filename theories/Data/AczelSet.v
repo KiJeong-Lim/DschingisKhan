@@ -684,7 +684,9 @@ Module OrdinalImpl.
 
   Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
 
-  Global Instance Ord_isWellFounded : isWellFounded Ord :=
+  Section ORDINAL_STRONG_INDUCTION.
+
+  Local Instance Ord_isWellFounded : isWellFounded Ord :=
     { wfRel := ltProp_Ordinal
     ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet elem AczelSet_well_founded
     }
@@ -694,6 +696,8 @@ Module OrdinalImpl.
     (IND : forall alpha : Ord, << IH : forall beta : Ord, beta < alpha -> phi beta >> -> phi alpha)
     : forall alpha : Ord, phi alpha.
   Proof. eapply NotherianRecursion. exact (IND). Qed.
+
+  End ORDINAL_STRONG_INDUCTION.
 
 (** "Transfinite Recursion" *)
 
