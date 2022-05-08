@@ -37,23 +37,23 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     match type of H with
     | REFERENCE_HOLDER (fun z => _) =>
       let H' := fresh z in
-      (rename H into H'; red in H')
+      rename H into H'; red in H'
     | ?P /\ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw in x'; rednw in y')
+      destruct H as [x' y']; rednw in x'; rednw in y'
     | ?P \/ ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
-      (destruct H as [x' | y']; [rednw in x' | rednw in y'])
+      destruct H as [x' | y']; [rednw in x' | rednw in y']
     | ?P <-> ?Q =>
       let x' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
       let y' := match Q with REFERENCE_HOLDER (fun z => _) => fresh z | _ => fresh H end in
-      (destruct H as [x' y']; rednw in x'; rednw in y')
+      destruct H as [x' y']; rednw in x'; rednw in y'
     | exists x, ?P =>
       let x' := fresh x in
       let y' := match P with REFERENCE_HOLDER (fun z => _) => fresh z | _ => H end in
-      (destruct H as [x' y']; rednw in y')
+      destruct H as [x' y']; rednw in y'
     end
   .
 
@@ -62,16 +62,25 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
 (** "\S4" *)
 
+  Global Tactic Notation "remove_eqn_if_trivial" hyp( H ) :=
+    match type of H with
+    | ?x = ?y => tryif has_evar x then idtac else tryif has_evar y then idtac else tryif unify x y then clear H else idtac
+    end
+  .
+
   Ltac ii := repeat intro.
   Ltac iis := ii; autounfold with khan_hints; try esplit.
   Ltac iiss := (repeat iis); cbn in *; desnw.
   Ltac des_once :=
     match goal with
-    | [ H : ?x = ?y |- _ ] => first [subst x | subst y]
+    | [ H : ?x = ?y |- _ ] => first [subst x | subst y | remove_eqn_if_trivial H]
     | [ H : ?P /\ ?Q |- _ ] => destruct H
     | [ H : ?P \/ ?Q |- _ ] => destruct H
     | [ H : ?P <-> ?Q |- _ ] => destruct H
     | [ H : exists x, ?P |- _ ] => let x' := fresh x in destruct H as [x' H]
+    | [ H : ?x <> ?y |- _ ] => try now contradiction H
+    | [ H : False |- _ ] => contradiction H
+    | [ H : True |- _ ] => clear H
     | [ |- let x : ?A := ?t in ?B ] => let x' := fresh x in intros x'
     | [ |- forall x : ?A, ?B ] => let x' := fresh x in intros x'
     | [ |- ?P /\ ?Q ] => split
@@ -101,7 +110,6 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 (** "\S7" *)
 
   Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
-  Ltac remove_eqn_if_trivial H := repeat (match goal with [ H : ?x = ?y |- _ ] => tryif unify x y then clear H else idtac end).
 
 End Khan.
 
