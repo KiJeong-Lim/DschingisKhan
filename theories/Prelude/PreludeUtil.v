@@ -1341,7 +1341,7 @@ Module FUN_FACTS.
     : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
   Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
-  Lemma well_founded_relation_on_image {A : Type} {B : Type} (f : A -> B) (R : B -> B -> Prop)
+  Polymorphic Lemma well_founded_relation_on_image {A : Type} {B : Type} (f : A -> B) (R : B -> B -> Prop)
     (R_wf : forall y : B, Acc R y)
     : forall x : A, Acc (binary_relation_on_image R f) x.
   Proof.

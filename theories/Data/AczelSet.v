@@ -684,6 +684,12 @@ Module OrdinalImpl.
 
   Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
 
+  Global Instance Ord_isWellFounded : isWellFounded Ord :=
+    { wfRel := ltProp_Ordinal
+    ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet elem AczelSet_well_founded
+    }
+  .
+
 (** "Transfinite Recursion" *)
 
   Record TransRecMethodsOf (Dom : AczelSetUniv.t) : AczelSetUniv.t :=
