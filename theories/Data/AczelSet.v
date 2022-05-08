@@ -833,7 +833,7 @@ Module OrdinalImpl.
     (trans_rec_alpha_well_formed : trans_rec alpha \in WellFormeds)
     (trans_rec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> dLe (trans_rec beta) (trans_rec alpha))
     (trans_rec_alpha_ge_empty : dLe methods.(dZero) (trans_rec alpha))
-    (trans_rec_alpha_ge_sucOf : forall beta : Ord, << beta_LT_alpha : beta < alpha >> -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
+    (trans_rec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> dLe (methods.(dSucc) (trans_rec beta)) (trans_rec alpha))
     (trans_rec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> dLe (methods.(dJoin) (fun i : I => trans_rec (beta_i i))) (trans_rec alpha))
     : BasicPropertiesOf_trans_rec trans_rec alpha
   .
