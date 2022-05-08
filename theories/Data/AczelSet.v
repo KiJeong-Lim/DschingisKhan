@@ -557,12 +557,11 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (alpha_isOrdinal : isOrdinal alpha)
     : forall beta : AczelSet, beta `elem` alpha -> isOrdinal beta.
   Proof.
-    destruct alpha_isOrdinal as [alpha_is_transitive_set every_member_of_alpha_is_transitive_set].
-    intros beta beta_in_alpha. econstructor.
-    - eapply every_member_of_alpha_is_transitive_set. exact (beta_in_alpha).
+    intros beta beta_in_alpha. econstructor; destruct alpha_isOrdinal as [? ?].
+    - eapply EVERY_ELEMENT_IS_TRANSITIVE_SET. exact (beta_in_alpha).
     - intros gamma gamma_in_beta; unnw. ii; desnw.
-      eapply every_member_of_alpha_is_transitive_set.
-      + eapply alpha_is_transitive_set; [exact (beta_in_alpha) | exact (gamma_in_beta)].
+      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET.
+      + eapply IS_TRANSITIVE_SET; [exact (beta_in_alpha) | exact (gamma_in_beta)].
       + exact (y_in).
       + exact (z_in).
   Defined.
