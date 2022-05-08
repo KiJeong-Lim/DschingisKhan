@@ -167,8 +167,6 @@ Module InteractionTrees.
 
   End RECURSION.
 
-(** "BISIMULATION" *)
-
   Section BISIMULATION.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
@@ -191,13 +189,11 @@ Module InteractionTrees.
     uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (curry bisim) (observe lhs) (observe rhs))
   .
 
-  Global Instance eqITreeF_isMonotonic
-    : isMonotonicMap eqITreeF.
+  Lemma eqITreeF_monotonic (R1 : ensemble (itree E R * itree E R)%type) (R2 : ensemble (itree E R * itree E R)%type)
+    (R1_implies_R2 : isSubsetOf R1 R2)
+    : isSubsetOf (eqITreeF R1) (eqITreeF R2).
   Proof.
     exact (
-      fun R1 : ensemble (itree E R * itree E R)%type =>
-      fun R2 : ensemble (itree E R * itree E R)%type =>
-      fun R1_implies_R2 : forall pr : itree E R * itree E R, R1 pr -> R2 pr =>
       fun lhs_rhs : itree E R * itree E R =>
       let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
       fun hypR1 : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
