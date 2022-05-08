@@ -78,8 +78,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     | [ H : ?P \/ ?Q |- _ ] => destruct H
     | [ H : ?P <-> ?Q |- _ ] => destruct H
     | [ H : exists x, ?P |- _ ] => let x' := fresh x in destruct H as [x' H]
-    | [ H : ?x <> ?y |- _ ] => try now contradiction H
-    | [ H : False |- _ ] => contradiction H
+    | [ H : False |- _ ] => contradiction (H)
     | [ H : True |- _ ] => clear H
     | [ |- let x : ?A := ?t in ?B ] => let x' := fresh x in intros x'
     | [ |- forall x : ?A, ?B ] => let x' := fresh x in intros x'

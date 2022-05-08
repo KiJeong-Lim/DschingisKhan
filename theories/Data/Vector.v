@@ -8,6 +8,14 @@ Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module MyFin.
 
+  Lemma Fin_eta {n : nat} (i : Fin n) :
+    i =
+    match n as m return Fin m -> Fin m with
+    | zero => Fin_case0
+    | suc n' => Fin_caseS FZ FS
+    end i.
+  Proof. destruct i; reflexivity. Defined.
+
   Definition evalFin {n : nat} (i : Fin n) : nat := proj1_sig (runFin i).
 
   Lemma evalFin_unfold {n : nat} (i : Fin n) :
@@ -16,7 +24,7 @@ Module MyFin.
     | FZ => O
     | FS i' => S (evalFin i')
     end.
-  Proof. destruct i; reflexivity. Qed.
+  Proof. destruct i; reflexivity. Defined.
 
   Lemma evalFin_inj {n : nat} (i1 : Fin n) (i2 : Fin n)
     (hyp_eq : evalFin i1 = evalFin i2)
