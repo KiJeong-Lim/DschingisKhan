@@ -73,7 +73,7 @@ Module MyVec.
     destruct xs as [ | n' x' xs']; [introFin0 | introFinS i'].
     - exact (eq_reflexivity x').
     - exact (eq_reflexivity (xs' !! i')).
-  Qed.
+  Defined.
 
   Global Instance vector_isSetoid (A : Hask.t) (n : nat) {requiresSetoid : isSetoid A} : isSetoid (vector A n) :=
     { eqProp (lhs : vector A n) (rhs : vector A n) := forall i : Fin n, lhs !! i == rhs !! i
@@ -158,7 +158,7 @@ Module MyVec.
   Theorem vector_extensional_equality {A : Type} {n : nat} (xs1 : vector A n) (xs2 : vector A n)
     : xs1 = xs2 <-> ⟪ POINTWISE_EQUALITY : forall i : Fin n, xs1 !! i = xs2 !! i ⟫.
   Proof.
-    change (xs1 = xs2 <-> eqProp (isSetoid := freeSetoidFromSetoid1 (vec_n n) A (requiresSetoid1 := vec_isSetoid1 n)) xs1 xs2); split.
+    change (eq xs1 xs2 <-> eqProp (isSetoid := freeSetoidFromSetoid1 (vec_n n) A (requiresSetoid1 := vec_isSetoid1 n)) xs1 xs2); split.
     - congruence.
     - revert xs1 xs2; induction n as [ | n IH].
       + introVNil; introVNil; intros hyp_eq.
