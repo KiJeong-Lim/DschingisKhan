@@ -190,17 +190,17 @@ Module InteractionTrees.
   .
 
   Lemma eqITreeF_monotonic (R1 : ensemble (itree E R * itree E R)%type) (R2 : ensemble (itree E R * itree E R)%type)
-    (R1_implies_R2 : isSubsetOf R1 R2)
+    (R1_isSubsetOf_R2 : isSubsetOf R1 R2)
     : isSubsetOf (eqITreeF R1) (eqITreeF R2).
   Proof.
     exact (
       fun lhs_rhs : itree E R * itree E R =>
       let '(lhs, rhs) as pr := lhs_rhs return eqITreeF R1 pr -> eqITreeF R2 pr in
-      fun hypR1 : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
-      match hypR1 in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
+      fun hyp_in : itreeBisimF (curry R1) (observe lhs) (observe rhs) =>
+      match hyp_in in itreeBisimF _ obs_lhs obs_rhs return itreeBisimF (curry R2) obs_lhs obs_rhs with
       | EqRetF _ r1 r2 hypEq => EqRetF (curry R2) r1 r2 hypEq
-      | EqTauF _ t1 t2 hypEq => EqTauF (curry R2) t1 t2 (R1_implies_R2 (t1, t2) hypEq)
-      | EqVisF _ X e k1 k2 hypEq => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_implies_R2 (k1 x, k2 x) (hypEq x))
+      | EqTauF _ t1 t2 hypEq => EqTauF (curry R2) t1 t2 (R1_isSubsetOf_R2 (t1, t2) hypEq)
+      | EqVisF _ X e k1 k2 hypEq => EqVisF (curry R2) X e k1 k2 (fun x : X => R1_isSubsetOf_R2 (k1 x, k2 x) (hypEq x))
       end
     ).
   Defined.
