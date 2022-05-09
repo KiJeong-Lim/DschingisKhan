@@ -684,22 +684,20 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof.
     intros x y z x_le_y y_le_z. revert x x_le_y z y_le_z. induction y as [y_children y_childtrees IH].
     intros [x_children x_childtrees] x_le_y [z_children z_childtrees] y_le_z. simpl in *.
-    intros c_x. exploit (x_le_y c_x) as [c_y ?]. exploit (y_le_z c_y) as [c_z ?]; eauto with *.
+    intros c_x; pose proof (x_le_y c_x) as [c_y ?]; pose proof (y_le_z c_y) as [c_z ?]; eauto with *.
   Qed.
 
-  Local Instance lePropOnRank_PreOrder : PreOrder lePropOnRank :=
+  Global Instance lePropOnRank_PreOrder : PreOrder lePropOnRank :=
     { PreOrder_Reflexive := lePropOnRank_Reflexive
     ; PreOrder_Transitive := lePropOnRank_Transitive
     }
   .
 
-  Local Instance eqPropOnRank_Equivalence
+  Global Instance eqPropOnRank_Equivalence
     : Equivalence eqPropOnRank.
-  Proof with eauto with *.
-    unfold eqPropOnRank. split; ii; des... all: transitivity (y)...
-  Qed.
+  Proof with eauto with *. unfold eqPropOnRank. split; ii; des... all: transitivity (y)... Qed.
 
-  Local Instance lePropOnRank_PartialOrder
+  Global Instance lePropOnRank_PartialOrder
     : PartialOrder eqPropOnRank lePropOnRank.
   Proof. ii; red; reflexivity. Qed.
 
