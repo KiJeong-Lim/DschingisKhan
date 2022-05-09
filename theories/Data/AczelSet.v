@@ -250,12 +250,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     exists (y). split; [symmetry; etransitivity; now eauto | exact (phi_y)].
   Qed.
 
-  Definition ltProp_on_the_base_set_of (alpha : AczelSet) (lhs : getChildren alpha) (rhs : getChildren alpha) : Prop :=
+  Definition elemLt {alpha : AczelSet} (lhs : getChildren alpha) (rhs : getChildren alpha) : Prop :=
     getChildTrees alpha lhs `elem` getChildTrees alpha rhs
   .
 
-  Global Instance the_base_set_of_alpha_isWellFounded {alpha : AczelSet} : isWellFounded (getChildren alpha) :=
-    { wfRel := ltProp_on_the_base_set_of alpha
+  Global Instance elemLt_isWellFounded (alpha : AczelSet) : isWellFounded (getChildren alpha) :=
+    { wfRel := elemLt (alpha := alpha)
     ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem AczelSet_well_founded
     }
   .
@@ -584,14 +584,15 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Local Hint Resolve elem_intro every_member_of_Ordinal_isOrdinal elem_implies_subseteq_forOrdinal : core.
 
-  Global Instance ltProp_on_the_base_set_of_alpha_isStrictOrder_if_alpha_isOrdinal {alpha : AczelSet}
-    {alpha_isOrdinal : isOrdinal alpha}
-    : StrictOrder (ltProp_on_the_base_set_of alpha).
+  Global Instance elemLt_StrictOrder {alpha : AczelSet}
+    (alpha_isOrdinal : isOrdinal alpha)
+    : StrictOrder (@elemLt alpha).
   Proof.
     pose proof (@elem_intro) as claim1. split.
-    - exact (wfRel_Irreflexive (requiresWellFounded := the_base_set_of_alpha_isWellFounded (alpha := alpha))).
-    - intros x y z x_lt_y y_lt_z. unfold ltProp_on_the_base_set_of in *.
-      destruct alpha_isOrdinal as [? ?]. eapply EVERY_ELEMENT_IS_TRANSITIVE_SET; unnw; eauto.
+    - exact (wfRel_Irreflexive (requiresWellFounded := elemLt_isWellFounded alpha)).
+    - intros x y z x_lt_y y_lt_z. unfold elemLt in *.
+      destruct alpha_isOrdinal as [? ?].
+      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET; unnw; eauto.
   Qed.
 
   Section EXAMPLES_OF_ORDINAL.
@@ -769,7 +770,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall alpha : AczelSet, Acc ltPropOnRank alpha.
   Proof.
     intros rhs. remember (rhs) as lhs eqn: lhs_eq_rhs.
-    assert (lhs_le_rhs : lePropOnRank lhs rhs) by now rewrite lhs_eq_rhs.
+    assert (lhs_le_rhs : lhs `rLe` rhs) by now rewrite lhs_eq_rhs.
     clear lhs_eq_rhs. revert lhs lhs_le_rhs. induction rhs as [x_children x_childtrees IH].
     intros [y_children y_childtrees] y_le_x. econstructor. intros alpha alpha_lt_x.
     destruct alpha_lt_x as [c_y RANK_LE]. simpl in *. destruct alpha as [alpha_base alpha_elems].
@@ -819,7 +820,7 @@ Module OrdinalImpl.
 
   Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
 
-  Local Instance Ord_isWellFounded : isWellFounded Ord :=
+  Global Instance Ord_isWellFounded : isWellFounded Ord :=
     { wfRel (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rLt` unliftOrdinalToAczelSet rhs
     ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet ltPropOnRank ltPropOnRank_isWellFounded
     }
