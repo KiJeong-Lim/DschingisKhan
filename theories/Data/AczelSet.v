@@ -785,7 +785,7 @@ Module OrdinalImpl.
 
   Import AczelSet.
 
-  Class ordMethods (Ord : AczelSetUniv.t) : AczelSetUniv.t :=
+  Class hasOrdMethods (Ord : AczelSetUniv.t) : AczelSetUniv.t :=
     { bot_ord : Ord
     ; suc_ord (alpha : Ord) : Ord
     ; lim_ord {I : smallUniv} (alpha_i : forall i : I, Ord) : Ord
@@ -808,8 +808,6 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " == " := (@eqProp Ord Ord_isSetoid) : ord_scope.
-
   Global Instance Ord_isPoset : isPoset Ord :=
     { leProp (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rLe` unliftOrd rhs
     ; Poset_requiresSetoid := Ord_isSetoid
@@ -818,19 +816,19 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
-
   Global Instance Ord_isWellFounded : isWellFounded Ord :=
     { wfRel (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rLt` unliftOrd rhs
     ; wfRel_well_founded := well_founded_relation_on_image unliftOrd ltPropOnRank ltPropOnRank_isWellFounded
     }
   .
 
+  Global Infix " == " := (@eqProp Ord Ord_isSetoid) : ord_scope.
+  Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
   Global Infix " < " := (@wfRel Ord Ord_isWellFounded) : ord_scope.
 
   Definition liftOrd (alpha : AczelSet) (alpha_isOrdinal : isOrdinal alpha) : Ord := @exist AczelSet isOrdinal alpha alpha_isOrdinal.
 
-  Global Instance implementationOf_ordMethods_forOrd : ordMethods Ord :=
+  Global Instance impl_OrdMethods_forOrd : hasOrdMethods Ord :=
     { bot_ord := liftOrd empty empty_isOrdinal
     ; suc_ord (alpha : Ord) := liftOrd (sucOf (unliftOrd alpha)) (sucOf_isOrdinal (unliftOrd alpha) ord_proof)
     ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := liftOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => ord_proof))
@@ -848,8 +846,8 @@ Module OrdinalImpl.
     (IND : forall alpha : Ord, ⟪ IH : forall beta : AczelSet, << beta_in_alpha : beta `elem` unliftOrd alpha >> -> exists beta_isOrdinal : isOrdinal beta, phi (liftOrd beta beta_isOrdinal) ⟫ -> phi alpha)
     : forall alpha : Ord, phi alpha.
   Proof.
-    intros [alpha alpha_isOrdinal]. induction alpha as [alpha IH] using NotherianRecursion. eapply IND. intros beta beta_in.
-    unnw. exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in). eapply IH. exact (beta_in).
+    intros [alpha alpha_isOrdinal]. induction alpha as [alpha IH] using NotherianRecursion. eapply IND. intros beta beta_in_alpha.
+    exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in_alpha). eapply IH. exact (beta_in_alpha).
   Qed.
 
 (** "Transfinite Recursion" *)
