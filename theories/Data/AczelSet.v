@@ -741,9 +741,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof.
     inversion lhs_lt_rhs. transitivity (getChildTrees rhs rhs_child); trivial.
     clear lhs lhs_lt_rhs RANK_LE. revert rhs_child. induction rhs as [x_children x_childtrees IH].
-    simpl in *. intros c_x. pose proof (IH c_x) as claim1.
-    destruct (x_childtrees c_x) as [z_children z_childtrees] eqn: x_c_eq_z. simpl in *.
-    intros c_z. exists (c_x). rewrite x_c_eq_z. eauto.
+    simpl in *. intros c_x. specialize IH with (c := c_x).
+    destruct (x_childtrees c_x) as [z_children z_childtrees] eqn: x_c_eq_z.
+    simpl in *. intros c_z. exists (c_x). rewrite x_c_eq_z. exact (IH c_z).
   Qed.
 
   Corollary elem_implies_ltPropOnRank (lhs : AczelSet) (rhs : AczelSet)
@@ -800,7 +800,7 @@ Module OrdinalImpl.
 
   Definition unliftOrd : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
-  Definition ord_proof {alpha : Ord} : isOrdinal (unliftOrd alpha) := proj2_sig alpha.
+  Definition ord_proof {alpha : Ord} : isOrdinal (unliftOrd alpha) := @proj2_sig AczelSet isOrdinal alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
     { eqProp (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rEq` unliftOrd rhs
@@ -828,24 +828,7 @@ Module OrdinalImpl.
 
   Global Infix " < " := (@wfRel Ord Ord_isWellFounded) : ord_scope.
 
-  Section BASIC_FACTS_ON_ORDINAL.
-
-  Local Instance implementationOf_ordMethods_forAczelSet : ordMethods AczelSet :=
-    { bot_ord := empty
-    ; suc_ord := sucOf
-    ; lim_ord {I : smallUniv} := unions_i (I := I)
-    }
-  .
-
   Definition liftOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
-
-  Lemma Ord_elem_ind (phi : Ord -> Prop)
-    (IND : forall alpha : Ord, ⟪ IH : forall beta : AczelSet, << beta_in_alpha : beta `elem` unliftOrd alpha >> -> exists beta_isOrdinal : isOrdinal beta, phi (liftOrd beta beta_isOrdinal) ⟫ -> phi alpha)
-    : forall alpha : Ord, phi alpha.
-  Proof.
-    intros [alpha alpha_isOrdinal]. induction alpha as [alpha IH] using NotherianRecursion. eapply IND. intros beta beta_in.
-    unnw. exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in). eapply IH. exact (beta_in).
-  Qed.
 
   Global Instance implementationOf_ordMethods_forOrd : ordMethods Ord :=
     { bot_ord := liftOrd empty empty_isOrdinal
@@ -854,7 +837,20 @@ Module OrdinalImpl.
     }
   .
 
-  End BASIC_FACTS_ON_ORDINAL.
+(** "Induction Schemes" *)
+
+  Lemma Ord_rank_ind (phi : Ord -> Prop)
+    (IND : forall alpha : Ord, ⟪ IH : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> phi beta ⟫ -> phi alpha)
+    : forall alpha : Ord, phi alpha.
+  Proof. eapply (NotherianRecursion). exact (IND). Qed.
+
+  Lemma Ord_elem_ind (phi : Ord -> Prop)
+    (IND : forall alpha : Ord, ⟪ IH : forall beta : AczelSet, << beta_in_alpha : beta `elem` unliftOrd alpha >> -> exists beta_isOrdinal : isOrdinal beta, phi (liftOrd beta beta_isOrdinal) ⟫ -> phi alpha)
+    : forall alpha : Ord, phi alpha.
+  Proof.
+    intros [alpha alpha_isOrdinal]. induction alpha as [alpha IH] using NotherianRecursion. eapply IND. intros beta beta_in.
+    unnw. exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in). eapply IH. exact (beta_in).
+  Qed.
 
 (** "Transfinite Recursion" *)
 

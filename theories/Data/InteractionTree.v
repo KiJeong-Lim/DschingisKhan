@@ -35,14 +35,14 @@ Module InteractionTrees.
   Global Notation Tau t := (go (TauF t)).
   Global Notation Vis X e k := (go (VisF X e k)).
 
-  Definition burn_tau {E : Type -> Type} {R : Type} : nat -> itree E R -> itree E R :=
-    fix burn_tau_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
+  Definition burn_tau_with_nat {E : Type -> Type} {R : Type} : forall fuel : nat, itree E R -> itree E R :=
+    fix burn_tau_with_nat_fix (n : nat) (t : itree E R) {struct n} : itree E R :=
     match n with
     | O => t
     | S n' =>
       match observe t with
       | RetF r => Ret r
-      | TauF t' => burn_tau_fix n' t'
+      | TauF t' => burn_tau_with_nat_fix n' t'
       | VisF X e k => Vis X e k
       end
     end
