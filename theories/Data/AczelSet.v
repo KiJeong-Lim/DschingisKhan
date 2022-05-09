@@ -819,19 +819,15 @@ Module OrdinalImpl.
 
   Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
 
-  Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
-    unliftOrdinalToAczelSet lhs `rLt` unliftOrdinalToAczelSet rhs
-  .
-
-  Global Infix " < " := (ltProp_Ordinal) : ord_scope.
-
-  Section BASIC_FACTS_ON_ORDINAL.
-
   Local Instance Ord_isWellFounded : isWellFounded Ord :=
-    { wfRel := ltProp_Ordinal
+    { wfRel (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rLt` unliftOrdinalToAczelSet rhs
     ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet ltPropOnRank ltPropOnRank_isWellFounded
     }
   .
+
+  Global Infix " < " := (@wfRel Ord Ord_isWellFounded) : ord_scope.
+
+  Section BASIC_FACTS_ON_ORDINAL.
 
   Lemma Ord_strong_induction (phi : Ord -> Prop)
     (IND : forall alpha : Ord, << IH : forall beta : Ord, beta < alpha -> phi beta >> -> phi alpha)
