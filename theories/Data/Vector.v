@@ -12,7 +12,7 @@ Module MyFin.
     i =
     match n as m return Fin m -> Fin m with
     | zero => Fin_case0
-    | suc n' => Fin_caseS FZ FS
+    | suc n' => Fin_caseS (@FZ n') (@FS n')
     end i.
   Proof. destruct i; reflexivity. Defined.
 
