@@ -774,7 +774,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     clear lhs_eq_rhs. revert lhs lhs_le_rhs. induction rhs as [x_children x_childtrees IH].
     intros [y_children y_childtrees] y_le_x. econstructor. intros alpha alpha_lt_x.
     destruct alpha_lt_x as [c_y RANK_LE]. simpl in *. destruct alpha as [alpha_base alpha_elems].
-    pose proof (y_le_x c_y) as [c_x y_c_le_x_c]. eapply IH. etransitivity; eauto with *.
+    pose proof (y_le_x c_y) as [c_x y_c_le_x_c]. eapply IH with (c := c_x). now transitivity (y_childtrees c_y).
   Qed.
 
   End RANK_OF_ACZEL_SET.
@@ -785,10 +785,10 @@ Module OrdinalImpl.
 
   Import AczelSet.
 
-  Class ord_signature (t : AczelSetUniv.t) : AczelSetUniv.t :=
-    { bot_ord : t
-    ; suc_ord : t -> t
-    ; lim_ord {I : smallUniv} : (I -> t) -> t
+  Class ordMethods (Ord : AczelSetUniv.t) : AczelSetUniv.t :=
+    { bot_ord : Ord
+    ; suc_ord (alpha : Ord) : Ord
+    ; lim_ord {I : smallUniv} (alpha_i : forall i : I, Ord) : Ord
     }
   .
 
@@ -800,7 +800,7 @@ Module OrdinalImpl.
 
   Definition unliftOrd : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
-  Definition proof_ord {alpha : Ord} : isOrdinal (unliftOrd alpha) := proj2_sig alpha.
+  Definition ord_proof {alpha : Ord} : isOrdinal (unliftOrd alpha) := proj2_sig alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
     { eqProp (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rEq` unliftOrd rhs
@@ -830,24 +830,27 @@ Module OrdinalImpl.
 
   Section BASIC_FACTS_ON_ORDINAL.
 
-  Lemma Ord_strong_induction (phi : Ord -> Prop)
-    (IND : forall alpha : Ord, << IH : forall beta : Ord, beta < alpha -> phi beta >> -> phi alpha)
-    : forall alpha : Ord, phi alpha.
-  Proof. eapply NotherianRecursion. exact (IND). Qed.
-
-  Local Instance implementationOf_ord_forAczelSet : ord_signature AczelSet :=
-    { bot_ord := AczelSet.empty
-    ; suc_ord := AczelSet.sucOf
-    ; lim_ord {I : smallUniv} := AczelSet.unions_i (I := I)
+  Local Instance implementationOf_ordMethods_forAczelSet : ordMethods AczelSet :=
+    { bot_ord := empty
+    ; suc_ord := sucOf
+    ; lim_ord {I : smallUniv} := unions_i (I := I)
     }
   .
 
-  Definition mkOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
+  Definition liftOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
 
-  Global Instance implementationOf_ord_forOrd : ord_signature Ord :=
-    { bot_ord := mkOrd empty empty_isOrdinal
-    ; suc_ord (alpha : Ord) := mkOrd (sucOf (unliftOrd alpha)) (sucOf_isOrdinal (unliftOrd alpha) proof_ord)
-    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := mkOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => proof_ord))
+  Lemma Ord_elem_ind (phi : Ord -> Prop)
+    (IND : forall alpha : Ord, ⟪ IH : forall beta : AczelSet, << beta_in_alpha : beta `elem` unliftOrd alpha >> -> exists beta_isOrdinal : isOrdinal beta, phi (liftOrd beta beta_isOrdinal) ⟫ -> phi alpha)
+    : forall alpha : Ord, phi alpha.
+  Proof.
+    intros [alpha alpha_isOrdinal]. induction alpha as [alpha IH] using NotherianRecursion. eapply IND. intros beta beta_in.
+    unnw. exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in). eapply IH. exact (beta_in).
+  Qed.
+
+  Global Instance implementationOf_ordMethods_forOrd : ordMethods Ord :=
+    { bot_ord := liftOrd empty empty_isOrdinal
+    ; suc_ord (alpha : Ord) := liftOrd (sucOf (unliftOrd alpha)) (sucOf_isOrdinal (unliftOrd alpha) ord_proof)
+    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := liftOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => ord_proof))
     }
   .
 
@@ -855,12 +858,16 @@ Module OrdinalImpl.
 
 (** "Transfinite Recursion" *)
 
+  Set Primitive Projections.
+
   Record TransRecMethodsOf (Dom : AczelSetUniv.t) : AczelSetUniv.t :=
     { dZero : Dom
     ; dSucc : Dom -> Dom
     ; dJoin {Idx : smallUniv} : (Idx -> Dom) -> Dom
     }
   .
+
+  Unset Primitive Projections.
 
   Global Arguments dZero {Dom} {methods} : rename.
   Global Arguments dSucc {Dom} {methods} (d) : rename.
@@ -870,14 +877,14 @@ Module OrdinalImpl.
     methods.(dJoin) (fun b : bool => if b then d_left else d_right)
   .
 
-  Definition transfinite_recursion {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+  Definition transfiniteRecursion {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha with
     | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
 
-  Definition transRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfinite_recursion methods (proj1_sig alpha) (proj2_sig alpha).
+  Definition transRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfiniteRecursion methods (proj1_sig alpha) (proj2_sig alpha).
 
 (* The Main Idea of "transRec":
   transRec (\empty) = dZero
@@ -913,10 +920,10 @@ Module OrdinalImpl.
   Variant BasicPropertiesOfTransRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} (TransRec : AczelSet -> Dom) (alpha : AczelSet) : Prop :=
   | BasicPropertiesOfTransRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : TransRec alpha \in WellFormeds)
-    (transRec_alpha_ge_image : forall beta : AczelSet, << beta_rLe_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
+    (transRec_alpha_ge_image : forall beta : AczelSet, << beta_le_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
     (transRec_alpha_ge_bot : methods.(dZero) `dLe` TransRec alpha)
-    (transRec_alpha_ge_suc : forall beta : AczelSet, << beta_rLt_alpha : beta `rLt` alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
-    (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : I -> AczelSet, << beta_i_rLt_alpha : forall i : I, beta_i i `rLt` alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
+    (transRec_alpha_ge_suc : forall beta : AczelSet, << beta_lt_alpha : beta `rLt` alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
+    (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : forall i : I, AczelSet, << beta_i_lt_alpha : forall i : I, beta_i i `rLt` alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
     : BasicPropertiesOfTransRec TransRec alpha
   .
 
