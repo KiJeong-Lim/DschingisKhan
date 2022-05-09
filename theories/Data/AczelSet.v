@@ -703,28 +703,65 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : PartialOrder eqPropOnRank lePropOnRank.
   Proof. ii; red; reflexivity. Qed.
 
-(*Theorem lePropOnRank_iff_subseteq_forOrdinals (lhs : AczelSet) (rhs : AczelSet)
-    (lhs_isOrdinal : isOrdinal lhs)
-    (rhs_isOrdinal : isOrdinal rhs)
-    : lePropOnRank lhs rhs <-> lhs `subseteq` rhs.
-  Proof with eauto with *.
-    revert lhs rhs lhs_isOrdinal rhs_isOrdinal.
-    enough (to_show :
-      forall x : AczelSet,
-      forall y : AczelSet,
-      forall alpha : AczelSet,
-      forall x_isOrdinal : isOrdinal x,
-      forall y_isOrdinal : isOrdinal y,
-      forall alpha_isOrdinal : isOrdinal alpha,
-      forall x_le_alpha : lePropOnRank x alpha,
-      forall alpha_subseteq_y : alpha `subseteq` y,
-      lePropOnRank x y <-> x `subseteq` y
-    ).
-    { ii. split; [intros lhs_le_rhs | intros lhs_subseteq_rhs].
-      - eapply to_show with (alpha := rhs)...
-      - eapply to_show with (alpha := lhs)...
-    }
-  Qed.*)
+  Lemma lePropOnRank_eqTree_lePropOnRank (x : AczelSet) (lhs : AczelSet) (rhs : AczelSet)
+    (x_le_lhs : lePropOnRank x lhs)
+    (lhs_eq_rhs : lhs == rhs)
+    : lePropOnRank x rhs.
+  Proof.
+    revert lhs rhs x_le_lhs lhs_eq_rhs. induction x as [x_children x_childtrees IH].
+    intros [y_children y_childtrees] [z_children z_childtrees]. intros x_le_y y_eq_z c_x.
+    simpl in *; unnw. destruct y_eq_z as [y_sim_z z_sim_y]. unfold_eqTree.
+    pose proof (x_le_y c_x) as [c_y x_c_le_y_c]. pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. eauto with *.
+  Qed.
+
+  Lemma eqTree_lePropOnRank_lePropOnRank (lhs : AczelSet) (rhs : AczelSet) (x : AczelSet)
+    (lhs_eq_rhs : lhs == rhs)
+    (rhs_le_x : lePropOnRank rhs x)
+    : lePropOnRank lhs x.
+  Proof.
+    revert lhs rhs lhs_eq_rhs rhs_le_x. induction x as [x_children x_childtrees IH].
+    intros [y_children y_childtrees] [z_children z_childtrees]. intros y_eq_z z_le_x c_y.
+    simpl in *; unnw. destruct y_eq_z as [y_sim_z z_sim_y]. unfold_eqTree.
+    pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. pose proof (z_le_x c_z) as [c_x z_c_le_x_c]. eauto with *.
+  Qed.
+
+  Local Hint Resolve lePropOnRank_eqTree_lePropOnRank eqTree_lePropOnRank_lePropOnRank : core.
+
+  Global Add Parametric Morphism :
+    lePropOnRank with signature (eqProp ==> eqProp ==> iff)
+    as lePropOnRank_compatWith_eqProp.
+  Proof. iis; eauto with *. Qed.
+
+  Lemma ltPropOnRank_implies_lePropOnRank (lhs : AczelSet) (rhs : AczelSet)
+    (lhs_lt_rhs : ltPropOnRank lhs rhs)
+    : lePropOnRank lhs rhs.
+  Proof.
+    inversion lhs_lt_rhs. transitivity (getChildTrees rhs rhs_child); trivial.
+    clear lhs lhs_lt_rhs RANK_LE. revert rhs_child. induction rhs as [x_children x_childtrees IH].
+    simpl in *. intros c_x. pose proof (IH c_x) as claim1.
+    destruct (x_childtrees c_x) as [z_children z_childtrees] eqn: x_c_eq_z. simpl in *.
+    intros c_z. exists (c_x). rewrite x_c_eq_z. eauto.
+  Qed.
+
+  Corollary elem_implies_ltPropOnRank (lhs : AczelSet) (rhs : AczelSet)
+    (lhs_in_rhs : lhs `elem` rhs)
+    : ltPropOnRank lhs rhs.
+  Proof. destruct lhs_in_rhs as [rhs_child lhs_eq_rhs]. exists (rhs_child). now rewrite <- lhs_eq_rhs. Qed.
+
+  Corollary lePropOnRank_ltPropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
+    (x_le_y : lePropOnRank x y)
+    (y_lt_z : ltPropOnRank y z)
+    : ltPropOnRank x z.
+  Proof. destruct y_lt_z as [c_z y_le_z_c]. exists (c_z). etransitivity; eauto with *. Qed.
+
+  Lemma ltPropOnRank_lePropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
+    (x_lt_y : ltPropOnRank x y)
+    (y_le_z : lePropOnRank y z)
+    : ltPropOnRank x z.
+  Proof.
+    destruct y as [y_children y_childtrees]. destruct x_lt_y as [c_y x_le_y_c]. destruct z as [z_children z_childtrees].
+    simpl in *. pose proof (y_le_z c_y) as [c_z y_c_le_z_c]. exists (c_z). simpl. transitivity (y_childtrees c_y); eauto with *.
+  Qed.
 
   End RANK_OF_ACZEL_SET.
 
@@ -955,7 +992,7 @@ Module OrdinalImpl.
   | BasicPropertiesOf_transRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : transRec alpha \in WellFormeds)
     (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> transRec beta `dle` transRec alpha)
-    (transRec_alpha_ge_empty : dLe methods.(dZero) (transRec alpha))
+    (transRec_alpha_ge_empty : methods.(dZero) `dle` transRec alpha)
     (transRec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (transRec beta) `dle` transRec alpha)
     (transRec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => transRec (beta_i i)) `dle` transRec alpha)
     : BasicPropertiesOf_transRec transRec alpha
@@ -976,9 +1013,8 @@ Module OrdinalImpl.
       BasicPropertiesOf_transRec (transRec (methods := methods)) (exist isOrdinal (beta_elems beta_child) IS_ORDINAL)
     ).
     { ii. eapply IH. red; simpl. exploit (LE beta_child) as [alpha_child SUBSETEQ].
-      
     }
-  Qed. *)
+  Qed.*)
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
