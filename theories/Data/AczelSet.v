@@ -767,9 +767,9 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     intros rhs. remember (rhs) as lhs eqn: lhs_eq_rhs.
     assert (lhs_le_rhs : lePropOnRank lhs rhs) by now rewrite lhs_eq_rhs.
     clear lhs_eq_rhs. revert lhs lhs_le_rhs. induction rhs as [x_children x_childtrees IH].
-    intros [y_children y_childtrees]. simpl. ii. econstructor. intros alpha alpha_lt_x.
+    intros [y_children y_childtrees] y_le_x. econstructor. intros alpha alpha_lt_x.
     destruct alpha_lt_x as [c_y RANK_LE]. simpl in *. destruct alpha as [alpha_base alpha_elems].
-    pose proof (lhs_le_rhs c_y) as [c_x y_c_le_x_c]. eapply IH. etransitivity; eauto with *.
+    pose proof (y_le_x c_y) as [c_x y_c_le_x_c]. eapply IH. etransitivity; eauto with *.
   Qed.
 
   End RANK_OF_ACZEL_SET.
