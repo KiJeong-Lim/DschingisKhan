@@ -828,7 +828,7 @@ Module OrdinalImpl.
 
   Global Infix " < " := (@wfRel Ord Ord_isWellFounded) : ord_scope.
 
-  Definition liftOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
+  Definition liftOrd (alpha : AczelSet) (alpha_isOrdinal : isOrdinal alpha) : Ord := @exist AczelSet isOrdinal alpha alpha_isOrdinal.
 
   Global Instance implementationOf_ordMethods_forOrd : ordMethods Ord :=
     { bot_ord := liftOrd empty empty_isOrdinal
@@ -909,14 +909,12 @@ Module OrdinalImpl.
   Global Infix " `dEq` " := dEq (at level 70, no associativity) : type_scope.
   Global Infix " `dLe` " := dLe (at level 70, no associativity) : type_scope.
 
-  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
-    @sig Dom WellFormeds
-  .
+  Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
 
   Variant BasicPropertiesOfTransRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} (TransRec : AczelSet -> Dom) (alpha : AczelSet) : Prop :=
   | BasicPropertiesOfTransRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : TransRec alpha \in WellFormeds)
-    (transRec_alpha_ge_image : forall beta : AczelSet, << beta_le_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
+    (transRec_alpha_monotonic : forall beta : AczelSet, << beta_le_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
     (transRec_alpha_ge_bot : methods.(dZero) `dLe` TransRec alpha)
     (transRec_alpha_ge_suc : forall beta : AczelSet, << beta_lt_alpha : beta `rLt` alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
     (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : forall i : I, AczelSet, << beta_i_lt_alpha : forall i : I, beta_i i `rLt` alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
@@ -962,7 +960,7 @@ Module OrdinalImpl.
   .
 
   Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun i : bool => if i as b return (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+    mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun b : bool => if b as this return (if this then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
   .
 
   End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
