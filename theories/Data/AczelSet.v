@@ -780,7 +780,7 @@ Module OrdinalImpl.
 
   Import AczelSet.
 
-  Class ord_sig (t : AczelSetUniv.t) : AczelSetUniv.t :=
+  Class ord_signature (t : AczelSetUniv.t) : AczelSetUniv.t :=
     { bot_ord : t
     ; suc_ord : t -> t
     ; lim_ord {I : smallUniv} : (I -> t) -> t
@@ -834,7 +834,7 @@ Module OrdinalImpl.
     : forall alpha : Ord, phi alpha.
   Proof. eapply NotherianRecursion. exact (IND). Qed.
 
-  Local Instance implementationOf_ord_sig_forAczelSet : ord_sig AczelSet :=
+  Local Instance implementationOf_ord_forAczelSet : ord_signature AczelSet :=
     { bot_ord := AczelSet.empty
     ; suc_ord := AczelSet.sucOf
     ; lim_ord {I : smallUniv} := AczelSet.unions_i (I := I)
@@ -843,7 +843,7 @@ Module OrdinalImpl.
 
   Let mkOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
 
-  Global Instance implementationOf_ord_sig_forOrd : ord_sig Ord :=
+  Global Instance implementationOf_ord_forOrd : ord_signature Ord :=
     { bot_ord := mkOrd empty empty_isOrdinal
     ; suc_ord (alpha : Ord) := mkOrd (sucOf (unliftOrdinalToAczelSet alpha)) (sucOf_isOrdinal (unliftOrdinalToAczelSet alpha) guarantee)
     ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := mkOrd (unions_i (fun i : I => unliftOrdinalToAczelSet (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrdinalToAczelSet (alpha_i i)) (fun i : I => guarantee))
