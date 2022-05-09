@@ -369,9 +369,7 @@ Module PreludeInit_MAIN.
 
   Polymorphic Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
 
-  Context {dom : Hask.t} {cod : Hask.t}.
-
-  Local Instance relation_on_image_liftsEquivalence {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Polymorphic Local Instance relation_on_image_liftsEquivalence {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresEquivalence : Equivalence eq_cod)
     : Equivalence (binary_relation_on_image eq_cod f).
   Proof.
@@ -381,7 +379,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Local Instance relation_on_image_liftsPreOrder {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Polymorphic Local Instance relation_on_image_liftsPreOrder {dom : Type} {cod : Type} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresPreOrder : PreOrder le_cod)
     : PreOrder (binary_relation_on_image le_cod f).
   Proof.
@@ -390,7 +388,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Local Instance relation_on_image_liftsPartialOrder {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Polymorphic Local Instance relation_on_image_liftsPartialOrder {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     {requiresEquivalence : Equivalence eq_cod}
     {requiresPreOrder : PreOrder le_cod}
     (requiresPartialOrder : PartialOrder eq_cod le_cod)
@@ -404,6 +402,8 @@ Module PreludeInit_MAIN.
       + exact (proj1 H_EQ).
       + exact (proj2 H_EQ).
   Defined.
+
+  Context {dom : Hask.t} {cod : Hask.t}.
 
   Definition im_eqProp {cod_isSetoid : isSetoid cod} (f : Hask.arrow dom cod) (lhs : dom) (rhs : dom) : Prop := binary_relation_on_image eqProp f lhs rhs.
 

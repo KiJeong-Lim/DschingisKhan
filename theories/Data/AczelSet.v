@@ -763,6 +763,18 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     simpl in *. pose proof (y_le_z c_y) as [c_z y_c_le_z_c]. exists (c_z). simpl. transitivity (y_childtrees c_y); eauto with *.
   Qed.
 
+  Theorem ltPropOnRank_isWellFounded
+    : forall alpha : AczelSet, Acc ltPropOnRank alpha.
+  Proof.
+    intros rhs. remember (rhs) as lhs eqn: lhs_eq_rhs.
+    assert (lhs_le_rhs : lePropOnRank lhs rhs) by now rewrite lhs_eq_rhs.
+    clear lhs_eq_rhs. revert lhs lhs_le_rhs. induction rhs as [x_children x_childtrees IH].
+    intros [y_children y_childtrees]. simpl. ii. econstructor. intros alpha alpha_lt_x.
+    destruct alpha_lt_x as [c_y RANK_LE]. simpl in *. destruct alpha as [alpha_base alpha_elems].
+    pose proof (lhs_le_rhs c_y) as [c_x y_c_le_x_c]. pose proof (IH c_x (y_childtrees c_y) y_c_le_x_c) as claim1.
+    eapply IH. etransitivity; eauto with *.
+  Qed.
+
   End RANK_OF_ACZEL_SET.
 
 End AczelSet.
@@ -789,25 +801,25 @@ Module OrdinalImpl.
   Definition guarantee {alpha : Ord} : isOrdinal (unliftOrdinalToAczelSet alpha) := proj2_sig alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
-    { eqProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs == unliftOrdinalToAczelSet rhs
-    ; eqProp_Equivalence := equivalence_relation_on_image unliftOrdinalToAczelSet AczelSet_isSetoid
+    { eqProp (lhs : Ord) (rhs : Ord) := eqPropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
+    ; eqProp_Equivalence := relation_on_image_liftsEquivalence unliftOrdinalToAczelSet eqPropOnRank_Equivalence
     }
   .
 
   Global Infix " == " := (@eqProp Ord Ord_isSetoid) : Ordinal_scope.
 
   Global Instance Ord_isPoset : isPoset Ord :=
-    { leProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `subseteq` unliftOrdinalToAczelSet rhs
+    { leProp (lhs : Ord) (rhs : Ord) := lePropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
     ; Poset_requiresSetoid := Ord_isSetoid
-    ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrdinalToAczelSet subseteq_PreOrder
-    ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrdinalToAczelSet subseteq_PartialOrder
+    ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrdinalToAczelSet lePropOnRank_PreOrder
+    ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrdinalToAczelSet lePropOnRank_PartialOrder
     }
   .
 
   Global Infix " =< " := (@leProp Ord Ord_isPoset) : Ordinal_scope.
 
   Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
-    unliftOrdinalToAczelSet lhs `elem` unliftOrdinalToAczelSet rhs
+    ltPropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
   .
 
   Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
@@ -816,7 +828,7 @@ Module OrdinalImpl.
 
   Local Instance Ord_isWellFounded : isWellFounded Ord :=
     { wfRel := ltProp_Ordinal
-    ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet elem AczelSet_well_founded
+    ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet ltPropOnRank ltPropOnRank_isWellFounded
     }
   .
 
