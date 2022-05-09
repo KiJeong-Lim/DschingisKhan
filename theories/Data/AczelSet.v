@@ -1004,9 +1004,9 @@ Module OrdinalImpl.
   | BasicPropertiesOf_transRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : transRec alpha \in WellFormeds)
     (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> transRec beta `dle` transRec alpha)
-    (transRec_alpha_ge_empty : methods.(dZero) `dle` transRec alpha)
-    (transRec_alpha_ge_sucOf : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (transRec beta) `dle` transRec alpha)
-    (transRec_alpha_ge_limit : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => transRec (beta_i i)) `dle` transRec alpha)
+    (transRec_alpha_ge_bot : methods.(dZero) `dle` transRec alpha)
+    (transRec_alpha_ge_suc : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (transRec beta) `dle` transRec alpha)
+    (transRec_alpha_ge_lim : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => transRec (beta_i i)) `dle` transRec alpha)
     : BasicPropertiesOf_transRec transRec alpha
   .
 
