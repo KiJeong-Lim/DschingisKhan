@@ -792,9 +792,9 @@ Module OrdinalImpl.
 
   Definition Ord : AczelSetUniv.t := @sig AczelSet isOrdinal.
 
-  Global Declare Scope Ordinal_scope.
-  Global Bind Scope Ordinal_scope with Ord.
-  Global Open Scope Ordinal_scope.
+  Global Declare Scope ord_scope.
+  Global Bind Scope ord_scope with Ord.
+  Global Open Scope ord_scope.
 
   Definition unliftOrdinalToAczelSet : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
@@ -806,7 +806,7 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " == " := (@eqProp Ord Ord_isSetoid) : Ordinal_scope.
+  Global Infix " == " := (@eqProp Ord Ord_isSetoid) : ord_scope.
 
   Global Instance Ord_isPoset : isPoset Ord :=
     { leProp (lhs : Ord) (rhs : Ord) := lePropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
@@ -816,13 +816,13 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " =< " := (@leProp Ord Ord_isPoset) : Ordinal_scope.
+  Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
 
   Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
     ltPropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
   .
 
-  Global Infix " < " := (ltProp_Ordinal) : Ordinal_scope.
+  Global Infix " < " := (ltProp_Ordinal) : ord_scope.
 
   Section BASIC_FACTS_ON_ORDINAL.
 
