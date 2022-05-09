@@ -671,6 +671,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Arguments lhs_ltOnRank_rhs_if {lhs} {rhs}.
 
+  Global Infix " `rEq` " := eqPropOnRank (at level 70, no associativity) : type_scope.
+  Global Infix " `rLe` " := lePropOnRank (at level 70, no associativity) : type_scope.
+  Global Infix " `rLt` " := ltPropOnRank (at level 70, no associativity) : type_scope.
+
   Section RANK_OF_ACZEL_SET.
 
   Local Instance lePropOnRank_Reflexive
@@ -702,7 +706,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof. ii; red; reflexivity. Qed.
 
   Lemma lePropOnRank_eqTree_lePropOnRank (x : AczelSet) (lhs : AczelSet) (rhs : AczelSet)
-    (x_le_lhs : lePropOnRank x lhs)
+    (x_le_lhs : x `rLe` lhs)
     (lhs_eq_rhs : lhs == rhs)
     : lePropOnRank x rhs.
   Proof.
@@ -714,7 +718,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Lemma eqTree_lePropOnRank_lePropOnRank (lhs : AczelSet) (rhs : AczelSet) (x : AczelSet)
     (lhs_eq_rhs : lhs == rhs)
-    (rhs_le_x : lePropOnRank rhs x)
+    (rhs_le_x : rhs `rLe` x)
     : lePropOnRank lhs x.
   Proof.
     revert lhs rhs lhs_eq_rhs rhs_le_x. induction x as [x_children x_childtrees IH].
@@ -731,8 +735,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof. iis; eauto with *. Qed.
 
   Lemma ltPropOnRank_implies_lePropOnRank (lhs : AczelSet) (rhs : AczelSet)
-    (lhs_lt_rhs : ltPropOnRank lhs rhs)
-    : lePropOnRank lhs rhs.
+    (lhs_lt_rhs : lhs `rLt` rhs)
+    : lhs `rLe` rhs.
   Proof.
     inversion lhs_lt_rhs. transitivity (getChildTrees rhs rhs_child); trivial.
     clear lhs lhs_lt_rhs RANK_LE. revert rhs_child. induction rhs as [x_children x_childtrees IH].
@@ -743,19 +747,19 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Corollary elem_implies_ltPropOnRank (lhs : AczelSet) (rhs : AczelSet)
     (lhs_in_rhs : lhs `elem` rhs)
-    : ltPropOnRank lhs rhs.
+    : lhs `rLt` rhs.
   Proof. destruct lhs_in_rhs as [rhs_child lhs_eq_rhs]. exists (rhs_child). now rewrite <- lhs_eq_rhs. Qed.
 
   Corollary lePropOnRank_ltPropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
-    (x_le_y : lePropOnRank x y)
-    (y_lt_z : ltPropOnRank y z)
-    : ltPropOnRank x z.
+    (x_le_y : x `rLe` y)
+    (y_lt_z : y `rLt` z)
+    : x `rLt` z.
   Proof. destruct y_lt_z as [c_z y_le_z_c]. exists (c_z). etransitivity; eauto with *. Qed.
 
   Lemma ltPropOnRank_lePropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
-    (x_lt_y : ltPropOnRank x y)
-    (y_le_z : lePropOnRank y z)
-    : ltPropOnRank x z.
+    (x_lt_y : x `rLt` y)
+    (y_le_z : y `rLe` z)
+    : x `rLt` z.
   Proof.
     destruct y as [y_children y_childtrees]. destruct x_lt_y as [c_y x_le_y_c]. destruct z as [z_children z_childtrees].
     simpl in *. pose proof (y_le_z c_y) as [c_z y_c_le_z_c]. exists (c_z). simpl. transitivity (y_childtrees c_y); eauto with *.
@@ -798,7 +802,7 @@ Module OrdinalImpl.
   Definition guarantee {alpha : Ord} : isOrdinal (unliftOrdinalToAczelSet alpha) := proj2_sig alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
-    { eqProp (lhs : Ord) (rhs : Ord) := eqPropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
+    { eqProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rEq` unliftOrdinalToAczelSet rhs
     ; eqProp_Equivalence := relation_on_image_liftsEquivalence unliftOrdinalToAczelSet eqPropOnRank_Equivalence
     }
   .
@@ -806,7 +810,7 @@ Module OrdinalImpl.
   Global Infix " == " := (@eqProp Ord Ord_isSetoid) : ord_scope.
 
   Global Instance Ord_isPoset : isPoset Ord :=
-    { leProp (lhs : Ord) (rhs : Ord) := lePropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
+    { leProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rLe` unliftOrdinalToAczelSet rhs
     ; Poset_requiresSetoid := Ord_isSetoid
     ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrdinalToAczelSet lePropOnRank_PreOrder
     ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrdinalToAczelSet lePropOnRank_PartialOrder
@@ -816,7 +820,7 @@ Module OrdinalImpl.
   Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
 
   Definition ltProp_Ordinal (lhs : Ord) (rhs : Ord) : Prop :=
-    ltPropOnRank (unliftOrdinalToAczelSet lhs) (unliftOrdinalToAczelSet rhs)
+    unliftOrdinalToAczelSet lhs `rLt` unliftOrdinalToAczelSet rhs
   .
 
   Global Infix " < " := (ltProp_Ordinal) : ord_scope.
@@ -841,7 +845,7 @@ Module OrdinalImpl.
     }
   .
 
-  Let mkOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
+  Definition mkOrd : forall alpha : AczelSet, isOrdinal alpha -> Ord := @exist AczelSet isOrdinal.
 
   Global Instance implementationOf_ord_forOrd : ord_signature Ord :=
     { bot_ord := mkOrd empty empty_isOrdinal
@@ -902,12 +906,24 @@ Module OrdinalImpl.
     }
   .
 
-  Global Infix " `deq` " := dEq (at level 70, no associativity) : type_scope.
-  Global Infix " `dle` " := dLe (at level 70, no associativity) : type_scope.
+  Global Infix " `dEq` " := dEq (at level 70, no associativity) : type_scope.
+  Global Infix " `dLe` " := dLe (at level 70, no associativity) : type_scope.
 
   Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t :=
     @sig Dom WellFormeds
   .
+
+  Variant BasicPropertiesOfTransRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} (TransRec : AczelSet -> Dom) (alpha : AczelSet) : Prop :=
+  | BasicPropertiesOfTransRec_alpha_areTheFollowings
+    (transRec_alpha_well_formed : TransRec alpha \in WellFormeds)
+    (transRec_alpha_ge_image : forall beta : AczelSet, << beta_rLe_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
+    (transRec_alpha_ge_bot : methods.(dZero) `dLe` TransRec alpha)
+    (transRec_alpha_ge_suc : forall beta : AczelSet, << beta_rLt_alpha : beta `rLt` alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
+    (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : I -> AczelSet, << beta_i_rLt_alpha : forall i : I, beta_i i `rLt` alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
+    : BasicPropertiesOfTransRec TransRec alpha
+  .
+
+  Global Arguments BasicPropertiesOfTransRec_alpha_areTheFollowings {Dom} {methods} {requiresDomainWithPartialOrder} {TransRec} {alpha}.
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
@@ -920,13 +936,13 @@ Module OrdinalImpl.
   Definition mkWellFormed (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom := @exist Dom WellFormeds d d_well_formed.
 
   Global Instance partialSetoidOfDomainWithPartialOrder : isSetoid (WellFormedPartOf Dom) :=
-    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `deq` proj1_sig rhs
+    { eqProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dEq` proj1_sig rhs
     ; eqProp_Equivalence := @dEq_Equivalence Dom methods requiresDomainWithPartialOrder
     }
   .
 
   Global Instance partialPosetOfDomainWithPartialOrder : isPoset (WellFormedPartOf Dom) :=
-    { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dle` proj1_sig rhs
+    { leProp (lhs : WellFormedPartOf Dom) (rhs : WellFormedPartOf Dom) := proj1_sig lhs `dLe` proj1_sig rhs
     ; Poset_requiresSetoid := partialSetoidOfDomainWithPartialOrder
     ; leProp_PreOrder := @dLe_PreOrder Dom methods requiresDomainWithPartialOrder
     ; leProp_PartialOrder := @dLe_PartialOrder Dom methods requiresDomainWithPartialOrder
@@ -979,7 +995,7 @@ Module OrdinalImpl.
 
   Lemma dLe_refl (d1 : Dom)
     (d1_well_formed : d1 \in WellFormeds)
-    : d1 `dle` d1.
+    : d1 `dLe` d1.
   Proof.
     change (mkWellFormed d1 d1_well_formed =< mkWellFormed d1 d1_well_formed).
     reflexivity.
@@ -989,41 +1005,13 @@ Module OrdinalImpl.
     (d1_well_formed : d1 \in WellFormeds)
     (d2_well_formed : d2 \in WellFormeds)
     (d3_well_formed : d3 \in WellFormeds)
-    (d1_le_d2 : d1 `dle` d2)
-    (d2_le_d3 : d2 `dle` d3)
-    : d1 `dle` d3.
+    (d1_le_d2 : d1 `dLe` d2)
+    (d2_le_d3 : d2 `dLe` d3)
+    : d1 `dLe` d3.
   Proof.
     change (mkWellFormed d1 d1_well_formed =< mkWellFormed d3 d3_well_formed).
     transitivity (mkWellFormed d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
   Qed.
-
-  Variant BasicPropertiesOf_transRec (transRec : Ord -> Dom) (alpha : Ord) : Prop :=
-  | BasicPropertiesOf_transRec_alpha_areTheFollowings
-    (transRec_alpha_well_formed : transRec alpha \in WellFormeds)
-    (transRec_alpha_ge_image : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> transRec beta `dle` transRec alpha)
-    (transRec_alpha_ge_bot : methods.(dZero) `dle` transRec alpha)
-    (transRec_alpha_ge_suc : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (transRec beta) `dle` transRec alpha)
-    (transRec_alpha_ge_lim : forall I : smallUniv, inhabited I -> forall beta_i : I -> Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => transRec (beta_i i)) `dle` transRec alpha)
-    : BasicPropertiesOf_transRec transRec alpha
-  .
-
-  Global Arguments BasicPropertiesOf_transRec_alpha_areTheFollowings {transRec} {alpha}.
-
-(*Lemma transRec_spec (alpha : Ord)
-    : BasicPropertiesOf_transRec (transRec (methods := methods)) alpha.
-  Proof with eauto with *.
-    induction alpha as [[[alpha_base alpha_elems] alpha_isOrdinal] IH] using Ord_strong_induction; unnw.
-    assert (claim1 :
-      forall beta_base : smallUniv,
-      forall beta_elems : beta_base -> AczelSet,
-      forall LE : forall beta_child : beta_base, exists alpha_child : alpha_base, beta_elems beta_child `subseteq` alpha_elems alpha_child,
-      forall beta_child : beta_base,
-      forall IS_ORDINAL : isOrdinal (beta_elems beta_child),
-      BasicPropertiesOf_transRec (transRec (methods := methods)) (exist isOrdinal (beta_elems beta_child) IS_ORDINAL)
-    ).
-    { ii. eapply IH. red; simpl. exploit (LE beta_child) as [alpha_child SUBSETEQ].
-    }
-  Qed.*)
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
