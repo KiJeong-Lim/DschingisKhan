@@ -798,31 +798,31 @@ Module OrdinalImpl.
   Global Bind Scope ord_scope with Ord.
   Global Open Scope ord_scope.
 
-  Definition unliftOrdinalToAczelSet : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
+  Definition unliftOrd : Ord -> AczelSet := @proj1_sig AczelSet isOrdinal.
 
-  Definition guarantee {alpha : Ord} : isOrdinal (unliftOrdinalToAczelSet alpha) := proj2_sig alpha.
+  Definition proof_ord {alpha : Ord} : isOrdinal (unliftOrd alpha) := proj2_sig alpha.
 
   Global Instance Ord_isSetoid : isSetoid Ord :=
-    { eqProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rEq` unliftOrdinalToAczelSet rhs
-    ; eqProp_Equivalence := relation_on_image_liftsEquivalence unliftOrdinalToAczelSet eqPropOnRank_Equivalence
+    { eqProp (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rEq` unliftOrd rhs
+    ; eqProp_Equivalence := relation_on_image_liftsEquivalence unliftOrd eqPropOnRank_Equivalence
     }
   .
 
   Global Infix " == " := (@eqProp Ord Ord_isSetoid) : ord_scope.
 
   Global Instance Ord_isPoset : isPoset Ord :=
-    { leProp (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rLe` unliftOrdinalToAczelSet rhs
+    { leProp (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rLe` unliftOrd rhs
     ; Poset_requiresSetoid := Ord_isSetoid
-    ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrdinalToAczelSet lePropOnRank_PreOrder
-    ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrdinalToAczelSet lePropOnRank_PartialOrder
+    ; leProp_PreOrder := relation_on_image_liftsPreOrder unliftOrd lePropOnRank_PreOrder
+    ; leProp_PartialOrder := relation_on_image_liftsPartialOrder unliftOrd lePropOnRank_PartialOrder
     }
   .
 
   Global Infix " =< " := (@leProp Ord Ord_isPoset) : ord_scope.
 
   Global Instance Ord_isWellFounded : isWellFounded Ord :=
-    { wfRel (lhs : Ord) (rhs : Ord) := unliftOrdinalToAczelSet lhs `rLt` unliftOrdinalToAczelSet rhs
-    ; wfRel_well_founded := well_founded_relation_on_image unliftOrdinalToAczelSet ltPropOnRank ltPropOnRank_isWellFounded
+    { wfRel (lhs : Ord) (rhs : Ord) := unliftOrd lhs `rLt` unliftOrd rhs
+    ; wfRel_well_founded := well_founded_relation_on_image unliftOrd ltPropOnRank ltPropOnRank_isWellFounded
     }
   .
 
@@ -846,8 +846,8 @@ Module OrdinalImpl.
 
   Global Instance implementationOf_ord_forOrd : ord_signature Ord :=
     { bot_ord := mkOrd empty empty_isOrdinal
-    ; suc_ord (alpha : Ord) := mkOrd (sucOf (unliftOrdinalToAczelSet alpha)) (sucOf_isOrdinal (unliftOrdinalToAczelSet alpha) guarantee)
-    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := mkOrd (unions_i (fun i : I => unliftOrdinalToAczelSet (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrdinalToAczelSet (alpha_i i)) (fun i : I => guarantee))
+    ; suc_ord (alpha : Ord) := mkOrd (sucOf (unliftOrd alpha)) (sucOf_isOrdinal (unliftOrd alpha) proof_ord)
+    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := mkOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => proof_ord))
     }
   .
 
@@ -1012,6 +1012,6 @@ Module OrdinalImpl.
 
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
-  Global Coercion unliftOrdinalToAczelSet : Ord >-> AczelSet.
+  Global Coercion unliftOrd : Ord >-> AczelSet.
 
 End OrdinalImpl.
