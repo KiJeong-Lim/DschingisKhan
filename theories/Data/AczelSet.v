@@ -695,7 +695,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance eqPropOnRank_Equivalence
     : Equivalence eqPropOnRank.
-  Proof with eauto with *. unfold eqPropOnRank. split; ii; des... all: transitivity (y)... Qed.
+  Proof with eauto with *. unfold eqPropOnRank. split; ii; des... all: etransitivity... Qed.
 
   Global Instance lePropOnRank_PartialOrder
     : PartialOrder eqPropOnRank lePropOnRank.
