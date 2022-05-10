@@ -569,6 +569,7 @@ Module PreludeInit_MAIN.
 
   End ImplFor_ensemble.
 
+  Global Arguments ensemble (X)%type.
   Global Arguments isSameSetAs {A} (lhs) (rhs) : simpl never.
   Global Arguments isSubsetOf {A} (lhs) (rhs) : simpl never.
 
@@ -798,18 +799,19 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Definition prod_left_distr_sum {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : A * (B + C)) : (A * B) + (A * C) :=
-    match snd it with
-    | inl y => inl (fst it, y)
-    | inr z => inr (fst it, z)
+  Polymorphic Definition either {A : Type} {B : Type} {C : Type} (run_left : A -> C) (run_right : B -> C) (it : A + B) : C :=
+    match it with
+    | inl my_left => run_left my_left
+    | inr my_right => run_right my_right
     end
   .
 
-  Polymorphic Definition prod_right_distr_sum {A : Hask.t} {B : Hask.t} {C : Hask.t} (it : (A + B) * C) : (A * C) + (B * C) :=
-    match fst it with
-    | inl x => inl (x, snd it)
-    | inr y => inr (y, snd it)
-    end
+  Polymorphic Definition prod_left_distr_sum {A : Type} {B : Type} {C : Type} (it : A * (B + C)) : (A * B) + (A * C) :=
+    either (fun y : B => inl (fst it, y)) (fun z : C => inr (fst it, z)) (snd it)
+  .
+
+  Polymorphic Definition prod_right_distr_sum {A : Type} {B : Type} {C : Type} (it : (A + B) * C) : (A * C) + (B * C) :=
+    either (fun x : A => inl (x, snd it)) (fun y : B => inr (y, snd it)) (fst it)
   .
 
   Global Polymorphic Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=

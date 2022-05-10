@@ -13,7 +13,7 @@ theories/Math/BasicPosetTheory.v #
 theories/Math/BooleanAlgebra.v #
 theories/Math/BasicGeneralTopology.v #
 #
-theories/Logic/UntypedLambdaCalculus.v #
+theories/Logic/LambdaCalculus.v #
 theories/Logic/PreludeOfPropositionalLogic.v #
 theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/ConstructiveMetaTheoryOfPropositionalLogic.v #

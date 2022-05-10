@@ -982,6 +982,14 @@ Module MyUtil.
     end
   .
 
+  Definition lookup {dom : Type} {cod : Type} {dom_requiresEqDec : EqDec dom} (x : dom) : list (dom * cod) -> option cod :=
+    fix lookup_fix (zs : list (dom * cod)) {struct zs} : option cod :=
+    match zs with
+    | [] => None
+    | z :: zs' => if eq_dec (EqDec := dom_requiresEqDec) x (fst z) then lookup_fix zs' else Some (snd z)
+    end
+  .
+
   End LIST_ACCESSORIES.
 
   Definition Some_inj {A : Type} (x : A) (y : A) : Some x = Some y -> x = y :=

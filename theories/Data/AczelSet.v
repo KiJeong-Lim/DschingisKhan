@@ -831,7 +831,7 @@ Module OrdinalImpl.
   Global Instance impl_OrdMethods_forOrd : hasOrdMethods Ord :=
     { bot_ord := liftOrd empty empty_isOrdinal
     ; suc_ord (alpha : Ord) := liftOrd (sucOf (unliftOrd alpha)) (sucOf_isOrdinal (unliftOrd alpha) ord_proof)
-    ; lim_ord {I : smallUniv} (alpha_i : I -> Ord) := liftOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => ord_proof))
+    ; lim_ord {I : smallUniv} (alpha_i : forall i : I, Ord) := liftOrd (unions_i (fun i : I => unliftOrd (alpha_i i))) (unions_i_isOrdinal (fun i : I => unliftOrd (alpha_i i)) (fun i : I => ord_proof))
     }
   .
 
@@ -866,25 +866,6 @@ Module OrdinalImpl.
   Global Arguments dZero {Dom} {methods} : rename.
   Global Arguments dSucc {Dom} {methods} (d) : rename.
   Global Arguments dJoin {Dom} {methods} {I} (ds) : rename.
-
-  Definition dUnion {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
-    methods.(dJoin) (fun b : bool => if b then d_left else d_right)
-  .
-
-  Definition transfiniteRecursion {Dom : AczelSetUniv.t} (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
-    fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
-    match alpha with
-    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
-    end
-  .
-
-  Definition transRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} (alpha : Ord) : Dom := transfiniteRecursion methods (proj1_sig alpha) (proj2_sig alpha).
-
-(* The Main Idea of "transRec":
-  transRec (\empty) = dZero
-  transRec (\suc x) = dSucc (transRec x)
-  transRec (\lim X) = dJoin {transRec x | x \in X}
-*)
 
   Class isDomainWithPartialOrder (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} : AczelSetUniv.t :=
     { WellFormeds : ensemble Dom
@@ -925,9 +906,30 @@ Module OrdinalImpl.
 
   Context {Dom : AczelSetUniv.t}.
 
-  Section EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
+  Section BASIC_DEFNS_ON_TRANSFINITE_RECURSION.
 
-  Context {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
+  Definition dUnion {methods : TransRecMethodsOf Dom} (d_left : Dom) (d_right : Dom) : Dom :=
+    methods.(dJoin) (fun b : bool => if b then d_left else d_right)
+  .
+
+  Definition transfiniteRecursion (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
+    fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
+    match alpha as x in AczelSet.Tree return isOrdinal x -> Dom with
+    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    end
+  .
+
+  Context {methods : TransRecMethodsOf Dom}.
+
+(* The Main Idea of "transRec"
+  1. transRec (\empty) = dZero
+  2. transRec (\suc x) = dSucc (transRec x)
+  3. transRec (\lim X) = dJoin {transRec x | x \in X}
+*)
+
+  Definition transRec (alpha : Ord) : Dom := transfiniteRecursion methods (unliftOrd alpha) ord_proof.
+
+  Context {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)}.
 
   Definition mkWellFormed (d : Dom) (d_well_formed : d \in WellFormeds) : WellFormedPartOf Dom := @exist Dom WellFormeds d d_well_formed.
 
@@ -961,7 +963,7 @@ Module OrdinalImpl.
     mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun b : bool => if b as this return (if this then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
   .
 
-  End EXTRA_DEFNS_ON_TRANSFINITE_RECURSION.
+  End BASIC_DEFNS_ON_TRANSFINITE_RECURSION.
 
   Class areGoodTransRecMethods (methods : TransRecMethodsOf Dom) {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : Prop :=
     { dsucc_lifts_leProp (d : WellFormedPartOf Dom) (d' : WellFormedPartOf Dom)
