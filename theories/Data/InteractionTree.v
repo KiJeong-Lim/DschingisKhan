@@ -74,8 +74,8 @@ Module InteractionTrees.
   End ITREE_MONAD.
 
   Global Instance itree_isMonad (E : Type -> Type) : isMonad (itree E) :=
-    { pure {R : Type} (x : R) := itree_pure x
-    ; bind {R1 : Type} {R2 : Type} (m : itree E R1) (k : R1 -> itree E R2) := itree_bind m k
+    { pure {R : Type} (x : R) := itree_pure (E := E) (R := R) x
+    ; bind {R1 : Type} {R2 : Type} (m : itree E R1) (k : R1 -> itree E R2) := itree_bind (E := E) (R1 := R1) (R2 := R2) m k
     }
   .
 
@@ -112,7 +112,7 @@ Module InteractionTrees.
   | Call (arg : I) : callE I R R
   .
 
-  Global Arguments Call {I} {R}.
+  Global Arguments Call {I} {R} (arg).
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
@@ -167,44 +167,44 @@ Module InteractionTrees.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
-  Variant itreeBisimF {BISIM : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
+  Variant itreeBisimF {bisim : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
   | EqRetF (r1 : R) (r2 : R)
-    (hypEq : r1 == r2)
+    (lhs_bisim_rhs : r1 == r2)
     : itreeBisimF (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
-    (hypEq : BISIM t1 t2)
+    (lhs_bisim_rhs : bisim t1 t2)
     : itreeBisimF (TauF t1) (TauF t2)
   | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    (hypEq : forall x : X, BISIM (k1 x) (k2 x))
+    (lhs_bisim_rhs : forall x : X, bisim (k1 x) (k2 x))
     : itreeBisimF (VisF X e k1) (VisF X e k2)
   .
 
-  Definition eqITreeF (bisim : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    let BISIM (lhs : itree E R) (rhs : itree E R) : Prop := bisim (lhs, rhs) in
-    fun '(lhs, rhs) => @itreeBisimF BISIM (observe lhs) (observe rhs)
+  Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
+    let bisim (lhs : itree E R) (rhs : itree E R) : Prop := BISIM (lhs, rhs) in
+    fun '(lhs, rhs) => itreeBisimF (bisim := bisim) (observe lhs) (observe rhs)
   .
 
-  Definition eqITreeF_monotonic (bisim1 : ensemble (itree E R * itree E R)) (bisim2 : ensemble (itree E R * itree E R)) (INCL : isSubsetOf bisim1 bisim2) : isSubsetOf (eqITreeF bisim1) (eqITreeF bisim2) :=
-    fun pair_lhs_rhs : itree E R * itree E R =>
-    let '(lhs, rhs) as pr := pair_lhs_rhs return eqITreeF bisim1 pr -> eqITreeF bisim2 pr in
+  Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
+    fun pair_of_lhs_and_rhs : itree E R * itree E R =>
+    let '(lhs, rhs) as pr := pair_of_lhs_and_rhs return eqITreeF BISIM pr -> eqITreeF BISIM' pr in
     fun hyp_in : itreeBisimF (observe lhs) (observe rhs) =>
     match hyp_in in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
-    | EqRetF r1 r2 hypEq => EqRetF r1 r2 hypEq
-    | EqTauF t1 t2 hypEq => EqTauF t1 t2 (INCL (t1, t2) hypEq)
-    | EqVisF X e k1 k2 hypEq => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (hypEq x))
+    | EqRetF r1 r2 lhs_bisim_rhs => EqRetF r1 r2 lhs_bisim_rhs
+    | EqTauF t1 t2 lhs_bisim_rhs => EqTauF t1 t2 (INCL (t1, t2) lhs_bisim_rhs)
+    | EqVisF X e k1 k2 lhs_bisim_rhs => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (lhs_bisim_rhs x))
     end
   .
 
   Set Primitive Projections.
 
   CoInductive itreeBisim (lhs : itree E R) (rhs : itree E R) : Prop :=
-    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF (BISIM := itreeBisim) (observe lhs) (observe rhs) }
+    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF (bisim := itreeBisim) (observe lhs) (observe rhs) }
   .
 
   Unset Primitive Projections.
 
   End BISIMULATION.
 
-  Global Arguments itreeBisimF {E} {R} {requiresSetoid} (BISIM) (lhs) (rhs).
+  Global Arguments itreeBisimF {E} {R} {requiresSetoid} (bisim) (lhs) (rhs).
 
 End InteractionTrees.
