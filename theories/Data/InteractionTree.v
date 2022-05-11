@@ -50,9 +50,7 @@ Module InteractionTrees.
 
   Definition itree_pure {R : Type} (r : R) : itree E R := Ret r.
 
-  Context {R1 : Type} {R2 : Type}.
-
-  Definition itree_bindGuard (k0 : R1 -> itree E R2) (ot0 : itreeF E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
+  Definition itree_bindGuard {R1 : Type} {R2 : Type} (k0 : R1 -> itree E R2) (ot0 : itreeF E R1) (CIH : itree E R1 -> itree E R2) : itree E R2 :=
     match ot0 with
     | RetF r => k0 r
     | TauF t => Tau (CIH t)
@@ -60,14 +58,14 @@ Module InteractionTrees.
     end
   .
 
-  Definition itree_bindAux (k : R1 -> itree E R2) : itree E R1 -> itree E R2 :=
+  Definition itree_bindAux {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) : itree E R1 -> itree E R2 :=
     cofix itree_bindAux_cofix (t : itree E R1) : itree E R2 :=
     itree_bindGuard k (observe t) itree_bindAux_cofix
   .
 
-  Definition itree_bind (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t.
+  Definition itree_bind {R1 : Type} {R2 : Type} (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t.
 
-  Lemma itree_bind_unfold_observed (t0 : itree E R1) (k0 : R1 -> itree E R2)
+  Lemma itree_bind_unfold_observed {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2)
     : observe (itree_bind t0 k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
   Proof. exact (eq_reflexivity (observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)))). Defined.
 
@@ -180,15 +178,14 @@ Module InteractionTrees.
   .
 
   Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    let bisim (lhs : itree E R) (rhs : itree E R) : Prop := BISIM (lhs, rhs) in
-    fun '(lhs, rhs) => itreeBisimF (bisim := bisim) (observe lhs) (observe rhs)
+    fun '(lhs, rhs) => itreeBisimF (bisim := curry BISIM) (observe lhs) (observe rhs)
   .
 
   Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
     fun pair_of_lhs_and_rhs : itree E R * itree E R =>
-    let '(lhs, rhs) as pr := pair_of_lhs_and_rhs return eqITreeF BISIM pr -> eqITreeF BISIM' pr in
+    let '(lhs, rhs) as pr in prod _ _ := pair_of_lhs_and_rhs return eqITreeF BISIM pr -> eqITreeF BISIM' pr in
     fun hyp_in : itreeBisimF (observe lhs) (observe rhs) =>
-    match hyp_in in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
+    match hyp_in as _ in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
     | EqRetF r1 r2 lhs_bisim_rhs => EqRetF r1 r2 lhs_bisim_rhs
     | EqTauF t1 t2 lhs_bisim_rhs => EqTauF t1 t2 (INCL (t1, t2) lhs_bisim_rhs)
     | EqVisF X e k1 k2 lhs_bisim_rhs => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (lhs_bisim_rhs x))
