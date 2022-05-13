@@ -37,6 +37,11 @@ Module BasicGeneralTopology.
     }
   .
 
+  Global Add Parametric Morphism {A : Type} (requiresTopology : isTopologicalSpace A) :
+    (isOpen (isTopologicalSpace := requiresTopology)) with signature (eqProp ==> iff)
+    as eqProp_lifts_isOpen.
+  Proof. iis; ii; eapply isOpen_compatWith_eqProp; eauto with *. Qed.
+
   Lemma fullOpen {A : Type} {requiresTopology : isTopologicalSpace A}
     : isOpen (@full A).
   Proof. eapply full_isOpen; eauto. Qed.
@@ -52,7 +57,7 @@ Module BasicGeneralTopology.
     : isOpen (intersection O1 O2).
   Proof. eapply intersection_isOpen; eauto. Qed.
 
-  Lemma emptyset_isOpen {A : Type} {requiresTopology : isTopologicalSpace A}
+  Lemma emptysetOpen {A : Type} {requiresTopology : isTopologicalSpace A}
     : isOpen (@empty A).
   Proof.
     eapply isOpen_compatWith_eqProp.
@@ -63,7 +68,7 @@ Module BasicGeneralTopology.
       + intros [].
   Qed.
 
-  Global Hint Resolve fullOpen unionsOpen intersectionOpen emptyset_isOpen : topology_hints.
+  Global Hint Resolve fullOpen unionsOpen intersectionOpen emptysetOpen : topology_hints.
 
   Definition isContinuousMap {dom : Type} {cod : Type} {dom_isTopology : isTopologicalSpace dom} {cod_isTopology : isTopologicalSpace cod} (f : dom -> cod) : Prop :=
     forall Y : ensemble cod, << TGT_OPEN : isOpen Y >> -> << SRC_OPEN : isOpen (preimage f Y) >>
