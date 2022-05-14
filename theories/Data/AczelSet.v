@@ -10,17 +10,19 @@ Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module AczelSetUniv.
 
-  Monomorphic Universe AczelSetUniv_lv.
+  Universe AczelSetUniv_lv.
 
-  Monomorphic Definition t : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
+  Definition t : Type@{AczelSetUniv_lv + 1} := Type@{AczelSetUniv_lv}.
 
 End AczelSetUniv.
 
 Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
-  Monomorphic Universe AczelSet_children_lv.
+  Universe AczelSet_smallUniv_lv.
 
-  Definition smallUniv : AczelSetUniv.t := Type@{AczelSet_children_lv}.
+  Constraint AczelSet_smallUniv_lv < AczelSetUniv.AczelSetUniv_lv.
+
+  Definition smallUniv : AczelSetUniv.t := Type@{AczelSet_smallUniv_lv}.
 
   Inductive Tree : AczelSetUniv.t :=
   | Node {children : smallUniv} (childtrees : children -> Tree) : Tree
