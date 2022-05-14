@@ -16,11 +16,11 @@ Module BasicPosetTheory.
     : forall x : D, forall y : D, x =< y <-> (forall z : D, z =< x -> z =< y).
   Proof. exact (proj1 (PreOrder_iff leProp) (@leProp_PreOrder D requiresPoset)). Qed.
 
-  Definition isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod) : Prop :=
+  Definition isMonotonicMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) : Prop :=
     forall x : dom, forall x' : dom, x =< x' -> f x =< f x'
   .
 
-  Lemma isMonotonicMap_iff_preserves_leProp1 {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+  Lemma isMonotonicMap_iff_preserves_leProp1 {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod)
     : isMonotonicMap f <-> preserves_leProp1 f.
   Proof. reflexivity. Qed.
 

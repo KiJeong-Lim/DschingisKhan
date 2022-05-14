@@ -60,10 +60,10 @@ Module InteractionTrees.
 
   Definition itree_bindAux {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) : itree E R1 -> itree E R2 :=
     cofix itree_bindAux_cofix (t : itree E R1) : itree E R2 :=
-    itree_bindGuard k (observe t) itree_bindAux_cofix
+    itree_bindGuard (R1 := R1) (R2 := R2) k (observe t) itree_bindAux_cofix
   .
 
-  Definition itree_bind {R1 : Type} {R2 : Type} (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux k t.
+  Definition itree_bind {R1 : Type} {R2 : Type} (t : itree E R1) (k : R1 -> itree E R2) := itree_bindAux (R1 := R1) (R2 := R2) k t.
 
   Lemma itree_bind_unfold_observed {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2)
     : observe (itree_bind t0 k0) = observe (itree_bindGuard k0 (observe t0) (fun t : itree E R1 => itree_bind t k0)).
@@ -81,7 +81,7 @@ Module InteractionTrees.
 
   Definition itree_trigger {E : Type -> Type} : E ~~> itree E := fun R : Type => fun e : E R => Vis R e (fun x : R => Ret x).
 
-  Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)%type) : I -> itree E R :=
+  Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
     cofix itree_iter_cofix (i : I) : itree E R :=
     itree_bindAux (either (fun i' : I => Tau (itree_iter_cofix i')) (fun r : R => Ret r)) (step i)
   .
@@ -178,7 +178,8 @@ Module InteractionTrees.
   .
 
   Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    fun '(lhs, rhs) => itreeBisimF (bisim := curry BISIM) (observe lhs) (observe rhs)
+    let bisim (lhs : itree E R) (rhs : itree E R) : Prop := BISIM (lhs, rhs) in
+    fun '(lhs, rhs) => itreeBisimF (bisim := bisim) (observe lhs) (observe rhs)
   .
 
   Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
