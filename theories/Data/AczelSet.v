@@ -916,7 +916,7 @@ Module OrdinalImpl.
 
   Definition transfiniteRecursion (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
-    match alpha as x in AczelSet.Tree return isOrdinal x -> Dom with
+    match alpha as x in Tree return isOrdinal x -> Dom with
     | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
     end
   .
