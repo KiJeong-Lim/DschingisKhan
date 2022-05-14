@@ -159,7 +159,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (x_eq_y : x == y)
     (y_in_z : y `elem` z)
     : x `elem` z.
-  Proof. destruct y_in_z as [c_z y_eq_z_c]. eexists; etransitivity; eauto with *. Defined.
+  Proof. destruct y_in_z as [c_z y_eq_z_c]. eexists; etransitivity; eauto with *. Qed.
 
   Lemma elem_eqProp_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (y_eq_z : y == z)
