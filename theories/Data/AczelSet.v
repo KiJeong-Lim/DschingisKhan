@@ -367,7 +367,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section AczelSet_empty.
 
-  Definition empty : AczelSet := Node (fun hyp_false : False => False_rect AczelSet hyp_false).
+  Definition empty : AczelSet := Node (fun hyp_false : False => @False_rect AczelSet hyp_false).
 
   Lemma AczelSet_empty_spec
     : forall z : AczelSet, z `elem` empty <-> << IN_empty : False >>.
@@ -962,7 +962,7 @@ Module OrdinalImpl.
   .
 
   Definition dunion (d_left : WellFormedPartOf Dom) (d_right : WellFormedPartOf Dom) : WellFormedPartOf Dom :=
-    mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (fun b : bool => if b as this return (if this then proj1_sig d_left else proj1_sig d_right) \in WellFormeds then proj2_sig d_left else proj2_sig d_right))
+    mkWellFormed (dUnion (proj1_sig d_left) (proj1_sig d_right)) (dJoin_well_formed (fun b : bool => if b then proj1_sig d_left else proj1_sig d_right) (@bool_ind (fun b : bool => (if b then proj1_sig d_left else proj1_sig d_right) \in WellFormeds) (proj2_sig d_left) (proj2_sig d_right)))
   .
 
   End BASIC_DEFNS_ON_TRANSFINITE_RECURSION.
