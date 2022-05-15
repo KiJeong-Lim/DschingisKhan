@@ -993,7 +993,7 @@ Module OrdinalImpl.
     as djoin_monotonic.
   Proof. exact (djoin_lifts_leProp). Defined.
 
-  Lemma dLe_refl (d1 : Dom)
+  Lemma dLe_reflexivity (d1 : Dom)
     (d1_well_formed : d1 \in WellFormeds)
     : d1 `dLe` d1.
   Proof.
@@ -1001,7 +1001,7 @@ Module OrdinalImpl.
     reflexivity.
   Qed.
 
-  Lemma dLe_trans (d1 : Dom) (d2 : Dom) (d3 : Dom)
+  Lemma dLe_transitivity (d1 : Dom) (d2 : Dom) (d3 : Dom)
     (d1_well_formed : d1 \in WellFormeds)
     (d2_well_formed : d2 \in WellFormeds)
     (d3_well_formed : d3 \in WellFormeds)

@@ -21,7 +21,7 @@ Module LambdaCalculus_init.
 
   Global Instance tvarEqDec : EqDec tvar := natEqDec.
 
-  Global Reserved Notation " ∀ ty_var , ty_expr " (at level 100, right associativity).
+  Global Reserved Notation " '(∀' ty_var ')' ty_expr " (at level 100, right associativity).
 
   Global Declare Scope tyExpr_scope.
   Global Declare Scope tmExpr_scope.
@@ -31,9 +31,11 @@ Module LambdaCalculus_init.
 
 End LambdaCalculus_init.
 
+Export LambdaCalculus_init.
+
 Module SystemF.
 
-  Import ListNotations LambdaCalculus_init.
+  Import ListNotations.
 
   Monomorphic Universe KIND_lv.
   Monomorphic Universe KIND_lv'.
@@ -46,12 +48,6 @@ Module SystemF.
   | TyArr (tau : tyExpr) (sigma : tyExpr) : tyExpr
   | TyAll (b : tvar) (sigma : tyExpr) : tyExpr
   .
-
-  Local Coercion TyVar : tvar >-> tyExpr.
-
-  Local Delimit Scope tyExpr_scope with tyExpr.
-  Local Notation " tau -> sigma " := (TyArr tau sigma) : tyExpr_scope.
-  Local Notation " ∀ b , sigma " := (TyAll b sigma) : tyExpr_scope.
 
   Local Instance typEqDec
     : EqDec tyExpr.
@@ -71,5 +67,11 @@ Module SystemF.
     | TyAll b sigma => (forall b_typ : KIND', evalTy_fix (fun a : tvar => if eq_dec (EqDec := tvarEqDec) a b then b_typ else lctx a) sigma)%type
     end
   .
+
+  Local Coercion TyVar : tvar >-> tyExpr.
+
+  Local Delimit Scope tyExpr_scope with tyExpr.
+  Local Notation " tau -> sigma " := (TyArr tau sigma) : tyExpr_scope.
+  Local Notation " (∀ b ) sigma " := (TyAll b sigma) : tyExpr_scope.
 
 End SystemF.
