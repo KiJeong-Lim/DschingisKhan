@@ -46,7 +46,7 @@ Module BasicCoLaTheory.
     @exist (dom -> cod) isMonotonicMap (supOfMonotonicMaps fs) (supOfMonotonicMaps_isMonotonicMap fs)
   .
 
-  Lemma supremum_m_isSupremumOf {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCoLa : isCoLa dom} {cod_isCoLa : isCoLa cod}
+  Lemma supremum_m_isSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCoLa : isCoLa dom} {cod_isCoLa : isCoLa cod}
     : forall fs : ensemble ⟬ dom ⟶ cod ⟭, isSupremumOf (supremum_m fs) fs.
   Proof with eauto with *.
     unfold supremum_m; intros fs f. split; intros ?; desnw.
@@ -58,8 +58,7 @@ Module BasicCoLaTheory.
   Qed.
 
   Local Instance MonotonicMaps_isCoLa (dom : Type) (cod : Type) {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCoLa : isCoLa dom} {cod_isCoLa : isCoLa cod} : isCoLa ⟬ dom ⟶ cod ⟭ :=
-    { getSupremumOf_inCoLa (fs : ensemble ⟬ dom ⟶ cod ⟭) := @exist ⟬ dom ⟶ cod ⟭ (fun sup_fs : ⟬ dom ⟶ cod ⟭ => isSupremumOf sup_fs fs) (supremum_m fs) (supremum_m_isSupremumOf fs)
-    }
+    fun fs : ensemble ⟬ dom ⟶ cod ⟭ => @exist ⟬ dom ⟶ cod ⟭ (fun sup_fs : ⟬ dom ⟶ cod ⟭ => isSupremumOf sup_fs fs) (supremum_m fs) (supremum_m_isSupremum fs)
   .
 
 End BasicCoLaTheory.
@@ -68,6 +67,6 @@ Module ParameterizedCoinduction.
 
   Import MathProps MathClasses BasicPosetTheory BasicCoLaTheory.
 
-  Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_isPoset.
+  Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_isPoset MonotonicMaps_isCoLa.
 
 End ParameterizedCoinduction.
