@@ -17,7 +17,7 @@ Module BasicPosetTheory.
   Proof. exact (proj1 (PreOrder_iff leProp) (@leProp_PreOrder D requiresPoset)). Qed.
 
   Definition isMonotonicMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) : Prop :=
-    forall x : dom, forall x' : dom, x =< x' -> f x =< f x'
+    forall x : dom, forall x' : dom, forall x_le_x' : x =< x', f x =< f x'
   .
 
   Lemma isMonotonicMap_iff_preserves_leProp1 {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod)
@@ -28,11 +28,11 @@ Module BasicPosetTheory.
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
   Global Notation " '('  X  ')↑' " := (UpperBoundsOf X)
     (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
-  Global Notation " '\sup' X '=' sup_X " := (isSupremumOf sup_X X)
+  Global Notation " sup_X '=' '\sup' X " := (isSupremumOf sup_X X)
     (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '('  X  ')↓' " := (LowerBoundsOf X)
     (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
-  Global Notation " '\inf' X '=' inf_X " := (isInfimumOf inf_X X)
+  Global Notation " inf_X '=' '\inf' X " := (isInfimumOf inf_X X)
     (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
     (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
@@ -194,11 +194,11 @@ Module BasicPosetTheory.
 
   Local Hint Resolve Infimum_monotonic_wrtEnsembles : poset_hints.
 
-  Lemma Infimum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (inf1 : D) (inf2 : D)
-    (inf_X1_isInfimumOf_X1 : isInfimumOf inf1 X1)
-    (inf_X2_isInfimumOf_X2 : isInfimumOf inf2 X2)
+  Lemma Infimum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (inf_X1 : D) (inf_X2 : D)
+    (inf_X1_isInfimumOf_X1 : isInfimumOf inf_X1 X1)
+    (inf_X2_isInfimumOf_X2 : isInfimumOf inf_X2 X2)
     (X1_eq_X2 : X1 == X2)
-    : inf1 == inf2.
+    : inf_X1 == inf_X2.
   Proof.
     pose proof (eqProp_implies_leProp X1 X2 X1_eq_X2) as claim1. symmetry in X1_eq_X2.
     pose proof (eqProp_implies_leProp X2 X1 X1_eq_X2) as claim2. eapply leProp_Antisymmetric; eauto with *.
@@ -236,9 +236,8 @@ Module BasicPosetTheory.
       - eapply eqProp_implies_leProp...
     }
     assert (claim2 : f lfp =< lfp).
-    { eapply lfp_isInfimumOfPrefixedPoints. ii; desnw. transitivity (f x).
-      - eapply f_isMonotonic, lfp_isInfimumOfPrefixedPoints...
-      - exact (H_IN).
+    { eapply lfp_isInfimumOfPrefixedPoints. ii; desnw. transitivity (f x); trivial.
+      eapply f_isMonotonic, lfp_isInfimumOfPrefixedPoints...
     }
     assert (claim3 : lfp =< f lfp).
     { eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonic... }
