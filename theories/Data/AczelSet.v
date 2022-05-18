@@ -496,17 +496,17 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   (* << A Sketch of the Proof of Strong Collection >>
     -- Advice of "Hanul Jeon"
-    > Aczel의 Strong Collection의 증명을 스케치해보면
+    > Aczel의 Strong Collection의 증명을 스케치해보면,
       Let's sketch the Aczel's proof of Strong Collection.
-    > 우선 forall x:X, exists y phi(x,y)가 성립한다고 합시다
-      First, assume that $forall x \in X, exists y, phi(x, y)$.
-    > 여기서 AC를 적용해서 f : forall x:X, phi(x,f(x))인 f를 찾고
+    > 우선 forall x:X, exists y, phi(x,y)가 성립한다고 합시다.
+      First, assume $forall x \in X, exists y, phi(x, y)$.
+    > 여기서 AC를 적용해서 f : forall x:X, phi(x,f(x))인 f를 찾고,
       By applying AC, find $f$ such that $forall x \in X, phi(x, f(x))$.
-    > base set을 X의 base와 똑같이 잡을 겁니다
+    > base set을 X의 base와 똑같이 잡을 겁니다.
       Now, take the base set as that of $X$.
-    > 그리고 원소는 f(x)에 대응하게끔 잡을 거고요
+    > 그리고 원소는 f(x)에 대응하게끔 잡을 거고요.
       And set the elements corresponding to $f(x)$.
-    > 문제는 AC가 Coq에서 작동할 것 같지 않다는 거네요
+    > 문제는 AC가 Coq에서 작동할 것 같지 않다는 거네요.
       Although, the problem is that AC may not work on Coq.
   *)
 
