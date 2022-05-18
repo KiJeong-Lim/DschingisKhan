@@ -510,7 +510,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       Although, the problem is that AC may not work on Coq.
   *)
 
-  Hypothesis AxiomOfChoice : forall A : AczelSetUniv.t, forall B : AczelSetUniv.t, forall phi : A -> B -> Prop, << NONEMPTY : forall x : A, exists y : B, phi x y >> -> << CHOICE : exists f : A -> B, forall x : A, phi x (f x) >>.
+  Hypothesis AC : forall A : AczelSetUniv.t, forall B : AczelSetUniv.t, forall phi : A -> B -> Prop, << NONEMPTY : forall x : A, exists y : B, phi x y >> -> << CHOICE : exists f : A -> B, forall x : A, phi x (f x) >>.
 
   Theorem AxiomOfChoice_implies_StrongCollection (phi : AczelSet -> AczelSet -> Prop) (X : AczelSet)
     (phi_compatWith_eqTree_on_1st_arg : forall y : AczelSet, compatWith_eqTree (fun x : AczelSet => phi x y))
@@ -520,7 +520,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     set (base_set := getChildren X). unnw.
     assert (claim1 : exists f : base_set -> AczelSet, forall x : base_set, phi (getChildTrees X x) (f x)).
-    { eapply AxiomOfChoice with (phi := fun x : base_set => fun y : AczelSet => phi (getChildTrees X x) y)... }
+    { eapply AC with (phi := fun x : base_set => fun y : AczelSet => phi (getChildTrees X x) y)... }
     destruct claim1 as [f claim1]. exists (@Node base_set (fun x : base_set => f x)). split.
     - intros x [c_X x_eq_X_c]. exists (f c_X). split... eapply phi_compatWith_eqTree_on_1st_arg...
     - intros x [c_X x_eq_X_c]. exists (getChildTrees X c_X). split... eapply phi_compatWith_eqTree_on_2nd_arg...
