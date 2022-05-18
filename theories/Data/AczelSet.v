@@ -852,6 +852,8 @@ Module OrdinalImpl.
     exists (every_member_of_Ordinal_isOrdinal alpha alpha_isOrdinal beta beta_in_alpha). eapply IH. exact (beta_in_alpha).
   Qed.
 
+(*
+
 (** "Transfinite Recursion" *)
 
   Set Primitive Projections.
@@ -887,22 +889,28 @@ Module OrdinalImpl.
     }
   .
 
+  Local Hint Resolve dZero_well_formed dSucc_well_formed dJoin_well_formed : core.
+
   Global Infix " `dEq` " := dEq (at level 70, no associativity) : type_scope.
   Global Infix " `dLe` " := dLe (at level 70, no associativity) : type_scope.
 
   Definition WellFormedPartOf (Dom : AczelSetUniv.t) {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} : AczelSetUniv.t := @sig Dom WellFormeds.
 
-  Variant BasicPropertiesOfTransRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} (TransRec : AczelSet -> Dom) (alpha : AczelSet) : Prop :=
+  Variant BasicPropertiesOfTransRec {Dom : AczelSetUniv.t} {methods : TransRecMethodsOf Dom} {requiresDomainWithPartialOrder : isDomainWithPartialOrder Dom (methods := methods)} (TransRec : Ord -> Dom) (alpha : Ord) : Prop :=
   | BasicPropertiesOfTransRec_alpha_areTheFollowings
     (transRec_alpha_well_formed : TransRec alpha \in WellFormeds)
-    (transRec_alpha_monotonic : forall beta : AczelSet, << beta_le_alpha : beta `rLe` alpha >> -> TransRec beta `dLe` TransRec alpha)
+    (transRec_alpha_monotonic : forall beta : Ord, << beta_le_alpha : beta =< alpha >> -> TransRec beta `dLe` TransRec alpha)
     (transRec_alpha_ge_bot : methods.(dZero) `dLe` TransRec alpha)
-    (transRec_alpha_ge_suc : forall beta : AczelSet, << beta_lt_alpha : beta `rLt` alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
-    (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : forall i : I, AczelSet, << beta_i_lt_alpha : forall i : I, beta_i i `rLt` alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
+    (transRec_alpha_ge_suc : forall beta : Ord, << beta_lt_alpha : beta < alpha >> -> methods.(dSucc) (TransRec beta) `dLe` TransRec alpha)
+    (transRec_alpha_ge_lim : forall I : smallUniv, << I_NONEMPTY : inhabited I >> -> forall beta_i : forall i : I, Ord, << beta_i_lt_alpha : forall i : I, beta_i i < alpha >> -> methods.(dJoin) (fun i : I => TransRec (beta_i i)) `dLe` TransRec alpha)
     : BasicPropertiesOfTransRec TransRec alpha
   .
 
   Global Arguments BasicPropertiesOfTransRec_alpha_areTheFollowings {Dom} {methods} {requiresDomainWithPartialOrder} {TransRec} {alpha}.
+
+  Definition elem_isOrdinal (beta : Ord) (beta_child : getChildren (unliftOrd beta)) : isOrdinal (getChildTrees (unliftOrd beta) beta_child) :=
+    every_member_of_Ordinal_isOrdinal (unliftOrd beta) ord_proof (getChildTrees (unliftOrd beta) beta_child) (elem_intro (unliftOrd beta) beta_child)
+  .
 
   Section BASIC_FACTS_ON_TRANSFINITE_RECURSION.
 
@@ -917,7 +925,7 @@ Module OrdinalImpl.
   Definition transfiniteRecursion (methods : TransRecMethodsOf Dom) : forall alpha : AczelSet, isOrdinal alpha -> Dom :=
     fix transRec_fix (alpha : AczelSet) {struct alpha} : isOrdinal alpha -> Dom :=
     match alpha as x in Tree return isOrdinal x -> Dom with
-    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)))))
+    | @Node alpha_base alpha_elems => fun alpha_isOrdinal : isOrdinal (@Node alpha_base alpha_elems) => dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun alpha_child : alpha_base => dSucc (methods := methods) (transRec_fix (alpha_elems alpha_child) (elem_isOrdinal (liftOrd (@Node alpha_base alpha_elems) alpha_isOrdinal) alpha_child))))
     end
   .
 
@@ -1013,7 +1021,60 @@ Module OrdinalImpl.
     transitivity (mkWellFormed d2 d2_well_formed); [exact (d1_le_d2) | exact (d2_le_d3)].
   Qed.
 
+  Theorem transRec_spec
+    : forall alpha : Ord, BasicPropertiesOfTransRec (transRec (methods := methods)) alpha.
+  Proof with eauto with *.
+    induction alpha as [[[alpha_base alpha_elems] alpha_isOrdinal] IH] using Ord_rank_ind.
+    unnw; unfold transRec. simpl in IH.
+    keep (fun alpha_child : alpha_base =>
+      every_member_of_Ordinal_isOrdinal (@Node alpha_base alpha_elems) alpha_isOrdinal (alpha_elems alpha_child) (elem_intro (@Node alpha_base alpha_elems) alpha_child)
+    ) as IS_ORDINAL into (forall alpha_child : alpha_base, isOrdinal (alpha_elems alpha_child)).
+    split; simpl.
+    { eapply dJoin_well_formed. intros [ | ]...
+      eapply dJoin_well_formed. intros alpha_child.
+      eapply dSucc_well_formed. exploit (IH (liftOrd (alpha_elems alpha_child) (IS_ORDINAL alpha_child))) as [? ? ? ? ?].
+      - simpl. eapply elem_implies_ltPropOnRank, elem_intro.
+      - eapply transRec_alpha_well_formed.
+    }
+    { ii; desnw. eapply djoin_sup. 
+    }
+    assert (IH_aux :
+      forall beta : Ord,
+      forall beta_le_alpha : beta =< alpha,
+      forall beta_child : getChildren (unliftOrd beta),
+      BasicPropertiesOfTransRec (transRec (methods := methods)) (liftOrd (getChildTrees (unliftOrd beta) beta_child) (elem_isOrdinal beta beta_child))
+    ).
+    { ii. eapply IH. eapply ltPropOnRank_lePropOnRank_lePropOnRank with (y := unliftOrd beta)...
+      simpl. eapply elem_implies_ltPropOnRank, elem_intro.
+    }
+    assert (WellFormeds_claim1 :
+      forall beta : Ord,
+      forall beta_le_alpha : beta =< alpha,
+      forall beta_child : getChildren (unliftOrd beta),
+      dSucc (methods := methods) (transRec (methods := methods) (liftOrd (getChildTrees (unliftOrd beta) beta_child) (elem_isOrdinal beta beta_child))) \in WellFormeds
+    ).
+    { ii. eapply dSucc_well_formed. exploit (IH_aux beta beta_le_alpha) as [? ? ? ? ?]. exact (transRec_alpha_well_formed). }
+    assert (WellFormeds_claim2 :
+      forall beta : Ord,
+      forall beta_le_alpha : beta =< alpha,
+      forall beta_child : getChildren (unliftOrd beta),
+      forall b : bool,
+      (if b then dZero (methods := methods) else dJoin (methods := methods) (fun i : getChildren (unliftOrd beta) => dSucc (methods := methods) (transRec (methods := methods) (liftOrd (getChildTrees (unliftOrd beta) i) (elem_isOrdinal beta i))))) \in WellFormeds
+    ).
+    { ii. destruct b as [ | ]; [eapply dZero_well_formed | eapply dJoin_well_formed]... }
+    assert (REFL : forall alpha_child1 : getChildren (unliftOrd alpha), exists alpha_child2 : getChildren (unliftOrd alpha), liftOrd (getChildTrees (unliftOrd alpha) alpha_child1) (elem_isOrdinal alpha alpha_child1) =< liftOrd (getChildTrees (unliftOrd alpha) alpha_child2) (elem_isOrdinal alpha alpha_child2)).
+    { intros alpha_child. exists (alpha_child)... }
+    assert (dLe_aux :
+      forall beta : Ord,
+      forall beta_le_alpha : beta =< alpha,
+      transRec (methods := methods) beta `dLe` (dUnion (methods := methods) (dZero (methods := methods)) (dJoin (methods := methods) (fun i : getChildren (unliftOrd alpha) => dSucc (methods := methods) (transRec (methods := methods) (liftOrd (getChildTrees (unliftOrd alpha) i) (elem_isOrdinal alpha i))))))
+    ).
+    { ii. }
+  Qed.
+
   End BASIC_FACTS_ON_TRANSFINITE_RECURSION.
+
+*)
 
   Global Coercion unliftOrd : Ord >-> AczelSet.
 
