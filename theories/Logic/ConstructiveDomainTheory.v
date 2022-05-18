@@ -120,21 +120,25 @@ Module BasicCoLaTheory.
     : x2 =< cola_union x1 x2.
   Proof. eapply cola_union_spec; eauto with *. Qed.
 
-  Lemma cola_union_le_iff {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D) (x : D)
-    : cola_union x1 x2 =< x <-> (x1 =< x /\ x2 =< x).
-  Proof with eauto with *.
-    split.
-    - intros ?; split; eapply cola_union_spec...
-    - intros [x1_le_x x2_le_x]. eapply cola_union_spec.
-      intros d d_in. apply in_finite_iff in d_in.
-      destruct d_in as [d_eq_x1 | [d_eq_x2 | []]]; subst d...
+  Lemma cola_union_le_elim_l {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
+    : forall x : D, cola_union x1 x2 =< x -> x1 =< x.
+  Proof. intros x le_x. apply cola_union_spec in le_x. eauto with *. Qed.
+
+  Lemma cola_union_le_elim_r {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
+    : forall x : D, cola_union x1 x2 =< x -> x2 =< x.
+  Proof. intros x le_x. apply cola_union_spec in le_x. eauto with *. Qed.
+
+  Lemma cola_union_le_intro {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
+    : forall x : D, x1 =< x -> x2 =< x -> cola_union x1 x2 =< x.
+  Proof.
+    ii; eapply cola_union_spec. intros d d_in. apply in_finite_iff in d_in.
+    destruct d_in as [d_eq_x1 | [d_eq_x2 | []]]; subst d; eauto with *.
   Qed.
 
-  Lemma cola_empty_le_intro {hasExtraColaMethods : ExtraColaMethods D} (x : D)
-    : cola_empty =< x.
+  Lemma cola_empty_le_intro {hasExtraColaMethods : ExtraColaMethods D}
+    : forall x : D, cola_empty =< x.
   Proof.
-    eapply cola_empty_spec.
-    intros d d_in. apply in_empty_iff in d_in.
+    ii; eapply cola_empty_spec. intros d d_in. apply in_empty_iff in d_in.
     destruct d_in as [].
   Qed.
 
