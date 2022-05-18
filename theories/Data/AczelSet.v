@@ -667,12 +667,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   .
 
   Variant ltPropOnRank (lhs : AczelSet) (rhs : AczelSet) : Prop :=
-  | lhs_ltOnRank_rhs_if (rhs_child : getChildren rhs)
+  | lhs_rLt_rhs_if (rhs_child : getChildren rhs)
     (RANK_LE : lePropOnRank lhs (getChildTrees rhs rhs_child))
     : ltPropOnRank lhs rhs
   .
 
-  Global Arguments lhs_ltOnRank_rhs_if {lhs} {rhs}.
+  Global Arguments lhs_rLt_rhs_if {lhs} {rhs}.
 
   Global Infix " `rEq` " := eqPropOnRank (at level 70, no associativity) : type_scope.
   Global Infix " `rLe` " := lePropOnRank (at level 70, no associativity) : type_scope.
