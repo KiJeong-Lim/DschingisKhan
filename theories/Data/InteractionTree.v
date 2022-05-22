@@ -185,8 +185,8 @@ Module InteractionTrees.
   Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
     fun pair_of_lhs_and_rhs : itree E R * itree E R =>
     let '(lhs, rhs) as pr in prod _ _ := pair_of_lhs_and_rhs return eqITreeF BISIM pr -> eqITreeF BISIM' pr in
-    fun hyp_in : itreeBisimF (observe lhs) (observe rhs) =>
-    match hyp_in as _ in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
+    fun LHS_REL_RHS : itreeBisimF (observe lhs) (observe rhs) =>
+    match LHS_REL_RHS as _ in itreeBisimF LHS RHS return itreeBisimF LHS RHS with
     | EqRetF r1 r2 REL => EqRetF r1 r2 REL
     | EqTauF t1 t2 REL => EqTauF t1 t2 (INCL (t1, t2) REL)
     | EqVisF X e k1 k2 REL => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (REL x))

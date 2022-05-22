@@ -22,3 +22,5 @@ theories/Logic/ClassicalDomainTheory.v #
 theories/Logic/ClassicalMetaTheoryOfPropositionalLogic.v #
 theories/Logic/InteractionTreeTheory.v #
 #
+theories/index.v #
+#
