@@ -161,12 +161,13 @@ Module Hask.
 
   Polymorphic Definition arrow@{dom_lv cod_lv arrow_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{arrow_lv} := dom -> cod.
 
-  Global Bind Scope type_scope with Hask.t Hask.arrow.
+  Global Delimit Scope type_scope with t.
+  Global Delimit Scope type_scope with arrow.
 
   Global Polymorphic Instance cat : isCategory Hask.t :=
     { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
-    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} := Khan.compose (A := A) (B := B) (C := C)
-    ; id {A : Hask.t} := Khan.id (A := A)
+    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} (f : Hask.arrow B C) (g : Hask.arrow A B) := fun x : A => f (g x)
+    ; id {A : Hask.t} := fun x : A => x
     }
   .
 
