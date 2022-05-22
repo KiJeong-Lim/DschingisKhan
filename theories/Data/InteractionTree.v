@@ -167,13 +167,13 @@ Module InteractionTrees.
 
   Variant itreeBisimF {bisim : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
   | EqRetF (r1 : R) (r2 : R)
-    (lhs_bisim_rhs : r1 == r2)
+    (REL : r1 == r2)
     : itreeBisimF (RetF r1) (RetF r2)
   | EqTauF (t1 : itree E R) (t2 : itree E R)
-    (lhs_bisim_rhs : bisim t1 t2)
+    (REL : bisim t1 t2)
     : itreeBisimF (TauF t1) (TauF t2)
   | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    (lhs_bisim_rhs : forall x : X, bisim (k1 x) (k2 x))
+    (REL : forall x : X, bisim (k1 x) (k2 x))
     : itreeBisimF (VisF X e k1) (VisF X e k2)
   .
 
@@ -187,9 +187,9 @@ Module InteractionTrees.
     let '(lhs, rhs) as pr in prod _ _ := pair_of_lhs_and_rhs return eqITreeF BISIM pr -> eqITreeF BISIM' pr in
     fun hyp_in : itreeBisimF (observe lhs) (observe rhs) =>
     match hyp_in as _ in itreeBisimF obs_lhs obs_rhs return itreeBisimF obs_lhs obs_rhs with
-    | EqRetF r1 r2 lhs_bisim_rhs => EqRetF r1 r2 lhs_bisim_rhs
-    | EqTauF t1 t2 lhs_bisim_rhs => EqTauF t1 t2 (INCL (t1, t2) lhs_bisim_rhs)
-    | EqVisF X e k1 k2 lhs_bisim_rhs => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (lhs_bisim_rhs x))
+    | EqRetF r1 r2 REL => EqRetF r1 r2 REL
+    | EqTauF t1 t2 REL => EqTauF t1 t2 (INCL (t1, t2) REL)
+    | EqVisF X e k1 k2 REL => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (REL x))
     end
   .
 
