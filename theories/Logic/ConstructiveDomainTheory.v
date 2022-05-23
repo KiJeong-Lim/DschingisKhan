@@ -153,8 +153,7 @@ Module BasicCoLaTheory.
     assert (claim1 : proj1_sig f (proj1_sig (nu f)) =< proj1_sig f (cola_union x (proj1_sig (nu f)))).
     { eapply (proj2_sig f). eapply cola_union_spec... }
     pose proof (proj2_sig (nu f)) as [claim2 claim3]. split.
-    - ii. transitivity (proj1_sig (nu f)); trivial.
-      transitivity (proj1_sig f (proj1_sig (nu f)))...
+    - intros x_le. rewrite x_le at 1. transitivity (proj1_sig f (proj1_sig (nu f)))...
     - intros x_le. unnw.
       exploit (cola_union_le_intro x (proj1_sig (nu f)) (proj1_sig f (cola_union x (proj1_sig (nu f)))) x_le).
       + do 2 red in claim2. rewrite claim2 at 1. eapply (proj2_sig f). eapply le_cola_union_intror.
@@ -167,7 +166,7 @@ Module BasicCoLaTheory.
 
   Lemma G_aux0_isMonotionicMap {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D)
     : isMonotonicMap (G_aux0 f x).
-  Proof with eauto with *.
+  Proof.
     intros x1 x2 x1_le_x2. eapply (proj2_sig f).
     eapply cola_union_le_intro; [eapply le_cola_union_introl | rewrite x1_le_x2; eapply le_cola_union_intror].
   Qed.
