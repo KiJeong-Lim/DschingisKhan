@@ -154,10 +154,9 @@ Module BasicCoLaTheory.
     { eapply (proj2_sig f). eapply cola_union_spec... }
     pose proof (proj2_sig (nu f)) as [claim2 claim3]. split.
     - intros x_le. rewrite x_le at 1. transitivity (proj1_sig f (proj1_sig (nu f)))...
-    - intros x_le. unnw.
-      exploit (cola_union_le_intro x (proj1_sig (nu f)) (proj1_sig f (cola_union x (proj1_sig (nu f)))) x_le).
+    - intros x_le. unnw. exploit (cola_union_le_intro x (proj1_sig (nu f)) _ x_le) as claim4.
       + do 2 red in claim2. rewrite claim2 at 1. eapply (proj2_sig f). eapply le_cola_union_intror.
-      + ii. rewrite x_le. eapply PostfixedPoint_le_GreatestFixedPoint. eapply (proj2_sig f)...
+      + rewrite x_le. eapply PostfixedPoint_le_GreatestFixedPoint. eapply (proj2_sig f)...
   Qed.
 
   Definition G_aux0 {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D -> D :=
