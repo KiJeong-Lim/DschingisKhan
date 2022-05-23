@@ -152,12 +152,11 @@ Module BasicCoLaTheory.
   Proof with eauto with *.
     assert (claim1 : proj1_sig f (proj1_sig (nu f)) =< proj1_sig f (cola_union x (proj1_sig (nu f)))).
     { eapply (proj2_sig f). eapply cola_union_spec... }
-    pose proof (proj2_sig (nu f)) as [claim2 claim3].
-    split.
+    pose proof (proj2_sig (nu f)) as [claim2 claim3]. split.
     - ii. transitivity (proj1_sig (nu f)); trivial.
       transitivity (proj1_sig f (proj1_sig (nu f)))...
     - intros x_le. unnw.
-      exploit (cola_union_le_intro x (proj1_sig (nu f)) (proj1_sig f (cola_union x (proj1_sig (nu f))))); trivial.
+      exploit (cola_union_le_intro x (proj1_sig (nu f)) (proj1_sig f (cola_union x (proj1_sig (nu f)))) x_le).
       + do 2 red in claim2. rewrite claim2 at 1. eapply (proj2_sig f). eapply le_cola_union_intror.
       + ii. rewrite x_le. eapply PostfixedPoint_le_GreatestFixedPoint. eapply (proj2_sig f)...
   Qed.
@@ -177,9 +176,7 @@ Module BasicCoLaTheory.
     @exist (D -> D) isMonotonicMap (G_aux0 f x) (G_aux0_isMonotionicMap f x)
   .
 
-  Definition G0 {requiresCoLa : isCoLa D} {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D :=
-    proj1_sig (nu (G_aux f x))
-  .
+  Definition G0 {requiresCoLa : isCoLa D} {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D := proj1_sig (nu (G_aux f x)).
 
   End PACO_METATHEORY.
 
