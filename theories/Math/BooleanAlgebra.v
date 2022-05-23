@@ -9,7 +9,6 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Math.BasicPosetTheory.
-Require Import DschingisKhan.Math.BasicGeneralTopology.
 
 Module BooleanAlgebra.
 
