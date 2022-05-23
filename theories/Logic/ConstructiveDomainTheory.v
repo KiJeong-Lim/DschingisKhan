@@ -162,19 +162,23 @@ Module BasicCoLaTheory.
       + ii. rewrite x_le. eapply PostfixedPoint_le_GreatestFixedPoint. eapply (proj2_sig f)...
   Qed.
 
-  Definition G0 {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D -> D :=
+  Definition G_aux0 {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D -> D :=
     fun y : D => proj1_sig f (cola_union x y)
   .
 
-  Lemma G0_isMonotionicMap {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D)
-    : isMonotonicMap (G0 f x).
+  Lemma G_aux0_isMonotionicMap {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D)
+    : isMonotonicMap (G_aux0 f x).
   Proof with eauto with *.
     intros x1 x2 x1_le_x2. eapply (proj2_sig f).
     eapply cola_union_le_intro; [eapply le_cola_union_introl | rewrite x1_le_x2; eapply le_cola_union_intror].
   Qed.
 
-  Definition G1 {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : ⟬ D ⟶ D ⟭ :=
-    @exist (D -> D) isMonotonicMap (G0 f x) (G0_isMonotionicMap f x)
+  Definition G_aux {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : ⟬ D ⟶ D ⟭ :=
+    @exist (D -> D) isMonotonicMap (G_aux0 f x) (G_aux0_isMonotionicMap f x)
+  .
+
+  Definition G0 {requiresCoLa : isCoLa D} {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D :=
+    proj1_sig (nu (G_aux f x))
   .
 
   End PACO_METATHEORY.
