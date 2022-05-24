@@ -21,7 +21,7 @@ Module BasicCoLaTheory.
     @sig (Hask.arrow dom cod) (fun f : dom -> cod => isMonotonicMap f)
   .
 
-  Local Notation " '⟬' dom '⟶' cod '⟭' " := (MonotonicMaps dom cod) : type_scope.
+  Local Notation " ⟬ dom ⟶ cod ⟭ " := (MonotonicMaps dom cod) : type_scope.
 
   Local Instance MonotonicMaps_isPoset (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : isPoset ⟬ dom ⟶ cod ⟭ :=
     subPoset (Hask.arrow dom cod) (requiresPoset := arrow_isPoset cod_requiresPoset)
@@ -62,7 +62,7 @@ Module BasicCoLaTheory.
     fun fs : ensemble ⟬ dom ⟶ cod ⟭ => @exist ⟬ dom ⟶ cod ⟭ (fun sup_fs : ⟬ dom ⟶ cod ⟭ => isSupremumOf sup_fs fs) (SupOfMonotonicMaps fs) (SupOfMonotonicMaps_isSupremum fs)
   .
 
-  Lemma getLeastFixedPoint_inCoLa {D : Type} {D_isPoset : isPoset D} {D_isCoLa : isCoLa D} (f : D -> D)
+  Lemma getLeastFixedPoint_inCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : D -> D)
     (f_isMonotonic : isMonotonicMap f)
     : {lfp_f : D | isInfimumOf lfp_f (PrefixedPoints f) /\ isLeastFixedPointOf lfp_f f}.
   Proof.
@@ -74,7 +74,7 @@ Module BasicCoLaTheory.
       + exact (IS_INFIMUM).
   Defined.
 
-  Lemma getGreatestFixedPoint_inCoLa {D : Type} {D_isPoset : isPoset D} {D_isCoLa : isCoLa D} (f : D -> D)
+  Lemma getGreatestFixedPoint_inCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : D -> D)
     (f_isMonotonic : isMonotonicMap f)
     : {gfp_f : D | isSupremumOf gfp_f (PostfixedPoints f) /\ isGreatestFixedPointOf gfp_f f}.
   Proof.
@@ -86,13 +86,13 @@ Module BasicCoLaTheory.
       + exact (IS_SUPREMUM).
   Defined.
 
-  Definition nu {D : Type} {D_isPoset : isPoset D} {D_isCoLa : isCoLa D (requiresPoset := D_isPoset)} (f : ⟬ D ⟶ D ⟭) : {gfp_f : D | isGreatestFixedPointOf gfp_f (proj1_sig f)} :=
-    let nu_proj1_sig : D := proj1_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
-    let IS_SUPREMUM : isSupremumOf nu_proj1_sig (PostfixedPoints (proj1_sig f)) := proj2_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
-    @exist D (fun gfp_f : D => isGreatestFixedPointOf gfp_f (proj1_sig f)) nu_proj1_sig (theGreatestFixedPointOfMonotonicMap (proj1_sig f) nu_proj1_sig (proj2_sig f) IS_SUPREMUM)
+  Definition nu {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D (requiresPoset := requiresPoset)} (f : ⟬ D ⟶ D ⟭) : {gfp_f : D | isGreatestFixedPointOf gfp_f (proj1_sig f)} :=
+    let nu_f_proj1_sig : D := proj1_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
+    let IS_SUPREMUM : isSupremumOf nu_f_proj1_sig (PostfixedPoints (proj1_sig f)) := proj2_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
+    @exist D (fun gfp_f : D => isGreatestFixedPointOf gfp_f (proj1_sig f)) nu_f_proj1_sig (theGreatestFixedPointOfMonotonicMap (proj1_sig f) nu_f_proj1_sig (proj2_sig f) IS_SUPREMUM)
   .
 
-  Corollary nu_isSupremumOf_PostfixedPoints {D : Type} {D_isPoset : isPoset D} {D_isCoLa : isCoLa D (requiresPoset := D_isPoset)} (f : ⟬ D ⟶ D ⟭)
+  Corollary nu_isSupremumOf_PostfixedPoints {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D (requiresPoset := requiresPoset)} (f : ⟬ D ⟶ D ⟭)
     : isSupremumOf (proj1_sig (nu f)) (PostfixedPoints (proj1_sig f)).
   Proof. exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f)))). Qed.
 
@@ -113,12 +113,12 @@ Module BasicCoLaTheory.
   Context {D : Type} {requiresPoset : isPoset D}.
 
   Lemma le_cola_union_introl {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
-    : x1 =< cola_union x1 x2.
-  Proof. eapply cola_union_spec; eauto with *. Qed.
+    : forall x : D, x =< x1 -> x =< cola_union x1 x2.
+  Proof. intros x x_le; rewrite x_le. eapply cola_union_spec; eauto with *. Qed.
 
   Lemma le_cola_union_intror {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
-    : x2 =< cola_union x1 x2.
-  Proof. eapply cola_union_spec; eauto with *. Qed.
+    : forall x : D, x =< x2 -> x =< cola_union x1 x2.
+  Proof. intros x x_le; rewrite x_le. eapply cola_union_spec; eauto with *. Qed.
 
   Lemma cola_union_le_elim_l {hasExtraColaMethods : ExtraColaMethods D} (x1 : D) (x2 : D)
     : forall x : D, cola_union x1 x2 =< x -> x1 =< x.
@@ -155,7 +155,7 @@ Module BasicCoLaTheory.
     pose proof (proj2_sig (nu f)) as [claim2 claim3]. split.
     - intros x_le. rewrite x_le at 1. transitivity (proj1_sig f (proj1_sig (nu f)))...
     - intros x_le. unnw. exploit (cola_union_le_intro x (proj1_sig (nu f)) _ x_le) as claim4.
-      + do 2 red in claim2. rewrite claim2 at 1. eapply (proj2_sig f). eapply le_cola_union_intror.
+      + do 2 red in claim2. rewrite claim2 at 1. eapply (proj2_sig f). eapply le_cola_union_intror...
       + rewrite x_le. eapply PostfixedPoint_le_GreatestFixedPoint. eapply (proj2_sig f)...
   Qed.
 
@@ -167,14 +167,47 @@ Module BasicCoLaTheory.
     : isMonotonicMap (G_aux0 f x).
   Proof.
     intros x1 x2 x1_le_x2. eapply (proj2_sig f).
-    eapply cola_union_le_intro; [eapply le_cola_union_introl | rewrite x1_le_x2; eapply le_cola_union_intror].
+    eapply cola_union_le_intro; [eapply le_cola_union_introl | rewrite x1_le_x2; eapply le_cola_union_intror]; eauto with *.
   Qed.
 
   Definition G_aux {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : ⟬ D ⟶ D ⟭ :=
     @exist (D -> D) isMonotonicMap (G_aux0 f x) (G_aux0_isMonotionicMap f x)
   .
 
-  Definition G0 {requiresCoLa : isCoLa D} {hasExtraColaMethods : ExtraColaMethods D} (f : ⟬ D ⟶ D ⟭) (x : D) : D := proj1_sig (nu (G_aux f x)).
+  Context {requiresCoLa : isCoLa D} {hasExtraColaMethods : ExtraColaMethods D}.
+
+  Definition G0 (f : ⟬ D ⟶ D ⟭) (x : D) : D := proj1_sig (nu (G_aux f x)).
+
+  Lemma G0_isMonotionicMap (f : ⟬ D ⟶ D ⟭)
+    : isMonotonicMap (G0 f).
+  Proof with eauto with *.
+    intros x1 x2 x1_le_x2. eapply StrongCoinduction. simpl in *.
+    assert (claim1 : G0 f x1 == proj1_sig f (cola_union x1 (G0 f x1))) by eapply (proj2_sig (nu (G_aux f x1))).
+    rewrite claim1 at 1. eapply (proj2_sig f). transitivity (cola_union x2 (G0 f x1)).
+    - eapply cola_union_le_intro.
+      + rewrite x1_le_x2 at 1. eapply le_cola_union_introl...
+      + eapply le_cola_union_intror...
+    - eapply cola_union_le_intro.
+      + eapply le_cola_union_introl...
+      + eapply le_cola_union_intror, le_cola_union_introl...
+  Qed.
+
+  Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ :=
+    @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotionicMap f)
+  .
+
+  Lemma G1_isMontonicMap
+    : isMonotonicMap G1.
+  Proof.
+    intros f1 f2 f1_le_f2 x. simpl. unfold G0.
+    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f1 x)) as claim1.
+    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f2 x)) as claim2.
+    eapply claim1. intros d d_in. do 3 red in d_in. eapply claim2; eauto with *.
+    do 3 red. revert d_in. unfold G_aux, G_aux0. simpl. ii.
+    rewrite d_in at 1. eapply f1_le_f2.
+  Qed.
+
+  Definition G : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ := @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap.
 
   End PACO_METATHEORY.
 
