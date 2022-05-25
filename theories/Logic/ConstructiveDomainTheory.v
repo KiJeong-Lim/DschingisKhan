@@ -198,7 +198,7 @@ Module BasicCoLaTheory.
 
   Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ := @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotonicMap f).
 
-  Lemma G1_isMontonicMap
+  Lemma G1_isMonotonicMap
     : isMonotonicMap G1.
   Proof.
     intros f1 f2 f1_le_f2 x0. simpl. unfold G0.
@@ -210,7 +210,7 @@ Module BasicCoLaTheory.
   Qed.
 
   Definition G : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ :=
-    @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap
+    @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMonotonicMap
   .
 
   Variant ParameterizedGreatestFixedPointSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
@@ -340,9 +340,11 @@ End BasicCoLaTheory.
 
 Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
 
-  Import ListNotations MathProps MathClasses BasicPosetTheory BasicCoLaTheory.
+  Import ListNotations MathProps MathClasses BasicPosetTheory BasicCoLaTheory DomainTheoryHelper.
 
   Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_asPoset MonotonicMaps_asCoLa.
+
+  Local Notation " ⟬ dom ⟶ cod ⟭ " := (MonotonicMaps dom cod) : type_scope.
 
   Section PACO_implementation.
 
@@ -380,7 +382,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Variant paco' {paco_F : D -> D} (F : D -> D) (X : D) : D :=
   | mk_paco' (WITNESS : D)
-    (INCL : isSubsetOf WITNESS (cola_union (paco_F X) X))
+    (INCL : isSubsetOf WITNESS (cola_union X (paco_F X)))
     : isSubsetOf (F WITNESS) (paco' F X)
   .
 
@@ -392,6 +394,20 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Unset Primitive Projections.
 
+  Lemma unions_isSupremum (Xs : ensemble D)
+    : isSupremumOf (unions Xs) Xs.
+  Proof.
+    intros X; unnw; split.
+    - intros unions_Xs_le_X Z Z_in x x_in. eapply unions_Xs_le_X. eapply in_unions_iff. exists (Z). split; [exact (x_in) | exact (Z_in)].
+    - intros X_is_upper_bound_of_Xs x x_in.
+      apply in_unions_iff in x_in. destruct x_in as [Z [x_in_Z Z_in_Xs]].
+      revert x x_in_Z. change (Z =< X). eapply X_is_upper_bound_of_Xs. exact (Z_in_Xs).
+  Qed.
+
+  Global Instance ensemble_isCoLa : isCoLa (ensemble A) :=
+    fun Xs : ensemble D => @exist D (fun sup_Xs : D => isSupremumOf sup_Xs Xs) (unions Xs) (unions_isSupremum Xs)
+  .
+
   End PACO_implementation.
 
   Global Arguments paco' {A} (paco_F) (F) (X).
@@ -400,6 +416,130 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Section PACO_theory.
 
   Context {A : Type}.
+
+  Lemma paco_fold (F : ensemble A -> ensemble A) (Y : ensemble A)
+    : isSubsetOf (F (cola_union Y (paco F Y))) (paco F Y).
+  Proof.
+    intros z z_in. econstructor. revert z z_in.
+    eapply mk_paco'. now change (cola_union Y (paco F Y) =< cola_union Y (paco F Y)).
+  Qed.
+
+  Lemma paco_unfold (F : ensemble A -> ensemble A) (Y : ensemble A)
+    (F_monotonic : isMonotonicMap F)
+    : isSubsetOf (paco F Y) (F (cola_union Y (paco F Y))).
+  Proof.
+    intros z z_in. apply unfold_paco in z_in.
+    inversion z_in; subst. clear z_in. rename WITNESS into X, H into ELEM.
+    revert z ELEM. change (F X =< F (cola_union Y (paco F Y))). now apply F_monotonic.
+  Qed.
+
+  Lemma paco_preserves_monotonicity (F : ensemble A -> ensemble A)
+    (F_monotonic : isMonotonicMap F)
+    : isMonotonicMap (paco F).
+  Proof.
+    intros X1 X2 X1_le_X2.
+    pose proof (paco_unfold F X1 F_monotonic) as claim1.
+    cofix CIH. intros z z_in. econstructor. apply claim1 in z_in.
+    revert z z_in. eapply mk_paco'. intros z z_in. eapply in_union_iff in z_in.
+    destruct z_in as [z_in_X1 | z_in_paco_f_X1]; [left; eapply X1_le_X2 | right; eapply CIH]; assumption.
+  Qed.
+
+  Local Hint Resolve le_cola_union_introl le_cola_union_intror cola_union_le_intro cola_empty_le_intro : core.
+
+  Let D : Type := ensemble A.
+
+  Definition Paco (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ :=
+    @exist (D -> D) isMonotonicMap (paco (proj1_sig f)) (paco_preserves_monotonicity (proj1_sig f) (proj2_sig f))
+  .
+
+  Lemma initPaco (f : ⟬ D ⟶ D ⟭)
+    : proj1_sig (nu f) == proj1_sig (Paco f) cola_empty.
+  Proof with eauto with *.
+    set (F := proj1_sig f).
+    assert (claim1 : F (cola_union cola_empty (paco F cola_empty)) =< paco F cola_empty) by exact (paco_fold F cola_empty).
+    assert (claim2 : paco F cola_empty =< F (cola_union cola_empty (paco F cola_empty))) by exact (paco_unfold F cola_empty (proj2_sig f)).
+    assert (FIXEDPOINT : paco F cola_empty == F (paco F cola_empty)).
+    { eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A).
+      - rewrite claim2 at 1. eapply (proj2_sig f). eapply cola_union_le_intro...
+      - rewrite <- claim1 at 2. eapply (proj2_sig f). eapply le_cola_union_intror...
+    }
+    assert (IS_SUPREMUM : isSupremumOf (proj1_sig (nu f)) (PostfixedPoints F)) by eapply nu_isSupremumOf_PostfixedPoints.
+    pose proof (nu_f_isGreatestFixedPointOf_f f) as [claim3 claim4]; unnw.
+    do 2 red in claim3. fold F in claim3.
+    assert (to_show : F (proj1_sig (nu f)) =< paco F cola_empty).
+    { cofix CIH. intros z z_in. econstructor. revert z z_in.
+      apply mk_paco'. intros z z_in. right. eapply CIH. rewrite <- claim3. exact (z_in).
+    }
+    rewrite <- claim3 in to_show. eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A)...
+  Qed.
+
+  Lemma unfoldPaco (f : ⟬ D ⟶ D ⟭)
+    : forall X : D, proj1_sig (Paco f) X == proj1_sig f (cola_union X (proj1_sig (Paco f) X)).
+  Proof.
+    intros X. eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A).
+    - eapply paco_unfold. exact (proj2_sig f).
+    - eapply paco_fold.
+  Qed.
+
+  Lemma accumPaco (f : ⟬ D ⟶ D ⟭)
+    : forall X : D, forall Y : D, Y =< proj1_sig (Paco f) X <-> Y =< proj1_sig (Paco f) (cola_union X Y).
+  Proof with eauto with *.
+    intros X Y. split.
+    - intros Y_le_paco_f_X z z_in. apply Y_le_paco_f_X in z_in.
+      revert z z_in. change (proj1_sig (Paco f) X =< proj1_sig (Paco f) (cola_union X Y)).
+      eapply paco_preserves_monotonicity; [exact (proj2_sig f) | eapply le_cola_union_introl]...
+    - intros H_STAR. set (F := proj1_sig f).
+      assert (claim1 : (paco F (cola_union X Y)) =< (F (cola_union (cola_union X Y) (paco F (cola_union X Y))))).
+      { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
+      assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
+      { eapply (proj2_sig f). eapply cola_union_le_intro.
+        - intros z z_in. apply in_union_iff in z_in. destruct z_in as [z_in_X | z_in_Y]; [left | right]...
+        - eapply le_cola_union_intror...
+      }
+      assert (claim3 : member (paco F (cola_union X Y)) (PostfixedPoints (fun Z : D => F (cola_union X Z)))).
+      { intros z z_in. eapply (proj2_sig f).
+        - reflexivity.
+        - eapply claim2...
+      }
+      assert (claim4 : isMonotonicMap (fun Z : D => F (cola_union X Z))).
+      { intros X1 X2 X1_le_X2. eapply (proj2_sig f).
+        intros z [z_in | z_in]; revert z z_in.
+        - change (X =< cola_union X X2). eapply le_cola_union_introl...
+        - change (X1 =< cola_union X X2). eapply le_cola_union_intror...
+      }
+      set (nu0 := proj1_sig (nu (@exist (D -> D) isMonotonicMap (fun Z : D => F (cola_union X Z)) claim4))).
+      assert (claim5 : paco F (cola_union X Y) =< F (cola_union X (paco F (cola_union X Y)))).
+      { intros z z_in. eapply (proj2_sig f).
+        - reflexivity.
+        - eapply claim2...
+      }
+      assert (claim6 : paco F (cola_union X Y) =< nu0).
+      { eapply PostfixedPoint_le_GreatestFixedPoint... }
+      assert (claim7 : isSupremumOf nu0 (PostfixedPoints (fun Z : D => F (cola_union X Z)))).
+      { eapply nu_isSupremumOf_PostfixedPoints. }
+      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) (fun Z : D => F (cola_union X Z)) nu0 claim4 claim7) as [claim8 claim9]; unnw.
+      assert (claim10 : nu0 =< F (cola_union X nu0)).
+      { eapply eqProp_implies_leProp... }
+      assert (to_show : F (cola_union X nu0) =< paco F X).
+      { cofix CIH. intros z z_in. econstructor. revert z z_in.
+        change (F (cola_union X nu0) =< paco' (paco F) F X). eapply mk_paco'.
+        intros z [z_in | z_in]; [left | right; eapply CIH]...
+      }
+      rewrite H_STAR at 1. change (paco F (cola_union X Y) =< paco F X).
+      rewrite <- to_show. rewrite claim6. exact (claim10).
+  Qed.
+
+  Corollary Paco_spec (f : ⟬ D ⟶ D ⟭)
+    : ParameterizedGreatestFixedPointSpec f (Paco f).
+  Proof. split; [exact (initPaco f) | exact (unfoldPaco f) | exact (accumPaco f)]. Qed.
+
+  Corollary Paco_eq_G (f : ⟬ D ⟶ D ⟭)
+    : Paco f == proj1_sig G f.
+  Proof. eapply @G_characterization with (requiresPoset := ensemble_isPoset A); exact (Paco_spec f). Qed.
+
+  Corollary Paco_isMonotonicMap
+    : isMonotonicMap Paco.
+  Proof. intros f1 f2 f1_le_f2. do 2 rewrite Paco_eq_G. now eapply G1_isMonotonicMap. Qed.
 
   End PACO_theory.
 
