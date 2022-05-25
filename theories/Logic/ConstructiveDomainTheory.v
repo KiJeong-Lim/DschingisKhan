@@ -146,6 +146,8 @@ Module BasicCoLaTheory.
     destruct d_in as [].
   Qed.
 
+  Local Hint Resolve le_cola_union_introl le_cola_union_intror cola_union_le_intro cola_empty_le_intro : core.
+
   Lemma PostfixedPoint_le_GreatestFixedPoint {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (x : D)
     (IS_POSTFIXEDPOINT : x =< proj1_sig f x)
     : x =< proj1_sig (nu f).
@@ -182,7 +184,7 @@ Module BasicCoLaTheory.
 
   Definition G0 (f : ⟬ D ⟶ D ⟭) (x : D) : D := proj1_sig (nu (G_aux f x)).
 
-  Lemma G0_isMonotionicMap (f : ⟬ D ⟶ D ⟭)
+  Lemma G0_isMonotonicMap (f : ⟬ D ⟶ D ⟭)
     : isMonotonicMap (G0 f).
   Proof with eauto with *.
     intros x1 x2 x1_le_x2. eapply StrongCoinduction. simpl in *.
@@ -191,12 +193,10 @@ Module BasicCoLaTheory.
     - eapply cola_union_le_intro.
       + rewrite x1_le_x2 at 1. eapply le_cola_union_introl...
       + eapply le_cola_union_intror...
-    - eapply cola_union_le_intro.
-      + eapply le_cola_union_introl...
-      + eapply le_cola_union_intror, le_cola_union_introl...
+    - eapply cola_union_le_intro...
   Qed.
 
-  Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ := @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotionicMap f).
+  Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ := @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotonicMap f).
 
   Lemma G1_isMontonicMap
     : isMonotonicMap G1.
@@ -213,32 +213,62 @@ Module BasicCoLaTheory.
     @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap
   .
 
-  Variant ParameterizedGreatestFixedpointSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
-  | verifyParameterizedGreatestFixedpointSpec
+  Variant ParameterizedGreatestFixedPointSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
+  | verifyParameterizedGreatestFixedPointSpec
     (INIT_COFIXPOINT : proj1_sig (nu f) == proj1_sig G_f cola_empty)
     (UNFOLD_COFIXPOINT : forall x : D, proj1_sig G_f x == proj1_sig f (cola_union x (proj1_sig G_f x)))
     (ACCUM_COFIXPOINT : forall x : D, forall y : D, y =< proj1_sig G_f x <-> y =< proj1_sig G_f (cola_union x y))
-    : ParameterizedGreatestFixedpointSpec f G_f
+    : ParameterizedGreatestFixedPointSpec f G_f
   .
 
-(*
   Theorem G_specification (f : ⟬ D ⟶ D ⟭)
-    : ParameterizedGreatestFixedpointSpec f (proj1_sig G f).
-  Proof. Admitted.
-
-  Theorem G_characterization (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭)
-    (G_f_spec : ParameterizedGreatestFixedpointSpec f G_f)
-    : G_f == proj1_sig G f.
-  Proof. Admitted.
+    : ParameterizedGreatestFixedPointSpec f (proj1_sig G f).
+  Proof with eauto with *.
+    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f cola_empty)) as claim1.
+    pose proof (nu_isSupremumOf_PostfixedPoints f) as claim2.
+    split.
+    - eapply leProp_Antisymmetric.
+      + eapply claim2. ii; desnw. eapply claim1...
+        do 3 red. do 2 red in H_IN. rewrite H_IN at 1. eapply (proj2_sig f)...
+      + eapply claim1. ii; desnw. eapply claim2...
+        do 3 red. do 2 red in H_IN. rewrite H_IN at 1. eapply (proj2_sig f)...
+    - exact (fun x : D => proj1 (nu_f_isGreatestFixedPointOf_f (G_aux f x))).
+    - iis; intros y_le.
+      + rewrite y_le at 1. eapply G0_isMonotonicMap...
+      + rewrite y_le at 1. eapply PostfixedPoint_le_GreatestFixedPoint.
+        assert (claim3 : proj1_sig (proj1_sig G f) (cola_union x y) == proj1_sig f (cola_union (cola_union x y) (proj1_sig (proj1_sig G f) (cola_union x y)))).
+        { exact (proj1 (nu_f_isGreatestFixedPointOf_f (G_aux f (cola_union x y)))). }
+        rewrite claim3 at 1. eapply (proj2_sig f). eapply cola_union_le_intro...
+  Qed.
 
   Theorem G_compositionality (f : ⟬ D ⟶ D ⟭) (r : D) (r1 : D) (r2 : D) (g1 : D) (g2 : D)
     (g1_le_G_f_r1 : g1 =< proj1_sig (proj1_sig G f) r1)
-    (g2_le_G_f_r2 : g1 =< proj1_sig (proj1_sig G f) r2)
+    (g2_le_G_f_r2 : g2 =< proj1_sig (proj1_sig G f) r2)
     (r1_le : r1 =< cola_union r g2)
     (r2_le : r2 =< cola_union r g1)
     : cola_union g1 g2 =< proj1_sig (proj1_sig G f) r.
-  Proof. Admitted.
-*)
+  Proof with eauto with *.
+    assert (claim1 : g1 =< proj1_sig (proj1_sig G f) (cola_union r (cola_union g1 g2))).
+    { rewrite g1_le_G_f_r1 at 1. eapply G0_isMonotonicMap. rewrite r1_le. eapply cola_union_le_intro... }
+    assert (claim2 : g2 =< proj1_sig (proj1_sig G f) (cola_union r (cola_union g1 g2))).
+    { rewrite g2_le_G_f_r2 at 1. eapply G0_isMonotonicMap. rewrite r2_le. eapply cola_union_le_intro... }
+    pose proof (G_specification f) as [? ? ?]. apply ACCUM_COFIXPOINT...
+  Qed.
+
+  Theorem G_characterization (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭)
+    (G_f_spec : ParameterizedGreatestFixedPointSpec f G_f)
+    : G_f == proj1_sig G f.
+  Proof with eauto with *. (* Thanks to SoonWon Moon *)
+    destruct G_f_spec as [INIT_COFIXPOINT' UNFOLD_COFIXPOINT' ACCUM_COFIXPOINT'].
+    assert (claim1 : forall x : D, proj1_sig G_f x =< proj1_sig (proj1_sig G f) x).
+    { ii. eapply PostfixedPoint_le_GreatestFixedPoint... }
+    pose proof (G_specification f) as [? ? ?].
+    assert (claim2 : forall x : D, proj1_sig (proj1_sig G f) x =< proj1_sig G_f (cola_union x (proj1_sig (proj1_sig G f) x))).
+    { ii. rewrite UNFOLD_COFIXPOINT with (x := x) at 1. rewrite UNFOLD_COFIXPOINT'. eapply (proj2_sig f). eapply cola_union_le_intro... }
+    intros x. eapply leProp_Antisymmetric.
+    - eapply claim1.
+    - eapply ACCUM_COFIXPOINT'...
+  Qed.
 
   End PACO_METATHEORY.
 
