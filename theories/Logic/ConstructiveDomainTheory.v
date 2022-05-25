@@ -199,12 +199,12 @@ Module BasicCoLaTheory.
   Lemma G1_isMontonicMap
     : isMonotonicMap G1.
   Proof.
-    intros f1 f2 f1_le_f2 x. simpl. unfold G0.
-    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f1 x)) as claim1.
-    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f2 x)) as claim2.
-    eapply claim1. intros d d_in. do 3 red in d_in. eapply claim2; eauto with *.
-    do 3 red. revert d_in. unfold G_aux, G_aux0. simpl. ii.
-    rewrite d_in at 1. eapply f1_le_f2.
+    intros f1 f2 f1_le_f2 x0. simpl. unfold G0.
+    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f1 x0)) as claim1.
+    pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f2 x0)) as claim2.
+    eapply claim1. ii; desnw. do 2 red in H_IN. eapply claim2; eauto with *.
+    do 3 red. revert H_IN. unfold G_aux, G_aux0. simpl. intros x_le.
+    rewrite x_le at 1. eapply f1_le_f2.
   Qed.
 
   Definition G : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ := @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap.
