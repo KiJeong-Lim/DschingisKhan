@@ -373,6 +373,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     : isSubsetOf (F WITNESS) (paco' F X)
   .
 
+  Set Primitive Projections.
+
   CoInductive paco (F : D -> D) (X : D) (x : A) : Prop :=
     Fold_paco { unfold_paco : member x (paco' (paco_F := paco F) F X) }
   .
