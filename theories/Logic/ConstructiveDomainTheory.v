@@ -424,8 +424,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Lemma paco_fold (F : D -> D) (Y : D)
     : isSubsetOf (F (cola_union Y (paco F Y))) (paco F Y).
   Proof.
-    intros z z_in. econstructor. revert z z_in.
-    eapply mk_paco'. now change (cola_union Y (paco F Y) =< cola_union Y (paco F Y)).
+    intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
+    now change (cola_union Y (paco F Y) =< cola_union Y (paco F Y)).
   Qed.
 
   Lemma paco_unfold (F : D -> D) (Y : D)
@@ -441,11 +441,9 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     (F_monotonic : isMonotonicMap F)
     : isMonotonicMap (paco F).
   Proof.
-    intros X1 X2 X1_le_X2.
-    pose proof (paco_unfold F X1 F_monotonic) as claim1.
-    cofix CIH. intros z z_in. econstructor. apply claim1 in z_in.
-    revert z z_in. eapply mk_paco'. intros z z_in. eapply in_union_iff in z_in.
-    destruct z_in as [z_in_X1 | z_in_paco_f_X1]; [left; eapply X1_le_X2 | right; eapply CIH]; assumption.
+    intros X1 X2 X1_le_X2. pose proof (paco_unfold F X1 F_monotonic) as claim1.
+    cofix CIH. intros z z_in. econstructor. apply claim1 in z_in. revert z z_in. eapply mk_paco'.
+    intros z [z_in_X1 | z_in_paco_f_X1]; [left; eapply X1_le_X2 | right; eapply CIH]; assumption.
   Qed.
 
   Definition Paco (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ :=
@@ -467,8 +465,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     pose proof (nu_f_isGreatestFixedPointOf_f f) as [claim3 claim4]; unnw.
     do 2 red in claim3. fold F in claim3.
     assert (to_show : F (proj1_sig (nu f)) =< paco F cola_empty).
-    { cofix CIH. intros z z_in. econstructor. revert z z_in.
-      apply mk_paco'. intros z z_in. right. eapply CIH. rewrite <- claim3. exact (z_in).
+    { cofix CIH. intros z z_in. econstructor. revert z z_in. apply mk_paco'.
+      intros z z_in. right. eapply CIH. rewrite <- claim3. exact (z_in).
     }
     rewrite <- claim3 in to_show. eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A)...
   Qed.
@@ -521,8 +519,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       assert (claim10 : nu0 =< F (cola_union X nu0)).
       { eapply eqProp_implies_leProp... }
       assert (to_show : F (cola_union X nu0) =< paco F X).
-      { cofix CIH. intros z z_in. econstructor. revert z z_in.
-        change (F (cola_union X nu0) =< paco' (paco F) F X). eapply mk_paco'.
+      { cofix CIH. intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
       }
       rewrite <- to_show, claim6; exact (claim10).
