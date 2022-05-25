@@ -23,7 +23,7 @@ Module BasicCoLaTheory.
 
   Local Notation " ⟬ dom ⟶ cod ⟭ " := (MonotonicMaps dom cod) : type_scope.
 
-  Local Instance MonotonicMaps_isPoset (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : isPoset ⟬ dom ⟶ cod ⟭ :=
+  Local Instance MonotonicMaps_asPoset (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : isPoset ⟬ dom ⟶ cod ⟭ :=
     subPoset (Hask.arrow dom cod) (requiresPoset := arrow_isPoset cod_requiresPoset)
   .
 
@@ -58,7 +58,7 @@ Module BasicCoLaTheory.
       revert x. change (f_i =< f)...
   Qed.
 
-  Local Instance MonotonicMaps_isCoLa (dom : Type) (cod : Type) {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCoLa : isCoLa dom} {cod_isCoLa : isCoLa cod} : isCoLa ⟬ dom ⟶ cod ⟭ :=
+  Local Instance MonotonicMaps_asCoLa (dom : Type) (cod : Type) {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCoLa : isCoLa dom} {cod_isCoLa : isCoLa cod} : isCoLa ⟬ dom ⟶ cod ⟭ :=
     fun fs : ensemble ⟬ dom ⟶ cod ⟭ => @exist ⟬ dom ⟶ cod ⟭ (fun sup_fs : ⟬ dom ⟶ cod ⟭ => isSupremumOf sup_fs fs) (SupOfMonotonicMaps fs) (SupOfMonotonicMaps_isSupremum fs)
   .
 
@@ -326,13 +326,26 @@ Module BasicCoLaTheory.
       eapply fix_f_isInfimum... eapply in_intersection_iff...
   Qed.
 
+  Corollary FixedPoints_asCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭)
+    : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := subPoset D).
+  Proof.
+    intros X.
+    assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
+    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]].
+      subst z; simpl in *. exact (x_eq_f_x).
+    }
+    pose proof (KnasterTarski f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
+    exists (@exist D (fun x : D => FixedPoints (proj1_sig f) x) sup_X (proj1 IS_SUPREMUM)).
+    rewrite <- isSupremumIn_iff. exact (IS_SUPREMUM).
+  Qed.
+
 End BasicCoLaTheory.
 
 Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
 
   Import ListNotations MathProps MathClasses BasicPosetTheory BasicCoLaTheory.
 
-  Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_isPoset MonotonicMaps_isCoLa.
+  Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_asPoset MonotonicMaps_asCoLa.
 
   Section PACO_implementation.
 
