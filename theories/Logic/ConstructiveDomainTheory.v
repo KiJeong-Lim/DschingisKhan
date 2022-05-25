@@ -213,13 +213,32 @@ Module BasicCoLaTheory.
     @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap
   .
 
-  Variant ParameterizedGreatestFixedpoint_spec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
+  Variant ParameterizedGreatestFixedpointSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
   | verifyParameterizedGreatestFixedpointSpec
     (INIT_COFIXPOINT : proj1_sig (nu f) == proj1_sig G_f cola_empty)
     (UNFOLD_COFIXPOINT : forall x : D, proj1_sig G_f x == proj1_sig f (cola_union x (proj1_sig G_f x)))
     (ACCUM_COFIXPOINT : forall x : D, forall y : D, y =< proj1_sig G_f x <-> y =< proj1_sig G_f (cola_union x y))
-    : ParameterizedGreatestFixedpoint_spec f G_f
+    : ParameterizedGreatestFixedpointSpec f G_f
   .
+
+(*
+  Theorem G_specification (f : ⟬ D ⟶ D ⟭)
+    : ParameterizedGreatestFixedpointSpec f (proj1_sig G f).
+  Proof. Admitted.
+
+  Theorem G_characterization (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭)
+    (G_f_spec : ParameterizedGreatestFixedpointSpec f G_f)
+    : G_f == proj1_sig G f.
+  Proof. Admitted.
+
+  Theorem G_compositionality (f : ⟬ D ⟶ D ⟭) (r : D) (r1 : D) (r2 : D) (g1 : D) (g2 : D)
+    (g1_le_G_f_r1 : g1 =< proj1_sig (proj1_sig G f) r1)
+    (g2_le_G_f_r2 : g1 =< proj1_sig (proj1_sig G f) r2)
+    (r1_le : r1 =< cola_union r g2)
+    (r2_le : r2 =< cola_union r g1)
+    : cola_union g1 g2 =< proj1_sig (proj1_sig G f) r.
+  Proof. Admitted.
+*)
 
   End PACO_METATHEORY.
 
