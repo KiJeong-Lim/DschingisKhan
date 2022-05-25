@@ -335,8 +335,7 @@ Module BasicCoLaTheory.
       subst z; simpl in *. exact (x_eq_f_x).
     }
     pose proof (KnasterTarski f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
-    exists (@exist D (fun x : D => FixedPoints (proj1_sig f) x) sup_X (proj1 IS_SUPREMUM)).
-    rewrite <- isSupremumIn_iff. exact (IS_SUPREMUM).
+    exists (@exist D (fun x : D => FixedPoints (proj1_sig f) x) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
   Qed.
 
 End BasicCoLaTheory.
