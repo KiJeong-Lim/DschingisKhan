@@ -285,7 +285,7 @@ Module BasicCoLaTheory.
       eapply claim3; eauto with *.
   Qed.
 
-  Theorem KnasterTarski {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
+  Theorem KnasterTarski_3rd {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
     (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints (proj1_sig f)))
     : {fix_f : D | isSupremumIn fix_f W (FixedPoints (proj1_sig f))}.
   Proof with eauto with *. (* Referring to "https://www.cs.utexas.edu/users/misra/Notes.dir/KnasterTarski.pdf" written by Jayadev Misra *)
@@ -332,7 +332,7 @@ Module BasicCoLaTheory.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
     { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. now subst z. }
-    pose proof (KnasterTarski f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
+    pose proof (KnasterTarski_3rd f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
     exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
   Qed.
 
@@ -455,7 +455,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Lemma initPaco (f : ⟬ D ⟶ D ⟭)
     : proj1_sig (nu f) == proj1_sig (Paco f) cola_empty.
   Proof with eauto with *.
-    set (F := proj1_sig f).
+    keep (proj1_sig f) as F into (D -> D).
     assert (claim1 : F (cola_union cola_empty (paco F cola_empty)) =< paco F cola_empty) by exact (paco_fold F cola_empty).
     assert (claim2 : paco F cola_empty =< F (cola_union cola_empty (paco F cola_empty))) by exact (paco_unfold F cola_empty (proj2_sig f)).
     assert (FIXEDPOINT : paco F cola_empty == F (paco F cola_empty)).
@@ -488,7 +488,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     - intros Y_le_paco_f_X z z_in. apply Y_le_paco_f_X in z_in.
       revert z z_in. change (proj1_sig (Paco f) X =< proj1_sig (Paco f) (cola_union X Y)).
       eapply paco_preserves_monotonicity; [exact (proj2_sig f) | eapply le_cola_union_introl]...
-    - intros COIND. set (F := proj1_sig f).
+    - intros COIND. keep (proj1_sig f) as F into (D -> D). rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
       assert (claim1 : (paco F (cola_union X Y)) =< (F (cola_union (cola_union X Y) (paco F (cola_union X Y))))).
       { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
       assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
@@ -525,8 +525,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
         change (F (cola_union X nu0) =< paco' (paco F) F X). eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
       }
-      rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
-      rewrite <- to_show. rewrite claim6. exact (claim10).
+      rewrite <- to_show, claim6; exact (claim10).
   Qed.
 
   Corollary Paco_spec (f : ⟬ D ⟶ D ⟭)
@@ -540,6 +539,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Corollary Paco_isMonotonicMap
     : isMonotonicMap Paco.
   Proof. intros f1 f2 f1_le_f2. do 2 rewrite Paco_eq_G. now eapply G1_isMonotonicMap. Qed.
+
+  Definition PaCo : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ := @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap Paco Paco_isMonotonicMap.
 
   End PACO_theory.
 
