@@ -683,7 +683,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Local Instance lePropOnRank_Reflexive
     : Reflexive lePropOnRank.
   Proof.
-    intros x. induction x as [x_children x_childtrees IH]; simpl; eauto with *.
+    intros x. induction x as [x_children x_childtrees IH]. simpl. eauto with *.
   Qed.
 
   Local Instance lePropOnRank_Transitive
@@ -711,18 +711,18 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Lemma lePropOnRank_eqTree_lePropOnRank (x : AczelSet) (lhs : AczelSet) (rhs : AczelSet)
     (x_le_lhs : x `rLe` lhs)
     (lhs_eq_rhs : lhs == rhs)
-    : lePropOnRank x rhs.
+    : x `rLe` rhs.
   Proof.
     revert lhs rhs x_le_lhs lhs_eq_rhs. induction x as [x_children x_childtrees IH].
     intros [y_children y_childtrees] [z_children z_childtrees]. intros x_le_y y_eq_z c_x.
-    simpl in *; unnw. destruct y_eq_z as [y_sim_z z_sim_y]. unfold_eqTree.
+    simpl in *; unnw. unfold_eqTree. destruct y_eq_z as [y_sim_z z_sim_y].
     pose proof (x_le_y c_x) as [c_y x_c_le_y_c]. pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. eauto with *.
   Qed.
 
   Lemma eqTree_lePropOnRank_lePropOnRank (lhs : AczelSet) (rhs : AczelSet) (x : AczelSet)
     (lhs_eq_rhs : lhs == rhs)
     (rhs_le_x : rhs `rLe` x)
-    : lePropOnRank lhs x.
+    : lhs `rLe` x.
   Proof.
     revert lhs rhs lhs_eq_rhs rhs_le_x. induction x as [x_children x_childtrees IH].
     intros [y_children y_childtrees] [z_children z_childtrees]. intros y_eq_z z_le_x c_y.
@@ -775,7 +775,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     assert (lhs_le_rhs : lhs `rLe` rhs) by now rewrite lhs_eq_rhs.
     clear lhs_eq_rhs. revert lhs lhs_le_rhs. induction rhs as [x_children x_childtrees IH].
     intros [y_children y_childtrees] y_le_x. econstructor. intros alpha alpha_lt_x.
-    destruct alpha_lt_x as [c_y RANK_LE]. simpl in *. destruct alpha as [alpha_base alpha_elems].
+    destruct alpha_lt_x as [c_y alpha_le_y_c]. simpl in *. destruct alpha as [alpha_base alpha_elems].
     pose proof (y_le_x c_y) as [c_x y_c_le_x_c]. eapply IH with (c := c_x). now transitivity (y_childtrees c_y).
   Qed.
 
