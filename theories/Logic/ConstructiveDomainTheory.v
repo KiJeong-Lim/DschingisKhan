@@ -265,12 +265,66 @@ Module BasicCoLaTheory.
     pose proof (G_specification f) as [? ? ?].
     assert (claim2 : forall x : D, proj1_sig (proj1_sig G f) x =< proj1_sig G_f (cola_union x (proj1_sig (proj1_sig G f) x))).
     { ii. rewrite UNFOLD_COFIXPOINT with (x := x) at 1. rewrite UNFOLD_COFIXPOINT'. eapply (proj2_sig f). eapply cola_union_le_intro... }
-    intros x. eapply leProp_Antisymmetric.
+    ii. eapply leProp_Antisymmetric.
     - eapply claim1.
     - eapply ACCUM_COFIXPOINT'...
   Qed.
 
   End PACO_METATHEORY.
+
+  Lemma CoinductionPrinciple {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (b : ⟬ D ⟶ D ⟭)
+    : forall x : D, x =< proj1_sig (nu b) <-> << COIND : exists y : D, x =< y /\ y =< proj1_sig b y >>.
+  Proof.
+    pose proof (nu_f_isGreatestFixedPointOf_f b) as [claim1 claim2].
+    pose proof (nu_isSupremumOf_PostfixedPoints b) as claim3.
+    unnw. iis.
+    - intros x_le_nu_b. exists (proj1_sig (nu b)). split; trivial.
+      eapply eqProp_implies_leProp, claim1.
+    - intros [y [x_le_y y_le_b_y]]. rewrite x_le_y.
+      eapply claim3; eauto with *.
+  Qed.
+
+  Theorem KnasterTarski {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
+    (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints (proj1_sig f)))
+    : {fix_f : D | isSupremumIn fix_f W (FixedPoints (proj1_sig f))}.
+  Proof with eauto with *.
+    pose proof (getSupremumOf_inCoLa W) as [q q_is_lub_of_W].
+    keep (fun w : D => q =< w) as W_hat into (ensemble D).
+    assert (q_is_glb_of_W_hat : isInfimumOf q W_hat) by exact (Supremum_isInfimumOf_itsUpperBounds W q q_is_lub_of_W).
+    assert (q_in_W_hat : member q W_hat) by exact (leProp_Reflexive q).
+    assert (W_hat_closed_under_f : forall x : D, member x W_hat -> member (proj1_sig f x) W_hat).
+    { intros x q_le_x. eapply q_is_lub_of_W.
+      intros w w_in_W. transitivity (proj1_sig f w).
+      - eapply eqProp_implies_leProp, W_is_a_set_of_fixed_points_of_f...
+      - eapply (proj2_sig f). transitivity (q); trivial. eapply q_is_lub_of_W...
+    }
+    assert (q_le_f_q : q =< proj1_sig f q) by exact (W_hat_closed_under_f q q_in_W_hat).
+    pose proof (getInfimumOf_inCoLa (intersection (PrefixedPoints (proj1_sig f)) W_hat)) as [fix_f fix_f_isInfimum].
+    enough (claim1 : proj1_sig f fix_f =< fix_f).
+    enough (claim2 : q =< fix_f).
+    enough (claim3 : fix_f == proj1_sig f fix_f).
+    exists (fix_f).
+    - split; unnw.
+      + exact (claim3).
+      + intros [x x_in]. simpl. split.
+        { intros fix_f_le_x d d_in. transitivity (q).
+          - eapply q_is_lub_of_W...
+          - transitivity (fix_f)...
+        }
+        { intros x_is_upper_bound_of_W. eapply fix_f_isInfimum... split.
+          - eapply eqProp_implies_leProp. now symmetry.
+          - eapply q_is_lub_of_W...
+        }
+    - eapply leProp_Antisymmetric; trivial.
+      eapply fix_f_isInfimum... eapply in_intersection_iff.
+      split; [eapply (proj2_sig f) | eapply W_hat_closed_under_f]... 
+    - eapply fix_f_isInfimum. ii; desnw.
+      apply in_intersection_iff in H_IN. destruct H_IN as [f_x_le_x q_le_x]...
+    - eapply fix_f_isInfimum. intros x x_in.
+      apply in_intersection_iff in x_in. destruct x_in as [f_x_le_x q_le_x].
+      do 2 red in f_x_le_x. rewrite <- f_x_le_x. eapply (proj2_sig f).
+      eapply fix_f_isInfimum... eapply in_intersection_iff...
+  Qed.
 
 End BasicCoLaTheory.
 

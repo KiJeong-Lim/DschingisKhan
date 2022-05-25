@@ -67,6 +67,16 @@ Module BasicPosetTheory.
 
   Context {D : Type} {requiresPoset : isPoset D}.
 
+  Lemma Supremum_isInfimumOf_itsUpperBounds (X : ensemble D) (q : D)
+    (q_isSupremumOf_X : isSupremumOf q X)
+    : isInfimumOf q (fun x : D => q =< x).
+  Proof with eauto with *.
+    intros d. unnw. split.
+    - intros d_le_q x q_le_x. rewrite d_le_q...
+    - intros d_in. eapply d_in, q_isSupremumOf_X.
+      ii; desnw. eapply q_isSupremumOf_X...
+  Qed.
+
   Lemma Supremum_monotonic_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : isSupremumOf sup_X1 X1)
     (sup_X2_isSupremumOf_X2 : isSupremumOf sup_X2 X2)
