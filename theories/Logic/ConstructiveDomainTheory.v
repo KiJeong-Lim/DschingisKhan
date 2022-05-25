@@ -523,7 +523,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       assert (to_show : F (cola_union X nu0) =< paco F X).
       { cofix CIH. intros z z_in. econstructor. revert z z_in.
         change (F (cola_union X nu0) =< paco' (paco F) F X). eapply mk_paco'.
-        intros z [z_in | z_in]; [left | right; eapply CIH]...
+        intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
       }
       rewrite H_STAR at 1. change (paco F (cola_union X Y) =< paco F X).
       rewrite <- to_show. rewrite claim6. exact (claim10).
