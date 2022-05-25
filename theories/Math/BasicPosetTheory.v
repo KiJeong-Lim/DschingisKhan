@@ -126,13 +126,13 @@ Module BasicPosetTheory.
 
   Local Hint Resolve SupremumOfMapSuprema_ge_Suprema : poset_hints.
 
-  Lemma SupremumOfMapSuprema_isSupremumOf_unions (Xs : ensemble (ensemble D)) (sup : D)
-    (SUP_EXISTS : forall X : ensemble D, << H_IN : member X Xs >> -> exists sup_X : D, isSupremumOf sup_X X)
+  Theorem SupremumOfMapSuprema_isSupremumOf_unions (Xs : ensemble (ensemble D)) (sup : D)
+    (SUPS_EXIST : forall X : ensemble D, << H_IN : member X Xs >> -> exists sup_X : D, isSupremumOf sup_X X)
     : isSupremumOf sup (MapSuprema Xs) <-> isSupremumOf sup (unions Xs).
   Proof with eauto with *.
     split; intros H_supremum z; split; ii; desnw.
     - apply in_unions_iff in H_IN. destruct H_IN as [X_i [x_in_X_i X_i_in_Xs]].
-      destruct (SUP_EXISTS X_i X_i_in_Xs) as [sup_X_i sup_X_i_isSupremumOf_X_i].
+      pose proof (SUPS_EXIST X_i X_i_in_Xs) as [sup_X_i sup_X_i_isSupremumOf_X_i].
       transitivity (sup_X_i).
       + eapply sup_X_i_isSupremumOf_X_i...
       + transitivity (sup)...
@@ -144,7 +144,7 @@ Module BasicPosetTheory.
       rename x into sup_X. enough (to_show : sup_X =< sup) by now transitivity (sup).
       eapply sup_x_isSupremumOf_X. ii; desnw. eapply H_supremum... eapply in_unions_iff...
     - eapply H_supremum. ii; desnw. apply in_unions_iff in H_IN.
-      destruct H_IN as [X [x_in_X X_in_Xs]]. destruct (SUP_EXISTS X X_in_Xs) as [sup_X sup_X_isSupremumOf_X].
+      destruct H_IN as [X [x_in_X X_in_Xs]]. pose proof (SUPS_EXIST X X_in_Xs) as [sup_X sup_X_isSupremumOf_X].
       transitivity (sup_X).
       + eapply sup_X_isSupremumOf_X...
       + eapply UPPER_BOUND, in_MapSuprema_iff...
@@ -155,11 +155,11 @@ Module BasicPosetTheory.
   Proof with eauto with *.
     split.
     - intros sup_X_isSupremumOf_X z. split; ii; desnw.
-      + transitivity (sup_X); trivial.
+      + rewrite LOWER_BOUND_LE_INFIMUM.
         eapply sup_X_isSupremumOf_X...
       + eapply LOWER_BOUND, sup_X_isSupremumOf_X...
     - intros H_supremum z. split; ii; desnw.
-      + transitivity (sup_X); trivial.
+      + rewrite <- SUPREMUM_LE_UPPER_BOUND.
         eapply sup_X_isInfimumOfUpperBounds. unnw.
         intros upper_bound upper_bound_in. unnw.
         exact (upper_bound_in x H_IN).
@@ -171,11 +171,11 @@ Module BasicPosetTheory.
   Proof with eauto with *.
     split.
     - intros inf_X_isInfimumOf_X z. split; ii; desnw.
-      + transitivity (inf_X); trivial.
+      + rewrite <- SUPREMUM_LE_UPPER_BOUND.
         eapply inf_X_isInfimumOf_X...
       + eapply UPPER_BOUND, inf_X_isInfimumOf_X...
     - intros H_infimum z. split; ii; desnw.
-      + transitivity (inf_X); trivial.
+      + rewrite LOWER_BOUND_LE_INFIMUM.
         eapply inf_X_isSupremumOfLowerBounds. unnw.
         intros lower_bound lower_bound_in. unnw.
         exact (lower_bound_in x H_IN).
@@ -289,7 +289,7 @@ Module BasicPosetTheory.
       - exact (proj2_sig sup_X).
       - split; ii; desnw.
         + eapply in_image_iff in H_IN. destruct H_IN as [[x' phi_x] [x_eq x_in]].
-          simpl in x_eq; subst x'. transitivity (proj1_sig sup_X); trivial.
+          simpl in x_eq; subst x'. rewrite <- SUPREMUM_LE_UPPER_BOUND.
           change (@exist D phi x phi_x =< sup_X). eapply sup_X_isSupremumOf_X...
         + change (sup_X =< upper_bound). eapply sup_X_isSupremumOf_X.
           intros x x_in. change (proj1_sig x =< proj1_sig upper_bound).
