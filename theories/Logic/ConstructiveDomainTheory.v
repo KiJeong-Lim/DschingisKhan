@@ -333,58 +333,59 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Local Existing Instances pair_isPoset arrow_isPoset MonotonicMaps_isPoset MonotonicMaps_isCoLa.
 
-  Section PACO_DEFN.
+  Section PACO_implementation.
 
   Context {A : Type}.
 
-  Global Program Instance ensemble_hasExtraColaMethods : ExtraColaMethods (ensemble A) :=
-    { cola_union := union
-    ; cola_empty := empty
-    }
-  .
-  Next Obligation.
+  Lemma cola_union_spec_forEnsembles (X1 : ensemble A) (X2 : ensemble A)
+    : isSupremumOf (@union A X1 X2) (finite [X1; X2]).
+  Proof.
     iis.
     - intros H_SUBSET X X_in. apply in_finite_iff in X_in. destruct X_in as [X_eq | [X_eq | []]]; subst X.
       + intros x x_in; eapply H_SUBSET. left; trivial.
       + intros x x_in; eapply H_SUBSET. right; trivial.
     - intros H_IN x x_in. apply in_union_iff in x_in. destruct x_in as [x_in | x_in].
-      + eapply H_IN with (x := d_left); trivial. eapply in_finite_iff. simpl. tauto.
-      + eapply H_IN with (x := d_right); trivial. eapply in_finite_iff. simpl. tauto.
+      + eapply H_IN with (x := X1); trivial. eapply in_finite_iff. simpl. tauto.
+      + eapply H_IN with (x := X2); trivial. eapply in_finite_iff. simpl. tauto.
   Qed.
-  Next Obligation.
+
+  Lemma cola_empty_spec_forEnsembles
+    : isSupremumOf (@empty A) empty.
+  Proof.
     iis.
     - intros H_SUBSET X X_in. inversion X_in.
     - intros H_IN x x_in. inversion x_in.
   Qed.
 
+  Global Instance ensemble_hasExtraColaMethods : ExtraColaMethods (ensemble A) :=
+    { cola_union := union
+    ; cola_empty := empty
+    ; cola_union_spec := cola_union_spec_forEnsembles
+    ; cola_empty_spec := cola_empty_spec_forEnsembles
+    }
+  .
+
   Let D : Type := ensemble A.
 
-  Set Primitive Projections.
-
-  Variant paco' {paco_F_X : D} (F : D -> D) (X : D) (x : A) : Prop :=
+  Variant paco' {paco_F : D -> D} (F : D -> D) (X : D) : D :=
   | mk_paco' (WITNESS : D)
-    (INCL : isSubsetOf WITNESS (cola_union paco_F_X X))
-    (ELEM : member x (F WITNESS))
-    : member x (paco' F X)
+    (INCL : isSubsetOf WITNESS (cola_union (paco_F X) X))
+    : isSubsetOf (F WITNESS) (paco' F X)
   .
 
   CoInductive paco (F : D -> D) (X : D) (x : A) : Prop :=
-    Fold_paco { unfold_paco : member x (paco' (paco_F_X := paco F X) F X) }
+    Fold_paco { unfold_paco : member x (paco' (paco_F := paco F) F X) }
   .
 
   Unset Primitive Projections.
 
-  End PACO_DEFN.
+  End PACO_implementation.
 
-  Global Arguments paco' {A} (paco_F_X) (F) (X) (x).
+  Global Arguments paco' {A} (paco_F) (F) (X).
   Global Arguments paco {A} (F) (X) (x).
 
-  Section PACO.
+  Section PACO_theory.
 
-  Context {A : Type}.
-
-  Let D : Type := ensemble A.
-
-  End PACO.
+  End PACO_theory.
 
 End ParameterizedCoinduction.

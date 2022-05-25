@@ -445,15 +445,15 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_arrow.
 
-  Variable dom : Hask.t.
+  Polymorphic Variable dom : Hask.t.
 
-  Variable cod : Hask.t.
+  Polymorphic Variable cod : Hask.t.
 
-  Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+  Polymorphic Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x == rhs x
   .
 
-  Local Instance arrow_eqProp_Equivalence
+  Local Polymorphic Instance arrow_eqProp_Equivalence
     (cod_isSetoid : isSetoid cod)
     : Equivalence arrow_eqProp.
   Proof.
@@ -463,17 +463,17 @@ Module PreludeInit_MAIN.
     - intros f1 f2 f3 H_1EQ2 H_2EQ3 x. exact (Equivalence_Transitive (f1 x) (f2 x) (f3 x) (H_1EQ2 x) (H_2EQ3 x)).
   Defined.
 
-  Global Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+  Global Polymorphic Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (cod_isSetoid := cod_isSetoid)
     ; eqProp_Equivalence := arrow_eqProp_Equivalence cod_isSetoid
     }
   .
 
-  Definition arrow_leProp {cod_isPoset : isPoset cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+  Polymorphic Definition arrow_leProp {cod_isPoset : isPoset cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x =< rhs x
   .
 
-  Local Instance arrow_leProp_PreOrder
+  Local Polymorphic Instance arrow_leProp_PreOrder
     (cod_isPoset : isPoset cod)
     : PreOrder arrow_leProp.
   Proof.
@@ -482,7 +482,7 @@ Module PreludeInit_MAIN.
     - intros f1 f2 f3 H_1LE2 H_2LE3 x. exact (PreOrder_Transitive (f1 x) (f2 x) (f3 x) (H_1LE2 x) (H_2LE3 x)).
   Defined.
 
-  Local Instance arrow_leProp_PartialOrder
+  Local Polymorphic Instance arrow_leProp_PartialOrder
     (cod_isPoset : isPoset cod)
     : PartialOrder arrow_eqProp arrow_leProp.
   Proof.
@@ -495,7 +495,7 @@ Module PreludeInit_MAIN.
       + exact (proj2 H_EQ x).
   Defined.
 
-  Local Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
+  Local Polymorphic Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
     { leProp := arrow_leProp
     ; Poset_requiresSetoid := arrow_isSetoid
     ; leProp_PreOrder := arrow_leProp_PreOrder cod_isPoset
