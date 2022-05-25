@@ -288,7 +288,7 @@ Module BasicCoLaTheory.
   Theorem KnasterTarski {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
     (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints (proj1_sig f)))
     : {fix_f : D | isSupremumIn fix_f W (FixedPoints (proj1_sig f))}.
-  Proof with eauto with *.
+  Proof with eauto with *. (* Referring to "https://www.cs.utexas.edu/users/misra/Notes.dir/KnasterTarski.pdf" written by Jayadev Misra *)
     pose proof (getSupremumOf_inCoLa W) as [q q_is_lub_of_W].
     keep (fun w : D => q =< w) as W_hat into (ensemble D).
     assert (q_is_glb_of_W_hat : isInfimumOf q W_hat) by exact (Supremum_isInfimumOf_itsUpperBounds W q q_is_lub_of_W).
@@ -388,6 +388,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Global Arguments paco {A} (F) (X) (x).
 
   Section PACO_theory.
+
+  Context {A : Type}.
 
   End PACO_theory.
 
