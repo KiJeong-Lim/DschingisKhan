@@ -226,19 +226,20 @@ Module BasicCoLaTheory.
   Proof with eauto with *.
     pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f cola_empty)) as claim1.
     pose proof (nu_isSupremumOf_PostfixedPoints f) as claim2.
+    pose proof (fun x : D => proj1 (nu_f_isGreatestFixedPointOf_f (G_aux f x))) as claim3.
     split.
     - eapply leProp_Antisymmetric.
       + eapply claim2. ii; desnw. eapply claim1...
         do 3 red. do 2 red in H_IN. rewrite H_IN at 1. eapply (proj2_sig f)...
       + eapply claim1. ii; desnw. eapply claim2...
         do 3 red. do 2 red in H_IN. rewrite H_IN at 1. eapply (proj2_sig f)...
-    - exact (fun x : D => proj1 (nu_f_isGreatestFixedPointOf_f (G_aux f x))).
+    - exact (claim3).
     - iis; intros y_le.
       + rewrite y_le at 1. eapply G0_isMonotonicMap...
       + rewrite y_le at 1. eapply PostfixedPoint_le_GreatestFixedPoint.
-        assert (claim3 : proj1_sig (proj1_sig G f) (cola_union x y) == proj1_sig f (cola_union (cola_union x y) (proj1_sig (proj1_sig G f) (cola_union x y)))).
-        { exact (proj1 (nu_f_isGreatestFixedPointOf_f (G_aux f (cola_union x y)))). }
-        rewrite claim3 at 1. eapply (proj2_sig f). eapply cola_union_le_intro...
+        transitivity (proj1_sig f (cola_union (cola_union x y) (proj1_sig (proj1_sig G f) (cola_union x y)))).
+        { eapply eqProp_implies_leProp. exact (claim3 (cola_union x y)). }
+        { eapply (proj2_sig f). eapply cola_union_le_intro... }
   Qed.
 
   Theorem G_compositionality (f : ⟬ D ⟶ D ⟭) (r : D) (r1 : D) (r2 : D) (g1 : D) (g2 : D)
