@@ -96,6 +96,10 @@ Module BasicCoLaTheory.
     : isSupremumOf (proj1_sig (nu f)) (PostfixedPoints (proj1_sig f)).
   Proof. exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f)))). Qed.
 
+  Corollary nu_f_isGreatestFixedPointOf_f {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D (requiresPoset := requiresPoset)} (f : ⟬ D ⟶ D ⟭)
+    : isGreatestFixedPointOf (proj1_sig (nu f)) (proj1_sig f).
+  Proof. eapply theGreatestFixedPointOfMonotonicMap; [exact (proj2_sig f) | exact (nu_isSupremumOf_PostfixedPoints f)]. Qed.
+
   Section PACO_METATHEORY.
 
   Import ListNotations MathNotations.
@@ -192,9 +196,7 @@ Module BasicCoLaTheory.
       + eapply le_cola_union_intror, le_cola_union_introl...
   Qed.
 
-  Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ :=
-    @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotionicMap f)
-  .
+  Definition G1 (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ := @exist (D -> D) isMonotonicMap (G0 f) (G0_isMonotionicMap f).
 
   Lemma G1_isMontonicMap
     : isMonotonicMap G1.
@@ -207,7 +209,17 @@ Module BasicCoLaTheory.
     rewrite x_le at 1. eapply f1_le_f2.
   Qed.
 
-  Definition G : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ := @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap.
+  Definition G : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ :=
+    @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMontonicMap
+  .
+
+  Variant ParameterizedGreatestFixedpoint_spec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
+  | verifyParameterizedGreatestFixedpointSpec
+    (INIT_COFIXPOINT : proj1_sig (nu f) == proj1_sig G_f cola_empty)
+    (UNFOLD_COFIXPOINT : forall x : D, proj1_sig G_f x == proj1_sig f (cola_union x (proj1_sig G_f x)))
+    (ACCUM_COFIXPOINT : forall x : D, forall y : D, y =< proj1_sig G_f x <-> y =< proj1_sig G_f (cola_union x y))
+    : ParameterizedGreatestFixedpoint_spec f G_f
+  .
 
   End PACO_METATHEORY.
 
