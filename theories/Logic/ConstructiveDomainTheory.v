@@ -303,8 +303,7 @@ Module BasicCoLaTheory.
     enough (claim1 : proj1_sig f fix_f =< fix_f).
     enough (claim2 : q =< fix_f).
     enough (claim3 : fix_f == proj1_sig f fix_f).
-    exists (fix_f).
-    - split; unnw.
+    - exists (fix_f). split; unnw.
       + exact (claim3).
       + intros [x x_in]. simpl. split.
         { intros fix_f_le_x d d_in. transitivity (q).
