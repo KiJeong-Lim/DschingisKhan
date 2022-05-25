@@ -327,11 +327,11 @@ Module BasicCoLaTheory.
   Qed.
 
   Corollary FixedPoints_asCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭)
-    : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := subPoset D).
+    : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := @subPoset D requiresPoset (FixedPoints (proj1_sig f))).
   Proof.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
-    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. now subst z; simpl in *. }
+    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. now subst z. }
     pose proof (KnasterTarski f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
     exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
   Qed.
