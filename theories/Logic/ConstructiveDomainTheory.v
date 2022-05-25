@@ -336,6 +336,8 @@ Module BasicCoLaTheory.
     exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
   Qed.
 
+  Global Hint Resolve le_cola_union_introl le_cola_union_intror cola_union_le_intro cola_empty_le_intro : poset_hints.
+
 End BasicCoLaTheory.
 
 Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in Coinductive Proof" *)
@@ -417,14 +419,16 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Context {A : Type}.
 
-  Lemma paco_fold (F : ensemble A -> ensemble A) (Y : ensemble A)
+  Let D : Type := ensemble A.
+
+  Lemma paco_fold (F : D -> D) (Y : D)
     : isSubsetOf (F (cola_union Y (paco F Y))) (paco F Y).
   Proof.
     intros z z_in. econstructor. revert z z_in.
     eapply mk_paco'. now change (cola_union Y (paco F Y) =< cola_union Y (paco F Y)).
   Qed.
 
-  Lemma paco_unfold (F : ensemble A -> ensemble A) (Y : ensemble A)
+  Lemma paco_unfold (F : D -> D) (Y : D)
     (F_monotonic : isMonotonicMap F)
     : isSubsetOf (paco F Y) (F (cola_union Y (paco F Y))).
   Proof.
@@ -433,7 +437,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     revert z ELEM. change (F X =< F (cola_union Y (paco F Y))). now apply F_monotonic.
   Qed.
 
-  Lemma paco_preserves_monotonicity (F : ensemble A -> ensemble A)
+  Lemma paco_preserves_monotonicity (F : D -> D)
     (F_monotonic : isMonotonicMap F)
     : isMonotonicMap (paco F).
   Proof.
@@ -443,10 +447,6 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     revert z z_in. eapply mk_paco'. intros z z_in. eapply in_union_iff in z_in.
     destruct z_in as [z_in_X1 | z_in_paco_f_X1]; [left; eapply X1_le_X2 | right; eapply CIH]; assumption.
   Qed.
-
-  Local Hint Resolve le_cola_union_introl le_cola_union_intror cola_union_le_intro cola_empty_le_intro : core.
-
-  Let D : Type := ensemble A.
 
   Definition Paco (f : ⟬ D ⟶ D ⟭) : ⟬ D ⟶ D ⟭ :=
     @exist (D -> D) isMonotonicMap (paco (proj1_sig f)) (paco_preserves_monotonicity (proj1_sig f) (proj2_sig f))
@@ -488,7 +488,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     - intros Y_le_paco_f_X z z_in. apply Y_le_paco_f_X in z_in.
       revert z z_in. change (proj1_sig (Paco f) X =< proj1_sig (Paco f) (cola_union X Y)).
       eapply paco_preserves_monotonicity; [exact (proj2_sig f) | eapply le_cola_union_introl]...
-    - intros H_STAR. set (F := proj1_sig f).
+    - intros COIND. set (F := proj1_sig f).
       assert (claim1 : (paco F (cola_union X Y)) =< (F (cola_union (cola_union X Y) (paco F (cola_union X Y))))).
       { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
       assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
@@ -525,7 +525,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
         change (F (cola_union X nu0) =< paco' (paco F) F X). eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
       }
-      rewrite H_STAR at 1. change (paco F (cola_union X Y) =< paco F X).
+      rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
       rewrite <- to_show. rewrite claim6. exact (claim10).
   Qed.
 
