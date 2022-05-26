@@ -213,7 +213,7 @@ Module InteractionTreeTheory.
     : go (observe t) == t.
   Proof. now apply obs_eq_obs_implies_eqITree. Qed.
 
-  Definition eqITree' {R : Type} : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) :=
+  Definition eqITreeF' {R : Type} : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) :=
     paco (eqITreeF (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R))
   .
 
@@ -221,20 +221,20 @@ Module InteractionTreeTheory.
     image (fun '(lhs, rhs) => (lhs >>= k, rhs >>= k)) BISIM
   .
 
-  Local Hint Unfold eqITree' Rel_map : core.
+  Local Hint Unfold eqITreeF' Rel_map : core.
 
   Lemma itree_bind_lifts_eqProp_on_1st_arg {R1 : Type} {R2 : Type}
     (k : R1 -> itree E R2)
-    : isSubsetOf (Rel_map k (eqITree' cola_empty)) (eqITree' cola_empty).
+    : isSubsetOf (Rel_map k (eqITreeF' cola_empty)) (eqITreeF' cola_empty).
   Proof with eauto with *.
     pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND. rename k into k0.
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_map k0 (eqITree' cola_empty))).
-    assert (INIT : cola_union cola_empty (eqITree' cola_empty) =< cola_union Rel_focus (eqITree' Rel_focus)).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_map k0 (eqITreeF' cola_empty))).
+    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in].
       - inversion z_in.
-      - right. revert z z_in. change (eqITree' cola_empty =< eqITree' Rel_focus). eapply paco_preserves_monotonicity... 
+      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity... 
     }
-    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITree' Rel_focus))).
+    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
       destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
       assert (k0_lhs_is : k0_lhs = (lhs >>= k0)) by exact (eq_congruence fst _ _ H_EQ).
@@ -252,14 +252,6 @@ Module InteractionTreeTheory.
         destruct REL as [REL | REL]; [inversion REL | ]. left. right...
     }
     eapply paco_fold.
-  Qed.
-
-  Corollary itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t1 : itree E R1) (t2 : itree E R1)
-    (HYP_FST_ARG_EQ : t1 == t2)
-    : forall k0 : R1 -> itree E R2, (t1 >>= k0) == (t2 >>= k0).
-  Proof.
-    intros k0. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k0).
-    apply in_image_iff. exists (t1, t2); eauto with *.
   Qed.
 
   Lemma itree_bind_unfold {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
@@ -303,15 +295,15 @@ Module InteractionTreeTheory.
     : (t_0 >>= k_1 >>= k_2) == (t_0 >>= fun x_1 => k_1 x_1 >>= k_2).
   Proof with eauto with *.
     revert t_0. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k_1 >>= k_2, rhs >>= fun x_1 => k_1 x_1 >>= k_2))).
-    enough (to_show : isSubsetOf (Rel_image (eqITree' cola_empty)) (eqITree' cola_empty)).
+    enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITree' cola_empty))).
-    assert (INIT : cola_union cola_empty (eqITree' cola_empty) =< cola_union Rel_focus (eqITree' Rel_focus)).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
+    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in].
       - inversion z_in.
-      - right. revert z z_in. change (eqITree' cola_empty =< eqITree' Rel_focus). eapply paco_preserves_monotonicity...
+      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
-    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R3) (cola_union Rel_focus (eqITree' Rel_focus))).
+    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R3) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
       destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
       pose proof (eq_congruence fst _ _ H_EQ) as k0_lhs_is.
@@ -339,15 +331,15 @@ Module InteractionTreeTheory.
     : (t >>= pure) == t.
   Proof with eauto with *.
     revert t. keep (image (fun '(lhs, rhs) => (lhs >>= pure, rhs))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R1 * itree E R1)).
-    enough (to_show : isSubsetOf (Rel_image (eqITree' cola_empty)) (eqITree' cola_empty)).
+    enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITree' cola_empty))).
-    assert (INIT : cola_union cola_empty (eqITree' cola_empty) =< cola_union Rel_focus (eqITree' Rel_focus)).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
+    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in].
       - inversion z_in.
-      - right. revert z z_in. change (eqITree' cola_empty =< eqITree' Rel_focus). eapply paco_preserves_monotonicity...
+      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
-    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R1) (cola_union Rel_focus (eqITree' Rel_focus))).
+    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R1) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
       destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
       pose proof (eq_congruence fst _ _ H_EQ) as k0_lhs_is.
@@ -365,20 +357,28 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
+  Lemma itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t1 : itree E R1) (t2 : itree E R1)
+    (HYP_FST_ARG_EQ : t1 == t2)
+    : forall k0 : R1 -> itree E R2, (t1 >>= k0) == (t2 >>= k0).
+  Proof.
+    intros k0. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k0).
+    apply in_image_iff. exists (t1, t2); eauto with *.
+  Qed.
+
   Lemma itree_bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} (k_1 : R1 -> itree E R2) (k_2 : R1 -> itree E R2)
     (HYP_SND_ARG_EQ : forall x : R1, k_1 x == k_2 x)
     : forall t_0 : itree E R1, (t_0 >>= k_1) == (t_0 >>= k_2).
   Proof with eauto with *.
     keep (image (fun '(lhs, rhs) => (lhs >>= k_1, rhs >>= k_2))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
-    enough (to_show : isSubsetOf (Rel_image (eqITree' cola_empty)) (eqITree' cola_empty)).
+    enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITree' cola_empty))).
-    assert (INIT : cola_union cola_empty (eqITree' cola_empty) =< cola_union Rel_focus (eqITree' Rel_focus)).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
+    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in].
       - inversion z_in.
-      - right. revert z z_in. change (eqITree' cola_empty =< eqITree' Rel_focus). eapply paco_preserves_monotonicity...
+      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
-    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITree' Rel_focus))).
+    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
       destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
       pose proof (eq_congruence fst _ _ H_EQ) as k0_lhs_is.
