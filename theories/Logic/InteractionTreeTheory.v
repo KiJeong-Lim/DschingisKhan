@@ -13,7 +13,7 @@ Module InteractionTreeTheory.
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
   Lemma eqITreeF_isMonotonicMap
-    : isMonotonicMap (@eqITreeF E R requiresSetoid).
+    : isMonotonicMap (fun BISIM : ensemble (itree E R * itree E R) => eqITreeF BISIM).
   Proof. exact (eqITreeF_monotonic). Defined.
 
   Definition eqITree (lhs : itree E R) (rhs : itree E R) : Prop :=
@@ -30,8 +30,7 @@ Module InteractionTreeTheory.
     enough (claim3 : paco eqITreeF cola_empty == itreeBisim').
     - ii. exact (claim3 (lhs, rhs)).
     - eapply @Supremum_preserves_eqProp_wrtEnsembles with (requiresPoset := ensemble_isPoset (itree E R * itree E R)%type) (X1 := PostfixedPoints (proj1_sig f)) (X2 := PostfixedPoints (proj1_sig f)).
-      + rewrite paco_init with (F_monotonic := eqITreeF_isMonotonicMap).
-        eapply nu_isSupremumOf_PostfixedPoints.
+      + rewrite paco_init with (F_monotonic := eqITreeF_isMonotonicMap). eapply nu_isSupremumOf_PostfixedPoints.
       + exact (claim2).
       + reflexivity.
     - intros Y. split.
