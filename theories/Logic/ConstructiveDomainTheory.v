@@ -276,7 +276,7 @@ Module BasicCoLaTheory.
     - eapply theLeastFixedPointOfMonotonicMap.
       + exact (f_isMonotonic).
       + exact (IS_INFIMUM).
-  Defined.
+  Qed.
 
   Theorem KnasterTarski_2nd (f : D -> D)
     (f_isMonotonic : isMonotonicMap f)
@@ -289,7 +289,7 @@ Module BasicCoLaTheory.
     - eapply theGreatestFixedPointOfMonotonicMap.
       + exact (f_isMonotonic).
       + exact (IS_SUPREMUM).
-  Defined.
+  Qed.
 
   Theorem KnasterTarski_3rd (f : D -> D) (W : ensemble D)
     (f_isMonotonic : isMonotonicMap f)
@@ -338,10 +338,10 @@ Module BasicCoLaTheory.
   Proof.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
-    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. subst z. exact (x_eq_f_x). }
+    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. now subst z. }
     pose proof (KnasterTarski_3rd (proj1_sig f) (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (proj2_sig f) claim1) as [sup_X IS_SUPREMUM].
-    exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). rewrite <- isSupremumIn_iff. exact (IS_SUPREMUM).
-  Defined.
+    exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
+  Qed.
 
   End KNASTER_TARSKI.
 
