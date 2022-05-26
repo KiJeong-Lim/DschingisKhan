@@ -388,6 +388,11 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     : isSubsetOf (F WITNESS) (paco' F X)
   .
 
+  Lemma inv_paco' {paco_F : D -> D} {F : D -> D} {Y : D} {z : A}
+    (H_paco' : member z (paco' (paco_F := paco_F) F Y))
+    : exists X : D, << INCL : isSubsetOf X (cola_union Y (paco_F Y)) >> /\ << ELEM : member z (F X) >>.
+  Proof. inversion H_paco'; subst. now exists (WITNESS). Qed.
+
   Set Primitive Projections.
 
   CoInductive paco (F : D -> D) (X : D) (x : A) : Prop :=
@@ -432,8 +437,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     (F_monotonic : isMonotonicMap F)
     : isSubsetOf (paco F Y) (F (cola_union Y (paco F Y))).
   Proof.
-    intros z z_in. apply unfold_paco in z_in.
-    inversion z_in; subst. clear z_in. rename WITNESS into X, H into ELEM.
+    intros z z_in. apply unfold_paco in z_in. apply inv_paco' in z_in. des; desnw.
     revert z ELEM. change (F X =< F (cola_union Y (paco F Y))). now apply F_monotonic.
   Qed.
 
