@@ -357,13 +357,10 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  Lemma itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t1 : itree E R1) (t2 : itree E R1)
-    (HYP_FST_ARG_EQ : t1 == t2)
-    : forall k0 : R1 -> itree E R2, (t1 >>= k0) == (t2 >>= k0).
-  Proof.
-    intros k0. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k0).
-    apply in_image_iff. exists (t1, t2); eauto with *.
-  Qed.
+  Lemma itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t_1 : itree E R1) (t_2 : itree E R1)
+    (HYP_FST_ARG_EQ : t_1 == t_2)
+    : forall k_0 : R1 -> itree E R2, (t_1 >>= k_0) == (t_2 >>= k_0).
+  Proof. intros k. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k). exists (t_1, t_2); eauto with *. Qed.
 
   Lemma itree_bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} (k_1 : R1 -> itree E R2) (k_2 : R1 -> itree E R2)
     (HYP_SND_ARG_EQ : forall x : R1, k_1 x == k_2 x)
