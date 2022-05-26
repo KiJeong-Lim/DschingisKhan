@@ -254,14 +254,11 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  Corollary itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type}
-    (t1 : itree E R1)
-    (t2 : itree E R1)
+  Corollary itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t1 : itree E R1) (t2 : itree E R1)
     (HYP_FST_ARG_EQ : t1 == t2)
-    (k0 : R1 -> itree E R2)
-    : (t1 >>= k0) == (t2 >>= k0).
+    : forall k0 : R1 -> itree E R2, (t1 >>= k0) == (t2 >>= k0).
   Proof.
-    eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k0).
+    intros k0. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k0).
     apply in_image_iff. exists (t1, t2); eauto with *.
   Qed.
 
@@ -302,10 +299,7 @@ Module InteractionTreeTheory.
 
   End ITREE_BIND_CASES.
 
-  Lemma itree_bind_assoc {R1 : Type} {R2 : Type} {R3 : Type}
-    (t_0 : itree E R1)
-    (k_1 : R1 -> itree E R2)
-    (k_2 : R2 -> itree E R3)
+  Lemma itree_bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} (t_0 : itree E R1) (k_1 : R1 -> itree E R2) (k_2 : R2 -> itree E R3)
     : (t_0 >>= k_1 >>= k_2) == (t_0 >>= fun x_1 => k_1 x_1 >>= k_2).
   Proof with eauto with *.
     revert t_0. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k_1 >>= k_2, rhs >>= fun x_1 => k_1 x_1 >>= k_2))).
@@ -337,14 +331,11 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  Lemma itree_pure_left_id_bind {R1 : Type} {R2 : Type}
-    (k : R1 -> itree E R2)
-    (x : R1)
+  Lemma itree_pure_left_id_bind {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (x : R1)
     : (pure x >>= k) == k x.
   Proof. exact (itree_bind_Ret k x). Qed.
 
-  Lemma itree_pure_right_id_bind {R1 : Type}
-    (t : itree E R1)
+  Lemma itree_pure_right_id_bind {R1 : Type} (t : itree E R1)
     : (t >>= pure) == t.
   Proof with eauto with *.
     revert t. keep (image (fun '(lhs, rhs) => (lhs >>= pure, rhs))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R1 * itree E R1)).
@@ -374,16 +365,14 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  Lemma itree_bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type}
-    (k_1 : R1 -> itree E R2)
-    (k_2 : R1 -> itree E R2)
+  Lemma itree_bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} (k_1 : R1 -> itree E R2) (k_2 : R1 -> itree E R2)
     (HYP_SND_ARG_EQ : forall x : R1, k_1 x == k_2 x)
-    (t_0 : itree E R1)
-    : (t_0 >>= k_1) == (t_0 >>= k_2).
+    : forall t_0 : itree E R1, (t_0 >>= k_1) == (t_0 >>= k_2).
   Proof with eauto with *.
-    revert t_0. keep (image (fun '(lhs, rhs) => (lhs >>= k_1, rhs >>= k_2))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
+    keep (image (fun '(lhs, rhs) => (lhs >>= k_1, rhs >>= k_2))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
     enough (to_show : isSubsetOf (Rel_image (eqITree' cola_empty)) (eqITree' cola_empty)).
-    { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITree' cola_empty))).
+    { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITree' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITree' cola_empty) =< cola_union Rel_focus (eqITree' Rel_focus)).
     { intros z [z_in | z_in].
       - inversion z_in.
@@ -430,7 +419,7 @@ Module InteractionTreeTheory.
     bind (itree_trigger (E := E) X e) k == Vis X e k.
   Proof.
     unfold itree_trigger. rewrite itree_bind_Vis. eapply Vis_eq_Vis_iff.
-    intros x. apply itree_pure_left_id_bind with (x := x).
+    intros x. eapply itree_pure_left_id_bind with (x := x).
   Qed.
 
 End InteractionTreeTheory.
