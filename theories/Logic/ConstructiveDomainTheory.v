@@ -289,25 +289,26 @@ Module BasicCoLaTheory.
       + exact (IS_SUPREMUM).
   Defined.
 
-  Theorem KnasterTarski_3rd (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
-    (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints (proj1_sig f)))
-    : {fix_f : D | isSupremumIn fix_f W (FixedPoints (proj1_sig f))}.
+  Theorem KnasterTarski_3rd (f : D -> D) (W : ensemble D)
+    (f_isMonotonic : isMonotonicMap f)
+    (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints f))
+    : {fix_f : D | isSupremumIn fix_f W (FixedPoints f)}.
   Proof with eauto with *.
     pose proof (getSupremumOf_inCoLa W) as [q q_is_lub_of_W].
     keep (fun w : D => q =< w) as W_hat into (ensemble D).
     assert (q_is_glb_of_W_hat : isInfimumOf q W_hat) by exact (Supremum_isInfimumOf_itsUpperBounds W q q_is_lub_of_W).
     assert (q_in_W_hat : member q W_hat) by exact (leProp_Reflexive q).
-    assert (W_hat_closed_under_f : forall x : D, member x W_hat -> member (proj1_sig f x) W_hat).
+    assert (W_hat_closed_under_f : forall x : D, member x W_hat -> member (f x) W_hat).
     { intros x q_le_x. eapply q_is_lub_of_W.
-      intros w w_in_W. transitivity (proj1_sig f w).
+      intros w w_in_W. transitivity (f w).
       - eapply eqProp_implies_leProp, W_is_a_set_of_fixed_points_of_f...
-      - eapply (proj2_sig f). transitivity (q); trivial. eapply q_is_lub_of_W...
+      - eapply f_isMonotonic. transitivity (q); trivial. eapply q_is_lub_of_W...
     }
-    assert (q_le_f_q : q =< proj1_sig f q) by exact (W_hat_closed_under_f q q_in_W_hat).
-    pose proof (getInfimumOf_inCoLa (intersection (PrefixedPoints (proj1_sig f)) W_hat)) as [fix_f fix_f_isInfimum].
-    enough (claim1 : proj1_sig f fix_f =< fix_f).
+    assert (q_le_f_q : q =< f q) by exact (W_hat_closed_under_f q q_in_W_hat).
+    pose proof (getInfimumOf_inCoLa (intersection (PrefixedPoints f) W_hat)) as [fix_f fix_f_isInfimum].
+    enough (claim1 : f fix_f =< fix_f).
     enough (claim2 : q =< fix_f).
-    enough (claim3 : fix_f == proj1_sig f fix_f).
+    enough (claim3 : fix_f == f fix_f).
     - exists (fix_f). split; unnw.
       + exact (claim3).
       + intros [x x_in]. simpl. split.
@@ -321,12 +322,12 @@ Module BasicCoLaTheory.
         }
     - eapply leProp_Antisymmetric; trivial.
       eapply fix_f_isInfimum... eapply in_intersection_iff.
-      split; [eapply (proj2_sig f) | eapply W_hat_closed_under_f]... 
+      split; [eapply f_isMonotonic | eapply W_hat_closed_under_f]... 
     - eapply fix_f_isInfimum. ii; desnw.
       apply in_intersection_iff in H_IN. destruct H_IN as [f_x_le_x q_le_x]...
     - eapply fix_f_isInfimum. intros x x_in.
       apply in_intersection_iff in x_in. destruct x_in as [f_x_le_x q_le_x].
-      do 2 red in f_x_le_x. rewrite <- f_x_le_x. eapply (proj2_sig f).
+      do 2 red in f_x_le_x. rewrite <- f_x_le_x. eapply f_isMonotonic.
       eapply fix_f_isInfimum... eapply in_intersection_iff...
   Qed.
 
@@ -336,7 +337,7 @@ Module BasicCoLaTheory.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
     { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. subst z. exact (x_eq_f_x). }
-    pose proof (KnasterTarski_3rd f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
+    pose proof (KnasterTarski_3rd (proj1_sig f) (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (proj2_sig f) claim1) as [sup_X IS_SUPREMUM].
     exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). rewrite <- isSupremumIn_iff. exact (IS_SUPREMUM).
   Defined.
 
