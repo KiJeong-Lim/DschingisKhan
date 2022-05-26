@@ -178,8 +178,7 @@ Module InteractionTrees.
   .
 
   Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    let bisim (lhs : itree E R) (rhs : itree E R) : Prop := BISIM (lhs, rhs) in
-    fun '(lhs, rhs) => itreeBisimF (bisim := bisim) (observe lhs) (observe rhs)
+    uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (bisim := curry BISIM) (observe lhs) (observe rhs))
   .
 
   Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=

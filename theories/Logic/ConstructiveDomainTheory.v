@@ -475,6 +475,11 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     rewrite <- claim3 in to_show. eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A)...
   Qed.
 
+  Lemma paco_init (F : D -> D)
+    (F_monotonic : isMonotonicMap F)
+    : paco F cola_empty == proj1_sig (nu (@exist (D -> D) isMonotonicMap F F_monotonic)).
+  Proof. symmetry. eapply initPaco. Qed.
+
   Lemma unfoldPaco (f : ⟬ D ⟶ D ⟭)
     : forall X : D, proj1_sig (Paco f) X == proj1_sig f (cola_union X (proj1_sig (Paco f) X)).
   Proof.
@@ -486,11 +491,11 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Lemma accumPaco (f : ⟬ D ⟶ D ⟭)
     : forall X : D, forall Y : D, Y =< proj1_sig (Paco f) X <-> Y =< proj1_sig (Paco f) (cola_union X Y).
   Proof with eauto with *.
-    intros X Y. split.
+    intros X Y. keep (proj1_sig f) as F into (D -> D). split.
     - intros Y_le_paco_f_X z z_in. apply Y_le_paco_f_X in z_in.
       revert z z_in. change (proj1_sig (Paco f) X =< proj1_sig (Paco f) (cola_union X Y)).
       eapply paco_preserves_monotonicity; [exact (proj2_sig f) | eapply le_cola_union_introl]...
-    - intros COIND. keep (proj1_sig f) as F into (D -> D). rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
+    - intros COIND. rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
       assert (claim1 : (paco F (cola_union X Y)) =< (F (cola_union (cola_union X Y) (paco F (cola_union X Y))))).
       { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
       assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
@@ -528,6 +533,11 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       }
       rewrite <- to_show, claim6; exact (claim10).
   Qed.
+
+  Lemma paco_accum (F : D -> D) (X : D) (Y : D)
+    (F_monotonic : isMonotonicMap F)
+    : Y =< paco F X <-> Y =< paco F (cola_union X Y).
+  Proof. eapply accumPaco with (f := @exist (D -> D) isMonotonicMap F F_monotonic). Qed.
 
   Corollary Paco_spec (f : ⟬ D ⟶ D ⟭)
     : ParameterizedGreatestFixedPointSpec f (Paco f).
