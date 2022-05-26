@@ -223,8 +223,7 @@ Module InteractionTreeTheory.
 
   Local Hint Unfold eqITreeF' Rel_map : core.
 
-  Lemma itree_bind_lifts_eqProp_on_1st_arg {R1 : Type} {R2 : Type}
-    (k : R1 -> itree E R2)
+  Lemma itree_bind_lifts_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (k : R1 -> itree E R2)
     : isSubsetOf (Rel_map k (eqITreeF' cola_empty)) (eqITreeF' cola_empty).
   Proof with eauto with *.
     pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND. rename k into k0.
