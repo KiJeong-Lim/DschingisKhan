@@ -138,7 +138,7 @@ Module InteractionTreeTheory.
 
   Local Instance eqITree_Transitive
     : Transitive eqITree.
-  Proof. intros t1 t2 t3 t1_eq_t2 t2_eq_t3. exact (eqITree_transitivity (t1, t3) (ex_intro _ t2 (conj t1_eq_t2 t2_eq_t3))). Qed.
+  Proof. intros t1 t2 t3 t1_eq_t2 t2_eq_t3. exact (eqITree_transitivity (t1, t3) (@ex_intro _ _ t2 (@conj _ _ t1_eq_t2 t2_eq_t3))). Qed.
 
   Global Add Parametric Relation : (itree E R)
     eqITree
@@ -185,11 +185,11 @@ Module InteractionTreeTheory.
 
   End ITREE_EQUIVALENCE_RELATION.
 
-  Section ITREE_MONAD_LAWS.
-
   Local Existing Instances freeSetoidFromSetoid1.
 
   Local Hint Resolve eqITreeF_isMonotonicMap : core.
+
+  Section ITREE_MONAD_LAWS.
 
   Context {E : Type -> Type}.
 
@@ -265,11 +265,7 @@ Module InteractionTreeTheory.
     apply in_image_iff. exists (t1, t2); eauto with *.
   Qed.
 
-  Section ITREE_BIND_CASES.
-
-  Context {R1 : Type} {R2 : Type}.
-
-  Lemma itree_bind_unfold  (t0 : itree E R1) (k0 : R1 -> itree E R2) :
+  Lemma itree_bind_unfold {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
     bind t0 k0 ==
     match observe t0 with
     | RetF r => k0 r
@@ -278,7 +274,19 @@ Module InteractionTreeTheory.
     end.
   Proof. eapply obs_eq_obs_implies_eqITree. exact (itree_bind_unfold_observed t0 k0). Qed.
 
-  Variable k0 : R1 -> itree E R2.
+  Lemma itree_iter_unfold {I : Type} {R : Type} (step : I -> itree E (I + R)) (arg : I) :
+    itree_iter step arg ==
+    bind (step arg) (fun res : I + R =>
+      match res with
+      | inl arg' => Tau (itree_iter step arg')
+      | inr res' => Ret res'
+      end
+    ).
+  Proof. now eapply obs_eq_obs_implies_eqITree. Qed.
+
+  Section ITREE_BIND_CASES.
+
+  Context {R1 : Type} {R2 : Type} (k0 : R1 -> itree E R2).
 
   Corollary itree_bind_Ret (r : R1)
     : bind (Ret r) k0 == k0 r.
@@ -410,5 +418,19 @@ Module InteractionTreeTheory.
   .
 
   End ITREE_MONAD_LAWS.
+
+  Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R) :
+    bind (itree_tick (E := E)) k == Tau (k tt).
+  Proof.
+    unfold itree_tick. rewrite itree_bind_Tau. eapply Tau_eq_Tau_iff.
+    eapply itree_pure_left_id_bind with (x := tt).
+  Qed.
+
+  Lemma reduce_itree_trigger {E : Type -> Type} {R : Type} (X : Type) (e : E X) (k : X -> itree E R) :
+    bind (itree_trigger (E := E) X e) k == Vis X e k.
+  Proof.
+    unfold itree_trigger. rewrite itree_bind_Vis. eapply Vis_eq_Vis_iff.
+    intros x. apply itree_pure_left_id_bind with (x := x).
+  Qed.
 
 End InteractionTreeTheory.
