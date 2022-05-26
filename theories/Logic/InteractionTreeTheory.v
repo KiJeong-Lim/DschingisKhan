@@ -153,6 +153,36 @@ Module InteractionTreeTheory.
     }
   .
 
+  Lemma Ret_eq_Ret_iff (x1 : R) (x2 : R)
+    : Ret x1 == Ret x2 <-> x1 == x2.
+  Proof.
+    repeat rewrite eqITree_iff_itreeBisim. split; intros H_EQ.
+    - apply unfold_itreeBisim in H_EQ. now inversion H_EQ; subst.
+    - econstructor. now econstructor 1. 
+  Qed.
+
+  Lemma Tau_eq_Tau_iff (t1 : itree E R) (t2 : itree E R)
+    : Tau t1 == Tau t2 <-> t1 == t2.
+  Proof.
+    repeat rewrite eqITree_iff_itreeBisim. split; intros H_EQ.
+    - apply unfold_itreeBisim in H_EQ. now inversion H_EQ.
+    - econstructor. now econstructor 2. 
+  Qed.
+
+  Lemma Vis_eq_Vis_iff (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
+    : Vis X e k1 == Vis X e k2 <-> k1 == k2.
+  Proof.
+    change (eqITree (Vis X e k1) (Vis X e k2) <-> (forall x : X, eqITree (k1 x) (k2 x))). split; intros H_EQ.
+    - rewrite eqITree_iff_itreeBisim in H_EQ. apply unfold_itreeBisim in H_EQ.
+      inversion H_EQ as [ | | X' e' k1' k2' REL]; subst.
+      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => E X) X e' e H0) as e_eq; subst e'; clear H0 H2.
+      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => X -> itree E R) X k1' k1 H1) as k1_eq; subst k1'; clear H1.
+      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => X -> itree E R) X k2' k2 H3) as k2_eq; subst k2'; clear H3.
+      intros x; rewrite eqITree_iff_itreeBisim; exact (REL x).
+    - rewrite eqITree_iff_itreeBisim. econstructor. econstructor 3.
+      intros x; rewrite <- eqITree_iff_itreeBisim; exact (H_EQ x).
+  Qed.
+
   End ITREE_EQUIVALENCE_RELATION.
 
   Section ITREE_MONAD_LAWS.
@@ -370,7 +400,7 @@ Module InteractionTreeTheory.
     apply paco_fold.
   Qed.
 
-  Global Instance itree_E_obeysMonadLaws : LawsOfMonad (itree E) :=
+  Global Instance itree_E_obeysMonadLaws : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (R1 := R1) (R2 := R2) (R3 := R3)
     ; pure_left_id_bind {R1 : Type} {R2 : Type} := itree_pure_left_id_bind (R1 := R1) (R2 := R2)
     ; pure_right_id_bind {R1 : Type} := itree_pure_right_id_bind (R1 := R1)
