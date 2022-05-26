@@ -282,7 +282,7 @@ Module PreludeInit_MAIN.
 
   Section SETOID_ACCESSORIES.
 
-  Polymorphic Context {A : Type} {requireSetoid : isSetoid A}.
+  Polymorphic Context {A : Type} {requiresSetoid : isSetoid A}.
 
   Polymorphic Lemma eqProp_Reflexive (x : A)
     : x == x.
