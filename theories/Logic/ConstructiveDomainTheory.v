@@ -62,30 +62,6 @@ Module BasicCoLaTheory.
     fun fs : ensemble ⟬ dom ⟶ cod ⟭ => @exist ⟬ dom ⟶ cod ⟭ (fun sup_fs : ⟬ dom ⟶ cod ⟭ => isSupremumOf sup_fs fs) (SupOfMonotonicMaps fs) (SupOfMonotonicMaps_isSupremum fs)
   .
 
-  Lemma getLeastFixedPoint_inCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : D -> D)
-    (f_isMonotonic : isMonotonicMap f)
-    : {lfp_f : D | isInfimumOf lfp_f (PrefixedPoints f) /\ isLeastFixedPointOf lfp_f f}.
-  Proof.
-    assert (IS_INFIMUM : isInfimumOf (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))) (PrefixedPoints f)) by exact (proj2_sig (getInfimumOf_inCoLa (PrefixedPoints f))).
-    exists (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))). split.
-    - exact (IS_INFIMUM).
-    - eapply theLeastFixedPointOfMonotonicMap.
-      + exact (f_isMonotonic).
-      + exact (IS_INFIMUM).
-  Defined.
-
-  Lemma getGreatestFixedPoint_inCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : D -> D)
-    (f_isMonotonic : isMonotonicMap f)
-    : {gfp_f : D | isSupremumOf gfp_f (PostfixedPoints f) /\ isGreatestFixedPointOf gfp_f f}.
-  Proof.
-    assert (IS_SUPREMUM : isSupremumOf (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))) (PostfixedPoints f)) by exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints f))).
-    exists (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))). split.
-    - exact (IS_SUPREMUM).
-    - eapply theGreatestFixedPointOfMonotonicMap.
-      + exact (f_isMonotonic).
-      + exact (IS_SUPREMUM).
-  Defined.
-
   Definition nu {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D (requiresPoset := requiresPoset)} (f : ⟬ D ⟶ D ⟭) : {gfp_f : D | isGreatestFixedPointOf gfp_f (proj1_sig f)} :=
     let nu_f_proj1_sig : D := proj1_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
     let IS_SUPREMUM : isSupremumOf nu_f_proj1_sig (PostfixedPoints (proj1_sig f)) := proj2_sig (getSupremumOf_inCoLa (PostfixedPoints (proj1_sig f))) in
@@ -99,6 +75,18 @@ Module BasicCoLaTheory.
   Corollary nu_f_isGreatestFixedPointOf_f {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D (requiresPoset := requiresPoset)} (f : ⟬ D ⟶ D ⟭)
     : isGreatestFixedPointOf (proj1_sig (nu f)) (proj1_sig f).
   Proof. eapply theGreatestFixedPointOfMonotonicMap; [exact (proj2_sig f) | exact (nu_isSupremumOf_PostfixedPoints f)]. Qed.
+
+  Lemma CoinductionPrinciple {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (b : ⟬ D ⟶ D ⟭)
+    : forall x : D, x =< proj1_sig (nu b) <-> << COIND : exists y : D, x =< y /\ y =< proj1_sig b y >>.
+  Proof.
+    pose proof (nu_f_isGreatestFixedPointOf_f b) as [claim1 claim2].
+    pose proof (nu_isSupremumOf_PostfixedPoints b) as claim3.
+    unnw. iis.
+    - intros x_le_nu_b. exists (proj1_sig (nu b)). split; trivial.
+      eapply eqProp_implies_leProp, claim1.
+    - intros [y [x_le_y y_le_b_y]]. rewrite x_le_y.
+      eapply claim3; eauto with *.
+  Qed.
 
   Section PACO_METATHEORY.
 
@@ -273,22 +261,38 @@ Module BasicCoLaTheory.
 
   End PACO_METATHEORY.
 
-  Lemma CoinductionPrinciple {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (b : ⟬ D ⟶ D ⟭)
-    : forall x : D, x =< proj1_sig (nu b) <-> << COIND : exists y : D, x =< y /\ y =< proj1_sig b y >>.
-  Proof.
-    pose proof (nu_f_isGreatestFixedPointOf_f b) as [claim1 claim2].
-    pose proof (nu_isSupremumOf_PostfixedPoints b) as claim3.
-    unnw. iis.
-    - intros x_le_nu_b. exists (proj1_sig (nu b)). split; trivial.
-      eapply eqProp_implies_leProp, claim1.
-    - intros [y [x_le_y y_le_b_y]]. rewrite x_le_y.
-      eapply claim3; eauto with *.
-  Qed.
+  Section KNASTER_TARSKI. (* Referring to "https://www.cs.utexas.edu/users/misra/Notes.dir/KnasterTarski.pdf" written by Jayadev Misra *)
 
-  Theorem KnasterTarski_3rd {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
+  Context {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D}.
+
+  Theorem KnasterTarski_1st (f : D -> D)
+    (f_isMonotonic : isMonotonicMap f)
+    : {lfp_f : D | isInfimumOf lfp_f (PrefixedPoints f) /\ isLeastFixedPointOf lfp_f f}.
+  Proof.
+    assert (IS_INFIMUM : isInfimumOf (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))) (PrefixedPoints f)) by exact (proj2_sig (getInfimumOf_inCoLa (PrefixedPoints f))).
+    exists (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))). split.
+    - exact (IS_INFIMUM).
+    - eapply theLeastFixedPointOfMonotonicMap.
+      + exact (f_isMonotonic).
+      + exact (IS_INFIMUM).
+  Defined.
+
+  Theorem KnasterTarski_2nd (f : D -> D)
+    (f_isMonotonic : isMonotonicMap f)
+    : {gfp_f : D | isSupremumOf gfp_f (PostfixedPoints f) /\ isGreatestFixedPointOf gfp_f f}.
+  Proof.
+    assert (IS_SUPREMUM : isSupremumOf (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))) (PostfixedPoints f)) by exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints f))).
+    exists (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))). split.
+    - exact (IS_SUPREMUM).
+    - eapply theGreatestFixedPointOfMonotonicMap.
+      + exact (f_isMonotonic).
+      + exact (IS_SUPREMUM).
+  Defined.
+
+  Theorem KnasterTarski_3rd (f : ⟬ D ⟶ D ⟭) (W : ensemble D)
     (W_is_a_set_of_fixed_points_of_f : isSubsetOf W (FixedPoints (proj1_sig f)))
     : {fix_f : D | isSupremumIn fix_f W (FixedPoints (proj1_sig f))}.
-  Proof with eauto with *. (* Referring to "https://www.cs.utexas.edu/users/misra/Notes.dir/KnasterTarski.pdf" written by Jayadev Misra *)
+  Proof with eauto with *.
     pose proof (getSupremumOf_inCoLa W) as [q q_is_lub_of_W].
     keep (fun w : D => q =< w) as W_hat into (ensemble D).
     assert (q_is_glb_of_W_hat : isInfimumOf q W_hat) by exact (Supremum_isInfimumOf_itsUpperBounds W q q_is_lub_of_W).
@@ -326,15 +330,17 @@ Module BasicCoLaTheory.
       eapply fix_f_isInfimum... eapply in_intersection_iff...
   Qed.
 
-  Corollary FixedPoints_asCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (f : ⟬ D ⟶ D ⟭)
+  Corollary FixedPoints_asCoLa (f : ⟬ D ⟶ D ⟭)
     : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := @subPoset D requiresPoset (FixedPoints (proj1_sig f))).
   Proof.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
-    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. now subst z. }
+    { intros z z_in. apply in_image_iff in z_in. destruct z_in as [[x x_eq_f_x] [z_eq x_in]]. subst z. exact (x_eq_f_x). }
     pose proof (KnasterTarski_3rd f (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) claim1) as [sup_X IS_SUPREMUM].
-    exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). now rewrite <- isSupremumIn_iff.
-  Qed.
+    exists (@exist D (FixedPoints (proj1_sig f)) sup_X (proj1 IS_SUPREMUM)). rewrite <- isSupremumIn_iff. exact (IS_SUPREMUM).
+  Defined.
+
+  End KNASTER_TARSKI.
 
   Global Hint Resolve le_cola_union_introl le_cola_union_intror cola_union_le_intro cola_empty_le_intro : poset_hints.
 
@@ -478,7 +484,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Theorem paco_init (F : D -> D)
     (F_monotonic : isMonotonicMap F)
     : paco F cola_empty == proj1_sig (nu (@exist (D -> D) isMonotonicMap F F_monotonic)).
-  Proof. symmetry. eapply initPaco. Qed.
+  Proof. symmetry. eapply initPaco with (f := @exist (D -> D) isMonotonicMap F F_monotonic). Qed.
 
   Lemma unfoldPaco (f : ⟬ D ⟶ D ⟭)
     : forall X : D, proj1_sig (Paco f) X == proj1_sig f (cola_union X (proj1_sig (Paco f) X)).
@@ -531,7 +537,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       { cofix CIH. intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
       }
-      rewrite <- to_show, claim6; exact (claim10).
+      now rewrite <- to_show, claim6.
   Qed.
 
   Theorem paco_accum (F : D -> D) (X : D) (Y : D)
