@@ -426,14 +426,14 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Let D : Type := ensemble A.
 
-  Lemma paco_fold (F : D -> D) (Y : D)
+  Theorem paco_fold (F : D -> D) (Y : D)
     : isSubsetOf (F (cola_union Y (paco F Y))) (paco F Y).
   Proof.
     intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
     now change (cola_union Y (paco F Y) =< cola_union Y (paco F Y)).
   Qed.
 
-  Lemma paco_unfold (F : D -> D) (Y : D)
+  Theorem paco_unfold (F : D -> D) (Y : D)
     (F_monotonic : isMonotonicMap F)
     : isSubsetOf (paco F Y) (F (cola_union Y (paco F Y))).
   Proof.
@@ -475,7 +475,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     rewrite <- claim3 in to_show. eapply @leProp_Antisymmetric with (requiresPoset := ensemble_isPoset A)...
   Qed.
 
-  Lemma paco_init (F : D -> D)
+  Theorem paco_init (F : D -> D)
     (F_monotonic : isMonotonicMap F)
     : paco F cola_empty == proj1_sig (nu (@exist (D -> D) isMonotonicMap F F_monotonic)).
   Proof. symmetry. eapply initPaco. Qed.
@@ -534,7 +534,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       rewrite <- to_show, claim6; exact (claim10).
   Qed.
 
-  Lemma paco_accum (F : D -> D) (X : D) (Y : D)
+  Theorem paco_accum (F : D -> D) (X : D) (Y : D)
     (F_monotonic : isMonotonicMap F)
     : Y =< paco F X <-> Y =< paco F (cola_union X Y).
   Proof. eapply accumPaco with (f := @exist (D -> D) isMonotonicMap F F_monotonic). Qed.
@@ -550,8 +550,6 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Corollary Paco_isMonotonicMap
     : isMonotonicMap Paco.
   Proof. intros f1 f2 f1_le_f2. do 2 rewrite Paco_eq_G. now eapply G1_isMonotonicMap. Qed.
-
-  Definition PaCo : ⟬ ⟬ D ⟶ D ⟭ ⟶ ⟬ D ⟶ D ⟭ ⟭ := @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap Paco Paco_isMonotonicMap.
 
   End PACO_theory.
 
