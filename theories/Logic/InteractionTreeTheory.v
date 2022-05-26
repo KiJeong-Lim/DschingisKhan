@@ -375,7 +375,7 @@ Module InteractionTreeTheory.
     ; pure_left_id_bind {R1 : Type} {R2 : Type} := itree_pure_left_id_bind (R1 := R1) (R2 := R2)
     ; pure_right_id_bind {R1 : Type} := itree_pure_right_id_bind (R1 := R1)
     ; bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} := itree_bind_compatWith_eqProp_on_1st_arg (R1 := R1) (R2 := R2)
-    ; bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} := itree_bind_compatWith_eqProp_on_2nd_arg (R1 := R1)
+    ; bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} := itree_bind_compatWith_eqProp_on_2nd_arg (R1 := R1) (R2 := R2)
     }
   .
 
