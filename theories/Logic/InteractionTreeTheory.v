@@ -405,14 +405,14 @@ Module InteractionTreeTheory.
   End ITREE_MONAD_LAWS.
 
   Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R) :
-    bind (itree_tick (E := E)) k == Tau (k tt).
+    (itree_tick (E := E) >>= k) == Tau (k tt).
   Proof.
     unfold itree_tick. rewrite itree_bind_Tau. eapply Tau_eq_Tau_iff.
     eapply itree_pure_left_id_bind with (x := tt).
   Qed.
 
   Lemma reduce_itree_trigger {E : Type -> Type} {R : Type} (X : Type) (e : E X) (k : X -> itree E R) :
-    bind (itree_trigger (E := E) X e) k == Vis X e k.
+    (itree_trigger (E := E) X e >>= k) == Vis X e k.
   Proof.
     unfold itree_trigger. rewrite itree_bind_Vis. eapply Vis_eq_Vis_iff.
     intros x. eapply itree_pure_left_id_bind with (x := x).
