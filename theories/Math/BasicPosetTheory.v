@@ -468,7 +468,7 @@ Module BasicPosetTheory.
     split; [now left | congruence].
   Qed.
   Next Obligation.
-    tauto.
+    intros H_eq. exact (H_eq).
   Qed.
   Next Obligation.
     intros H_gt. exploit (lex_le_flip_spec lhs rhs).

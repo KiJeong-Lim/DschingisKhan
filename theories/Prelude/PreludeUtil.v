@@ -108,19 +108,23 @@ Module EQ_FACTS.
     end
   .
 
-  Let my_eq_encoder_ret (eq_em_x : x = x \/ x <> x) (h_eq : x = x) : x = x :=
-    match eq_em_x with
-    | or_introl Heq => Heq
-    | or_intror Hne => False_ind (x = x) (Hne h_eq)
-    end
-  .
-
-  Let my_eq_encoder_x_eq_reflexivity_x_is (hyp_eq : x = x) : my_eq_encoder x (eq_reflexivity x) = my_eq_encoder x hyp_eq :=
-    match eq_em x as eq_em_x return my_eq_encoder_ret eq_em_x (eq_reflexivity x) = my_eq_encoder_ret eq_em_x hyp_eq with
-    | or_introl h_eq => eq_reflexivity h_eq
-    | or_intror h_ne => False_ind (False_ind (x = x) (h_ne (eq_reflexivity x)) = False_ind (x = x) (h_ne hyp_eq)) (h_ne hyp_eq)
-    end
-  .
+  Lemma my_eq_encoder_x_eq_reflexivity_x_is
+    (hyp_eq : x = x)
+    : my_eq_encoder x (eq_reflexivity x) = my_eq_encoder x hyp_eq.
+  Proof.
+    keep (fun eq_em_x : x = x \/ x <> x => fun h_eq : x = x =>
+      match eq_em_x return x = x with
+      | or_introl Heq => Heq
+      | or_intror Hne => False_ind (x = x) (Hne h_eq)
+      end
+    ) as ret.
+    exact (
+      match eq_em x as eq_em_x return ret eq_em_x (eq_reflexivity x) = ret eq_em_x hyp_eq with
+      | or_introl h_eq => eq_reflexivity h_eq
+      | or_intror h_ne => False_ind (False_ind (x = x) (h_ne (eq_reflexivity x)) = False_ind (x = x) (h_ne hyp_eq)) (h_ne hyp_eq)
+      end
+    ).
+  Defined.
 
   Definition eq_em_implies_eq_pirrel : forall y : A, forall hyp_eq1 : x = y, forall hyp_eq2 : x = y, hyp_eq1 = hyp_eq2 :=
     eq_pirrel_holds_if_we_have_an_eq_encoder_which_returns_the_same_code my_eq_encoder (rect_eq_l x (fun y : A => fun hyp_eq1 : x = y => forall hyp_eq2 : x = y, my_eq_encoder y hyp_eq1 = my_eq_encoder y hyp_eq2) my_eq_encoder_x_eq_reflexivity_x_is)
@@ -155,9 +159,9 @@ Module NAT_FACTS.
   Global Notation suc := S.
 
   Definition is_suc (n : nat) : Prop :=
-    match n return Prop with
-    | O => False
-    | S n' => True
+    match n with
+    | zero => False
+    | suc n' => True
     end
   .
 

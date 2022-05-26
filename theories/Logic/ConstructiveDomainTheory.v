@@ -269,7 +269,8 @@ Module BasicCoLaTheory.
     (f_isMonotonic : isMonotonicMap f)
     : {lfp_f : D | isInfimumOf lfp_f (PrefixedPoints f) /\ isLeastFixedPointOf lfp_f f}.
   Proof.
-    assert (IS_INFIMUM : isInfimumOf (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))) (PrefixedPoints f)) by exact (proj2_sig (getInfimumOf_inCoLa (PrefixedPoints f))).
+    assert (IS_INFIMUM : isInfimumOf (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))) (PrefixedPoints f)).
+    { exact (proj2_sig (getInfimumOf_inCoLa (PrefixedPoints f))). }
     exists (proj1_sig (getInfimumOf_inCoLa (PrefixedPoints f))). split.
     - exact (IS_INFIMUM).
     - eapply theLeastFixedPointOfMonotonicMap.
@@ -281,7 +282,8 @@ Module BasicCoLaTheory.
     (f_isMonotonic : isMonotonicMap f)
     : {gfp_f : D | isSupremumOf gfp_f (PostfixedPoints f) /\ isGreatestFixedPointOf gfp_f f}.
   Proof.
-    assert (IS_SUPREMUM : isSupremumOf (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))) (PostfixedPoints f)) by exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints f))).
+    assert (IS_SUPREMUM : isSupremumOf (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))) (PostfixedPoints f)).
+    { exact (proj2_sig (getSupremumOf_inCoLa (PostfixedPoints f))). }
     exists (proj1_sig (getSupremumOf_inCoLa (PostfixedPoints f))). split.
     - exact (IS_SUPREMUM).
     - eapply theGreatestFixedPointOfMonotonicMap.
