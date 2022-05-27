@@ -298,9 +298,8 @@ Module InteractionTreeTheory.
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
-    { intros z [z_in | z_in].
-      - inversion z_in.
-      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
+    { intros z [z_in | z_in]; [inversion z_in | right].
+      revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
     transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R3) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
@@ -334,9 +333,8 @@ Module InteractionTreeTheory.
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
-    { intros z [z_in | z_in].
-      - inversion z_in.
-      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
+    { intros z [z_in | z_in]; [inversion z_in | right].
+      revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
     transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R1) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
@@ -350,8 +348,8 @@ Module InteractionTreeTheory.
       - destruct REL as [REL | REL]; [inversion REL | ].
         econstructor 2. left. right. exists (t1, t2)...
       - econstructor 3. intros x. specialize REL with (x := x).
-      apply in_union_iff in REL. destruct REL as [REL | REL]; [inversion REL | ].
-      left. right. exists (k1 x, k2 x)...
+        apply in_union_iff in REL. destruct REL as [REL | REL]; [inversion REL | ].
+        left. right. exists (k1 x, k2 x)...
     }
     eapply paco_fold.
   Qed.
@@ -370,9 +368,8 @@ Module InteractionTreeTheory.
     { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
-    { intros z [z_in | z_in].
-      - inversion z_in.
-      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
+    { intros z [z_in | z_in]; [inversion z_in | right].
+      revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
     }
     transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.

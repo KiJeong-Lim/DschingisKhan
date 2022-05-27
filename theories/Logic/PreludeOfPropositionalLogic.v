@@ -6,7 +6,7 @@ Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Math.BasicPosetTheory.
 
-Module SyntaxOfPropositionalLogic.
+Module SyntaxOfPL.
 
   Definition propVar : Set := nat.
 
@@ -161,4 +161,66 @@ Module SyntaxOfPropositionalLogic.
 
   End ENUMERATE_FORMULA.
 
-End SyntaxOfPropositionalLogic.
+End SyntaxOfPL.
+
+Module FormulaNotationsOfPL.
+
+  Import SyntaxOfPL.
+
+  Global Declare Scope pl_formula_scope.
+
+  Bind Scope pl_formula_scope with formula.
+
+  Global Declare Custom Entry pl_formula_viewer.
+
+  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_viewer at level 0).
+
+  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_viewer at level 0, no associativity).
+
+  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_viewer at level 1, right associativity).
+
+  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_viewer at level 1, right associativity).
+
+  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
+
+  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
+
+  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_viewer at level 2, no associativity).
+
+  Global Notation " p " := p (in custom pl_formula_viewer at level 0, p ident).
+
+  Global Notation " '(' p ')' " := p (in custom pl_formula_viewer, p at level 3).
+
+  Global Open Scope pl_formula_scope.
+
+  Global Notation " '\pl[' p  ']' " := p (p custom pl_formula_viewer at level 3, at level 0, no associativity) : pl_formula_scope.
+
+End FormulaNotationsOfPL.
+
+Module SemanticsOfPL.
+
+  Import SyntaxOfPL FormulaNotationsOfPL.
+
+  Definition truth_value : Type := Prop.
+
+  Global Delimit Scope type_scope with truth_value.
+
+  Definition propVar_env : Type := propVar -> truth_value.
+
+  Fixpoint eval_formula (env : propVar_env) (p : formula) {struct p} : truth_value :=
+    match p with
+    | \pl[ p_{ i } ] => env i
+    | \pl[ _|_ ] => False
+    | \pl[ ~ p1 ] => ~ eval_formula env p1
+    | \pl[ p1 /\ p2 ] => eval_formula env p1 /\ eval_formula env p2
+    | \pl[ p1 \/ p2 ] => eval_formula env p1 \/ eval_formula env p2
+    | \pl[ p1 -> p2 ] => eval_formula env p1 -> eval_formula env p2
+    | \pl[ p1 <-> p2 ] => eval_formula env p1 <-> eval_formula env p2
+    end
+  .
+
+  Variant satisfies (env : propVar_env) (p : formula) : Prop :=
+  | IsModel (EVAL_TO_TRUE : eval_formula env p) : satisfies env p
+  .
+
+End SemanticsOfPL.
