@@ -72,9 +72,7 @@ Module InteractionTreeTheory.
       - assert (obs_eq : @eq (itreeF E R) (VisF X1 e1 k1) (VisF X2 e2 k2)) by congruence.
         rewrite obs_eq. econstructor 3. ii. left. right. reflexivity.
     }
-    transitivity (paco eqITreeF (cola_union cola_empty Rel_id)).
-    { eapply paco_fold. }
-    eapply paco_preserves_monotonicity...
+    eapply paco_fold.
   Qed.
 
   Lemma eqITree_symmetry
@@ -97,9 +95,8 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_compose (paco eqITreeF cola_empty) (paco eqITreeF cola_empty))).
     assert (INIT : eqITreeF (cola_union cola_empty (paco eqITreeF cola_empty)) =< eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
-    { eapply eqITreeF_isMonotonicMap. intros [lhs rhs] [lhs_eq_rhs | lhs_eq_rhs].
-      - inversion lhs_eq_rhs.
-      - right. eapply paco_preserves_monotonicity with (x := cola_empty)...
+    { eapply eqITreeF_isMonotonicMap. intros [lhs rhs] [lhs_eq_rhs | lhs_eq_rhs]; [inversion lhs_eq_rhs | right].
+      eapply paco_preserves_monotonicity with (x := cola_empty)...
     }
     transitivity (eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
     { intros [lhs rhs] [t [lhs_eq_t t_eq_rhs]]. apply paco_unfold in lhs_eq_t... apply paco_unfold in t_eq_rhs... do 3 red in lhs_eq_t, t_eq_rhs. do 3 red.
