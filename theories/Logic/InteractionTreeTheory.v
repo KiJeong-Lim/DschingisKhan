@@ -217,42 +217,6 @@ Module InteractionTreeTheory.
     paco (eqITreeF (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R))
   .
 
-  Definition Rel_map {R1 : Type} {R2 : Type} (k : R1 -> itree E R2) (BISIM : ensemble (itree E R1 * itree E R1)) : ensemble (itree E R2 * itree E R2) :=
-    image (fun '(lhs, rhs) => (lhs >>= k, rhs >>= k)) BISIM
-  .
-
-  Local Hint Unfold eqITreeF' Rel_map : core.
-
-  Lemma itree_bind_lifts_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (k : R1 -> itree E R2)
-    : isSubsetOf (Rel_map k (eqITreeF' cola_empty)) (eqITreeF' cola_empty).
-  Proof with eauto with *.
-    pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND. rename k into k0.
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_map k0 (eqITreeF' cola_empty))).
-    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
-    { intros z [z_in | z_in].
-      - inversion z_in.
-      - right. revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity... 
-    }
-    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITreeF' Rel_focus))).
-    { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
-      destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
-      assert (k0_lhs_is : k0_lhs = (lhs >>= k0)) by exact (eq_congruence fst _ _ H_EQ).
-      assert (k0_rhs_is : k0_rhs = (rhs >>= k0)) by exact (eq_congruence snd _ _ H_EQ).
-      clear H_EQ. subst k0_lhs k0_rhs. apply paco_unfold in H_IN...
-      do 3 red in H_IN. do 3 red. unfold ">>="; simpl. do 2 rewrite OBSERVE_BIND.
-      destruct H_IN as [r1 r2 REL | t1 t2 REL | X e k1 k2 REL]; simpl in *.
-      - assert (claim1 : member (k0 r1, k0 r2) Rel_id) by congruence.
-        pose proof (eqITree_reflexivity (requiresSetoid := theFinestSetoidOf R2) (k0 r1, k0 r2) claim1) as claim2.
-        apply paco_unfold in claim2... do 3 red in claim2.
-        exact (eqITreeF_isMonotonicMap _ _ INIT (k0 r1, k0 r2) claim2).
-      - destruct REL as [REL | REL]; [inversion REL | ].
-        econstructor 2. left. right...
-      - econstructor 3. intros x. specialize REL with (x := x).
-        destruct REL as [REL | REL]; [inversion REL | ]. left. right...
-    }
-    eapply paco_fold.
-  Qed.
-
   Lemma itree_bind_unfold {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
     bind t0 k0 ==
     match observe t0 with
@@ -357,7 +321,36 @@ Module InteractionTreeTheory.
   Lemma itree_bind_compatWith_eqProp_on_1st_arg {R1 : Type} {R2 : Type} (t_1 : itree E R1) (t_2 : itree E R1)
     (HYP_FST_ARG_EQ : t_1 == t_2)
     : forall k_0 : R1 -> itree E R2, (t_1 >>= k_0) == (t_2 >>= k_0).
-  Proof. intros k. eapply itree_bind_lifts_eqProp_on_1st_arg with (k := k). exists (t_1, t_2); eauto with *. Qed.
+  Proof with eauto with *.
+    intros k0. revert t_1 t_2 HYP_FST_ARG_EQ.
+    keep (image (fun '(lhs, rhs) => (lhs >>= k0, rhs >>= k0))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
+    enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
+    { ii. eapply to_show, in_image_iff. exists (t_1, t_2). split... }
+    pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND.
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
+    assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
+    { intros z [z_in | z_in]; [inversion z_in | right].
+      revert z z_in. change (eqITreeF' cola_empty =< eqITreeF' Rel_focus). eapply paco_preserves_monotonicity...
+    }
+    transitivity (eqITreeF (requiresSetoid := theFinestSetoidOf R2) (cola_union Rel_focus (eqITreeF' Rel_focus))).
+    { intros [k0_lhs k0_rhs] k0_lhs_eq_k0_rhs. apply in_image_iff in k0_lhs_eq_k0_rhs.
+      destruct k0_lhs_eq_k0_rhs as [[lhs rhs] [H_EQ H_IN]].
+      assert (k0_lhs_is : k0_lhs = (lhs >>= k0)) by exact (eq_congruence fst _ _ H_EQ).
+      assert (k0_rhs_is : k0_rhs = (rhs >>= k0)) by exact (eq_congruence snd _ _ H_EQ).
+      clear H_EQ. subst k0_lhs k0_rhs. apply paco_unfold in H_IN...
+      do 3 red in H_IN. do 3 red. unfold ">>="; simpl. do 2 rewrite OBSERVE_BIND.
+      destruct H_IN as [r1 r2 REL | t1 t2 REL | X e k1 k2 REL]; simpl in *.
+      - assert (claim1 : member (k0 r1, k0 r2) Rel_id) by congruence.
+        pose proof (eqITree_reflexivity (requiresSetoid := theFinestSetoidOf R2) (k0 r1, k0 r2) claim1) as claim2.
+        apply paco_unfold in claim2... do 3 red in claim2.
+        exact (eqITreeF_isMonotonicMap _ _ INIT (k0 r1, k0 r2) claim2).
+      - destruct REL as [REL | REL]; [inversion REL | ].
+        econstructor 2. left. right...
+      - econstructor 3. intros x. specialize REL with (x := x).
+        destruct REL as [REL | REL]; [inversion REL | ]. left. right...
+    }
+    eapply paco_fold.
+  Qed.
 
   Lemma itree_bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} (k_1 : R1 -> itree E R2) (k_2 : R1 -> itree E R2)
     (HYP_SND_ARG_EQ : forall x : R1, k_1 x == k_2 x)
