@@ -152,11 +152,11 @@ Module SyntaxOfPropositionalLogic.
   .
 
   Theorem formula_is_enumerable (p : formula)
-    : {n : nat | enumFormula n = p}.
+    : {seed : nat | enumFormula seed = p}.
   Proof.
     pose proof (specOf_enumFormula' p (getRankOfFormula p) le_reflexitivity) as [seed0 H_EQ].
-    exists (cantor_pairing_inv (getRankOfFormula p) seed0). unfold cantor_pairing_inv.
-    unfold enumFormula. now repeat rewrite <- cantor_pairing_is_surjective.
+    exists (cantor_pairing_inv (getRankOfFormula p) seed0). unfold cantor_pairing_inv, enumFormula.
+    now repeat rewrite <- cantor_pairing_is_surjective.
   Qed.
 
   End ENUMERATE_FORMULA.
