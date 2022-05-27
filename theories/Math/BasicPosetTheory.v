@@ -312,10 +312,10 @@ Module BasicPosetTheory.
   Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_preserves_eqProp_wrtEnsembles Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
   Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
-    { compare : A -> A -> comparison
-    ; compare_LT_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Lt -> lhs =< rhs /\ ~ lhs == rhs
-    ; compare_EQ_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Eq -> lhs == rhs
-    ; compare_GT_implies : forall lhs : A, forall rhs : A, compare lhs rhs = Gt -> rhs =< lhs /\ ~ lhs == rhs
+    { compare (lhs : A) (rhs : A) : comparison
+    ; compare_LT_implies (lhs : A) (rhs : A) (H_lt : compare lhs rhs = Lt) : lhs =< rhs /\ ~ lhs == rhs
+    ; compare_EQ_implies (lhs : A) (rhs : A) (H_eq : compare lhs rhs = Eq) : lhs == rhs
+    ; compare_GT_implies (lhs : A) (rhs : A) (H_gt : compare lhs rhs = Gt) : rhs =< lhs /\ ~ lhs == rhs
     }
   .
 
@@ -458,23 +458,11 @@ Module BasicPosetTheory.
     }
   .
 
-  Local Obligation Tactic := cbn; unfold lex_le, lex_eq; intros lhs rhs.
-  Global Program Instance listLexicographicalOrder_lifts_DecidableTotalOrder : isDecidableTotalOrder (list A) :=
-    { compare := lex_compare
-    }
-  .
-  Next Obligation.
-    intros H_lt. rewrite H_lt.
-    split; [now left | congruence].
-  Qed.
-  Next Obligation.
-    intros H_eq. exact (H_eq).
-  Qed.
-  Next Obligation.
-    intros H_gt. exploit (lex_le_flip_spec lhs rhs).
-    rewrite H_gt. intros H_lt. rewrite H_lt.
-    split; [now left | congruence].
-  Qed.
+  Local Obligation Tactic := cbn; unfold lex_le, lex_eq; ii.
+  Global Program Instance listLexicographicalOrder_liftsDecidableTotalOrder : isDecidableTotalOrder (list A) := { compare := lex_compare }.
+  Next Obligation. rewrite H_lt. split; [now left | congruence]. Qed.
+  Next Obligation. exact (H_eq). Qed.
+  Next Obligation. exploit (lex_le_flip_spec lhs rhs). rewrite H_gt. intros H_lt. rewrite H_lt. split; [now left | congruence]. Qed.
 
   End LEXICOGRAPHICAL_ORDER.
 
