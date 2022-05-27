@@ -256,7 +256,7 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     revert t_0. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k_1 >>= k_2, rhs >>= fun x_1 => k_1 x_1 >>= k_2))).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
-    { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
+    { intros t0. eapply to_show. exists (t0, t0)... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in]; [inversion z_in | right].
@@ -291,7 +291,7 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     revert t. keep (image (fun '(lhs, rhs) => (lhs >>= pure, rhs))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R1 * itree E R1)).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
-    { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
+    { intros t0. eapply to_show. exists (t0, t0)... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in]; [inversion z_in | right].
@@ -321,7 +321,7 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     intros k0. revert t_1 t_2 HYP_FST_ARG_EQ. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k0, rhs >>= k0))).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
-    { ii. eapply to_show, in_image_iff. exists (t_1, t_2). split... }
+    { ii. eapply to_show. exists (t_1, t_2)... }
     pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND.
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
@@ -354,7 +354,7 @@ Module InteractionTreeTheory.
   Proof with eauto with *.
     keep (image (fun '(lhs, rhs) => (lhs >>= k_1, rhs >>= k_2))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
-    { intros t0. eapply to_show, in_image_iff. exists (t0, t0). split... change (t0 == t0)... }
+    { intros t0. eapply to_show. exists (t0, t0)... change (t0 == t0)... }
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in]; [inversion z_in | right].
@@ -401,7 +401,7 @@ Module InteractionTreeTheory.
     (itree_trigger (E := E) X e >>= k) == Vis X e k.
   Proof.
     unfold itree_trigger. rewrite itree_bind_Vis. eapply Vis_eq_Vis_iff.
-    intros x. eapply itree_pure_left_id_bind with (x := x).
+    intros x; eapply itree_pure_left_id_bind with (x := x).
   Qed.
 
 End InteractionTreeTheory.
