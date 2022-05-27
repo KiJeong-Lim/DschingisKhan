@@ -200,14 +200,19 @@ Module BooleanAlgebra.
     exists botBA : BA, member botBA X /\ botBA == falseBA
   .
 
-  Lemma inconsistent_compatWith_eqProp (X : ensemble BA) (X' : ensemble BA)
-    (IS_INCONSISTENT : inconsistent X)
-    (X_eq_X' : X == X')
+  Lemma isSubsetOf_lifts_inconsistent (X : ensemble BA) (X' : ensemble BA)
+    (SUBSET : isSubsetOf X X')
+    (INCONSISTENT : inconsistent X)
     : inconsistent X'.
   Proof.
-    destruct IS_INCONSISTENT as [botBA [botBA_in_X botBA_eq_falseBA]].
-    exists (botBA). split; [now eapply X_eq_X' | exact (botBA_eq_falseBA)].
+    destruct INCONSISTENT as [botBA [botBA_in_X botBA_eq_falseBA]].
+    exists (botBA). split; [exact (SUBSET botBA botBA_in_X) | exact (botBA_eq_falseBA)].
   Qed.
+
+  Global Add Parametric Morphism :
+    inconsistent with signature (eqProp ==> iff)
+    as inconsistent_compatWith_eqProp.
+  Proof. intros X X' X_eq_X'. split; eapply isSubsetOf_lifts_inconsistent. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
 
   Definition isProperFilter (F : ensemble BA) : Prop :=
     << IS_FILTER : isFilter F >> /\ << IS_CONSISTENT : ~ inconsistent F >>
@@ -220,8 +225,7 @@ Module BooleanAlgebra.
   Proof.
     destruct F_isProperFilter; desnw. split; unnw.
     - eapply isFilter_compatWith_eqProp; eauto.
-    - intros H_inconsistent. contradiction (IS_CONSISTENT).
-      now eapply inconsistent_compatWith_eqProp with (X := F').
+    - intros INCONSISTENT. contradiction (IS_CONSISTENT). now rewrite F_eq_F'.
   Qed.
 
   Definition equiconsistent (X : ensemble BA) (X' : ensemble BA) : Prop :=
@@ -235,6 +239,61 @@ Module BooleanAlgebra.
   Definition cl (X : ensemble BA) : ensemble BA :=
     fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le : andsBA xs =< x ⟫
   .
+
+  Lemma fact1_of_1_2_8 (X : ensemble BA)
+    : isFilter (cl X).
+  Proof with eauto with *.
+    eapply isFilter_intro.
+    - exists (trueBA). exists ([]). unnw. split.
+      + intros z z_in. inversion z_in.
+      + rewrite andsBA_zero...
+    - ii; desnw.
+      destruct x1_inFilter as [xs1 [xs1_isFiniteSubsetOf andsBA_xs1_le]]; unnw.
+      destruct x2_inFilter as [xs2 [xs2_isFiniteSubsetOf andsBA_xs2_le]]; unnw.
+      exists (xs1 ++ xs2). unnw. split.
+      + eapply isFiniteSubsetOf_append...
+      + rewrite andsBA_app. eapply andBA_preserves_leProp2...
+    - ii; desnw. destruct x_inFilter as [xs [? ?]]; desnw.
+      exists (xs). unnw. split; [ | etransitivity]...
+  Qed.
+
+  Lemma fact2_of_1_2_8 (X : ensemble BA)
+    (X_isFilter : isFilter X)
+    : member trueBA X.
+  Proof.
+    inversion X_isFilter. eapply CLOSED_UPWARD with (x := andsBA []).
+    - eapply CLOSED_andsBA. intros z z_in. inversion z_in.
+    - red. reflexivity.
+  Qed.
+
+  Lemma fact3_of_1_2_8 (X : ensemble BA)
+    : isSubsetOf X (cl X).
+  Proof with eauto with *.
+    intros b b_in. exists ([b]). unnw. split.
+    - intros z [z_eq_b | []]; subst z...
+    - rewrite andsBA_one...
+  Qed.
+
+  Lemma fact4_of_1_2_8 (X : ensemble BA) (X' : ensemble BA)
+    (X_isSubsetOf_X' : isSubsetOf X X')
+    : isSubsetOf (cl X) (cl X').
+  Proof.
+    intros b b_in. destruct b_in as [xs [? ?]]; desnw.
+    exists (xs); unnw. split; eauto with *.
+  Qed.
+
+  Lemma fact5_of_1_2_8 (X : ensemble BA)
+    (X_isFilter : isFilter X)
+    : isSubsetOf (cl X) X.
+  Proof.
+    intros b b_in. destruct b_in as [xs [? ?]]; desnw.
+    inversion X_isFilter. eauto with *.
+  Qed.
+
+  Lemma proposition1_of_1_2_9 (X : ensemble BA)
+    (X_isFilter : isFilter X)
+    : forall b : BA, member b X -> forall b' : BA, b == b' -> member b' X.
+  Proof. ii. inversion X_isFilter. eauto with *. Qed.
 
   Definition isElementCompleteFor (X : ensemble BA) (b : BA) : Prop :=
     forall EQUICONSISTENT : equiconsistent X (cl (insert b X)), member b X
@@ -257,5 +316,36 @@ Module CountableBooleanAlgebra.
     ; CBA_requiresCountable :> isCountable BA
     }
   .
+
+  Section section_2_of_chapter_1_PART2.
+
+  Context {BA : Type} {requiresSetoid : isSetoid BA} {requiresCBA : isCBA BA (requiresSetoid := requiresSetoid)}.
+
+  Variant Insertion (X : ensemble BA) (n : nat) : ensemble BA :=
+  | inInsertion
+    (EQUICONSISTENT : equiconsistent X (cl (insert (enum n) X)))
+    : member (enum n) (Insertion X n)
+  .
+
+  Definition iterInsertion (X : ensemble BA) : nat -> ensemble BA :=
+    fix iterInsertion_fix (n : nat) {struct n} : ensemble BA :=
+    match n with
+    | O => X
+    | S n' => let X' : ensemble BA := iterInsertion_fix n' in cl (union X' (Insertion X' n))
+    end
+  .
+
+  Definition getCompleteFilterOf (X : ensemble BA) : ensemble BA :=
+    fun b : BA => exists n : nat, member b (iterInsertion X n)
+  .
+
+  Variant isUltraFilter (X : ensemble BA) : Prop :=
+  | isUltraFilterIf
+    (IS_FILTER : isFilter X)
+    (ULTRAFILTER : forall X' : ensemble BA, << IS_FILTER' : isFilter X' >> -> forall EQUICONSISTENT : equiconsistent X X', << SUBSET : isSubsetOf X X' >> -> X == X')
+    : isUltraFilter X
+  .
+
+  End section_2_of_chapter_1_PART2.
 
 End CountableBooleanAlgebra.
