@@ -501,11 +501,11 @@ Module DomainTheoryHelper.
 
   Lemma MonotonicMap_preservesDirected {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isMonotonic : isMonotonicMap f)
-    : forall X : ensemble dom, << X_isDirected : isDirectedSubset X >> -> isDirectedSubset (image f X).
+    : forall X : ensemble dom, << IS_DIRECTED : isDirectedSubset X >> -> isDirectedSubset (image f X).
   Proof.
     intros X ? y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
     destruct H_IN1 as [x1 [y1_eq x1_in]]; destruct H_IN2 as [x2 [y2_eq x2_in]]; subst y1 y2.
-    exploit (X_isDirected x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
+    pose proof (IS_DIRECTED x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
     exists (f x3). rewrite in_image_iff. split; eauto with *.
   Qed.
 
