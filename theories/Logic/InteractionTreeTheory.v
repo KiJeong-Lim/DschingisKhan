@@ -319,8 +319,7 @@ Module InteractionTreeTheory.
     (HYP_FST_ARG_EQ : t_1 == t_2)
     : forall k_0 : R1 -> itree E R2, (t_1 >>= k_0) == (t_2 >>= k_0).
   Proof with eauto with *.
-    intros k0. revert t_1 t_2 HYP_FST_ARG_EQ.
-    keep (image (fun '(lhs, rhs) => (lhs >>= k0, rhs >>= k0))) as Rel_image into (ensemble (itree E R1 * itree E R1) -> ensemble (itree E R2 * itree E R2)).
+    intros k0. revert t_1 t_2 HYP_FST_ARG_EQ. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k0, rhs >>= k0))).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
     { ii. eapply to_show, in_image_iff. exists (t_1, t_2). split... }
     pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND.
