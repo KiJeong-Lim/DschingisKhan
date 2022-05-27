@@ -247,6 +247,32 @@ Module NAT_FACTS.
     end
   .
 
+  Fixpoint n1_le_max_n1_n2 (n1 : nat) (n2 : nat) {struct n1} : n1 <= max n1 n2 :=
+    match n1 as n return n <= max n n2 with
+    | O => le_intro_0_le_n
+    | S n1' =>
+      match n2 as m return S n1' <= max (S n1') m with
+      | O => le_n (S n1')
+      | S n2' => le_intro_S_n_le_S_m (n1_le_max_n1_n2 n1' n2')
+      end
+    end
+  .
+
+  Fixpoint n2_le_max_n1_n2 (n1 : nat) (n2 : nat) {struct n1} : n2 <= max n1 n2 :=
+    match n1 as n return n2 <= max n n2 with
+    | O => le_n n2
+    | S n1' =>
+      match n2 as m return m <= max (S n1') m with
+      | O => le_intro_0_le_n
+      | S n2' => le_intro_S_n_le_S_m (n2_le_max_n1_n2 n1' n2')
+      end
+    end
+  .
+
+  Definition le_elim_max_n1_n2_le_m (n1 : nat) (n2 : nat) (m : nat) (hyp_le : max n1 n2 <= m) : n1 <= m /\ n2 <= m :=
+    @conj _ _ (le_transitivity (n1_le_max_n1_n2 n1 n2) hyp_le) (le_transitivity (n2_le_max_n1_n2 n1 n2) hyp_le)
+  .
+
   Lemma le_unfold {n : nat} {m : nat} :
     n <= m <->
     match m with

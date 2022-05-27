@@ -27,11 +27,11 @@ Module BasicPosetTheory.
   Global Notation " f '\monotonic' " := (preserves_leProp1 f)
     (in custom math_form_scope at level 6, f custom math_term_scope at level 1, no associativity).
   Global Notation " '('  X  ')↑' " := (UpperBoundsOf X)
-    (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
+    (in custom math_form_scope at level 0, X custom math_term_scope at level 5).
   Global Notation " sup_X '=' '\sup' X " := (isSupremumOf sup_X X)
     (in custom math_form_scope at level 6, sup_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '('  X  ')↓' " := (LowerBoundsOf X)
-    (in custom math_form_scope at level 6, X custom math_term_scope at level 5).
+    (in custom math_form_scope at level 0, X custom math_term_scope at level 5).
   Global Notation " inf_X '=' '\inf' X " := (isInfimumOf inf_X X)
     (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
