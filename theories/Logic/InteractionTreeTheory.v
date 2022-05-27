@@ -208,7 +208,7 @@ Module InteractionTreeTheory.
 
   Corollary itree_eta {R : Type} (t : itree E R)
     : go (observe t) == t.
-  Proof. now apply obs_eq_obs_implies_eqITree. Qed.
+  Proof. now eapply obs_eq_obs_implies_eqITree. Qed.
 
   Definition eqITreeF' {R : Type} : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) :=
     paco (eqITreeF (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R))
@@ -377,7 +377,7 @@ Module InteractionTreeTheory.
         destruct REL as [REL | REL]; [inversion REL | ].
         left. right. exists (k1 x, k2 x)...
     }
-    apply paco_fold.
+    eapply paco_fold.
   Qed.
 
   Global Instance itree_E_obeysMonadLaws : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
