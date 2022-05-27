@@ -162,8 +162,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof. destruct y_in_z as [c_z y_eq_z_c]. eexists; etransitivity; eauto with *. Qed.
 
   Lemma elem_eqProp_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
-    (y_eq_z : y == z)
     (x_in_y : x `elem` y)
+    (y_eq_z : y == z)
     : x `elem` z.
   Proof.
     destruct z as [z_children z_childtrees]; destruct y as [y_children y_childtrees].
@@ -177,7 +177,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     intros x1 y1 hyp_eq1 x2 y2 hyp_eq2.
     transitivity (x1 `elem` y2).
-    - split; eapply elem_eqProp_elem...
+    - split; ii; eapply elem_eqProp_elem...
     - split; eapply eqProp_elem_elem...
   Qed.
 
