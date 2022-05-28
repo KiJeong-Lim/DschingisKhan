@@ -165,6 +165,10 @@ Module BooleanAlgebra.
     : andsBA [x1; x2] == andBA x1 x2.
   Proof. replace ([x1; x2]) with ([x1] ++ [x2]); trivial. rewrite andsBA_app. now do 2 rewrite andsBA_one. Qed.
 
+  Lemma falseBA_isBottom
+    : forall x : BA, falseBA =< x.
+  Proof. ii. red; simpl. eapply falseBA_ann_andBA. Qed.
+
   Variant isFilter (F : ensemble BA) : Prop :=
   | isFilterIf
     (CLOSED_andsBA : forall xs : list BA, ⟪ xs_isFiniteSubsetOfFilter : isFiniteSubsetOf xs F ⟫ -> member (andsBA xs) F)
@@ -303,6 +307,13 @@ Module BooleanAlgebra.
     forall b : BA, isElementCompleteFor X b
   .
 
+  Variant isUltraFilter (X : ensemble BA) : Prop :=
+  | isUltraFilterIf
+    (IS_FILTER : isFilter X)
+    (ULTRAFILTER : forall X' : ensemble BA, << IS_FILTER' : isFilter X' >> -> forall EQUICONSISTENT : equiconsistent X X', << SUBSET : isSubsetOf X X' >> -> X == X')
+    : isUltraFilter X
+  .
+
   End section_2_of_chapter_1_PART1.
 
 End BooleanAlgebra.
@@ -322,7 +333,7 @@ Module CountableBooleanAlgebra.
   Context {BA : Type} {requiresSetoid : isSetoid BA} {requiresCBA : isCBA BA (requiresSetoid := requiresSetoid)}.
 
   Variant Insertion (X : ensemble BA) (n : nat) : ensemble BA :=
-  | inInsertion
+  | inInsertionIf
     (EQUICONSISTENT : equiconsistent X (cl (insert (enum n) X)))
     : member (enum n) (Insertion X n)
   .
@@ -339,12 +350,22 @@ Module CountableBooleanAlgebra.
     fun b : BA => exists n : nat, member b (iterInsertion X n)
   .
 
-  Variant isUltraFilter (X : ensemble BA) : Prop :=
-  | isUltraFilterIf
-    (IS_FILTER : isFilter X)
-    (ULTRAFILTER : forall X' : ensemble BA, << IS_FILTER' : isFilter X' >> -> forall EQUICONSISTENT : equiconsistent X X', << SUBSET : isSubsetOf X X' >> -> X == X')
-    : isUltraFilter X
-  .
+  Lemma lemma1_of_1_2_11 (n : nat)
+    : forall X : ensemble BA, << IS_FILTER : isFilter X >> -> isFilter (iterInsertion X n).
+  Proof.
+    induction n as [ | n IH]; simpl; eauto.
+    ii; desnw. eapply fact1_of_1_2_8.
+  Qed.
+
+  Lemma lemma1_of_1_2_12 (n1 : nat) (n2 : nat) (n1_le_n2 : n1 <= n2)
+    : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
+  Proof.
+    change (forall X : ensemble BA, iterInsertion X n1 =< iterInsertion X n2).
+    induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X.
+    - reflexivity.
+    - etransitivity; [exact (IH X) | set (X' := (union (iterInsertion X n2) (Insertion (iterInsertion X n2) (suc n2))))].
+      transitivity (X'); [intros z z_in; left | simpl; eapply fact3_of_1_2_8]; eauto with *.
+  Qed.
 
   End section_2_of_chapter_1_PART2.
 
