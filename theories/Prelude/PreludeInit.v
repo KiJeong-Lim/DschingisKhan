@@ -538,6 +538,11 @@ Module PreludeInit_MAIN.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
+  Global Add Parametric Morphism (A : Type) :
+    (@member A) with signature (eq ==> eqProp ==> iff)
+    as member_compatWith_eqProp_on_2nd_arg.
+  Proof. intros z X Y H_EQ. exact (H_EQ z). Qed.
+
   Definition isSameSetAs {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
     forall x : A, member x lhs <-> member x rhs
   .
@@ -564,9 +569,17 @@ Module PreludeInit_MAIN.
     }
   .
 
+  Global Instance isSubsetOf_PreOrder (A : Type) : PreOrder (@isSubsetOf A) :=
+    @leProp_PreOrder (ensemble A) (ensemble_isPoset A)
+  .
+
+  Global Instance isSubsetOf_PartialOrder (A : Type) : PartialOrder eqProp (@isSubsetOf A) :=
+    @leProp_PartialOrder (ensemble A) (ensemble_isPoset A)
+  .
+
   Lemma unfold_ensemble_isPoset {A : Hask.t}
     : ensemble_isPoset A = @arrow_isPoset A Prop Prop_isPoset.
-  Proof. reflexivity. Qed.
+  Proof. reflexivity. Defined.
 
   End ImplFor_ensemble.
 
