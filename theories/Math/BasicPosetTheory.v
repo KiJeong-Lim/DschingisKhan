@@ -287,9 +287,8 @@ Module BasicPosetTheory.
     : isSupremumIn (proj1_sig sup_X) (image (@proj1_sig D phi) X) phi <-> isSupremumOf sup_X X.
   Proof with eauto with *.
     split.
-    { intros [? ?] z. desnw; split.
-      - ii; desnw. eapply SUPREMUM_OF_SUBSET...
-        eapply in_image_iff...
+    { intros [? ?] z; desnw; split.
+      - ii; desnw. eapply SUPREMUM_OF_SUBSET... eapply in_image_iff...
       - ii; desnw. eapply SUPREMUM_OF_SUBSET.
         intros x H_in_image. unnw. eapply in_image_iff in H_in_image.
         destruct H_in_image as [[x' phi_x] [x_eq x_in]]. simpl in x_eq; subst x'.
@@ -436,6 +435,20 @@ Module BasicPosetTheory.
     }
     assert (lemma6 : forall xs1 : list A, forall xs2 : list A, lex_compare xs1 xs2 = Gt <-> lex_compare xs2 xs1 = Lt) by firstorder.
     intros lhs rhs; destruct (lex_compare lhs rhs) eqn: H_compare_result; now firstorder.
+  Qed.
+
+  Corollary lex_le_flip_iff (lhs : list A) (rhs : list A) (compare_result : comparison) :
+    lex_compare lhs rhs = compare_result <->
+    match compare_result with
+    | Lt => lex_compare rhs lhs = Gt
+    | Eq => lex_compare rhs lhs = Eq
+    | Gt => lex_compare rhs lhs = Lt
+    end.
+  Proof.
+    split.
+    - ii; subst compare_result. exact (lex_le_flip_spec lhs rhs).
+    - pose proof (lex_le_flip_spec rhs lhs) as claim1. intros H_eq.
+      destruct compare_result eqn: H_compare_result; now rewrite H_eq in claim1.
   Qed.
 
   Local Instance lex_le_PartialOrder
