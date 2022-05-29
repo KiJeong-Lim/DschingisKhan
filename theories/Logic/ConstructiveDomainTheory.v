@@ -533,12 +533,12 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       { eapply PostfixedPoint_le_GreatestFixedPoint... }
       assert (claim7 : isSupremumOf nu0 (PostfixedPoints (fun Z : D => F (cola_union X Z)))).
       { eapply nu_isSupremumOf_PostfixedPoints. }
-      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) (fun Z : D => F (cola_union X Z)) nu0 claim4 claim7) as [claim8 claim9]; unnw.
-      assert (claim10 : nu0 =< F (cola_union X nu0)).
+      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) (fun Z : D => F (cola_union X Z)) nu0 claim4 claim7) as [? ?]; desnw.
+      assert (claim8 : nu0 =< F (cola_union X nu0)).
       { eapply eqProp_implies_leProp... }
       assert (to_show : F (cola_union X nu0) =< paco F X).
       { cofix CIH. intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
-        intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim10 z z_in)].
+        intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim8 z z_in)].
       }
       now rewrite <- to_show, claim6.
   Qed.

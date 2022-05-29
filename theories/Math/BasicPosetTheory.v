@@ -487,7 +487,7 @@ Module DomainTheoryHelper.
 
   Global Hint Unfold isDirectedSubset : poset_hints.
 
-  Lemma MonotonicMap_preservesDirected {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+  Lemma preservesDirected_if_isMonotonic {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isMonotonic : isMonotonicMap f)
     : forall X : ensemble dom, << IS_DIRECTED : isDirectedSubset X >> -> isDirectedSubset (image f X).
   Proof.
