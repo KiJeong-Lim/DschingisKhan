@@ -543,25 +543,25 @@ Module PreludeInit_MAIN.
     as member_compatWith_eqProp_on_2nd_arg.
   Proof. intros z X Y H_EQ. exact (H_EQ z). Qed.
 
-  Definition isSameSetAs {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
+  Definition isSameSetAs {A : Type} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
     forall x : A, member x lhs <-> member x rhs
   .
 
-  Global Instance ensemble_isSetoid (A : Hask.t) : isSetoid (ensemble A) :=
+  Global Instance ensemble_isSetoid (A : Type) : isSetoid (ensemble A) :=
     { eqProp := @isSameSetAs A
     ; eqProp_Equivalence := @arrow_eqProp_Equivalence A Prop Prop_isSetoid
     }
   .
 
-  Lemma unfold_ensemble_isSetoid {A : Hask.t}
+  Lemma unfold_ensemble_isSetoid {A : Type}
     : ensemble_isSetoid A = @arrow_isSetoid A Prop Prop_isSetoid.
   Proof. reflexivity. Qed.
 
-  Definition isSubsetOf {A : Hask.t} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
+  Definition isSubsetOf {A : Type} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
     forall x : A, member x lhs -> member x rhs
   .
 
-  Global Instance ensemble_isPoset (A : Hask.t) : isPoset (ensemble A) :=
+  Global Instance ensemble_isPoset (A : Type) : isPoset (ensemble A) :=
     { leProp := @isSubsetOf A
     ; Poset_requiresSetoid := ensemble_isSetoid A
     ; leProp_PreOrder := arrow_leProp_PreOrder A Prop Prop_isPoset
@@ -577,7 +577,7 @@ Module PreludeInit_MAIN.
     @leProp_PartialOrder (ensemble A) (ensemble_isPoset A)
   .
 
-  Lemma unfold_ensemble_isPoset {A : Hask.t}
+  Lemma unfold_ensemble_isPoset {A : Type}
     : ensemble_isPoset A = @arrow_isPoset A Prop Prop_isPoset.
   Proof. reflexivity. Defined.
 
