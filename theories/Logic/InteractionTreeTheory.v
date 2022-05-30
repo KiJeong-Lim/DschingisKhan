@@ -325,7 +325,6 @@ Module InteractionTreeTheory.
     intros k0. revert t_1 t_2 HYP_FST_ARG_EQ. set (Rel_image := image (fun '(lhs, rhs) => (lhs >>= k0, rhs >>= k0))).
     enough (to_show : isSubsetOf (Rel_image (eqITreeF' cola_empty)) (eqITreeF' cola_empty)).
     { ii. eapply to_show. exists (t_1, t_2)... }
-    pose proof (itree_bind_unfold_observed (E := E) (R1 := R1) (R2 := R2)) as OBSERVE_BIND.
     eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_image (eqITreeF' cola_empty))).
     assert (INIT : cola_union cola_empty (eqITreeF' cola_empty) =< cola_union Rel_focus (eqITreeF' Rel_focus)).
     { intros z [z_in | z_in]; [inversion z_in | right].
@@ -337,7 +336,7 @@ Module InteractionTreeTheory.
       assert (k0_lhs_is : k0_lhs = (lhs >>= k0)) by exact (eq_congruence fst _ _ H_EQ).
       assert (k0_rhs_is : k0_rhs = (rhs >>= k0)) by exact (eq_congruence snd _ _ H_EQ).
       clear H_EQ. subst k0_lhs k0_rhs. apply paco_unfold in H_IN...
-      do 3 red in H_IN. do 3 red. unfold ">>="; simpl. do 2 rewrite OBSERVE_BIND.
+      do 3 red in H_IN. do 3 red. unfold ">>="; simpl. do 2 rewrite itree_bind_unfold_observed.
       destruct H_IN as [r1 r2 REL | t1 t2 REL | X e k1 k2 REL]; simpl in *.
       - assert (claim1 : member (k0 r1, k0 r2) Rel_id) by congruence.
         pose proof (eqITree_reflexivity (requiresSetoid := theFinestSetoidOf R2) (k0 r1, k0 r2) claim1) as claim2.
@@ -382,9 +381,7 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  End ITREE_MONAD_LAWS.
-
-  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
+  Global Instance itree_E_obeysMonadLaws : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (R1 := R1) (R2 := R2) (R3 := R3)
     ; pure_left_id_bind {R1 : Type} {R2 : Type} := itree_pure_left_id_bind (R1 := R1) (R2 := R2)
     ; pure_right_id_bind {R1 : Type} := itree_pure_right_id_bind (R1 := R1)
@@ -392,6 +389,8 @@ Module InteractionTreeTheory.
     ; bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} := itree_bind_compatWith_eqProp_on_2nd_arg (R1 := R1) (R2 := R2)
     }
   .
+
+  End ITREE_MONAD_LAWS.
 
   Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R) :
     (itree_tick (E := E) >>= k) == Tau (k tt).
