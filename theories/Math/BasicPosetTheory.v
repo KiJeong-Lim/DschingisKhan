@@ -35,9 +35,9 @@ Module BasicPosetTheory.
   Global Notation " inf_X '=' '\inf' X " := (isInfimumOf inf_X X)
     (in custom math_form_scope at level 6, inf_X custom math_term_scope at level 1, X custom math_term_scope at level 5).
   Global Notation " '\{' '\sup' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun sup => isSupremumOf sup Y))
-    (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
+    (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X pattern, Y custom math_term_scope at level 1, no associativity).
   Global Notation " '\{' '\inf' Y ':' X '∈' Xs '\}' " := (ensemble_bind Xs (fun X => fun inf => isInfimumOf inf Y))
-    (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X name, Y custom math_term_scope at level 1, no associativity).
+    (in custom math_term_scope at level 0, Xs custom math_term_scope at level 5, X pattern, Y custom math_term_scope at level 1, no associativity).
 
   Create HintDb poset_hints.
   Global Hint Unfold REFERENCE_HOLDER member UpperBoundsOf LowerBoundsOf isSupremumOf isInfimumOf isMonotonicMap : poset_hints.

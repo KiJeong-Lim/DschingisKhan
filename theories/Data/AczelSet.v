@@ -25,7 +25,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Definition smallUniv : AczelSetUniv.t := Type@{AczelSet_smallUniv_lv}.
 
   Inductive Tree : AczelSetUniv.t :=
-  | Node {children : smallUniv} (childtrees : children -> Tree) : Tree
+  | Node {children : smallUniv} (childtrees : forall c : children, Tree) : Tree
   .
 
   Definition AczelSet : AczelSetUniv.t := Tree.
