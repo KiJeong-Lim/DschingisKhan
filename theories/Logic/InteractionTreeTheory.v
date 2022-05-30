@@ -26,6 +26,8 @@ Module InteractionTreeTheory.
     member (lhs, rhs) (paco eqITreeF cola_empty)
   .
 
+  Local Hint Resolve eqITreeF_isMonotonicMap : core.
+
   Theorem eqITree_iff_itreeBisim (lhs : itree E R) (rhs : itree E R)
     : eqITree lhs rhs <-> itreeBisim lhs rhs.
   Proof.
@@ -58,7 +60,7 @@ Module InteractionTreeTheory.
     fun '(lhs, rhs) => exists t : itree E R, member (lhs, t) BISIM /\ member (t, rhs) BISIM'
   .
 
-  Local Hint Resolve eqITreeF_isMonotonicMap : core.
+  Definition eqITreeF' : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) := paco eqITreeF.
 
   Lemma eqITree_reflexivity
     : isSubsetOf Rel_id (paco eqITreeF cola_empty).
@@ -190,6 +192,8 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
+  Local Notation eqITreeF' := (let R : Type := _ in eqITreeF' (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R)).
+
   Global Instance itree_E_isSetoid1 : isSetoid1 (itree E) :=
     { liftSetoid1 {R : Type} (R_isSetoid : isSetoid R) := itree_E_R_isSetoid (R := R) (requiresSetoid := R_isSetoid)
     }
@@ -209,10 +213,6 @@ Module InteractionTreeTheory.
   Corollary itree_eta {R : Type} (t : itree E R)
     : go (observe t) == t.
   Proof. now eapply obs_eq_obs_implies_eqITree. Qed.
-
-  Definition eqITreeF' {R : Type} : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) :=
-    paco (eqITreeF (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R))
-  .
 
   Lemma itree_bind_unfold {R1 : Type} {R2 : Type} (t0 : itree E R1) (k0 : R1 -> itree E R2) :
     bind t0 k0 ==
