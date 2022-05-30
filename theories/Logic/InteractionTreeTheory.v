@@ -18,9 +18,9 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
-  Lemma eqITreeF_isMonotonicMap
-    : isMonotonicMap (fun BISIM : ensemble (itree E R * itree E R) => eqITreeF BISIM).
-  Proof. exact (eqITreeF_monotonic). Defined.
+  Definition eqITreeF_isMonotonicMap : isMonotonicMap eqITreeF :=
+    eqITreeF_monotonic (E := E) (R := R) (requiresSetoid := requiresSetoid)
+  .
 
   Definition eqITreeF' : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) := paco eqITreeF.
 
@@ -116,9 +116,9 @@ Module InteractionTreeTheory.
         { exact (eq_congruence (fun ot : itreeF E R => match ot with VisF X e k => X | _ => X1 end) (VisF X2 e2 k2') (VisF X1 e1 k1') H_t_obs). }
         subst X2. rename X1 into X.
         assert (e1_eq_e2 : e1 = e2).
-        { inversion H_t_obs. eapply ExclusiveMiddle.projT2_eq with (A := Type) (B := fun X' : Type => E X')... }
+        { inversion H_t_obs. eapply ExclusiveMiddle.projT2_eq with (B := fun X' : Type => E X')... }
         assert (k1_eq_k2 : k1' = k2').
-        { inversion H_t_obs. eapply ExclusiveMiddle.projT2_eq with (A := Type) (B := fun X' : Type => X' -> itree E R)... }
+        { inversion H_t_obs. eapply ExclusiveMiddle.projT2_eq with (B := fun X' : Type => X' -> itree E R)... }
         subst e2 k2'. rename e1 into e, k1' into k.
         econstructor 3. intros x. specialize REL1 with (x := x). specialize REL2 with (x := x).
         apply in_union_iff in REL1, REL2. destruct REL1 as [REL1 | REL1]; [inversion REL1 | ]. destruct REL2 as [REL2 | REL2]; [inversion REL2 | ].
