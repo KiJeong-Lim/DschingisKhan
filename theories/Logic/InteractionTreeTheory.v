@@ -22,8 +22,10 @@ Module InteractionTreeTheory.
     : isMonotonicMap (fun BISIM : ensemble (itree E R * itree E R) => eqITreeF BISIM).
   Proof. exact (eqITreeF_monotonic). Defined.
 
+  Definition eqITreeF' : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) := paco eqITreeF.
+
   Definition eqITree (lhs : itree E R) (rhs : itree E R) : Prop :=
-    member (lhs, rhs) (paco eqITreeF cola_empty)
+    member (lhs, rhs) (eqITreeF' cola_empty)
   .
 
   Local Hint Resolve eqITreeF_isMonotonicMap : core.
@@ -35,7 +37,7 @@ Module InteractionTreeTheory.
     set (f := @exist (ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R)) isMonotonicMap eqITreeF eqITreeF_isMonotonicMap).
     enough (claim1 : isSubsetOf itreeBisim' (proj1_sig f itreeBisim')).
     enough (claim2 : isSupremumOf itreeBisim' (PostfixedPoints (proj1_sig f))).
-    enough (claim3 : paco eqITreeF cola_empty == itreeBisim').
+    enough (claim3 : eqITreeF' cola_empty == itreeBisim').
     - ii. exact (claim3 (lhs, rhs)).
     - eapply @Supremum_preserves_eqProp_wrtEnsembles with (requiresPoset := ensemble_isPoset (itree E R * itree E R)%type) (X1 := PostfixedPoints (proj1_sig f)) (X2 := PostfixedPoints (proj1_sig f)).
       + rewrite paco_init with (F_monotonic := eqITreeF_isMonotonicMap). eapply nu_isSupremumOf_PostfixedPoints.
@@ -60,13 +62,11 @@ Module InteractionTreeTheory.
     fun '(lhs, rhs) => exists t : itree E R, member (lhs, t) BISIM /\ member (t, rhs) BISIM'
   .
 
-  Definition eqITreeF' : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) := paco eqITreeF.
-
   Lemma eqITree_reflexivity
-    : isSubsetOf Rel_id (paco eqITreeF cola_empty).
+    : isSubsetOf Rel_id (eqITreeF' cola_empty).
   Proof with eauto with *.
     eapply paco_accum... set (Rel_focus := cola_union cola_empty Rel_id).
-    transitivity (eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
+    transitivity (eqITreeF (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [lhs rhs] lhs_eq_rhs. do 3 red. do 2 red in lhs_eq_rhs.
       destruct (observe lhs) as [r1 | t1 | X1 e1 k1] eqn: H_lhs_obs; destruct (observe rhs) as [r2 | t2 | X2 e2 k2] eqn: H_rhs_obs; try congruence.
       - econstructor 1. replace (r2) with (r1) by congruence. reflexivity.
@@ -78,10 +78,10 @@ Module InteractionTreeTheory.
   Qed.
 
   Lemma eqITree_symmetry
-    : isSubsetOf (Rel_flip (paco eqITreeF cola_empty)) (paco eqITreeF cola_empty).
+    : isSubsetOf (Rel_flip (eqITreeF' cola_empty)) (eqITreeF' cola_empty).
   Proof with eauto with *.
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_flip (paco eqITreeF cola_empty))).
-    transitivity (eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_flip (eqITreeF' cola_empty))).
+    transitivity (eqITreeF (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [lhs rhs] lhs_eq_rhs. apply paco_unfold in lhs_eq_rhs... do 3 red in lhs_eq_rhs. do 3 red.
       destruct lhs_eq_rhs as [r1 r2 REL | t1 t2 REL | X e k1 k2 REL].
       - econstructor 1. symmetry...
@@ -93,14 +93,14 @@ Module InteractionTreeTheory.
   Qed.
 
   Lemma eqITree_transitivity
-    : isSubsetOf (Rel_compose (paco eqITreeF cola_empty) (paco eqITreeF cola_empty)) (paco eqITreeF cola_empty).
+    : isSubsetOf (Rel_compose (eqITreeF' cola_empty) (eqITreeF' cola_empty)) (eqITreeF' cola_empty).
   Proof with eauto with *.
-    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_compose (paco eqITreeF cola_empty) (paco eqITreeF cola_empty))).
-    assert (INIT : eqITreeF (cola_union cola_empty (paco eqITreeF cola_empty)) =< eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
+    eapply paco_accum... set (Rel_focus := cola_union cola_empty (Rel_compose (eqITreeF' cola_empty) (eqITreeF' cola_empty))).
+    assert (INIT : eqITreeF (cola_union cola_empty (eqITreeF' cola_empty)) =< eqITreeF (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { eapply eqITreeF_isMonotonicMap. intros [lhs rhs] [lhs_eq_rhs | lhs_eq_rhs]; [inversion lhs_eq_rhs | right].
       eapply paco_preserves_monotonicity with (x := cola_empty)...
     }
-    transitivity (eqITreeF (cola_union Rel_focus (paco eqITreeF Rel_focus))).
+    transitivity (eqITreeF (cola_union Rel_focus (eqITreeF' Rel_focus))).
     { intros [lhs rhs] [t [lhs_eq_t t_eq_rhs]]. apply paco_unfold in lhs_eq_t... apply paco_unfold in t_eq_rhs... do 3 red in lhs_eq_t, t_eq_rhs. do 3 red.
       destruct (observe t) as [r3 | t3 | X3 e3 k3] eqn: H_t_obs.
       - inversion lhs_eq_t; subst. rename REL into REL1, H0 into H_lhs_obs. 
@@ -139,12 +139,12 @@ Module InteractionTreeTheory.
     : Transitive eqITree.
   Proof. intros t1 t2 t3 t1_eq_t2 t2_eq_t3. exact (eqITree_transitivity (t1, t3) (@ex_intro _ _ t2 (@conj _ _ t1_eq_t2 t2_eq_t3))). Qed.
 
-  Global Add Parametric Relation : (itree E R)
-    eqITree
-      reflexivity proved by eqITree_Reflexive
-      symmetry proved by eqITree_Symmetric
-      transitivity proved by eqITree_Transitive
-    as eqITree_Equivalence.
+  Global Instance eqITree_Equivalence : Equivalence (eqITree) :=
+    { Equivalence_Reflexive := eqITree_Reflexive
+    ; Equivalence_Symmetric := eqITree_Symmetric
+    ; Equivalence_Transitive := eqITree_Transitive
+    }
+  .
 
   Local Instance itree_E_R_isSetoid : isSetoid (itree E R) :=
     { eqProp := eqITree
@@ -173,11 +173,14 @@ Module InteractionTreeTheory.
   Proof.
     change (eqITree (Vis X e k1) (Vis X e k2) <-> (forall x : X, eqITree (k1 x) (k2 x))). split; intros H_EQ.
     - rewrite eqITree_iff_itreeBisim in H_EQ. apply unfold_itreeBisim in H_EQ.
-      inversion H_EQ as [ | | X' e' k1' k2' REL]; subst.
-      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => E X) X e' e H0) as e_eq; subst e'; clear H0 H2.
-      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => X -> itree E R) X k1' k1 H1) as k1_eq; subst k1'; clear H1.
-      pose proof (ExclusiveMiddle.projT2_eq Type (fun X : Type => X -> itree E R) X k2' k2 H3) as k2_eq; subst k2'; clear H3.
-      intros x; rewrite eqITree_iff_itreeBisim; exact (REL x).
+      inversion H_EQ as [ | | X' e' k1' k2' REL]; subst X'.
+      assert (e_eq_e' : e = e').
+      { now eapply ExclusiveMiddle.projT2_eq with (B := fun X' : Type => E X'). }
+      assert (k1_eq_k1' : k1 = k1').
+      { now eapply ExclusiveMiddle.projT2_eq with (B := fun X' : Type => X' -> itree E R). }
+      assert (k2_eq_k2' : k2 = k2').
+      { now eapply ExclusiveMiddle.projT2_eq with (B := fun X' : Type => X' -> itree E R). }
+      subst e' k1' k2'. intros x; rewrite eqITree_iff_itreeBisim; exact (REL x).
     - rewrite eqITree_iff_itreeBisim. econstructor. econstructor 3.
       intros x; rewrite <- eqITree_iff_itreeBisim; exact (H_EQ x).
   Qed.
@@ -379,7 +382,9 @@ Module InteractionTreeTheory.
     eapply paco_fold.
   Qed.
 
-  Global Instance itree_E_obeysMonadLaws : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
+  End ITREE_MONAD_LAWS.
+
+  Global Instance itree_E_obeysMonadLaws {E : Type -> Type} : LawsOfMonad (itree E) (requiresSetoid1 := itree_E_isSetoid1) :=
     { bind_assoc {R1 : Type} {R2 : Type} {R3 : Type} := itree_bind_assoc (R1 := R1) (R2 := R2) (R3 := R3)
     ; pure_left_id_bind {R1 : Type} {R2 : Type} := itree_pure_left_id_bind (R1 := R1) (R2 := R2)
     ; pure_right_id_bind {R1 : Type} := itree_pure_right_id_bind (R1 := R1)
@@ -387,8 +392,6 @@ Module InteractionTreeTheory.
     ; bind_compatWith_eqProp_on_2nd_arg {R1 : Type} {R2 : Type} := itree_bind_compatWith_eqProp_on_2nd_arg (R1 := R1) (R2 := R2)
     }
   .
-
-  End ITREE_MONAD_LAWS.
 
   Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R) :
     (itree_tick (E := E) >>= k) == Tau (k tt).
