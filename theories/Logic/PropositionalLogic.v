@@ -346,8 +346,8 @@ Module InferenceRulesOfPL.
 
   Local Hint Constructors infers : core.
 
-  Lemma Law_of_Exclusive_Middle (p : formula) :
-    empty ⊢ \pl[ p \/ ~ p ].
+  Lemma Law_of_Exclusive_Middle (C : formula)
+    : empty ⊢ \pl[ C \/ ~ C ].
   Proof with reflexivity.
     eapply NegationE, ContradictionI.
     - eapply DisjunctionI2, NegationI, ContradictionI.
