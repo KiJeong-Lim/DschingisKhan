@@ -404,8 +404,8 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Set Primitive Projections.
 
-  CoInductive paco (F : D -> D) (X : D) (x : A) : Prop :=
-    Fold_paco { unfold_paco : member x (paco' (paco_F := paco F) F X) }
+  CoInductive paco (F : D -> D) (X : D) (z : A) : Prop :=
+    Fold_paco { unfold_paco : member z (paco' (paco_F := paco F) F X) }
   .
 
   Unset Primitive Projections.
@@ -427,7 +427,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   End PACO_implementation.
 
   Global Arguments paco' {A} (paco_F) (F) (X).
-  Global Arguments paco {A} (F) (X) (x).
+  Global Arguments paco {A} (F) (X) (z).
 
   Section PACO_theory.
 
@@ -504,43 +504,39 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     - intros Y_le_paco_f_X z z_in. apply Y_le_paco_f_X in z_in.
       revert z z_in. change (proj1_sig (Paco f) X =< proj1_sig (Paco f) (cola_union X Y)).
       eapply paco_preserves_monotonicity; [exact (proj2_sig f) | eapply le_cola_union_introl]...
-    - intros COIND. rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X).
-      assert (claim1 : (paco F (cola_union X Y)) =< (F (cola_union (cola_union X Y) (paco F (cola_union X Y))))).
+    - intros COIND. rewrite COIND at 1. change (paco F (cola_union X Y) =< paco F X). keep (G_aux0 f X) as F' into (D -> D).
+      assert (claim1 : paco F (cola_union X Y) =< F (cola_union (cola_union X Y) (paco F (cola_union X Y)))).
       { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
       assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
       { eapply (proj2_sig f). eapply cola_union_le_intro.
         - intros z z_in. apply in_union_iff in z_in. destruct z_in as [z_in_X | z_in_Y]; [left | right]...
         - eapply le_cola_union_intror...
       }
-      assert (claim3 : member (paco F (cola_union X Y)) (PostfixedPoints (fun Z : D => F (cola_union X Z)))).
+      assert (claim3 : member (paco F (cola_union X Y)) (PostfixedPoints (fun Z : D =>F (cola_union X Z)))).
       { intros z z_in. eapply (proj2_sig f).
         - reflexivity.
         - eapply claim2...
       }
-      assert (claim4 : isMonotonicMap (fun Z : D => F (cola_union X Z))).
-      { intros X1 X2 X1_le_X2. eapply (proj2_sig f).
-        intros z [z_in | z_in]; revert z z_in.
-        - change (X =< cola_union X X2). eapply le_cola_union_introl...
-        - change (X1 =< cola_union X X2). eapply le_cola_union_intror...
-      }
-      set (nu0 := proj1_sig (nu (@exist (D -> D) isMonotonicMap (fun Z : D => F (cola_union X Z)) claim4))).
-      assert (claim5 : paco F (cola_union X Y) =< F (cola_union X (paco F (cola_union X Y)))).
+      assert (claim4 : isMonotonicMap F').
+      { eapply G_aux0_isMonotionicMap. }
+      set (nu0 := proj1_sig (nu (@exist (D -> D) isMonotonicMap F' claim4))).
+      assert (claim5 : paco F (cola_union X Y) =< F' (paco F (cola_union X Y))).
       { intros z z_in. eapply (proj2_sig f).
         - reflexivity.
         - eapply claim2...
       }
       assert (claim6 : paco F (cola_union X Y) =< nu0).
       { eapply PostfixedPoint_le_GreatestFixedPoint... }
-      assert (claim7 : isSupremumOf nu0 (PostfixedPoints (fun Z : D => F (cola_union X Z)))).
+      assert (claim7 : isSupremumOf nu0 (PostfixedPoints F')).
       { eapply nu_isSupremumOf_PostfixedPoints. }
-      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) (fun Z : D => F (cola_union X Z)) nu0 claim4 claim7) as [? ?]; desnw.
+      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) F' nu0 claim4 claim7) as [? ?]; desnw.
       assert (claim8 : nu0 =< F (cola_union X nu0)).
       { eapply eqProp_implies_leProp... }
-      assert (to_show : F (cola_union X nu0) =< paco F X).
+      assert (claim9 : F (cola_union X nu0) =< paco F X).
       { cofix CIH. intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim8 z z_in)].
       }
-      now rewrite <- to_show, claim6.
+      now rewrite <- claim9, claim6.
   Qed.
 
   Theorem paco_accum (F : D -> D) (X : D) (Y : D)
@@ -556,9 +552,26 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     : Paco f == proj1_sig G f.
   Proof. eapply @G_characterization with (requiresPoset := ensemble_isPoset A); exact (Paco_spec f). Qed.
 
+  Corollary paco_eq_G (F : D -> D)
+    (F_monotonic : isMonotonicMap F)
+    : forall X : D, paco F X == proj1_sig (proj1_sig G (@exist (D -> D) isMonotonicMap F F_monotonic)) X.
+  Proof. eapply Paco_eq_G with (f := @exist (D -> D) isMonotonicMap F F_monotonic). Qed.
+
   Corollary Paco_isMonotonicMap
     : isMonotonicMap Paco.
   Proof. intros f1 f2 f1_le_f2. do 2 rewrite Paco_eq_G. now eapply G1_isMonotonicMap. Qed.
+
+  Corollary paco_compositionality (F : D -> D) (r : D) (r1 : D) (r2 : D) (g1 : D) (g2 : D)
+    (F_monotonic : isMonotonicMap F)
+    (g1_le_G_f_r1 : g1 =< paco F r1)
+    (g2_le_G_f_r2 : g2 =< paco F r2)
+    (r1_le : r1 =< cola_union r g2)
+    (r2_le : r2 =< cola_union r g1)
+    : cola_union g1 g2 =< paco F r.
+  Proof with eauto.
+    rewrite paco_eq_G with (F := F) (F_monotonic := F_monotonic).
+    eapply G_compositionality... all: rewrite <- paco_eq_G...
+  Qed.
 
   End PACO_theory.
 

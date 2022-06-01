@@ -13,3 +13,4 @@ Require Import DschingisKhan.Logic.ScottTopology.
 Require Import DschingisKhan.Logic.LambdaCalculus.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
 Require Import DschingisKhan.Logic.InteractionTreeTheory.
+Require Import DschingisKhan.Logic.PropositionalLogic.

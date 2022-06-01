@@ -18,6 +18,7 @@ theories/Logic/ScottTopology.v #
 theories/Logic/LambdaCalculus.v #
 theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/InteractionTreeTheory.v #
+theories/Logic/PropositionalLogic.v #
 #
 theories/Index/Index.v #
 #
