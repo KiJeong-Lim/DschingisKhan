@@ -205,9 +205,9 @@ Module SemanticsOfPL.
 
   Global Delimit Scope type_scope with truth_value.
 
-  Definition propVar_env : Type := propVar -> truth_value.
+  Definition propVarEnv : Type := propVar -> truth_value.
 
-  Fixpoint eval_formula (env : propVar_env) (p : formula) {struct p} : truth_value :=
+  Fixpoint eval_formula (env : propVarEnv) (p : formula) {struct p} : truth_value :=
     match p with
     | \pl[ p_{ i } ] => env i
     | \pl[ _|_ ] => False
@@ -219,8 +219,28 @@ Module SemanticsOfPL.
     end
   .
 
-  Variant satisfies (env : propVar_env) (p : formula) : Prop :=
-  | IsModel (EVAL_TO_TRUE : eval_formula env p) : satisfies env p
+  Variant satisfies (env : propVarEnv) (A : formula) : Prop :=
+  | IsModel
+    (EVAL_TO_TRUE : eval_formula env A)
+    : satisfies env A
+  .
+
+  Global Infix " `satisfies` " := satisfies (at level 70, no associativity) : type_scope.
+
+  Definition entails (Gamma : ensemble formula) (A : formula) : Prop :=
+    forall env : propVarEnv, forall env_satisfies : forall B : formula, forall B_IN : B \in Gamma, env `satisfies` B, env `satisfies` A
+  .
+
+  Global Infix " ⊧ " := entails (at level 70, no associativity) : type_scope.
+
+  Lemma extend_entails (Gamma1 : ensemble formula) (Gamma2 : ensemble formula) (C : formula)
+    (Gamma1_entails_C : Gamma1 ⊧ C)
+    (Gamma1_isSubsetOf_Gamma2 : isSubsetOf Gamma1 Gamma2)
+    : Gamma2 ⊧ C.
+  Proof. ii. eauto with *. Qed.
+
+  Definition isStructure (Gamma : ensemble formula) : Prop :=
+    forall A : formula, A \in Gamma <-> eval_formula (preimage AtomF Gamma) A
   .
 
 End SemanticsOfPL.
