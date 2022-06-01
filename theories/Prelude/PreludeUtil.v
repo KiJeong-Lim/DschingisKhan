@@ -560,6 +560,15 @@ Module MyData.
     end
   .
 
+  Lemma list_liftsEqDec {A : Type}
+    (requiresEqDec : EqDec A)
+    : EqDec (list A).
+  Proof with try ((left; congruence) || (right; congruence)).
+    change (forall lhs : list A, forall rhs : list A, {lhs = rhs} + {lhs <> rhs}).
+    induction lhs as [ | x1 xs1 IH], rhs as [ | x2 xs2]...
+    pose proof (requiresEqDec x1 x2) as [ | ]; pose proof (IH xs2) as [ | ]...
+  Defined.
+
   End LIST.
 
   Section VECTOR.
