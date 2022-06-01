@@ -328,7 +328,7 @@ Module CountableBooleanAlgebra.
     }
   .
 
-  Section section_2_of_chapter_1_PART2.
+  Section section_2_of_chapter_1_PART2. (* Reference: << Constructive Completeness Proofs and Delimited Control >> written by "Danko Ilik" *)
 
   Context {BA : Type} {requiresSetoid : isSetoid BA} {requiresCBA : isCBA BA (requiresSetoid := requiresSetoid)}.
 
@@ -360,10 +360,9 @@ Module CountableBooleanAlgebra.
   Lemma lemma1_of_1_2_12 (n1 : nat) (n2 : nat) (n1_le_n2 : n1 <= n2)
     : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
   Proof.
-    change (forall X : ensemble BA, iterInsertion X n1 =< iterInsertion X n2).
     induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X.
     - reflexivity.
-    - etransitivity; [exact (IH X) | set (X' := (union (iterInsertion X n2) (Insertion (iterInsertion X n2) (suc n2))))].
+    - etransitivity; [exact (IH X) | set (X' := union (iterInsertion X n2) (Insertion (iterInsertion X n2) (suc n2)))].
       transitivity (X'); [intros z z_in; left | simpl; eapply fact3_of_1_2_8]; eauto with *.
   Qed.
 

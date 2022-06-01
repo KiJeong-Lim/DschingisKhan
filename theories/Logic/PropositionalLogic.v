@@ -356,7 +356,7 @@ Module InferenceRulesOfPL.
     - eapply ByAssumption. left...
   Qed.
 
-  Lemma Cut_property (Gamma : ensemble formula) (A : formula) (B : formula)
+  Lemma Cut_Property (Gamma : ensemble formula) (A : formula) (B : formula)
     (INFERS : Gamma ⊢ A)
     (CUT : insert A Gamma ⊢ B)
     : Gamma ⊢ B.
