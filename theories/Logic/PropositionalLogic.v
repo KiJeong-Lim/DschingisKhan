@@ -24,13 +24,13 @@ Module SyntaxOfPL.
     : EqDec formula.
   Proof with try ((left; congruence) || (right; congruence)).
     change (forall lhs : formula, forall rhs : formula, {lhs = rhs} + {lhs <> rhs}).
-    induction lhs, rhs...
-    { destruct (eq_dec i i0)... }
-    { destruct (IHlhs rhs)... }
-    { destruct (IHlhs1 rhs1); destruct (IHlhs2 rhs2)... }
-    { destruct (IHlhs1 rhs1); destruct (IHlhs2 rhs2)... }
-    { destruct (IHlhs1 rhs1); destruct (IHlhs2 rhs2)... }
-    { destruct (IHlhs1 rhs1); destruct (IHlhs2 rhs2)... }
+    induction lhs as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2], rhs as [i' | | p1' | p1' p2' | p1' p2' | p1' p2' | p1' p2']...
+    { destruct (eq_dec i i')... }
+    { destruct (IH1 p1')... }
+    { destruct (IH1 p1'); destruct (IH2 p2')... }
+    { destruct (IH1 p1'); destruct (IH2 p2')... }
+    { destruct (IH1 p1'); destruct (IH2 p2')... }
+    { destruct (IH1 p1'); destruct (IH2 p2')... }
   Defined.
 
   Section ENUMERATE_FORMULA.
