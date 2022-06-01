@@ -40,7 +40,7 @@ Module BooleanAlgebra.
     ; trueBA_id_andBA :> trueBA `isIdentityOf` andBA
     ; falseBA_id_orBA :> falseBA `isIdentityOf` orBA
     ; falseBA_ann_andBA :> falseBA `isAnnihilatorFor` andBA
-    ; trueBA_ann_orBA :> falseBA `isAnnihilatorFor` andBA
+    ; trueBA_ann_orBA :> trueBA `isAnnihilatorFor` orBA
     ; andBA_idem :> Idem andBA
     ; orBA_idem :> Idem orBA
     ; Absorption_andBA_orBA :> Absorption andBA orBA
