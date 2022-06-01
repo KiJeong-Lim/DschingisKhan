@@ -25,12 +25,12 @@ Module SyntaxOfPL.
   Proof with try ((left; congruence) || (right; congruence)).
     change (forall lhs : formula, forall rhs : formula, {lhs = rhs} + {lhs <> rhs}).
     induction lhs as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2], rhs as [i' | | p1' | p1' p2' | p1' p2' | p1' p2' | p1' p2']...
-    { destruct (eq_dec i i')... }
-    { destruct (IH1 p1')... }
-    { destruct (IH1 p1'); destruct (IH2 p2')... }
-    { destruct (IH1 p1'); destruct (IH2 p2')... }
-    { destruct (IH1 p1'); destruct (IH2 p2')... }
-    { destruct (IH1 p1'); destruct (IH2 p2')... }
+    { pose proof (eq_dec i i') as [i_eq_i' | i_ne_i']... }
+    { pose proof (IH1 p1') as [p1_eq_p1' | p1_ne_p1']... }
+    { pose proof (IH1 p1') as [p1_eq_p1' | p1_ne_p1']; pose proof (IH2 p2') as [p2_eq_p2' | p2_ne_p2']... }
+    { pose proof (IH1 p1') as [p1_eq_p1' | p1_ne_p1']; pose proof (IH2 p2') as [p2_eq_p2' | p2_ne_p2']... }
+    { pose proof (IH1 p1') as [p1_eq_p1' | p1_ne_p1']; pose proof (IH2 p2') as [p2_eq_p2' | p2_ne_p2']... }
+    { pose proof (IH1 p1') as [p1_eq_p1' | p1_ne_p1']; pose proof (IH2 p2') as [p2_eq_p2' | p2_ne_p2']... }
   Defined.
 
   Section ENUMERATE_FORMULA.
