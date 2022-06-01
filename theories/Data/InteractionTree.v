@@ -15,7 +15,7 @@ Module InteractionTrees.
   Set Primitive Projections.
 
   CoInductive itree (E : Type -> Type) (R : Type) : Type :=
-    go { observe : itreeF (itree_E_R := itree E R) E R }
+    { observe : itreeF (itree_E_R := itree E R) E R }
   .
 
   Unset Primitive Projections.
@@ -24,9 +24,9 @@ Module InteractionTrees.
   Global Arguments TauF {itree_E_R} {E} {R} (t).
   Global Arguments VisF {itree_E_R} {E} {R} (X) (e) (k).
 
-  Global Arguments go {E} {R}.
   Global Arguments observe {E} {R}.
 
+  Global Notation go ot := ({| observe := ot |}).
   Global Notation Ret r := (go (RetF r)).
   Global Notation Tau t := (go (TauF t)).
   Global Notation Vis X e k := (go (VisF X e k)).

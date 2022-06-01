@@ -195,21 +195,19 @@ Module InteractionTreeTheory.
 
   Context {E : Type -> Type}.
 
-  Local Notation eqITreeF' := (let R : Type := _ in eqITreeF' (E := E) (R := R) (requiresSetoid := theFinestSetoidOf R)).
+  Local Notation eqITreeF' := (eqITreeF' (E := E) (requiresSetoid := theFinestSetoidOf _)).
 
   Global Instance itree_E_isSetoid1 : isSetoid1 (itree E) :=
     { liftSetoid1 {R : Type} (R_isSetoid : isSetoid R) := itree_E_R_isSetoid (R := R) (requiresSetoid := R_isSetoid)
     }
   .
 
-  Theorem obs_eq_obs_implies_eqITree {R : Type}
-    (lhs : itree E R)
-    (rhs : itree E R)
+  Theorem obs_eq_obs_implies_eqITree {R : Type} (lhs : itree E R) (rhs : itree E R)
     (obs_eq_obs : observe lhs = observe rhs)
     : lhs == rhs.
   Proof.
     eapply eqITree_iff_itreeBisim; constructor.
-    replace (observe rhs) with (observe lhs).
+    replace (observe rhs) with (observe lhs) by exact (obs_eq_obs).
     eapply eqITree_iff_itreeBisim; reflexivity.
   Qed.
 
