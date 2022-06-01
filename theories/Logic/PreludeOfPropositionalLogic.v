@@ -243,4 +243,10 @@ Module SemanticsOfPL.
     forall A : formula, A \in Gamma <-> eval_formula (preimage AtomF Gamma) A
   .
 
+  Lemma structure_gives_a_model_to_its_subset (Gamma : ensemble formula) (Gamma' : ensemble formula)
+    (Gamma_isSubsetOf_Gamma' : isSubsetOf Gamma Gamma')
+    (IS_STRUCTURE : isStructure Gamma')
+    : << MODEL_OF_SUBSET : forall B : formula, B \in Gamma -> preimage AtomF Gamma' `satisfies` B >>.
+  Proof. intros B B_IN. econstructor. eapply IS_STRUCTURE. eauto with *. Qed.
+
 End SemanticsOfPL.
