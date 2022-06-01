@@ -254,26 +254,28 @@ Module Ensembles.
 
   Import ListNotations.
 
-  Inductive union {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (x : A) : Prop :=
+  Global Infix " \in " := member (at level 70, no associativity) : type_scope.
+
+  Inductive union {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (z : A) : Prop :=
   | In_union_l
-    (x_in_Xl : member x X1)
-    : member x (union X1 X2)
+    (z_in_X1 : z \in X1)
+    : z \in union X1 X2
   | In_union_r
-    (x_in_Xr : member x X2)
-    : member x (union X1 X2)
+    (z_in_X2 : z \in X2)
+    : z \in union X1 X2
   .
 
-  Inductive unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) (x : A) : Prop :=
+  Inductive unions_i {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A)) (z : A) : Prop :=
   | In_unions_i (i : I)
-    (x_in_Xs_i : member x (Xs i))
-    : member x (unions_i Xs)
+    (z_in_Xs_i : z \in Xs i)
+    : z \in unions_i Xs
   .
 
-  Inductive unions {A : Hask.t} (Xs : ensemble (ensemble A)) (x : A) : Prop :=
+  Inductive unions {A : Hask.t} (Xs : ensemble (ensemble A)) (z : A) : Prop :=
   | In_unions (X : ensemble A)
-    (x_in_X : member x X)
-    (X_in_Xs : member X Xs)
-    : member x (unions Xs)
+    (z_in_X : z \in X)
+    (X_in_Xs : X \in Xs)
+    : z \in unions Xs
   .
 
   Inductive image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) (y : B) : Prop :=
@@ -289,52 +291,50 @@ Module Ensembles.
     : member x (preimage f Y)
   .
 
-  Inductive finite {A : Hask.t} (xs : list A) (x : A) : Prop :=
+  Inductive finite {A : Hask.t} (xs : list A) (z : A) : Prop :=
   | In_finite
-    (x_in_xs : In x xs)
-    : member x (finite xs)
+    (z_in_xs : In z xs)
+    : member z (finite xs)
   .
 
-  Inductive intersection {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (x : A) : Prop :=
+  Inductive intersection {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (z : A) : Prop :=
   | In_intersection
-    (x_in_Xl : member x X1)
-    (x_in_Xr : member x X2)
-    : member x (intersection X1 X2)
+    (x_in_X1 : z \in X1)
+    (x_in_X2 : z \in X2)
+    : z \in intersection X1 X2
   .
 
-  Inductive full {A : Hask.t} (x : A) : Prop :=
+  Inductive full {A : Hask.t} (z : A) : Prop :=
   | In_full
-    : member x (full)
+    : member z (full)
   .
 
-  Inductive empty {A : Hask.t} (x : A) : Prop :=
+  Inductive empty {A : Hask.t} (z : A) : Prop :=
   .
 
   Local Hint Constructors union unions_i unions image preimage finite intersection full empty : core.
 
-  Global Infix " \in " := member (at level 70, no associativity) : type_scope.
-
-  Definition complement {A : Hask.t} (X : ensemble A) : ensemble A := fun x : A => ~ x \in X.
+  Definition complement {A : Hask.t} (X : ensemble A) : ensemble A := fun z : A => ~ z \in X.
 
   Definition setminus {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) : ensemble A := intersection X1 (complement X2).
 
-  Definition singleton {A : Hask.t} (z : A) : ensemble A := finite [z].
+  Definition singleton {A : Hask.t} (x : A) : ensemble A := fun z : A => x = z.
 
-  Definition delete {A : Hask.t} (z : A) (X : ensemble A) : ensemble A := setminus X (singleton z).
+  Definition delete {A : Hask.t} (x : A) (X : ensemble A) : ensemble A := setminus X (singleton x).
 
-  Definition insert {A : Hask.t} (z : A) (X : ensemble A) : ensemble A := union (singleton z) X.
+  Definition insert {A : Hask.t} (x : A) (X : ensemble A) : ensemble A := union (singleton x) X.
 
-  Lemma in_union_iff {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A)
-    : forall x : A, x \in union Xl Xr <-> (x \in Xl \/ x \in Xr).
-  Proof. intros x; split; intros [H_l | H_r]; eauto. Qed.
+  Lemma in_union_iff {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A)
+    : forall z : A, z \in union X1 X2 <-> (z \in X1 \/ z \in X2).
+  Proof. intros z; split; intros [H_l | H_r]; eauto. Qed.
 
   Lemma in_unions_i_iff {A : Hask.t} {I : Hask.t} (Xs : Hask.arrow I (ensemble A))
-    : forall x : A, x \in unions_i Xs <-> (exists i : I, x \in Xs i).
-  Proof. intros x; split; intros [i H_i]; eauto. Qed.
+    : forall z : A, z \in unions_i Xs <-> (exists i : I, z \in Xs i).
+  Proof. intros z; split; intros [i H_i]; eauto. Qed.
 
   Lemma in_unions_iff {A : Hask.t} (Xs : ensemble (ensemble A))
-    : forall x : A, x \in unions Xs <-> (exists X : ensemble A, x \in X /\ X \in Xs).
-  Proof. intros x; split; [intros [X H_X H_Xs] | intros [X [H_X H_Xs]]]; eauto. Qed.
+    : forall z : A, z \in unions Xs <-> (exists X : ensemble A, z \in X /\ X \in Xs).
+  Proof. intros z; split; [intros [X H_X H_Xs] | intros [X [H_X H_Xs]]]; eauto. Qed.
 
   Lemma in_image_iff {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A)
     : forall y : B, y \in image f X <-> (exists x : A, y = f x /\ x \in X).
@@ -342,43 +342,43 @@ Module Ensembles.
 
   Lemma in_preimage_iff {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B)
     : forall x : A, x \in preimage f Y <-> (exists y : B, y = f x /\ y \in Y).
-  Proof. intros y; split; [intros [H_x] | intros [x [H_x H_y]]; subst]; eauto. Qed.
+  Proof. intros x; split; [intros [H_x] | intros [y [H_x H_y]]; subst]; eauto. Qed.
 
   Lemma in_finite_iff {A : Hask.t} (xs : list A)
-    : forall x : A, x \in finite xs <-> (In x xs).
-  Proof. intros x; split; [intros [H_x] | intros H_x]; eauto. Qed.
+    : forall z : A, z \in finite xs <-> (In z xs).
+  Proof. intros z; split; [intros [H_x] | intros H_x]; eauto. Qed.
 
-  Lemma in_intersection_iff {A : Hask.t} (Xl : ensemble A) (Xr : ensemble A)
-    : forall x : A, x \in intersection Xl Xr <-> (x \in Xl /\ x \in Xr).
-  Proof. intros x; split; intros [H_l H_r]; eauto. Qed.
+  Lemma in_intersection_iff {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A)
+    : forall z : A, z \in intersection X1 X2 <-> (z \in X1 /\ z \in X2).
+  Proof. intros z; split; intros [H_l H_r]; eauto. Qed.
 
   Lemma in_full_iff {A : Hask.t}
-    : forall x : A, x \in full <-> (True).
-  Proof. intros x; split; eauto. Qed.
+    : forall z : A, z \in full <-> (True).
+  Proof. intros z; split; eauto. Qed.
 
   Lemma in_empty_iff {A : Hask.t}
-    : forall x : A, x \in empty <-> (False).
-  Proof. intros x; split; intros []. Qed.
+    : forall z : A, z \in empty <-> (False).
+  Proof. intros z; split; intros []. Qed.
 
   Lemma in_complement_iff {A : Hask.t} (X : ensemble A)
-    : forall x : A, x \in complement X <-> (~ x \in X).
+    : forall z : A, z \in complement X <-> (~ z \in X).
   Proof. reflexivity. Qed.
 
   Lemma in_setminus_iff {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A)
-    : forall x : A, x \in setminus X1 X2 <-> (x \in X1 /\ ~ x \in X2).
-  Proof. intros x. unfold setminus. rewrite in_intersection_iff, in_complement_iff. tauto. Qed.
+    : forall z : A, z \in setminus X1 X2 <-> (z \in X1 /\ ~ z \in X2).
+  Proof. intros z. unfold setminus. rewrite in_intersection_iff, in_complement_iff. tauto. Qed.
 
-  Lemma in_singleton_iff {A : Hask.t} (z : A)
-    : forall x : A, x \in singleton z <-> (x = z).
-  Proof. intros x. unfold singleton. rewrite in_finite_iff. split; [intros [H | []] | intros []; left]; eauto. Qed.
+  Lemma in_singleton_iff {A : Hask.t} (x : A)
+    : forall z : A, z \in singleton x <-> (x = z).
+  Proof. intros z. reflexivity. Qed.
 
-  Lemma in_delete_iff {A : Hask.t} (z : A) (X : ensemble A)
-    : forall x : A, x \in delete z X <-> (x <> z /\ x \in X).
-  Proof. intros x. unfold delete. rewrite in_setminus_iff, in_singleton_iff. tauto. Qed.
+  Lemma in_delete_iff {A : Hask.t} (x : A) (X : ensemble A)
+    : forall z : A, z \in delete x X <-> (x <> z /\ z \in X).
+  Proof. intros z. unfold delete. rewrite in_setminus_iff, in_singleton_iff. tauto. Qed.
 
-  Lemma in_insert_iff {A : Hask.t} (z : A) (X : ensemble A)
-    : forall x : A, x \in insert z X <-> (x = z \/ x \in X).
-  Proof. intros x. unfold insert. rewrite in_union_iff, in_singleton_iff. tauto. Qed.
+  Lemma in_insert_iff {A : Hask.t} (x : A) (X : ensemble A)
+    : forall z : A, z \in insert x X <-> (x = z \/ z \in X).
+  Proof. intros z. unfold insert. rewrite in_union_iff, in_singleton_iff. tauto. Qed.
 
   Local Instance Powerset_isCovariantFunctor : isCovariantFunctor ensemble := { fmap {A : Hask.t} {B : Hask.t} := image (A := A) (B := B) }.
   Local Instance Powerset_isContravariantFunctor : isContravariantFunctor ensemble := { contramap {B : Hask.t} {A : Hask.t} := preimage (A := A) (B := B) }.
@@ -452,7 +452,9 @@ Module Ensembles.
     unfold isListRepOf in *. intros z z_in.
     exploit (in_remove eq_dec xs z x z_in) as [z_in_xs z_ne_x].
     pose proof (xs_isFiniteSubsetOf_insert_x_X z z_in_xs) as claim1.
-    eapply in_insert_iff in claim1. now firstorder.
+    eapply in_insert_iff in claim1. destruct claim1 as [x_eq_z | z_in_X].
+    - now contradiction (z_ne_x).
+    - now firstorder.
   Qed.
 
   Lemma isListRepOf_remove {requireEqDec : EqDec A} (x : A) (xs : list A) (X : ensemble A)

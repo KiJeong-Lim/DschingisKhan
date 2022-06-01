@@ -10,9 +10,6 @@ Require Import DschingisKhan.Math.BooleanAlgebra.
 Require Import DschingisKhan.Math.BasicGeneralTopology.
 Require Import DschingisKhan.Logic.ScottTopology.
 Require Import DschingisKhan.Logic.LambdaCalculus.
-Require Import DschingisKhan.Logic.PreludeOfPropositionalLogic.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
-Require Import DschingisKhan.Logic.ConstructiveMetaTheoryOfPropositionalLogic.
 Require Import DschingisKhan.Logic.ClassicalDomainTheory.
-Require Import DschingisKhan.Logic.ClassicalMetaTheoryOfPropositionalLogic.
 Require Import DschingisKhan.Logic.InteractionTreeTheory.
