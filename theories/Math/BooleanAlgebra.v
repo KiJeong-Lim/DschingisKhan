@@ -137,7 +137,7 @@ Module BooleanAlgebra.
     : preserves_leProp2 andBA.
   Proof.
     ii. cbn in *. transitivity (andBA (andBA lhs1 rhs1) (andBA lhs2 rhs2)).
-    - repeat erewrite andBA_assoc.
+    - repeat rewrite andBA_assoc.
       rewrite (andBA_comm (andBA lhs1 lhs2) rhs1).
       rewrite (andBA_assoc rhs1 lhs1 lhs2).
       rewrite (andBA_comm rhs1 lhs1).
@@ -338,11 +338,13 @@ Module CountableBooleanAlgebra.
     : member (enum n) (Insertion X n)
   .
 
+  Definition Insertion' (X : ensemble BA) (n : nat) : ensemble BA := union X (Insertion X n).
+
   Definition iterInsertion (X : ensemble BA) : nat -> ensemble BA :=
     fix iterInsertion_fix (n : nat) {struct n} : ensemble BA :=
     match n with
     | O => X
-    | S n' => let X' : ensemble BA := iterInsertion_fix n' in cl (union X' (Insertion X' n))
+    | S n' => cl (Insertion' (iterInsertion_fix n') n')
     end
   .
 
@@ -359,11 +361,12 @@ Module CountableBooleanAlgebra.
 
   Lemma lemma1_of_1_2_12 (n1 : nat) (n2 : nat) (n1_le_n2 : n1 <= n2)
     : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
-  Proof.
-    induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X.
-    - reflexivity.
-    - etransitivity; [exact (IH X) | set (X' := union (iterInsertion X n2) (Insertion (iterInsertion X n2) (suc n2)))].
-      transitivity (X'); [intros z z_in; left | simpl; eapply fact3_of_1_2_8]; eauto with *.
+  Proof with eauto with *.
+    induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X... etransitivity.
+    - exact (IH X).
+    - transitivity (Insertion' (iterInsertion X n2) n2).
+      + intros z z_in; left...
+      + simpl; eapply fact3_of_1_2_8...
   Qed.
 
   End section_2_of_chapter_1_PART2.
