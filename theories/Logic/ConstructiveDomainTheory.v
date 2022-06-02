@@ -519,20 +519,20 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       }
       assert (claim4 : isMonotonicMap F').
       { eapply G_aux0_isMonotionicMap. }
-      set (nu0 := proj1_sig (nu (@exist (D -> D) isMonotonicMap F' claim4))).
+      set (G_f_X := proj1_sig (nu (@exist (D -> D) isMonotonicMap F' claim4))).
       assert (claim5 : paco F (cola_union X Y) =< F' (paco F (cola_union X Y))).
       { intros z z_in. eapply (proj2_sig f).
         - reflexivity.
         - eapply claim2...
       }
-      assert (claim6 : paco F (cola_union X Y) =< nu0).
+      assert (claim6 : paco F (cola_union X Y) =< G_f_X).
       { eapply PostfixedPoint_le_GreatestFixedPoint... }
-      assert (claim7 : isSupremumOf nu0 (PostfixedPoints F')).
+      assert (claim7 : isSupremumOf G_f_X (PostfixedPoints F')).
       { eapply nu_isSupremumOf_PostfixedPoints. }
-      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) F' nu0 claim4 claim7) as [? ?]; desnw.
-      assert (claim8 : nu0 =< F (cola_union X nu0)).
+      pose proof (theGreatestFixedPointOfMonotonicMap (requiresPoset := ensemble_isPoset A) F' G_f_X claim4 claim7) as [? ?]; desnw.
+      assert (claim8 : G_f_X =< F (cola_union X G_f_X)).
       { eapply eqProp_implies_leProp... }
-      assert (claim9 : F (cola_union X nu0) =< paco F X).
+      assert (claim9 : F (cola_union X G_f_X) =< paco F X).
       { cofix CIH. intros z z_in. econstructor. revert z z_in. eapply mk_paco'.
         intros z [z_in | z_in]; [left; exact (z_in) | right; eapply CIH; exact (claim8 z z_in)].
       }
