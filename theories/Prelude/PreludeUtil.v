@@ -1054,29 +1054,28 @@ Module MyUtil.
     - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
   Qed.
 
-(* "REFACTOR ME!"
-  Ltac repeat_rewrite :=
-    simpl in *;
-    first
-    [ rewrite in_app_iff in *
-    | rewrite in_remove_iff in *
-    | rewrite orb_false_iff in *
-    | rewrite forallb_app in *
-    | rewrite andb_true_iff in *
-    | rewrite orb_true_iff in *
-    | rewrite negb_true_iff in *
-    | rewrite andb_false_iff in *
-    | rewrite negb_false_iff in *
-    | rewrite Nat.eqb_eq in *
-    | rewrite Nat.eqb_neq in *
-    | rewrite forallb_true_iff in *
-    | rewrite in_map_iff in *
-    | rewrite not_true_iff_false in *
-    | rewrite not_false_iff_true in *
-    ]
-  .
-  Ltac auto_rewrite := repeat repeat_rewrite; repeat (try intro; try repeat_rewrite; try now (subst; firstorder)).
-*)
+(** "RESOLVER" *)
+
+  Global Hint Rewrite @in_app_iff : khan_hints.
+  Global Hint Rewrite @in_remove_iff : khan_hints.
+  Global Hint Rewrite @orb_false_iff : khan_hints.
+  Global Hint Rewrite @forallb_app : khan_hints.
+  Global Hint Rewrite @andb_true_iff : khan_hints.
+  Global Hint Rewrite @orb_true_iff : khan_hints.
+  Global Hint Rewrite @forallb_app : khan_hints.
+  Global Hint Rewrite @andb_true_iff : khan_hints.
+  Global Hint Rewrite @orb_true_iff : khan_hints.
+  Global Hint Rewrite @negb_true_iff : khan_hints.
+  Global Hint Rewrite @andb_false_iff : khan_hints.
+  Global Hint Rewrite @negb_false_iff : khan_hints.
+  Global Hint Rewrite @Nat.eqb_eq : khan_hints.
+  Global Hint Rewrite @Nat.eqb_neq : khan_hints.
+  Global Hint Rewrite @forallb_true_iff : khan_hints.
+  Global Hint Rewrite @in_map_iff : khan_hints.
+  Global Hint Rewrite @not_true_iff_false : khan_hints.
+  Global Hint Rewrite @not_false_iff_true : khan_hints.
+
+  Ltac resolver := simpl in *; ii; autorewrite with khan_hints; try now (subst; firstorder).
 
 End MyUtil.
 
@@ -1276,7 +1275,7 @@ Module FUN_FACTS.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
-  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
+  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
 

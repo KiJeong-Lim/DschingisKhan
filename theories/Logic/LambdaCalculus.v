@@ -30,3 +30,47 @@ Module LambdaCalculusHelper.
   Global Open Scope tmExpr_scope.
 
 End LambdaCalculusHelper.
+
+Module UntypedLambdaCalculus.
+
+  Import ListNotations LambdaCalculusHelper.
+
+  Inductive tmExpr : Set :=
+  | Var (x : ivar) : tmExpr
+  | App (P1 : tmExpr) (P2 : tmExpr) : tmExpr
+  | Lam (y : ivar) (Q : tmExpr) : tmExpr
+  .
+
+  Local Delimit Scope tmExpr_scope with tmExpr.
+
+  Global Instance tmExprEqDec
+    : EqDec tmExpr.
+  Proof with try ((left; congruence) || (right; congruence)).
+    change (forall lhs : tmExpr, forall rhs : tmExpr, {lhs = rhs} + {lhs <> rhs}).
+    induction lhs as [x | P1 IH1 P2 IH2 | y Q IH], rhs as [x' | P1' P2' | y' Q']...
+    { pose proof (ivarEqDec x x') as [x_eq_x' | x_ne_x']... }
+    { pose proof (IH1 P1') as [P1_eq_P1' | P1_ne_P1']; pose proof (IH2 P2') as [P2_eq_P2' | P2_ne_P2']... }
+    { pose proof (ivarEqDec y y') as [y_eq_y' | y_ne_y']; pose proof (IH Q') as [Q_eq_Q' | Q_ne_Q']... }
+  Defined.
+
+  Fixpoint getFVs (M : tmExpr) {struct M} : list ivar :=
+    match M with
+    | Var x => [x]
+    | App P1 P2 => getFVs P1 ++ getFVs P2
+    | Lam y Q => remove ivarEqDec y (getFVs Q)
+    end
+  .
+
+  Fixpoint isFreeIn (z : ivar) (M : tmExpr) {struct M} : bool :=
+    match M with
+    | Var x => Nat.eqb x z
+    | App P1 P2 => isFreeIn z P1 || isFreeIn z P2
+    | Lam y Q => negb (Nat.eqb y z) && isFreeIn z Q
+    end
+  .
+
+  Lemma getFVs_isFreeIn (M : tmExpr)
+    : forall z : ivar, In z (getFVs M) <-> isFreeIn z M = true.
+  Proof. induction M as [x | P1 IH1 P2 IH2 | y Q IH]; resolver. Qed.
+
+End UntypedLambdaCalculus.
