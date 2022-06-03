@@ -890,24 +890,24 @@ Module MyUtil.
     intros [p_x_true forallb_p_xs_true] y [x_eq_y | y_in_xs]; [rewrite x_eq_y in p_x_true | eapply IH]...
   Qed.
 
-  Definition fold_right_max_0 : list nat -> nat := fold_right max 0.
+  Definition maxs : list nat -> nat := fold_right max 0.
 
-  Lemma fold_right_max_0_in (ns : list nat) (n : nat) (H_IN : In n ns)
-    : fold_right_max_0 ns >= n.
+  Lemma maxs_in (ns : list nat) (n : nat) (H_IN : In n ns)
+    : maxs ns >= n.
   Proof with (lia || eauto).
-    unfold fold_right_max_0. revert n H_IN. induction ns as [ | n' ns IH]; simpl...
+    unfold maxs. revert n H_IN. induction ns as [ | n' ns IH]; simpl...
     intros n [H_eq | H_in]... enough (H_suff : fold_right max 0 ns >= n)...
   Qed.
 
-  Lemma fold_right_max_0_app (ns1 : list nat) (ns2 : list nat)
-    : fold_right_max_0 (ns1 ++ ns2) = max (fold_right_max_0 ns1) (fold_right_max_0 ns2).
+  Lemma maxs_app (ns1 : list nat) (ns2 : list nat)
+    : maxs (ns1 ++ ns2) = max (maxs ns1) (maxs ns2).
   Proof with (lia || eauto).
-    unfold fold_right_max_0. revert ns2.
+    unfold maxs. revert ns2.
     induction ns1 as [ | n1 ns1 IH]; simpl... 
     intros n; rewrite IH...
   Qed.
 
-  Lemma property1_of_fold_right_max_0 (phi : nat -> Prop) (ns : list nat)
+  Lemma property1_of_maxs (phi : nat -> Prop) (ns : list nat)
     (phi_dec : forall i : nat, {phi i} + {~ phi i})
     (phi_implies_in : forall i : nat, phi i -> In i ns)
     : forall n : nat, phi n -> fold_right max 0 ns >= n.
@@ -919,7 +919,7 @@ Module MyUtil.
     induction ks; simpl... intros k [H_eq | H_in]... enough (claim3 : fold_right Init.Nat.max 0 ks >= k)...
   Qed.
 
-  Lemma property2_of_fold_right_max_0 (ns : list nat) (n : nat)
+  Lemma property2_of_maxs (ns : list nat) (n : nat)
     : fold_right max 0 ns > n <-> (exists i : nat, In i ns /\ i > n).
   Proof with try now (lia || firstorder; eauto).
     revert n; induction ns as [ | n1 ns1 IH]; simpl... intros n.
@@ -930,33 +930,33 @@ Module MyUtil.
     - intros [i [[H_eq | H_in] H_gt]]... enough (claim3 : fold_right Init.Nat.max 0 ns1 > n)...
   Qed.
 
-  Lemma property3_of_fold_right_max_0 (ns1 : list nat) (ns2 : list nat)
+  Lemma property3_of_maxs (ns1 : list nat) (ns2 : list nat)
     : fold_right max 0 (ns1 ++ ns2) = max (fold_right max 0 ns1) (fold_right max 0 ns2).
-  Proof. exact (fold_right_max_0_app ns1 ns2). Qed.
+  Proof. exact (maxs_app ns1 ns2). Qed.
 
-  Lemma property4_of_fold_right_max_0 (ns : list nat) (n : nat) (H_IN : In n ns)
+  Lemma property4_of_maxs (ns : list nat) (n : nat) (H_IN : In n ns)
     : fold_right max 0 ns >= n.
   Proof with try now (lia || firstorder; eauto).
     revert n H_IN; induction ns as [ | n ns IH]; simpl...
     intros m [H_eq | H_in]... enough (H_suff : fold_right max 0 ns >= m)...
   Qed.
 
-  Lemma property5_of_fold_right_max_0 (ns1 : list nat) (ns2 : list nat)
+  Lemma property5_of_maxs (ns1 : list nat) (ns2 : list nat)
     (H_SUBSET : forall n : nat, In n ns1 -> In n ns2)
     : fold_right max 0 ns1 <= fold_right max 0 ns2.
   Proof with try now (lia || firstorder; eauto).
     revert ns2 H_SUBSET; induction ns1 as [ | n1 ns1 IH]; simpl...
     intros ns2 H. destruct (le_gt_dec n1 (fold_right max 0 ns1)).
     - enough (H_suff : fold_right max 0 ns1 <= fold_right max 0 ns2)...
-    - enough (H_suff : n1 <= fold_right max 0 ns2)... eapply property4_of_fold_right_max_0...
+    - enough (H_suff : n1 <= fold_right max 0 ns2)... eapply property4_of_maxs...
   Qed.
 
-  Lemma fold_right_max_0_ext (ns1 : list nat) (ns2 : list nat)
+  Lemma maxs_ext (ns1 : list nat) (ns2 : list nat)
     (H_EXT_EQ : forall n : nat, In n ns1 <-> In n ns2)
     : fold_right max 0 ns1 = fold_right max 0 ns2.
   Proof with try now firstorder.
     enough (claim1 : fold_right max 0 ns1 <= fold_right max 0 ns2 /\ fold_right max 0 ns2 <= fold_right max 0 ns1) by lia.
-    split; eapply property5_of_fold_right_max_0...
+    split; eapply property5_of_maxs...
   Qed.
 
   Lemma in_remove_iff {A : Type} (x0 : A) (xs : list A)
@@ -1074,8 +1074,7 @@ Module MyUtil.
   Global Hint Rewrite @in_map_iff : khan_hints.
   Global Hint Rewrite @not_true_iff_false : khan_hints.
   Global Hint Rewrite @not_false_iff_true : khan_hints.
-
-  Ltac resolver := simpl in *; ii; autorewrite with khan_hints; try now (subst; firstorder).
+  Ltac resolver := simpl in *; ii; autorewrite with khan_hints using eauto; try now (subst; firstorder).
 
 End MyUtil.
 

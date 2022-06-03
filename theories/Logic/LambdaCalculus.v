@@ -73,4 +73,18 @@ Module UntypedLambdaCalculus.
     : forall z : ivar, In z (getFVs M) <-> isFreeIn z M = true.
   Proof. induction M as [x | P1 IH1 P2 IH2 | y Q IH]; resolver. Qed.
 
+  Definition tmSubst : Set := ivar -> tmExpr.
+
+  Definition nilSubst : tmSubst :=
+    fun z : ivar => Var z
+  .
+
+  Definition consSubst (x : ivar) (M : tmExpr) (sigma : tmSubst) : tmSubst :=
+    fun z : ivar => if ivarEqDec x z then M else sigma z
+  .
+
+  Definition chi (sigma : tmSubst) (M : tmExpr) : ivar :=
+    1 + maxs (map (fun z : ivar => maxs (getFVs (sigma z))) (getFVs M))
+  .
+
 End UntypedLambdaCalculus.
