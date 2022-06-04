@@ -1060,24 +1060,21 @@ Module MyUtil.
 
   End OPTION_ACCESSORIES.
 
-  (** "RESOLVER" *)
+(** "resolver" *)
 
   Global Hint Rewrite @in_app_iff : khan_hints.
   Global Hint Rewrite @in_remove_iff : khan_hints.
-  Global Hint Rewrite @orb_false_iff : khan_hints.
-  Global Hint Rewrite @forallb_app : khan_hints.
-  Global Hint Rewrite @andb_true_iff : khan_hints.
-  Global Hint Rewrite @orb_true_iff : khan_hints.
+  Global Hint Rewrite @in_map_iff : khan_hints.
   Global Hint Rewrite @forallb_app : khan_hints.
   Global Hint Rewrite @andb_true_iff : khan_hints.
   Global Hint Rewrite @orb_true_iff : khan_hints.
   Global Hint Rewrite @negb_true_iff : khan_hints.
   Global Hint Rewrite @andb_false_iff : khan_hints.
+  Global Hint Rewrite @orb_false_iff : khan_hints.
   Global Hint Rewrite @negb_false_iff : khan_hints.
   Global Hint Rewrite @Nat.eqb_eq : khan_hints.
   Global Hint Rewrite @Nat.eqb_neq : khan_hints.
   Global Hint Rewrite @forallb_true_iff : khan_hints.
-  Global Hint Rewrite @in_map_iff : khan_hints.
   Global Hint Rewrite @not_true_iff_false : khan_hints.
   Global Hint Rewrite @not_false_iff_true : khan_hints.
 
