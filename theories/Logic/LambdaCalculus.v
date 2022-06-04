@@ -64,8 +64,8 @@ Module UntypedLambdaCalculus.
   Fixpoint isFreeIn (z : ivar) (M : tmExpr) {struct M} : bool :=
     match M with
     | Var x => Nat.eqb x z
-    | App P1 P2 => isFreeIn z P1 || isFreeIn z P2
-    | Lam y Q => negb (Nat.eqb y z) && isFreeIn z Q
+    | App P1 P2 => orb (isFreeIn z P1) (isFreeIn z P2)
+    | Lam y Q => andb (negb (Nat.eqb y z)) (isFreeIn z Q)
     end
   .
 
