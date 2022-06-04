@@ -1,3 +1,4 @@
+Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
@@ -310,7 +311,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_preserves_eqProp_wrtEnsembles Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
-  Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
+  Polymorphic Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
     { compare (lhs : A) (rhs : A) : comparison
     ; compare_LT_implies (lhs : A) (rhs : A) (H_lt : compare lhs rhs = Lt) : lhs =< rhs /\ ~ lhs == rhs
     ; compare_EQ_implies (lhs : A) (rhs : A) (H_eq : compare lhs rhs = Eq) : lhs == rhs
@@ -478,6 +479,77 @@ Module BasicPosetTheory.
   Next Obligation. exploit (lex_le_flip_spec lhs rhs). rewrite H_gt. intros H_lt. rewrite H_lt. split; [now left | congruence]. Qed.
 
   End LEXICOGRAPHICAL_ORDER.
+
+  Section NAT_TOSET.
+
+  Local Instance nat_isPoset : isPoset nat :=
+    { leProp := le
+    ; Poset_requiresSetoid := theFinestSetoidOf nat
+    ; leProp_PreOrder := Nat.le_preorder
+    ; leProp_PartialOrder := Nat.le_partialorder
+    }
+  .
+
+  Fixpoint nat_compare (x : nat) (y : nat) {struct x} : comparison :=
+    match x, y with
+    | O, O => Eq
+    | O, S y' => Lt
+    | S x', O => Gt
+    | S x', S y' => nat_compare x' y'
+    end
+  .
+
+  Lemma nat_compare_lt (x : nat) (y : nat)
+    (hyp_lt : nat_compare x y = Lt)
+    : x <= y /\ x <> y.
+  Proof with eauto with *.
+    revert x y hyp_lt. induction x as [ | x IH], y as [ | y]; simpl; ii.
+    - inversion hyp_lt.
+    - split.
+      { eapply le_intro_0_le_n. }
+      { ii; eapply not_S_n_eq_0... }
+    - inversion hyp_lt.
+    - pose proof (IH y hyp_lt) as [x_le_y x_ne_y]. split.
+      { eapply le_intro_S_n_le_S_m... }
+      { ii. eapply x_ne_y, suc_n_eq_suc_m_elim... }
+  Qed.
+
+  Lemma nat_compare_eq (x : nat) (y : nat)
+    (hyp_lt : nat_compare x y = Eq)
+    : x = y.
+  Proof with eauto with *.
+    revert x y hyp_lt. induction x as [ | x IH], y as [ | y]; simpl; ii.
+    - reflexivity.
+    - inversion hyp_lt.
+    - inversion hyp_lt.
+    - pose proof (IH y hyp_lt) as x_eq_y.
+      exact (eq_congruence suc x y x_eq_y).
+  Qed.
+
+  Lemma nat_compare_gt (x : nat) (y : nat)
+    (hyp_lt : nat_compare x y = Gt)
+    : y <= x /\ x <> y.
+  Proof with eauto with *.
+    cbn. revert x y hyp_lt. induction x as [ | x IH], y as [ | y]; simpl; ii.
+    - inversion hyp_lt.
+    - inversion hyp_lt.
+    - split.
+      { eapply le_intro_0_le_n. }
+      { ii; eapply not_S_n_eq_0... }
+    - pose proof (IH y hyp_lt) as [y_le_x x_ne_y]. split.
+      { eapply le_intro_S_n_le_S_m... }
+      { ii. eapply x_ne_y, suc_n_eq_suc_m_elim... }
+  Qed.
+
+  Local Instance nat_hasDecidableTotalOrder : isDecidableTotalOrder nat (requiresPoset := nat_isPoset) :=
+    { compare := nat_compare
+    ; compare_LT_implies := nat_compare_lt
+    ; compare_EQ_implies := nat_compare_eq
+    ; compare_GT_implies := nat_compare_gt
+    }
+  .
+
+  End NAT_TOSET.
 
 End BasicPosetTheory.
 

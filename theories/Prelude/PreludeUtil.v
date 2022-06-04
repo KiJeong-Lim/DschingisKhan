@@ -379,6 +379,8 @@ Module NAT_FACTS.
     end
   .
 
+(** "Set-level le" *)
+
   Inductive Le (n : nat) : nat -> Set :=
   | Le_n : Le n n
   | Le_S (m : nat) (hyp_Le : Le n m) : Le n (S m)
@@ -1074,7 +1076,7 @@ Module MyUtil.
   Global Hint Rewrite @in_map_iff : khan_hints.
   Global Hint Rewrite @not_true_iff_false : khan_hints.
   Global Hint Rewrite @not_false_iff_true : khan_hints.
-  Ltac resolver := simpl in *; ii; autorewrite with khan_hints using eauto; try now (subst; firstorder).
+  Ltac resolver := ii; simpl in *; autorewrite with khan_hints using eauto; try now (subst; firstorder).
 
 End MyUtil.
 
