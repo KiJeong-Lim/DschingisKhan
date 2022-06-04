@@ -962,11 +962,11 @@ Module MyUtil.
   Qed.
 
   Lemma in_remove_iff {A : Type} (x0 : A) (xs : list A)
-    (A_eq_dec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2})
-    : forall x : A, In x (remove A_eq_dec x0 xs) <-> (In x xs /\ x <> x0).
+    (requiresEqDec : forall x1 : A, forall x2 : A, {x1 = x2} + {x1 <> x2})
+    : forall x : A, In x (remove requiresEqDec x0 xs) <-> (In x xs /\ x <> x0).
   Proof.
-    pose proof (claim1 := in_remove A_eq_dec).
-    pose proof (claim2 := in_in_remove A_eq_dec).
+    pose proof (claim1 := in_remove requiresEqDec).
+    pose proof (claim2 := in_in_remove requiresEqDec).
     now firstorder.
   Qed.
 
@@ -1006,7 +1006,7 @@ Module MyUtil.
     forall H_In : In x xs,
     nth_error xs (elemIndex_In x x_eq_dec xs H_In) = Some x.
   Proof.
-    induction xs as [| x' xs' IH]; simpl.
+    induction xs as [ | x' xs' IH]; simpl.
     - contradiction.
     - intros [H_eq | H_In']; destruct (x_eq_dec x') as [H_yes | H_no].
       + now subst x'.
@@ -1033,6 +1033,8 @@ Module MyUtil.
 
   End LIST_ACCESSORIES.
 
+  Section OPTION_ACCESSORIES.
+
   Definition Some_inj {A : Type} (x : A) (y : A) : Some x = Some y -> x = y :=
     eq_congruence (maybe y id) (Some x) (Some y)
   .
@@ -1056,7 +1058,9 @@ Module MyUtil.
     - intros [H_no H_eq]. subst x. destruct Some_x as [x | ]...
   Qed.
 
-(** "RESOLVER" *)
+  End OPTION_ACCESSORIES.
+
+  (** "RESOLVER" *)
 
   Global Hint Rewrite @in_app_iff : khan_hints.
   Global Hint Rewrite @in_remove_iff : khan_hints.
@@ -1076,6 +1080,7 @@ Module MyUtil.
   Global Hint Rewrite @in_map_iff : khan_hints.
   Global Hint Rewrite @not_true_iff_false : khan_hints.
   Global Hint Rewrite @not_false_iff_true : khan_hints.
+
   Ltac resolver := ii; simpl in *; autorewrite with khan_hints using eauto; try now (subst; firstorder).
 
 End MyUtil.
