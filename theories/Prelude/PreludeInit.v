@@ -269,12 +269,12 @@ Module PreludeInit_MAIN.
 
   Global Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
     (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
-    as compose_lifts_eqProp.
+    as compose_compatWith_eqProp.
   Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
 
   Global Notation isFunctor := (isCovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
 
-  Polymorphic Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
+  Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
     { pure {A : Hask.t} (x : A) : M A
     ; bind {A : Hask.t} {B : Hask.t} (m : M A) (k : A -> M B) : M B
     }
@@ -710,13 +710,13 @@ Module PreludeInit_MAIN.
 
   Section TypeclassesForProgrammers.
 
-  Polymorphic Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
+  Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
     Cat.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Local Polymorphic Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 (theFinestSetoidOf X).
+  Local Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 (theFinestSetoidOf X).
 
-  Polymorphic Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
+  Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
     { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
       (arr_r : obj -> obj_r)
       (arr_l : obj_l -> obj)
@@ -726,7 +726,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Class LawsOfMonad (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} : Prop :=
+  Class LawsOfMonad (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} : Prop :=
     { bind_assoc {A : Hask.t} {B : Hask.t} {C : Hask.t}
       (m0 : M A)
       (k1 : kleisli M A B)
@@ -754,14 +754,14 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
+  Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
     { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M
     }
   .
 
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
-  Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
+  Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I >=[ M ]=> I + R) : kleisli M I R
     }
   .
@@ -771,12 +771,12 @@ Module PreludeInit_MAIN.
     as bind_lifts_eqProp.
   Proof. ii; etransitivity; [eapply bind_compatWith_eqProp_on_1st_arg | eapply bind_compatWith_eqProp_on_2nd_arg]; eauto. Qed.
 
-  Local Polymorphic Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
+  Local Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
     { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
-  Global Polymorphic Instance LawsOfMonad_guarantees_LawsOfFunctor (M : Hask.cat -----> Hask.cat)
+  Global Instance LawsOfMonad_guarantees_LawsOfFunctor (M : Hask.cat -----> Hask.cat)
     {requiresSetoid1 : isSetoid1 M}
     {requiresMonad : isMonad M}
     {obeysMonadLaws : LawsOfMonad M (requiresSetoid1 := requiresSetoid1) (requiresMonad := requiresMonad)}
@@ -859,7 +859,7 @@ Module PreludeInit_MAIN.
   Section Hask_with_laws.
 
   Local Obligation Tactic := ii; vm_compute in *; congruence.
-  Local Polymorphic Program Instance Hask_withLaws : isCategory_withLaws Hask.t :=
+  Local Program Instance Hask_withLaws : isCategory_withLaws Hask.t :=
     { Category_withLaws_requiresCategory_asSelf := Hask.cat
     ; hom_isSetoid {dom : Hask.t} {cod : Hask.t} := arrow_isSetoid (dom := dom) (cod := cod) (theFinestSetoidOf cod)
     }
