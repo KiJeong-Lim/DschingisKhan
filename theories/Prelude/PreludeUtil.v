@@ -1447,61 +1447,6 @@ Module SCRATCH.
 
   End ACKERMANN.
 
-(* (* Reference: "https://github.com/agda/agda-stdlib/blob/456930d31e99ba1669a51a70e0d41e0434a9bb14/src/Induction/WellFounded.agda#L183" *)
-  Section LexicographicalOrder.
-
-  Context {A : Type} {B : A -> Type}.
-
-  Let C : Type := @sigT A B.
-
-  Inductive sigT_wfRel (wfRel_A : A -> A -> Prop) (wfRel_B : forall x : A, B x -> B x -> Prop) : C -> C -> Prop :=
-  | sigT_wfRel_fst (x1 : A) (x2 : A) (y1 : B x1) (y2 : B x2)
-    (hyp_wfRel_x1_x2 : wfRel_A x1 x2)
-    : sigT_wfRel wfRel_A wfRel_B (@existT A B x1 y1) (@existT A B x2 y2)
-  | sigT_wfRel_snd (x : A) (y1 : B x) (y2 : B x)
-    (hyp_wfRel_y1_y2 : wfRel_B x y1 y2)
-    : sigT_wfRel wfRel_A wfRel_B (@existT A B x y1) (@existT A B x y2)
-  .
-
-  Lemma sigT_wfRel_well_founded_aux {wfRel_A : A -> A -> Prop} {wfRel_B : forall x : A, B x -> B x -> Prop}
-    (wf_A : forall x' : A, Acc wfRel_A x')
-    (wf_B : forall x' : A, forall y' : B x', Acc (wfRel_B x') y')
-    : forall root : C, Acc (sigT_wfRel wfRel_A wfRel_B) root.
-  Proof.
-    unnw. intros root.
-    pose proof (wf_A (projT1 root)) as acc_x.
-    pose proof (wf_B (projT1 root) (projT2 root)) as acc_y.
-    revert root acc_x acc_y.
-    refine (
-      fix to_show_fix (tree : C) (acc_tree1 : Acc wfRel_A (projT1 tree)) (acc_tree2 : Acc (wfRel_B (projT1 tree)) (projT2 tree)) : Acc (sigT_wfRel wfRel_A wfRel_B) tree :=
-      match acc_tree1, acc_tree2 with
-      | Acc_intro _ hyp_acc_root1, Acc_intro _ hyp_acc_root2 => _
-      end
-    ).
-    econstructor. intros subtree wfRel_subtree_tree. destruct wfRel_subtree_tree as [x1 x2 y1 y2 hyp_wfRel_x1_x2 | x y1 y2 hyp_wfRel_y1_y2].
-    - eapply to_show_fix with (tree := existT B x1 y1).
-      + eapply hyp_acc_root1. exact (hyp_wfRel_x1_x2).
-      + exact (wf_B x1 y1).
-    - eapply to_show_fix with (tree := existT B x y1).
-      + exact (wf_A x).
-      + eapply hyp_acc_root2. exact (hyp_wfRel_y1_y2).
-  Defined.
-
-  Hypothesis A_isWellFounded : isWellFounded A.
-
-  Hypothesis B_x_isWellFounded : forall x : A, isWellFounded (B x).
-
-  Definition indexed_lexicographical_order : C -> C -> Prop := sigT_wfRel (@wfRel A A_isWellFounded) (fun x : A => @wfRel (B x) (B_x_isWellFounded x)).
-
-  Global Instance pair_isWellFounded
-    : isWellFounded (@sigT A B).
-  Proof.
-    exists (indexed_lexicographical_order).
-  Defined.
-
-  End LexicographicalOrder.
-*)
-
   Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
 
   Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
@@ -1556,8 +1501,8 @@ Module SCRATCH.
   Proof.
     cofix combineCircuit_cofix.
     intros circuit1 circuit2. econstructor. intros [x1 x2].
-    destruct (Circuit_observe circuit1 x1) as [circuit1' y1].
-    destruct (Circuit_observe circuit2 x2) as [circuit2' y2].
+    pose proof (Circuit_observe circuit1 x1) as [circuit1' y1].
+    pose proof (Circuit_observe circuit2 x2) as [circuit2' y2].
     exact (combineCircuit_cofix circuit1' circuit2', (y1, y2)).
   Defined.
 

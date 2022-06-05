@@ -24,6 +24,7 @@ Module InteractionTrees.
   Global Arguments TauF {itree_E_R} {E} {R} (t).
   Global Arguments VisF {itree_E_R} {E} {R} (X) (e) (k).
 
+  Global Arguments mkITree {E} {R}.
   Global Arguments observe {E} {R}.
 
   Global Notation go ot := ({| observe := ot |}).
