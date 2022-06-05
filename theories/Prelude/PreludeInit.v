@@ -106,9 +106,11 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) := refine (let REF := PRF in _).
 
+  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+
 (** "\S7" *)
 
-  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+  Polymorphic Record box : Type := mkBox { tag :> Type; unBox :> tag }.
 
 End Khan.
 
@@ -370,7 +372,7 @@ Module PreludeInit_MAIN.
 
   Polymorphic Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
 
-  Polymorphic Local Instance relation_on_image_liftsEquivalence {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Polymorphic Instance relation_on_image_liftsEquivalence {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresEquivalence : Equivalence eq_cod)
     : Equivalence (binary_relation_on_image eq_cod f).
   Proof.
@@ -380,7 +382,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Polymorphic Local Instance relation_on_image_liftsPreOrder {dom : Type} {cod : Type} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Polymorphic Instance relation_on_image_liftsPreOrder {dom : Type} {cod : Type} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresPreOrder : PreOrder le_cod)
     : PreOrder (binary_relation_on_image le_cod f).
   Proof.
@@ -389,7 +391,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Polymorphic Local Instance relation_on_image_liftsPartialOrder {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Polymorphic Instance relation_on_image_liftsPartialOrder {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     {requiresEquivalence : Equivalence eq_cod}
     {requiresPreOrder : PreOrder le_cod}
     (requiresPartialOrder : PartialOrder eq_cod le_cod)
@@ -399,7 +401,7 @@ Module PreludeInit_MAIN.
     - intros H_EQ. constructor.
       + exact (proj1 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
       + exact (proj2 (proj1 (partial_order_equivalence (f x1) (f x2)) H_EQ)).
-    - intros H_EQ. eapply (proj2 (partial_order_equivalence (f x1) (f x2))). constructor.
+    - intros H_EQ. apply (proj2 (partial_order_equivalence (f x1) (f x2))). constructor.
       + exact (proj1 H_EQ).
       + exact (proj2 H_EQ).
   Defined.
@@ -490,7 +492,7 @@ Module PreludeInit_MAIN.
     - intros H_EQ. constructor.
       + intros x. exact (proj1 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
       + intros x. exact (proj2 (proj1 (partial_order_equivalence (f1 x) (f2 x)) (H_EQ x))).
-    - intros H_EQ x. eapply (proj2 (partial_order_equivalence (f1 x) (f2 x))). constructor.
+    - intros H_EQ x. apply (proj2 (partial_order_equivalence (f1 x) (f2 x))). constructor.
       + exact (proj1 H_EQ x).
       + exact (proj2 H_EQ x).
   Defined.
@@ -652,10 +654,10 @@ Module PreludeInit_MAIN.
         { exact (proj2 (proj1 (partial_order_equivalence (fst p1) (fst p2)) (proj1 H_EQ))). }
         { exact (proj2 (proj1 (partial_order_equivalence (snd p1) (snd p2)) (proj2 H_EQ))). }
     - intros H_EQ. constructor.
-      + eapply (proj2 (partial_order_equivalence (fst p1) (fst p2))). constructor.
+      + apply (proj2 (partial_order_equivalence (fst p1) (fst p2))). constructor.
         { exact (proj1 (proj1 H_EQ)). }
         { exact (proj1 (proj2 H_EQ)). }
-      + eapply (proj2 (partial_order_equivalence (snd p1) (snd p2))). constructor.
+      + apply (proj2 (partial_order_equivalence (snd p1) (snd p2))). constructor.
         { exact (proj2 (proj1 H_EQ)). }
         { exact (proj2 (proj2 H_EQ)). }
   Defined.
@@ -677,11 +679,11 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_kleisli.
 
-  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : Type := Hask.t.
+  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : box := mkBox Type Hask.t.
 
   Variable M : Hask.cat -----> Hask.cat.
 
-  Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := Hask.arrow dom (M cod).
+  Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := dom -> M cod.
 
   Variable requiresMonad : isMonad M.
 
@@ -698,10 +700,12 @@ Module PreludeInit_MAIN.
 
   End ImplFor_kleisli.
 
+  Global Arguments kleisli (M)%type (dom)%type (cod)%type.
   Global Arguments kempty {M} {requiresMonad} {obj}.
   Global Arguments kappend {M} {requiresMonad} {obj_l} {obj} {obj_r}.
   Global Arguments kleisliCategory (M) {requiresMonad}.
 
+  Global Notation " dom '>=[' M ']=>' cod " := (kleisli M dom cod) (at level 100, no associativity) : type_scope.
   Global Infix " <=< " := kappend (at level 40, left associativity) : program_scope.
 
   Section TypeclassesForProgrammers.
@@ -758,7 +762,7 @@ Module PreludeInit_MAIN.
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Polymorphic Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : kleisli M I (I + R)%type) : kleisli M I R
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I >=[ M ]=> I + R) : kleisli M I R
     }
   .
 
@@ -830,7 +834,7 @@ Module PreludeInit_MAIN.
     either (fun x : A => inl (x, snd it)) (fun y : B => inr (y, snd it)) (fst it)
   .
 
-  Global Polymorphic Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
+  Global Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
     { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)) := curry (iterMonad (kempty ∘ prod_rdistr_sum <=< uncurry step))
     }
   .
