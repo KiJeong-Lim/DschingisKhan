@@ -351,10 +351,10 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Definition maybe {A : Hask.t} {B : Hask.t} (d : B) (f : A -> B) (m : option A) : B :=
-    match m with
-    | Some x => f x
-    | None => d
+  Definition maybe {A : Hask.t} {B : Hask.t} (runNOTHING : B) (runJUST : A -> B) (it : option A) : B :=
+    match it with
+    | Some x => runJUST x
+    | None => runNOTHING
     end
   .
 
@@ -796,40 +796,42 @@ Module PreludeInit_MAIN.
 
   End TypeclassesForProgrammers.
 
-  Polymorphic Definition stateT (ST : Hask.t) (M : Hask.cat -----> Hask.cat) : Hask.cat -----> Hask.cat := fun X : Hask.t => ST -> M (prod X ST).
+  Definition stateT (ST : Hask.t) (M : Hask.cat -----> Hask.cat) : Hask.cat -----> Hask.cat := fun X : Hask.t => ST -> M (prod X ST).
 
-  Polymorphic Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id_{ stateT ST M X }.
+  Global Arguments stateT (ST)%type (M) (X)%type.
 
-  Polymorphic Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id_{ stateT ST M X }.
+  Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id_{ stateT ST M X }.
 
-  Global Polymorphic Instance stateT_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
+  Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id_{ stateT ST M X }.
+
+  Global Instance stateT_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
     { pure _ := StateT ∘ curry kempty
     ; bind _ _ := fun m k => StateT (uncurry (runStateT ∘ k) <=< runStateT m)
     }
   .
 
-  Global Polymorphic Instance stateT_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
-    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) := fun m : M X => StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
+  Global Instance stateT_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
+    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) (m : M X) := StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
     }
   .
 
-  Polymorphic Definition either {A : Type} {B : Type} {C : Type} (run_left : A -> C) (run_right : B -> C) (it : A + B) : C :=
+  Definition either {A : Type} {B : Type} {C : Type} (runLEFT : A -> C) (runRIGHT : B -> C) (it : A + B) : C :=
     match it with
-    | inl my_left => run_left my_left
-    | inr my_right => run_right my_right
+    | inl LEFT => runLEFT LEFT
+    | inr RIGHT => runRIGHT RIGHT
     end
   .
 
-  Polymorphic Definition prod_left_distr_sum {A : Type} {B : Type} {C : Type} (it : A * (B + C)) : (A * B) + (A * C) :=
+  Definition prod_ldistr_sum {A : Type} {B : Type} {C : Type} (it : A * (B + C)) : (A * B) + (A * C) :=
     either (fun y : B => inl (fst it, y)) (fun z : C => inr (fst it, z)) (snd it)
   .
 
-  Polymorphic Definition prod_right_distr_sum {A : Type} {B : Type} {C : Type} (it : (A + B) * C) : (A * C) + (B * C) :=
+  Definition prod_rdistr_sum {A : Type} {B : Type} {C : Type} (it : (A + B) * C) : (A * C) + (B * C) :=
     either (fun x : A => inl (x, snd it)) (fun y : B => inr (y, snd it)) (fst it)
   .
 
   Global Polymorphic Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)%type) := curry (iterMonad (kempty ∘ prod_right_distr_sum <=< uncurry step))
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)) := curry (iterMonad (kempty ∘ prod_rdistr_sum <=< uncurry step))
     }
   .
 
