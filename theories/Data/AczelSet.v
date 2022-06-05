@@ -500,8 +500,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
       Let's sketch the Aczel's proof of Strong Collection.
     > 우선 forall x:X, exists y, phi(x,y)가 성립한다고 합시다.
       First, assume $forall x \in X, exists y, phi(x, y)$.
-    > 여기서 AC를 적용해서 f : forall x:X, phi(x,f(x))인 f를 찾고,
-      By applying AC, find $f$ such that $forall x \in X, phi(x, f(x))$.
+    > 여기서 AC를 적용해서 forall x:X, phi(x,f(x))인 f를 찾고,
+      By applying AC, find $f$ for which $forall x \in X, phi(x, f(x))$.
     > base set을 X의 base와 똑같이 잡을 겁니다.
       Now, take the base set as that of $X$.
     > 그리고 원소는 f(x)에 대응하게끔 잡을 거고요.

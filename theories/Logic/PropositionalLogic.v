@@ -343,7 +343,7 @@ Module InferenceRulesOfPL.
     Gamma ⊢ BiconditionalF A B ->
     Gamma ⊢ B ->
     Gamma ⊢ A
-  where " Gamma ⊢ C " := (infers Gamma C).
+  where " Gamma ⊢ C " := (infers Gamma C) : type_scope.
 
   Local Hint Constructors infers : core.
 

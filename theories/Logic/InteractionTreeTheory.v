@@ -179,7 +179,7 @@ Module InteractionTreeTheory.
 
   Local Hint Resolve eqITreeF_isMonotonicMap : core.
 
-  Section ITREE_MONAD_LAWS.
+  Section ITREE_EQUALITY.
 
   Context {E : Type -> Type}.
 
@@ -376,17 +376,17 @@ Module InteractionTreeTheory.
     }
   .
 
-  End ITREE_MONAD_LAWS.
+  End ITREE_EQUALITY.
 
-  Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R) :
-    (itree_tick (E := E) >>= k) == Tau (k tt).
+  Lemma reduce_itree_tick {E : Type -> Type} {R : Type} (k : unit -> itree E R)
+    : (itree_tick >>= k) == Tau (k tt).
   Proof.
     unfold itree_tick. rewrite itree_bind_Tau. eapply Tau_eq_Tau_iff.
     eapply itree_pure_left_id_bind with (x := tt).
   Qed.
 
-  Lemma reduce_itree_trigger {E : Type -> Type} {R : Type} (X : Type) (e : E X) (k : X -> itree E R) :
-    (itree_trigger (E := E) X e >>= k) == Vis X e k.
+  Lemma reduce_itree_trigger {E : Type -> Type} {R : Type} (X : Type) (e : E X) (k : X -> itree E R)
+    : (itree_trigger X e >>= k) == Vis X e k.
   Proof.
     unfold itree_trigger. rewrite itree_bind_Vis. eapply Vis_eq_Vis_iff.
     intros x; eapply itree_pure_left_id_bind with (x := x).
