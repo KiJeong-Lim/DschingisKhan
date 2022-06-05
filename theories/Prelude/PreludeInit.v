@@ -106,11 +106,11 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) "into" uconstr( PROP ) := refine (let REF : PROP := PRF in _).
   Global Tactic Notation "keep" uconstr( PRF ) "as" ident( REF ) := refine (let REF := PRF in _).
 
-  Ltac intro_pattern_revert := let x := fresh "x" in intro x; pattern x; revert x.
+  Ltac intro_pattern_revert := let x := fresh in intro x; pattern x; revert x.
 
 (** "\S7" *)
 
-  Polymorphic Record box : Type := mkBox { tag :> Type; unBox :> tag }.
+  Polymorphic Record box@{lv} : Type@{lv + 1} := mkBox { box_tag :> Type@{lv}; unBox :> box_tag }.
 
 End Khan.
 
