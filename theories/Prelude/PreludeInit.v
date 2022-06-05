@@ -166,8 +166,8 @@ Module Hask.
 
   Global Polymorphic Instance cat : isCategory Hask.t :=
     { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
-    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} (f : Hask.arrow B C) (g : Hask.arrow A B) := fun x : A => f (g x)
-    ; id {A : Hask.t} := fun x : A => x
+    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} := Khan.compose (A := A) (B := B) (C := C)
+    ; id {A : Hask.t} := Khan.id (A := A)
     }
   .
 
@@ -834,8 +834,8 @@ Module PreludeInit_MAIN.
   .
 
   Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
-  | inl1 (FL_X : FL X) : sum1 FL FR X
-  | inr1 (FR_X : FR X) : sum1 FL FR X
+  | inl1 (LEFT : FL X) : sum1 FL FR X
+  | inr1 (RIGHT : FR X) : sum1 FL FR X
   .
 
   Global Arguments inl1 {FL} {FR} {X}.
@@ -843,10 +843,12 @@ Module PreludeInit_MAIN.
 
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
-  Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (sum1 FL FR) :=
-    { fmap {A : Hask.t} {B : Hask.t} := fun f : Hask.arrow A B => sum1_rect FL FR A (fun _ : sum1 FL FR A => sum1 FL FR B) (fun l : FL A => inl1 (fmap f l)) (fun r : FR A => inr1 (fmap f r))
+  Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (FL +' FR) :=
+    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT))
     }
   .
+
+(** "5. Extras" *)
 
   Section Hask_with_laws.
 
