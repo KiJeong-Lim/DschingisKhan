@@ -521,9 +521,21 @@ Module Ensembles.
     fun x : A => exists i : I, x = x_i i
   .
 
+  Definition Rel_id {A : Type} : ensemble (A * A) :=
+    fun '(lhs, rhs) => lhs = rhs
+  .
+
+  Definition Rel_flip {A : Type} (X : ensemble (A * A)) : ensemble (A * A) :=
+    fun '(lhs, rhs) => member (rhs, lhs) X
+  .
+
+  Definition Rel_compose {A : Type} (X : ensemble (A * A)) (X' : ensemble (A * A)) : ensemble (A * A) :=
+    fun '(lhs, rhs) => exists x : A, member (lhs, x) X /\ member (x, rhs) X'
+  .
+
 (** "Ensemble Tactics" *)
 
-  Ltac ensemble_rewrite := autorewrite with ensemble_hints.
+  Ltac ensemble_rewrite := autorewrite with ensemble_hints using eauto.
 
 End Ensembles.
 

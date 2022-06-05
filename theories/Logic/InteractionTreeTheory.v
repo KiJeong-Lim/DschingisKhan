@@ -50,18 +50,6 @@ Module InteractionTreeTheory.
     - intros [lhs rhs] H_in. eapply unfold_itreeBisim. exact (H_in). 
   Qed.
 
-  Definition Rel_id : ensemble (itree E R * itree E R) :=
-    fun '(lhs, rhs) => lhs = rhs
-  .
-
-  Definition Rel_flip (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    fun '(lhs, rhs) => member (rhs, lhs) BISIM
-  .
-
-  Definition Rel_compose (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    fun '(lhs, rhs) => exists t : itree E R, member (lhs, t) BISIM /\ member (t, rhs) BISIM'
-  .
-
   Lemma eqITree_reflexivity
     : isSubsetOf Rel_id (eqITreeF' cola_empty).
   Proof with eauto with *.

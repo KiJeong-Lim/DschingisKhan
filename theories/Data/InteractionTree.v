@@ -15,7 +15,7 @@ Module InteractionTrees.
   Set Primitive Projections.
 
   CoInductive itree (E : Type -> Type) (R : Type) : Type :=
-    { observe : itreeF (itree_E_R := itree E R) E R }
+    mkITree { observe : itreeF (itree_E_R := itree E R) E R }
   .
 
   Unset Primitive Projections.
