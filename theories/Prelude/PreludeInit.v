@@ -848,6 +848,17 @@ Module PreludeInit_MAIN.
     }
   .
 
+  Section Hask_with_laws.
+
+  Local Obligation Tactic := ii; vm_compute in *; congruence.
+  Local Polymorphic Program Instance Hask_withLaws : isCategory_withLaws Hask.t :=
+    { Category_withLaws_requiresCategory_asSelf := Hask.cat
+    ; hom_isSetoid {dom : Hask.t} {cod : Hask.t} := arrow_isSetoid (dom := dom) (cod := cod) (theFinestSetoidOf cod)
+    }
+  .
+
+  End Hask_with_laws.
+
 End PreludeInit_MAIN.
 
 Export PreludeInit_MAIN.
