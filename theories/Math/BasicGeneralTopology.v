@@ -82,7 +82,7 @@ Module BasicGeneralTopology.
 
   Context {requiresTopology : isTopologicalSpace A}.
 
-  Definition isOpen_inSubspace (O_repr : ensemble (@sig A phi)) : Prop :=
+  Definition isOpen_inSubspace (O_repr : ensemble Subspace) : Prop :=
     exists O : ensemble A, isFilterReprOf phi O_repr O /\ isOpen O
   .
 
