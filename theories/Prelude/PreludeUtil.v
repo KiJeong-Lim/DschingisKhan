@@ -1468,15 +1468,14 @@ Module SCRATCH.
     Circuit_go (fun x : I => (embedFunIntoCircuit_cofix, arr x))
   .
 
-  Definition combineCircuit {I1 : Type} {I2 : Type} {O1 : Type} {O2 : Type}
-    : circuit I1 O1 -> circuit I2 O2 -> circuit (I1 * I2) (O1 * O2).
-  Proof.
-    cofix combineCircuit_cofix.
-    intros circuit1 circuit2. econstructor. intros [x1 x2].
-    pose proof (Circuit_observe circuit1 x1) as [circuit1' y1].
-    pose proof (Circuit_observe circuit2 x2) as [circuit2' y2].
-    exact (combineCircuit_cofix circuit1' circuit2', (y1, y2)).
-  Defined.
+  Definition combineCircuit {I1 : Type} {I2 : Type} {O1 : Type} {O2 : Type} : circuit I1 O1 -> circuit I2 O2 -> circuit (I1 * I2) (O1 * O2) :=
+    cofix combineCircuit_cofix (circuit1 : circuit I1 O1) (circuit2 : circuit I2 O2) : circuit (I1 * I2) (O1 * O2) :=
+    Circuit_go (fun '(x1, x2) =>
+      let '(circuit1', y1) := Circuit_observe circuit1 x1 in
+      let '(circuit2', y2) := Circuit_observe circuit2 x2 in
+      (combineCircuit_cofix circuit1' circuit2', (y1, y2))
+    )
+  .
 
   End SYNCHRONOUS_CIRCUIT.
 
