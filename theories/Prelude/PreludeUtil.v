@@ -1410,7 +1410,7 @@ Module SCRATCH.
 
   Section ACKERMANN.
 
-  Record AckermannFuncSpec (ack : (nat * nat) -> nat) : Prop :=
+  Record AckermannFuncSpec (ack : nat * nat -> nat) : Prop :=
     { AckermannFunc_spec1 : forall n, ack (0, n) = n + 1
     ; AckermannFunc_spec2 : forall m, ack (m + 1, 0) = ack (m, 1)
     ; AckermannFunc_spec3 : forall m n, ack (m + 1, n + 1) = ack (m, ack (m + 1, n))
@@ -1433,10 +1433,10 @@ Module SCRATCH.
     end
   .
 
-  Definition AckermannImpl1 (pr : nat * nat) : nat := AckermannImpl1Aux2 (fst pr) (snd pr).
+  Definition AckermannImpl1 (it : nat * nat) : nat := AckermannImpl1Aux2 (fst it) (snd it).
 
-  Theorem AckermannImpl1_satisfies_AckermannFuncSpec :
-    AckermannFuncSpec AckermannImpl1.
+  Theorem AckermannImpl1_satisfies_AckermannFuncSpec
+    : AckermannFuncSpec AckermannImpl1.
   Proof with (lia || eauto).
     split.
     - intros n; replace (n + 1) with (S n)...
@@ -1446,34 +1446,6 @@ Module SCRATCH.
   Qed.
 
   End ACKERMANN.
-
-  Definition dep_S {A : Type} {B : forall x : A, Type} {C : forall x : A, forall y : B x, Type} (f : forall x : A, forall y : B x, C x y) (g : forall x : A, B x) (x : A) : C x (g x) := f x (g x).
-
-  Definition dep_K {A : Type} {B : forall x : A, Type} (x : A) (y : B x) : A := x.
-
-  Definition curry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : ({i : I & prod (A i) (B i)} -> C) -> (forall i : I, A i -> B i -> C) :=
-    fun f : {i : I & prod (A i) (B i)} -> C =>
-    fun i : I =>
-    fun x : A i =>
-    fun y : B i =>
-    f (existT _ i (x, y))
-  .
-
-  Definition uncurry' {I : Type} {A : I -> Type} {B : I -> Type} {C : Type} : (forall i : I, A i -> B i -> C) -> ({i : I & prod (A i) (B i)} -> C) :=
-    fun f : forall i : I, A i -> B i -> C =>
-    fun p : {i : I & prod (A i) (B i)} =>
-    match p with
-    | existT _ i (x, y) => f i x y
-    end
-  .
-
-  Definition kconcat {M : Hask.cat -----> Hask.cat} {requiresMonad : isMonad M} {X : Type} : list (kleisli M X X) -> kleisli M X X :=
-    fix kconcat_fix (ks : list (kleisli M X X)) {struct ks} : kleisli M X X :=
-    match ks with
-    | [] => kempty
-    | k :: ks => k <=< kconcat_fix ks
-    end
-  .
 
   Section SYNCHRONOUS_CIRCUIT.
 
