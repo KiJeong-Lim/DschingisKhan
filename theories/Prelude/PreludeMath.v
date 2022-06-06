@@ -491,6 +491,8 @@ Module Ensembles.
 
   End SUBSET_INTRO.
 
+  Global Hint Resolve isSubsetOf_insert_if isSubsetOf_singleton_if isSubsetOf_empty_if : khan_hints.
+
   Definition isFilterReprOf {A : Hask.t} (phi : A -> Prop) (X_repr : ensemble (@sig A phi)) (X : ensemble A) : Prop :=
     forall z : @sig A phi, member (proj1_sig z) X <-> member z X_repr
   .

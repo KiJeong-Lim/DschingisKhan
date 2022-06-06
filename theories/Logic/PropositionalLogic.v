@@ -169,31 +169,19 @@ Module FormulaNotationsOfPL.
   Import SyntaxOfPL.
 
   Global Declare Scope pl_formula_scope.
-
-  Bind Scope pl_formula_scope with formula.
-
+  Global Bind Scope pl_formula_scope with formula.
   Global Declare Custom Entry pl_formula_viewer.
-
-  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_viewer at level 0).
-
-  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_viewer at level 0, no associativity).
-
-  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_viewer at level 1, right associativity).
-
-  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_viewer at level 1, right associativity).
-
-  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
-
-  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
-
-  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_viewer at level 2, no associativity).
-
-  Global Notation " p " := p (in custom pl_formula_viewer at level 0, p ident).
-
-  Global Notation " '(' p ')' " := p (in custom pl_formula_viewer, p at level 3).
-
   Global Open Scope pl_formula_scope.
 
+  Global Notation " 'p_{' i  '}' " := (AtomF i) (in custom pl_formula_viewer at level 0).
+  Global Notation " '_|_' " := (ContradictionF) (in custom pl_formula_viewer at level 0, no associativity).
+  Global Notation " '~' p1 " := (NegationF p1) (in custom pl_formula_viewer at level 1, right associativity).
+  Global Notation " p1 '/\' p2 " := (ConjunctionF p1 p2) (in custom pl_formula_viewer at level 1, right associativity).
+  Global Notation " p1 '\/' p2 " := (DisjunctionF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
+  Global Notation " p1 '->' p2 " := (ImplicationF p1 p2) (in custom pl_formula_viewer at level 2, right associativity).
+  Global Notation " p1 '<->' p2 " := (BiconditionalF p1 p2) (in custom pl_formula_viewer at level 2, no associativity).
+  Global Notation " p " := p (in custom pl_formula_viewer at level 0, p ident).
+  Global Notation " '(' p ')' " := p (in custom pl_formula_viewer, p at level 3).
   Global Notation " '\pl[' p  ']' " := p (p custom pl_formula_viewer at level 3, at level 0, no associativity) : pl_formula_scope.
 
 End FormulaNotationsOfPL.
@@ -247,7 +235,7 @@ Module SemanticsOfPL.
   Lemma structure_gives_its_subset_to_model (Gamma : ensemble formula) (Gamma' : ensemble formula)
     (IS_STRUCTURE : isStructure Gamma')
     (SUBSET : isSubsetOf Gamma Gamma')
-    : << MODEL_OF_SUBSET : forall B : formula, forall B_IN : B \in Gamma, preimage AtomF Gamma' `satisfies` B >>.
+    : << MODEL : forall B : formula, B \in Gamma -> preimage AtomF Gamma' `satisfies` B >>.
   Proof. ii. econstructor. eapply IS_STRUCTURE. eauto with *. Qed.
 
 End SemanticsOfPL.
@@ -362,8 +350,6 @@ Module InferenceRulesOfPL.
     (CUT : insert A Gamma ⊢ B)
     : Gamma ⊢ B.
   Proof. assert (claim1 : Gamma ⊢ \pl[ A -> B ]); eauto with *. Qed.
-
-  Global Hint Resolve isSubsetOf_insert_if : khan_hints.
 
   Lemma extend_infers (Gamma : ensemble formula) (Gamma' : ensemble formula) (C : formula)
     (INFERS : Gamma ⊢ C)
