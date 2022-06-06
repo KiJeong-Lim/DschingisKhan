@@ -465,7 +465,7 @@ Module PreludeInit_MAIN.
     - intros f1 f2 f3 H_1EQ2 H_2EQ3 x. exact (Equivalence_Transitive (f1 x) (f2 x) (f3 x) (H_1EQ2 x) (H_2EQ3 x)).
   Defined.
 
-  Global Polymorphic Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+  Global Polymorphic Instance arrow_isSetoid (cod_isSetoid : isSetoid cod) : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (cod_isSetoid := cod_isSetoid)
     ; eqProp_Equivalence := arrow_eqProp_Equivalence cod_isSetoid
     }
@@ -497,9 +497,9 @@ Module PreludeInit_MAIN.
       + exact (proj2 H_EQ x).
   Defined.
 
-  Local Polymorphic Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
+  Local Polymorphic Instance arrow_isPoset (cod_isPoset : isPoset cod) : isPoset (Hask.arrow dom cod) :=
     { leProp := arrow_leProp
-    ; Poset_requiresSetoid := arrow_isSetoid
+    ; Poset_requiresSetoid := arrow_isSetoid (@Poset_requiresSetoid cod cod_isPoset)
     ; leProp_PreOrder := arrow_leProp_PreOrder cod_isPoset
     ; leProp_PartialOrder := arrow_leProp_PartialOrder cod_isPoset
     }
