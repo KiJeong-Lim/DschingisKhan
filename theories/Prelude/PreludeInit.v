@@ -108,10 +108,6 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
   Ltac intro_pattern_revert := let x := fresh in intro x; pattern x; revert x.
 
-(** "\S7" *)
-
-  Polymorphic Record box@{lv} : Type@{lv + 1} := mkBox { box_tag :> Type@{lv}; unBox :> box_tag }.
-
 End Khan.
 
 Export Khan.
@@ -672,18 +668,16 @@ Module PreludeInit_MAIN.
 
   End ImplFor_pair.
 
-  Global Arguments pair_eqProp {fsts} {snds}.
-  Global Arguments pair_leProp {fsts} {snds}.
-  Global Arguments pair_isSetoid {fsts} {snds}.
-  Global Arguments pair_isPoset {fsts} {snds}.
+  Global Arguments pair_eqProp {fsts} {snds} {fsts_isSetoid} {snds_isSetoid}.
+  Global Arguments pair_leProp {fsts} {snds} {fsts_isPoset} {snds_isPoset}.
+  Global Arguments pair_isSetoid (fsts) (snds) {fsts_isSetoid} {snds_isSetoid}.
+  Global Arguments pair_isPoset (fsts) (snds) {fsts_isPoset} {snds_isPoset}.
 
   Section ImplFor_kleisli.
 
-  Definition kleisli_objs (M : Hask.cat -----> Hask.cat) : box := mkBox Type Hask.t.
-
   Variable M : Hask.cat -----> Hask.cat.
 
-  Definition kleisli (dom : Hask.t) (cod : Hask.t) : kleisli_objs M := dom -> M cod.
+  Definition kleisli (dom : Hask.t) (cod : Hask.t) : Type := dom -> M cod.
 
   Variable requiresMonad : isMonad M.
 
@@ -691,19 +685,11 @@ Module PreludeInit_MAIN.
 
   Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r := fun x_l => k_l x_l >>= fun x_r => k_r x_r.
 
-  Local Instance kleisliCategory : isCategory (kleisli_objs M) :=
-    { hom (dom : Hask.t) (cod : Hask.t) := kleisli dom cod
-    ; compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} := kappend (obj_l := obj_l) (obj := obj) (obj_r := obj_r)
-    ; id {obj : Hask.t} := kempty (obj := obj)
-    }
-  .
-
   End ImplFor_kleisli.
 
   Global Arguments kleisli (M)%type (dom)%type (cod)%type.
   Global Arguments kempty {M} {requiresMonad} {obj}.
   Global Arguments kappend {M} {requiresMonad} {obj_l} {obj} {obj_r}.
-  Global Arguments kleisliCategory (M) {requiresMonad}.
 
   Global Notation " dom '>=[' M ']=>' cod " := (kleisli M dom cod) (at level 100, no associativity) : type_scope.
   Global Infix " <=< " := kappend (at level 40, left associativity) : program_scope.
