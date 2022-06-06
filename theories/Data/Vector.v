@@ -85,7 +85,7 @@ Module MyVec.
 
   Global Instance vector_isSetoid (A : Hask.t) (n : nat) {requiresSetoid : isSetoid A} : isSetoid (vector A n) :=
     { eqProp (lhs : vector A n) (rhs : vector A n) := forall i : Fin n, lhs !! i == rhs !! i
-    ; eqProp_Equivalence := equivalence_relation_on_image vector_indexing (arrow_isSetoid requiresSetoid)
+    ; eqProp_Equivalence := equivalence_relation_on_image vector_indexing (arrow_isSetoid (Fin n) A)
     }
   .
 

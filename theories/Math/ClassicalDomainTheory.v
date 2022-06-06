@@ -13,7 +13,7 @@ Module BasicCpoTheory.
   .
 
   Local Instance ScottContinuousMaps_asPoset (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : isPoset (ScottContinuousMaps dom cod) :=
-    subPoset (Hask.arrow dom cod) (requiresPoset := arrow_isPoset cod_requiresPoset)
+    subPoset (Hask.arrow dom cod) (requiresPoset := arrow_isPoset dom cod)
   .
 
   Local Notation " ⟬ dom ⟶ cod ⟭ " := (ScottContinuousMaps dom cod) : type_scope.
