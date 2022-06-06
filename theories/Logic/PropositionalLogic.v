@@ -196,21 +196,21 @@ Module SemanticsOfPL.
 
   Definition propVarEnv : Type := propVar -> truth_value.
 
-  Fixpoint eval_formula (env : propVarEnv) (p : formula) {struct p} : truth_value :=
+  Fixpoint evalFormula (env : propVarEnv) (p : formula) {struct p} : truth_value :=
     match p with
     | \pl[ p_{ i } ] => env i
     | \pl[ _|_ ] => False
-    | \pl[ ~ p1 ] => ~ eval_formula env p1
-    | \pl[ p1 /\ p2 ] => eval_formula env p1 /\ eval_formula env p2
-    | \pl[ p1 \/ p2 ] => eval_formula env p1 \/ eval_formula env p2
-    | \pl[ p1 -> p2 ] => eval_formula env p1 -> eval_formula env p2
-    | \pl[ p1 <-> p2 ] => eval_formula env p1 <-> eval_formula env p2
+    | \pl[ ~ p1 ] => ~ evalFormula env p1
+    | \pl[ p1 /\ p2 ] => evalFormula env p1 /\ evalFormula env p2
+    | \pl[ p1 \/ p2 ] => evalFormula env p1 \/ evalFormula env p2
+    | \pl[ p1 -> p2 ] => evalFormula env p1 -> evalFormula env p2
+    | \pl[ p1 <-> p2 ] => evalFormula env p1 <-> evalFormula env p2
     end
   .
 
   Variant satisfies (env : propVarEnv) (A : formula) : Prop :=
   | IsModel
-    (EVAL_TO_TRUE : eval_formula env A)
+    (EVAL_TO_TRUE : evalFormula env A)
     : satisfies env A
   .
 
@@ -229,7 +229,7 @@ Module SemanticsOfPL.
   Proof. ii. eauto with *. Qed.
 
   Definition isStructure (Gamma : ensemble formula) : Prop :=
-    forall A : formula, A \in Gamma <-> eval_formula (preimage AtomF Gamma) A
+    forall A : formula, A \in Gamma <-> evalFormula (preimage AtomF Gamma) A
   .
 
   Lemma structure_gives_its_subset_to_model (Gamma : ensemble formula) (Gamma' : ensemble formula)
