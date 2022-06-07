@@ -44,8 +44,11 @@ Module InteractionTreeTheory.
       + exact (claim2).
       + reflexivity.
     - intros Y. split.
-      + intros le_Y X X_in. unnw. do 2 red in X_in. rewrite <- le_Y. intros [lhs rhs] H_in. change (itreeBisim lhs rhs). revert lhs rhs H_in.
-        cofix CIH. ii. econstructor. exact (eqITreeF_isMonotonicMap X (uncurry itreeBisim) (fun '(LHS, RHS) => CIH LHS RHS) (lhs, rhs) (X_in (lhs, rhs) H_in)).
+      + intros le_Y X X_in. unnw. do 2 red in X_in. rewrite <- le_Y. intros [lhs rhs] H_in. revert lhs rhs H_in.
+        exact (
+          cofix CIH (lhs : itree E R) (rhs : itree E R) (H_in : member (lhs, rhs) X) : itreeBisim lhs rhs :=
+          Fold_itreeBisim lhs rhs (eqITreeF_isMonotonicMap X (uncurry itreeBisim) (fun '(LHS, RHS) => CIH LHS RHS) (lhs, rhs) (X_in (lhs, rhs) H_in))
+        ).
       + intros ?; desnw. eapply UPPER_BOUND. exact (claim1).
     - intros [lhs rhs] H_in. eapply unfold_itreeBisim. exact (H_in). 
   Qed.
