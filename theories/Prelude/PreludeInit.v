@@ -55,13 +55,21 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
   Global Tactic Notation "desnw" "in" "*" := repeat (match goal with [ H : _ |- _ ] => desnw in H end).
 
   Ltac unnw := unfold REFERENCE_HOLDER in *.
-  Ltac desnw := repeat (match goal with [ H : _ |- _ ] => desnw in H | [ H : exists x, ?P |- _ ] => let x' := fresh x in destruct H as [x' H] end).
+  Ltac desnw := repeat
+    match goal with
+    | [ H : exists x, ?P |- _ ] => let x' := fresh x in destruct H as [x' H]
+    | [ H : _ |- _ ] => desnw in H
+    end
+  .
 
 (** "\S4" *)
 
   Global Tactic Notation "remove_eqn_if_trivial" hyp( H ) :=
     match type of H with
-    | ?x = ?y => tryif has_evar x then idtac else tryif has_evar y then idtac else tryif unify x y then clear H else idtac
+    | ?x = ?y =>
+      tryif has_evar x then idtac else
+      tryif has_evar y then idtac else
+      tryif unify x y then clear H else idtac
     end
   .
 
