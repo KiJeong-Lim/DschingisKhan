@@ -182,8 +182,8 @@ Module BooleanAlgebra.
     (CLOSED_UPWARD : forall x : BA, ⟪ x_inFilter : member x F ⟫ -> forall x' : BA, ⟪ x_le_x' : x =< x' ⟫ -> member x' F)
     : isFilter F.
   Proof.
-    split; trivial. induction xs as [ | x xs IH]; simpl; ii; desnw.
-    - des. eapply CLOSED_UPWARD with (x := x0); trivial. cbn. eapply trueBA_id_andBA.
+    split; trivial. induction xs as [ | x xs IH]; simpl; ii.
+    - desnw. eapply CLOSED_UPWARD with (x := x0); trivial. cbn. eapply trueBA_id_andBA.
     - eapply CLOSED_MEET; [eapply CLOSED_UPWARD | eapply IH]; eauto with *.
   Qed.
 

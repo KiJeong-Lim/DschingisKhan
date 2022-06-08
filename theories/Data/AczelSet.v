@@ -631,12 +631,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     econstructor.
     - ii; desnw. apply AczelSet_unions_i_spec in y_in. desnw.
-      destruct IN_unions_i as [i y_in_alpha_i_i].
       eapply AczelSet_unions_i_spec. exists (i).
       exploit (alpha_i_isOrdinal i) as [? ?]...
     - ii; desnw. apply AczelSet_unions_i_spec in IS_ELEMENT. desnw.
-      destruct IN_unions_i as [i beta_in_alpha_i_i]. exploit (alpha_i_isOrdinal i) as [? ?].
-      eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
+      exploit (alpha_i_isOrdinal i) as [? ?]. eapply EVERY_ELEMENT_IS_TRANSITIVE_SET...
   Qed.
 
   Lemma intersections_i_isOrdinal {I : smallUniv} {default_of_I : I} (alpha_i : I -> AczelSet)
