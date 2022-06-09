@@ -299,8 +299,8 @@ Module Ensembles.
 
   Inductive intersection {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (z : A) : Prop :=
   | In_intersection
-    (x_in_X1 : z \in X1)
-    (x_in_X2 : z \in X2)
+    (z_in_X1 : z \in X1)
+    (z_in_X2 : z \in X2)
     : z \in intersection X1 X2
   .
 
@@ -389,12 +389,12 @@ Module Ensembles.
   Global Add Parametric Morphism (A : Type) :
     (@member A) with signature (eq ==> leProp ==> impl)
     as member_eq_leProp_with_impl.
-  Proof. ii. cbn in *. unfold isSubsetOf in *. eauto. Qed.
+  Proof. ii. cbv in *. eauto. Qed.
 
   Global Add Parametric Morphism (A : Type) :
     (@member A) with signature (eq ==> eqProp ==> iff)
     as member_eq_eqProp_with_iff.
-  Proof. ii. cbn in *. unfold isSameSetAs in *. eauto. Qed.
+  Proof. ii. cbv in *. eauto. Qed.
 
   Section POWERSET_MONAD.
 
