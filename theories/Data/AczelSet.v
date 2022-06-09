@@ -57,20 +57,20 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Lemma AczelSet_well_founded
     : forall root : AczelSet, Acc (fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)) root.
   Proof.
-    enough (eqTree_refl : forall x : AczelSet, eqTree x x).
-    enough (eqTree_sym : forall x : AczelSet, forall y : AczelSet, eqTree x y -> eqTree y x).
-    enough (eqTree_trans : forall y : AczelSet, forall x : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
+    enough (eqTree_Reflexive : forall x : AczelSet, eqTree x x).
+    enough (eqTree_Symmetric : forall x : AczelSet, forall y : AczelSet, eqTree x y -> eqTree y x).
+    enough (eqTree_Transitive : forall x : AczelSet, forall y : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
     set (elem := fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)).
     enough (Acc_compatWith_eqTree : forall lhs : AczelSet, forall rhs : AczelSet, eqTree lhs rhs -> Acc elem lhs -> Acc elem rhs).
-    - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_sym; exact (y_eq_x_c)| exact (IH c_x)].
+    - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_Symmetric; exact (y_eq_x_c)| exact (IH c_x)].
     - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
       econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
       destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtrees]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
-      unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_trans; [exact (z_eq_y_c) | eapply eqTree_sym; exact (x_c_eq_y_c)].
-    - induction y as [y_children y_childtrees IH]; destruct x as [x_children x_childtrees]; destruct z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
+      unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_Transitive; [exact (z_eq_y_c) | eapply eqTree_Symmetric; exact (x_c_eq_y_c)].
+    - induction x as [x_children x_childtrees IH], y as [y_children y_childtrees], z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
       + intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
-    - induction x as [x_children x_childtrees IH]; destruct y as [y_children y_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
+    - induction x as [x_children x_childtrees IH], y as [y_children y_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
       + intros c_y. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
       + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
     - induction x as [x_children x_childtrees IH]. simpl; unnw. split.
@@ -225,12 +225,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     subseteq with signature (eqProp ==> eqProp ==> iff)
     as subseteq_compatWith_eqProp.
   Proof with eauto with *.
-    intros x1 x2 h_x_eq y1 y2 h_y_eq.
+    intros x1 x2 x1_eq_x2 y1 y2 y1_eq_y2.
     transitivity (subseteq x1 y2); unfold subseteq; split; intros h_subset z h_in.
-    - rewrite <- h_y_eq...
-    - rewrite -> h_y_eq...
-    - rewrite <- h_x_eq in h_in...
-    - rewrite -> h_x_eq in h_in...
+    - rewrite <- y1_eq_y2...
+    - rewrite -> y1_eq_y2...
+    - rewrite <- x1_eq_x2 in h_in...
+    - rewrite -> x1_eq_x2 in h_in...
   Qed.
 
   Local Hint Resolve subseteq_compatWith_eqProp : khan_hints.
