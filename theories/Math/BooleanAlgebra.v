@@ -219,7 +219,7 @@ Module BooleanAlgebra.
   Proof. intros X X' X_eq_X'. split; eapply inconsistent_compatWith_isSubsetOf. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
 
   Definition isProperFilter (F : ensemble BA) : Prop :=
-    << IS_FILTER : isFilter F >> /\ << IS_CONSISTENT : ~ inconsistent F >>
+    << IS_FILTER : isFilter F >> /\ << CONSISTENT : ~ inconsistent F >>
   .
 
   Lemma isProperFilter_compatWith_eqProp (F : ensemble BA) (F' : ensemble BA)
@@ -229,7 +229,7 @@ Module BooleanAlgebra.
   Proof.
     destruct F_isProperFilter; desnw. split; unnw.
     - eapply isFilter_compatWith_eqProp; eauto.
-    - intros INCONSISTENT. contradiction (IS_CONSISTENT). now rewrite F_eq_F'.
+    - intros INCONSISTENT. contradiction (CONSISTENT). now rewrite F_eq_F'.
   Qed.
 
   Definition equiconsistent (X : ensemble BA) (X' : ensemble BA) : Prop :=
@@ -350,7 +350,7 @@ Module CountableBooleanAlgebra.
     end
   .
 
-  Definition getCompleteFilterOf (X : ensemble BA) : ensemble BA :=
+  Definition completeFilterOf (X : ensemble BA) : ensemble BA :=
     fun b : BA => exists n : nat, member b (iterInsertion X n)
   .
 
@@ -365,7 +365,7 @@ Module CountableBooleanAlgebra.
     : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
   Proof with eauto with *.
     induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X...
-    etransitivity; [exact (IH X) | transitivity (Insertion' (iterInsertion X n2) n2)].
+    rewrite IH with (X := X). transitivity (Insertion' (iterInsertion X n2) n2).
     - intros z z_in; left...
     - simpl; eapply fact3_of_1_2_8...
   Qed.
