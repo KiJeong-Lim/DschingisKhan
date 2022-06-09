@@ -701,7 +701,7 @@ Module PreludeInit_MAIN.
 
   Section TypeclassesForProgrammers.
 
-  Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : hom (objs := Hask.t) (Hask.arrow A B) (Hask.arrow (F A) (F B)) :=
+  Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : Hask.arrow A B -> Hask.arrow (F A) (F B) :=
     Cat.fmap (F := F) (dom := A) (cod := B)
   .
 
@@ -841,7 +841,7 @@ Module PreludeInit_MAIN.
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
   Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (FL +' FR) :=
-    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT))
+    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT))
     }
   .
 
