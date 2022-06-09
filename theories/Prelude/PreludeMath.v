@@ -280,21 +280,21 @@ Module Ensembles.
 
   Inductive image {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (X : ensemble A) (y : B) : Prop :=
   | In_image (x : A)
-    (x_in_X : member x X)
+    (x_in_X : x \in X)
     (y_eq_f_x : y = f x)
-    : member y (image f X)
+    : y \in image f X
   .
 
   Inductive preimage {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) (Y : ensemble B) (x : A) : Prop :=
   | In_preimage
-    (f_x_in_Y : member (f x) Y)
-    : member x (preimage f Y)
+    (f_x_in_Y : f x \in Y)
+    : x \in preimage f Y
   .
 
   Inductive finite {A : Hask.t} (xs : list A) (z : A) : Prop :=
   | In_finite
     (z_in_xs : In z xs)
-    : member z (finite xs)
+    : z \in finite xs
   .
 
   Inductive intersection {A : Hask.t} (X1 : ensemble A) (X2 : ensemble A) (z : A) : Prop :=
@@ -306,7 +306,7 @@ Module Ensembles.
 
   Inductive full {A : Hask.t} (z : A) : Prop :=
   | In_full
-    : member z (full)
+    : z \in full
   .
 
   Inductive empty {A : Hask.t} (z : A) : Prop :=
