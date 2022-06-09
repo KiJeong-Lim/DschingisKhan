@@ -32,7 +32,7 @@ Module BasicGeneralTopology.
   .
 
   Class isTopologicalSpace (A : Type) : Type :=
-    { isOpen : ensemble A -> Prop
+    { isOpen (O : ensemble A) : Prop
     ; TopologicalSpace_obeysTopology_axiom :> Topology_axiom isOpen
     }
   .
@@ -48,13 +48,13 @@ Module BasicGeneralTopology.
 
   Lemma unionsOpen {A : Type} {requiresTopology : isTopologicalSpace A} (Os : ensemble (ensemble A))
     (every_member_of_Os_isOpen : forall O : ensemble A, member O Os -> isOpen O)
-    : isOpen (unions Os).
+    : isOpen (@unions A Os).
   Proof. eapply unions_isOpen; eauto. Qed.
 
   Lemma intersectionOpen {A : Type} {requiresTopology : isTopologicalSpace A} (O1 : ensemble A) (O2 : ensemble A)
     (O1_isOpen : isOpen O1)
     (O2_isOpen : isOpen O2)
-    : isOpen (intersection O1 O2).
+    : isOpen (@intersection A O1 O2).
   Proof. eapply intersection_isOpen; eauto. Qed.
 
   Lemma emptyOpen {A : Type} {requiresTopology : isTopologicalSpace A}
