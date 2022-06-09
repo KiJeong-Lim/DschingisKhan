@@ -294,6 +294,8 @@ Module BooleanAlgebra.
     inversion X_isFilter. eauto with *.
   Qed.
 
+  Global Instance cl_preserves_leProp : preserves_leProp1 cl := fact4_of_1_2_8.
+
   Lemma proposition1_of_1_2_9 (X : ensemble BA)
     (X_isFilter : isFilter X)
     : forall b : BA, member b X -> forall b' : BA, b == b' -> member b' X.
