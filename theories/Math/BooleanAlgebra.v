@@ -204,7 +204,7 @@ Module BooleanAlgebra.
     exists botBA : BA, member botBA X /\ botBA == falseBA
   .
 
-  Lemma isSubsetOf_lifts_inconsistent (X : ensemble BA) (X' : ensemble BA)
+  Lemma inconsistent_compatWith_isSubsetOf (X : ensemble BA) (X' : ensemble BA)
     (SUBSET : isSubsetOf X X')
     (INCONSISTENT : inconsistent X)
     : inconsistent X'.
@@ -216,7 +216,7 @@ Module BooleanAlgebra.
   Global Add Parametric Morphism :
     inconsistent with signature (eqProp ==> iff)
     as inconsistent_compatWith_eqProp.
-  Proof. intros X X' X_eq_X'. split; eapply isSubsetOf_lifts_inconsistent. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
+  Proof. intros X X' X_eq_X'. split; eapply inconsistent_compatWith_isSubsetOf. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
 
   Definition isProperFilter (F : ensemble BA) : Prop :=
     << IS_FILTER : isFilter F >> /\ << IS_CONSISTENT : ~ inconsistent F >>
@@ -309,11 +309,11 @@ Module BooleanAlgebra.
     forall b : BA, isElementCompleteFor X b
   .
 
-  Variant isUltraFilter (X : ensemble BA) : Prop :=
+  Variant isUltraFilter (F : ensemble BA) : Prop :=
   | isUltraFilterIf
-    (IS_FILTER : isFilter X)
-    (ULTRAFILTER : forall X' : ensemble BA, << IS_FILTER' : isFilter X' >> -> forall EQUICONSISTENT : equiconsistent X X', << SUBSET : isSubsetOf X X' >> -> X == X')
-    : isUltraFilter X
+    (IS_FILTER : isFilter F)
+    (ULTRAFILTER : forall F' : ensemble BA, << IS_FILTER' : isFilter F' >> -> forall EQUICONSISTENT : equiconsistent F F', << SUBSET : isSubsetOf F F' >> -> F == F')
+    : isUltraFilter F
   .
 
   End section_2_of_chapter_1_PART1.
@@ -364,11 +364,10 @@ Module CountableBooleanAlgebra.
   Lemma lemma1_of_1_2_12 (n1 : nat) (n2 : nat) (n1_le_n2 : n1 <= n2)
     : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
   Proof with eauto with *.
-    induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X... etransitivity.
-    - exact (IH X).
-    - transitivity (Insertion' (iterInsertion X n2) n2).
-      + intros z z_in; left...
-      + simpl; eapply fact3_of_1_2_8...
+    induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X...
+    etransitivity; [exact (IH X) | transitivity (Insertion' (iterInsertion X n2) n2)].
+    - intros z z_in; left...
+    - simpl; eapply fact3_of_1_2_8...
   Qed.
 
   End section_2_of_chapter_1_PART2.
