@@ -733,31 +733,31 @@ Module MathClasses.
 
   Class Magma_axiom (bin_op : S -> S -> S) : Prop := Magma_requiresCongruence :> preserves_eqProp2 bin_op.
 
-  Class Semigroup_axiom (plus : S -> S -> S) : Prop :=
-    { Semigroup_requiresMagma :> Magma_axiom plus
-    ; Semigroup_requiresAssoc :> Assoc plus
+  Class Semigroup_axiom (add : S -> S -> S) : Prop :=
+    { Semigroup_requiresMagma :> Magma_axiom add
+    ; Semigroup_requiresAssoc :> Assoc add
     }
   .
 
-  Class Monoid_axiom (plus : S -> S -> S) (zero : S) : Prop :=
-    { Monoid_requiresSemigroup :> Semigroup_axiom plus
-    ; Monoid_requiresIdElem :> zero `isIdentityOf` plus
+  Class Monoid_axiom (add : S -> S -> S) (zero : S) : Prop :=
+    { Monoid_requiresSemigroup :> Semigroup_axiom add
+    ; Monoid_requiresIdElem :> zero `isIdentityOf` add
     }
   .
 
-  Class Group_axiom (plus : S -> S -> S) (zero : S) (neg : S -> S) : Prop :=
-    { Group_requiresMonoid :> Monoid_axiom plus zero
-    ; Group_requiresInvOp :> neg `isInverseOpFor` plus
+  Class Group_axiom (add : S -> S -> S) (zero : S) (neg : S -> S) : Prop :=
+    { Group_requiresMonoid :> Monoid_axiom add zero
+    ; Group_requiresInvOp :> neg `isInverseOpFor` add
     }
   .
 
-  Global Instance neg_preserves_eqProp_inGroup {plus : S -> S -> S} {zero : S} {neg : S -> S}
-    (requiresGroup : Group_axiom plus zero neg)
+  Global Instance neg_preserves_eqProp_inGroup {add : S -> S -> S} {zero : S} {neg : S -> S}
+    (requiresGroup : Group_axiom add zero neg)
     : preserves_eqProp1 neg.
   Proof.
-    ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_plus neg_right_inv_plus]].
-    rewrite <- right_id. rewrite <- neg_right_inv_plus with (x := rhs1).
-    assert (claim1 : plus (neg lhs1) rhs1 == zero) by now rewrite <- H_EQ1.
+    ii. destruct requiresGroup as [requiresMonoid [neg_left_inv_add neg_right_inv_add]].
+    rewrite <- right_id. rewrite <- neg_right_inv_add with (x := rhs1).
+    assert (claim1 : add (neg lhs1) rhs1 == zero) by now rewrite <- H_EQ1.
     now rewrite associativity, claim1, left_id.
   Qed.
 
