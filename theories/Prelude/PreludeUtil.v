@@ -1197,7 +1197,7 @@ Module FUN_FACTS.
     - eapply projT2_eq. now destruct hyp_eq.
   Qed.
 
-  Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
+  Section EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
 
   Hypothesis exclusive_middle : forall P : Prop, P \/ ~ P.
 
@@ -1278,7 +1278,7 @@ Module FUN_FACTS.
 
   End EXCLUSIVE_MIDDLE_implies_PROOF_IRRELEVANCE.
 
-  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL. (* Reference: "https://coq.inria.fr/library/Coq.Logic.Berardi.html" *)
+  Section UNTYPED_LAMBDA_CALCULUS_FOR_BB_implies_PARADOX_OF_RUSSELL.
 
   Hypothesis untyped_lambda_calculus_for_BB : RETRACT (BB -> BB) BB.
 
@@ -1386,10 +1386,6 @@ Module FUN_FACTS.
     : Irreflexive wfRel.
   Proof. intros x hyp_lt. induction x as [x IH] using NotherianRecursion. eapply IH; exact (hyp_lt). Defined.
 
-  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
-    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
-  Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
-
   Polymorphic Lemma well_founded_relation_on_image {A : Type} {B : Type} (f : A -> B) (R : B -> B -> Prop)
     (R_wf : forall y : B, Acc R y)
     : forall x : A, Acc (binary_relation_on_image R f) x.
@@ -1399,6 +1395,10 @@ Module FUN_FACTS.
     intros x' hyp_eq. econstructor. intros x f_x_R_f_x'.
     subst y'. eapply IH; [exact (f_x_R_f_x') | reflexivity].
   Defined.
+
+  Lemma PreOrder_iff {A : Type} (R : A -> A -> Prop)
+    : PreOrder R <-> << PREORDER_PROPERTY : forall x : A, forall y : A, R x y <-> ⟪ UNFOLDED : forall z : A, R z x -> R z y ⟫ >>.
+  Proof. (split; ii; desnw); (split; ii; unnw); (now firstorder). Qed.
 
 End FUN_FACTS.
 

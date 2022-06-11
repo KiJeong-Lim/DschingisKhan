@@ -44,10 +44,10 @@ Module BooleanAlgebra.
     ; andBA_idem :> Idem andBA
     ; orBA_idem :> Idem orBA
     ; Absorption_andBA_orBA :> Absorption andBA orBA
-    ; andBA_notBA_falseBA (x : BA)
-      : andBA x (notBA x) == falseBA
-    ; orBA_notBA_trueBA (x : BA)
-      : orBA x (notBA x) == trueBA
+    ; andBA_notBA_falseBA
+      : forall x : BA, andBA x (notBA x) == falseBA
+    ; orBA_notBA_trueBA
+      : forall x : BA, orBA x (notBA x) == trueBA
     }
   .
 
