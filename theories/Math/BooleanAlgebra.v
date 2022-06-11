@@ -138,9 +138,9 @@ Module BooleanAlgebra.
   Proof.
     ii. cbn in *. transitivity (andBA (andBA lhs1 rhs1) (andBA lhs2 rhs2)).
     - repeat rewrite andBA_assoc.
-      rewrite (andBA_comm (andBA lhs1 lhs2) rhs1).
-      rewrite (andBA_assoc rhs1 lhs1 lhs2).
-      rewrite (andBA_comm rhs1 lhs1).
+      rewrite @commutativity with (Comm := andBA_comm) (x := andBA lhs1 lhs2) (y := rhs1).
+      rewrite @associativity with (Assoc := andBA_assoc) (x := rhs1) (y := lhs1) (z := lhs2).
+      rewrite @commutativity with (Comm := andBA_comm) (x := rhs1) (y := lhs1).
       reflexivity.
     - now rewrite H_LE1, H_LE2.
   Qed.
@@ -149,7 +149,7 @@ Module BooleanAlgebra.
     : andsBA (xs1 ++ xs2) == andBA (andsBA xs1) (andsBA xs2).
   Proof.
     ii. cbn. revert xs2. induction xs1 as [ | x1 xs1 IH]; simpl; ii.
-    - symmetry. eapply trueBA_id_andBA.
+    - now rewrite @left_id with (IdElemOf := trueBA_id_andBA).
     - rewrite <- andBA_assoc. now rewrite IH.
   Qed.
 

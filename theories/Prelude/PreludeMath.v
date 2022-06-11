@@ -118,8 +118,8 @@ Module MathProps.
   .
 
   Class Annihilator (a : A) (bin_op : A -> A -> A) : Prop :=
-    { leftAnnihilator : forall x : A, bin_op x a == a
-    ; rightAnnihilator : forall x : A, bin_op a x == a
+    { leftAnnihilator : forall x : A, bin_op a x == a
+    ; rightAnnihilator : forall x : A, bin_op x a == a
     }
   .
 
