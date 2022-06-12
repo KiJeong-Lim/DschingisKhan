@@ -48,6 +48,8 @@ Module SyntaxOfPL.
     end
   .
 
+  Local Notation plus6 i := (S (S (S (S (S (S i)))))).
+
   Fixpoint enumFormula' (rank : nat) (seed0 : nat) {struct rank} : formula :=
     match rank with
     | zero => AtomF seed0
@@ -63,7 +65,7 @@ Module SyntaxOfPL.
       | 3 => DisjunctionF (enumFormula' rank' seed2) (enumFormula' rank' seed3)
       | 4 => ImplicationF (enumFormula' rank' seed2) (enumFormula' rank' seed3)
       | 5 => BiconditionalF (enumFormula' rank' seed2) (enumFormula' rank' seed3)
-      | S (S (S (S (S (S i))))) => AtomF i
+      | plus6 i => AtomF i
       end
     end
   .
@@ -91,10 +93,10 @@ Module SyntaxOfPL.
     induction p as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2]; simpl.
     { intros [ | r'] H.
       - exists (i)...
-      - assert (H0 : cantor_pairing (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i)))))) = (0, S (S (S (S (S (S i))))))) by now apply claim1.
-        exists (sum_from_0_to (0 + S (S (S (S (S (S i)))))) + S (S (S (S (S (S i))))))...
+      - assert (H0 : cantor_pairing (sum_from_0_to (0 + plus6 i) + plus6 i) = (0, plus6 i)) by now apply claim1.
+        exists (sum_from_0_to (0 + plus6 i) + plus6 i)...
     }
-    all: intros r H; set (rank := pred r); assert (H0 : S rank = r) by (now apply (suc_pred_n_eq_n_if_m_lt_n H)); rewrite <- H0.
+    all: intros r H; set (rank := pred r); (assert (H0 : S rank = r) by now apply (suc_pred_n_eq_n_if_m_lt_n H)); rewrite <- H0.
     { set (piece := 0).
       exists (piece)...
     }
