@@ -263,7 +263,7 @@ Module BasicCoLaTheory.
 
   Section KNASTER_TARSKI. (* Referring to "https://www.cs.utexas.edu/users/misra/Notes.dir/KnasterTarski.pdf" written by Jayadev Misra *)
 
-  Context {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D}.
+  Context {D : Type} {D_isPoset : isPoset D} {D_isCoLa : isCoLa D (requiresPoset := D_isPoset)}.
 
   Theorem KnasterTarski_1st (f : D -> D)
     (f_isMonotonic : isMonotonicMap f)
@@ -333,7 +333,7 @@ Module BasicCoLaTheory.
   Qed.
 
   Corollary FixedPoints_asCoLa (f : ⟬ D ⟶ D ⟭)
-    : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := @subPoset D requiresPoset (FixedPoints (proj1_sig f))).
+    : isCoLa (@sig D (FixedPoints (proj1_sig f))) (requiresPoset := @subPoset D D_isPoset (FixedPoints (proj1_sig f))).
   Proof.
     intros X.
     assert (claim1 : isSubsetOf (image (@proj1_sig D (FixedPoints (proj1_sig f))) X) (FixedPoints (proj1_sig f))).
@@ -413,7 +413,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     : isSupremumOf (unions Xs) Xs.
   Proof.
     intros X; unnw; split.
-    - intros unions_Xs_le_X Z Z_in x x_in. eapply unions_Xs_le_X. eapply in_unions_iff. exists (Z). split; [exact (x_in) | exact (Z_in)].
+    - intros unions_Xs_le_X Z Z_in x x_in. eapply unions_Xs_le_X. now exists (Z).
     - intros X_is_upper_bound_of_Xs x x_in.
       apply in_unions_iff in x_in. destruct x_in as [Z [x_in_Z Z_in_Xs]].
       revert x x_in_Z. change (Z =< X). eapply X_is_upper_bound_of_Xs. exact (Z_in_Xs).
