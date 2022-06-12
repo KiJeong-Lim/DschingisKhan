@@ -311,17 +311,16 @@ Module BasicCoLaTheory.
     enough (claim1 : f fix_f =< fix_f).
     enough (claim2 : q =< fix_f).
     enough (claim3 : fix_f == f fix_f).
-    - exists (fix_f). split; unnw.
-      + exact (claim3).
-      + intros [x x_in]. simpl. split.
-        { intros fix_f_le_x d d_in. transitivity (q).
-          - eapply q_is_lub_of_W...
-          - transitivity (fix_f)...
-        }
-        { intros x_is_upper_bound_of_W. eapply fix_f_isInfimum... split.
-          - eapply eqProp_implies_leProp. now symmetry.
-          - eapply q_is_lub_of_W...
-        }
+    - exists (fix_f). split; unnw; trivial.
+      intros [x x_in]. simpl. split.
+      { intros fix_f_le_x d d_in. transitivity (q).
+        - eapply q_is_lub_of_W...
+        - transitivity (fix_f)...
+      }
+      { intros x_is_upper_bound_of_W. eapply fix_f_isInfimum... split.
+        - eapply eqProp_implies_leProp. now symmetry.
+        - eapply q_is_lub_of_W...
+      }
     - eapply leProp_Antisymmetric; trivial.
       eapply fix_f_isInfimum... eapply in_intersection_iff.
       split; [eapply f_isMonotonic | eapply W_hat_closed_under_f]... 

@@ -223,8 +223,8 @@ Module BooleanAlgebra.
   .
 
   Lemma isProperFilter_compatWith_eqProp (F : ensemble BA) (F' : ensemble BA)
-    (F_isProperFilter : isProperFilter F)
     (F_eq_F' : F == F')
+    (F_isProperFilter : isProperFilter F)
     : isProperFilter F'.
   Proof.
     destruct F_isProperFilter; desnw. split; unnw.
