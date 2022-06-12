@@ -508,22 +508,16 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
       { exact (paco_unfold (proj1_sig f) (cola_union X Y) (proj2_sig f)). }
       assert (claim2 : F (cola_union (cola_union X Y) (paco F (cola_union X Y))) =< F (cola_union X (paco F (cola_union X Y)))).
       { eapply (proj2_sig f). eapply cola_union_le_intro.
-        - intros z z_in. apply in_union_iff in z_in. destruct z_in as [z_in_X | z_in_Y]; [left | right]...
+        - intros z [z_in_X | z_in_Y]; [left | right]...
         - eapply le_cola_union_intror...
       }
-      assert (claim3 : member (paco F (cola_union X Y)) (PostfixedPoints (fun Z : D =>F (cola_union X Z)))).
-      { intros z z_in. eapply (proj2_sig f).
-        - reflexivity.
-        - eapply claim2...
-      }
+      assert (claim3 : member (paco F (cola_union X Y)) (PostfixedPoints F')).
+      { intros z z_in. eapply (proj2_sig f); [reflexivity | eapply claim2]... }
       assert (claim4 : isMonotonicMap F').
       { eapply G_aux0_isMonotionicMap. }
       set (G_f_X := proj1_sig (nu (@exist (D -> D) isMonotonicMap F' claim4))).
       assert (claim5 : paco F (cola_union X Y) =< F' (paco F (cola_union X Y))).
-      { intros z z_in. eapply (proj2_sig f).
-        - reflexivity.
-        - eapply claim2...
-      }
+      { intros z z_in. eapply (proj2_sig f); [reflexivity | eapply claim2]... }
       assert (claim6 : paco F (cola_union X Y) =< G_f_X).
       { eapply PostfixedPoint_le_GreatestFixedPoint... }
       assert (claim7 : isSupremumOf G_f_X (PostfixedPoints F')).
