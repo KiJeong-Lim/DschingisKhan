@@ -162,6 +162,26 @@ Module SyntaxOfPL.
     now repeat rewrite <- cantor_pairing_is_surjective.
   Qed.
 
+  Corollary enumFormula_isSurjective
+    : isSurjective enumFormula.
+  Proof. intros p. pose proof (formula_is_enumerable p) as [seed H_EQ]. now exists (seed). Qed.
+
+  Global Instance formula_isCountable : isCountable formula :=
+    { enum := enumFormula
+    ; enum_isSurjective := enumFormula_isSurjective
+    }
+  .
+
+  Corollary enumFormula_isSurjection
+    : isSurjection enumFormula.
+  Proof. intros p. pose proof (formula_is_enumerable p) as [seed H_EQ]. now exists (seed). Qed.
+
+  Global Instance formula_isRecursivelyEnumerable : isRecursivelyEnumerable formula :=
+    { RecursivelyEnumerable_requiresCountable := formula_isCountable
+    ; enum_isSurjection := enumFormula_isSurjection
+    }
+  .
+
   End ENUMERATE_FORMULA.
 
 End SyntaxOfPL.
