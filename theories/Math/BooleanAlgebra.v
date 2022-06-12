@@ -334,19 +334,19 @@ Module CountableBooleanAlgebra.
 
   Context {BA : Type} {requiresSetoid : isSetoid BA} {requiresCBA : isCBA BA (requiresSetoid := requiresSetoid)}.
 
-  Variant Insertion (X : ensemble BA) (n : nat) : ensemble BA :=
-  | inInsertionIf
+  Variant insertion (X : ensemble BA) (n : nat) : ensemble BA :=
+  | In_insertion
     (EQUICONSISTENT : equiconsistent X (cl (insert (enum n) X)))
-    : member (enum n) (Insertion X n)
+    : member (enum n) (insertion X n)
   .
 
-  Definition Insertion' (X : ensemble BA) (n : nat) : ensemble BA := union X (Insertion X n).
+  Definition Insertion (X : ensemble BA) (n : nat) : ensemble BA := union X (insertion X n).
 
   Definition iterInsertion (X : ensemble BA) : nat -> ensemble BA :=
     fix iterInsertion_fix (n : nat) {struct n} : ensemble BA :=
     match n with
     | O => X
-    | S n' => cl (Insertion' (iterInsertion_fix n') n')
+    | S n' => cl (Insertion (iterInsertion_fix n') n')
     end
   .
 
@@ -365,7 +365,7 @@ Module CountableBooleanAlgebra.
     : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
   Proof with eauto with *.
     induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X...
-    rewrite IH with (X := X). transitivity (Insertion' (iterInsertion X n2) n2).
+    rewrite IH with (X := X). transitivity (Insertion (iterInsertion X n2) n2).
     - intros z z_in; left...
     - simpl; eapply fact3_of_1_2_8...
   Qed.

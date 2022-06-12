@@ -356,7 +356,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
 
   Local Notation " ⟬ dom ⟶ cod ⟭ " := (MonotonicMaps dom cod) : type_scope.
 
-  Section PACO_implementation.
+  Section PACO_IMPL.
 
   Context {A : Type}.
 
@@ -423,12 +423,12 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     fun Xs : ensemble D => @exist D (fun sup_Xs : D => isSupremumOf sup_Xs Xs) (unions Xs) (unions_isSupremum Xs)
   .
 
-  End PACO_implementation.
+  End PACO_IMPL.
 
   Global Arguments paco' {A} (paco_F) (F) (X).
   Global Arguments paco {A} (F) (X) (z).
 
-  Section PACO_theory.
+  Section PACO_THEORY.
 
   Context {A : Type}.
 
@@ -572,6 +572,6 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     eapply G_compositionality... all: rewrite <- paco_eq_G...
   Qed.
 
-  End PACO_theory.
+  End PACO_THEORY.
 
 End ParameterizedCoinduction.
