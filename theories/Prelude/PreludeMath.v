@@ -491,7 +491,7 @@ Module Ensembles.
 
   End SUBSET_INTRO.
 
-  Global Hint Resolve isSubsetOf_insert_if isSubsetOf_singleton_if isSubsetOf_empty_if : khan_hints.
+  Global Hint Resolve isSubsetOf_insert_if isSubsetOf_singleton_if isSubsetOf_empty_if : ensemble_hints.
 
   Definition isFilterReprOf {A : Hask.t} (phi : A -> Prop) (X_repr : ensemble (@sig A phi)) (X : ensemble A) : Prop :=
     forall z : @sig A phi, member (proj1_sig z) X <-> member z X_repr
@@ -519,7 +519,7 @@ Module Ensembles.
       pose proof (proj1 (X_repr_isFilterReprOf_X (exist _ z phi_z)) z_in_X) as z_in_X_repr...
   Qed.
 
-  Polymorphic Definition fromSequence {I : Type} {A : Type} (x_i : I -> A) : ensemble A :=
+  Definition fromSequence {I : Type} {A : Type} (x_i : I -> A) : ensemble A :=
     fun x : A => exists i : I, x = x_i i
   .
 
@@ -527,12 +527,12 @@ Module Ensembles.
     fun '(lhs, rhs) => lhs = rhs
   .
 
-  Definition Rel_flip {A : Type} (X : ensemble (A * A)) : ensemble (A * A) :=
+  Definition Rel_flip {A : Type} {B : Type} (X : ensemble (A * B)) : ensemble (B * A) :=
     fun '(lhs, rhs) => member (rhs, lhs) X
   .
 
-  Definition Rel_compose {A : Type} (X : ensemble (A * A)) (X' : ensemble (A * A)) : ensemble (A * A) :=
-    fun '(lhs, rhs) => exists x : A, member (lhs, x) X /\ member (x, rhs) X'
+  Definition Rel_compose {A : Type} {B : Type} {C : Type} (X : ensemble (A * B)) (X' : ensemble (B * C)) : ensemble (A * C) :=
+    fun '(lhs, rhs) => exists x : B, member (lhs, x) X /\ member (x, rhs) X'
   .
 
 (** "Ensemble Tactics" *)
