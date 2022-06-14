@@ -84,7 +84,7 @@ Module UntypedLambdaCalculus.
   .
 
   Definition chi (sigma : tmSubst) (M : tmExpr) : ivar :=
-    1 + maxs (map (fun z : ivar => maxs (getFVs (sigma z))) (getFVs M))
+    suc (maxs (map (fun z : ivar => maxs (getFVs (sigma z))) (getFVs M)))
   .
 
 End UntypedLambdaCalculus.
