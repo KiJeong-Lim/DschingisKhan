@@ -54,7 +54,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
-  Lemma AczelSet_well_founded
+  Lemma elem_well_founded
     : forall root : AczelSet, Acc (fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)) root.
   Proof.
     enough (eqTree_Reflexive : forall x : AczelSet, eqTree x x).
@@ -136,7 +136,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance AczelSet_isWellFounded : isWellFounded AczelSet :=
     { wfRel := elem
-    ; wfRel_well_founded := AczelSet_well_founded
+    ; wfRel_well_founded := elem_well_founded
     }
   .
 
@@ -258,7 +258,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance elemLt_isWellFounded (alpha : AczelSet) : isWellFounded (getChildren alpha) :=
     { wfRel := elemLt (alpha := alpha)
-    ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem AczelSet_well_founded
+    ; wfRel_well_founded := well_founded_relation_on_image (getChildTrees alpha) elem elem_well_founded
     }
   .
 
@@ -365,15 +365,15 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End AczelSet_unions.
 
-  Section AczelSet_empty.
+  Section AczelSet_emptyset.
 
-  Definition empty : AczelSet := Node (fun hyp_false : False => @False_rect AczelSet hyp_false).
+  Definition emptyset : AczelSet := Node (fun hyp_false : False => @False_rect AczelSet hyp_false).
 
-  Lemma AczelSet_empty_spec
-    : forall z : AczelSet, z `elem` empty <-> << IN_empty : False >>.
-  Proof. unnw. intros z. unfold empty. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
+  Lemma AczelSet_emptyset_spec
+    : forall z : AczelSet, z `elem` emptyset <-> << IN_emptyset : False >>.
+  Proof. unnw. intros z. unfold emptyset. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
 
-  End AczelSet_empty.
+  End AczelSet_emptyset.
 
   Section AczelSet_union.
 
@@ -408,7 +408,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Fixpoint natToAczelSet (n : nat) {struct n} : AczelSet :=
     match n with
-    | O => empty
+    | O => emptyset
     | S n' => sucOf (natToAczelSet n')
     end
   .
@@ -599,12 +599,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section EXAMPLES_OF_ORDINAL.
 
-  Lemma empty_isOrdinal
-    : isOrdinal empty.
+  Lemma emptyset_isOrdinal
+    : isOrdinal emptyset.
   Proof.
     econstructor; ii; desnw.
-    - apply AczelSet_empty_spec in y_in. unnw. tauto.
-    - apply AczelSet_empty_spec in IS_ELEMENT. unnw. tauto.
+    - apply AczelSet_emptyset_spec in y_in. unnw. tauto.
+    - apply AczelSet_emptyset_spec in IS_ELEMENT. unnw. tauto.
   Qed.
 
   Lemma sucOf_isOrdinal (alpha : AczelSet)
