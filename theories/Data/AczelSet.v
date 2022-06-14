@@ -273,7 +273,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     intros z. unnw; split.
     - intros [[c_x phi_c_x] z_eq_x_c]. simpl in *...
-    - intros [c_x [z_eq_x_c phi_c_x]]. exists (exist _ c_x phi_c_x)...
+    - intros [c_x [z_eq_x_c phi_c_x]]. exists (@exist _ _ c_x phi_c_x)...
   Qed.
 
   Corollary subset_filtering (x : AczelSet)
@@ -282,7 +282,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     intros z. unnw. split.
     - intros z_subset_x. exists (fun c_x : getChildren x => getChildTrees x c_x `elem` z). eapply eqTree_intro.
       + intros y y_in_z. pose proof (z_subset_x y y_in_z) as [c_x y_eq_x_c].
-        rewrite y_eq_x_c. rewrite y_eq_x_c in y_in_z. exists (exist _ c_x y_in_z)...
+        rewrite y_eq_x_c. rewrite y_eq_x_c in y_in_z. exists (@exist _ _ c_x y_in_z)...
       + intros y [[c_x x_c_in_z] y_eq_x_c]. rewrite y_eq_x_c...
     - intros [phi z_eq]. rewrite z_eq. intros y. rewrite AczelSet_filtering_spec. unnw.
       intros [c_x [z_eq_x_c phi_c_x]]...
@@ -346,7 +346,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof with eauto with *.
     intros z. unnw; split.
     - intros [[i c_u] z_eq_u_c]. simpl in *...
-    - intros [i [c_u z_eq_u_c]]. exists (existT _ i c_u)...
+    - intros [i [c_u z_eq_u_c]]. exists (@existT _ _ i c_u)...
   Qed.
 
   End AczelSet_unions_i.
@@ -459,7 +459,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : forall z : AczelSet, z `elem` fromAcc tree tree_acc <-> << EXPANDED : exists child : {subtree : A | wfRel subtree tree}, z == fromAcc (proj1_sig child) (Acc_inv tree_acc (proj2_sig child)) >>.
   Proof.
     intros z. destruct tree_acc as [hyp_acc]. unnw; split.
-    all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (exist _ c hyp_wf).
+    all: intros [[c hyp_wf] z_eq_c]; cbn in *; unfold_eqTree; now exists (@exist _ _ c hyp_wf).
   Qed.
 
   Lemma fromAcc_proof_irrelevance {A : smallUniv} {wfRel : A -> A -> Prop} (root : A) (root_acc1 : Acc wfRel root) (root_acc2 : Acc wfRel root)
@@ -469,14 +469,14 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     enough (it_suffices_to_show : forall tree : A, Acc wfRel tree -> forall tree_acc1 : Acc wfRel tree, forall tree_acc2 : Acc wfRel tree, fromAcc tree tree_acc1 `subseteq` fromAcc tree tree_acc2).
     { ii. eapply subseteq_PartialOrder. split; eapply it_suffices_to_show... }
     intros tree tree_acc. induction tree_acc as [tree tree_acc_inv IH]. intros [tree_acc1_inv] [tree_acc2_inv].
-    intros z [[subtree subtree_R_tree] z_eq]. simpl in *; unfold_eqTree. exists (exist _ subtree subtree_R_tree).
+    intros z [[subtree subtree_R_tree] z_eq]. simpl in *; unfold_eqTree. exists (@exist _ _ subtree subtree_R_tree).
     simpl; unfold_eqTree. rewrite z_eq. eapply subseteq_PartialOrder; split...
   Qed.
 
   Corollary fromAcc_elem_fromAcc_intro {A : smallUniv} {wfRel : A -> A -> Prop} (subtree : A) (subtree_acc : Acc wfRel subtree) (tree : A) (tree_acc : Acc wfRel tree)
     (subtree_R_tree : wfRel subtree tree)
     : fromAcc subtree subtree_acc `elem` fromAcc tree tree_acc.
-  Proof. eapply fromAcc_unfold. exists (exist _ subtree subtree_R_tree). simpl; unfold_eqTree. eapply fromAcc_proof_irrelevance. Qed.
+  Proof. eapply fromAcc_unfold. exists (@exist _ _ subtree subtree_R_tree). simpl; unfold_eqTree. eapply fromAcc_proof_irrelevance. Qed.
 
   Lemma fromAcc_subseteq_iff {A : smallUniv} {wfRel : A -> A -> Prop} (tree : A) (tree_acc : Acc wfRel tree)
     : forall x : AczelSet, fromAcc tree tree_acc `subseteq` x <-> << LT_ELEM : forall subtree : A, forall subtree_R_tree : wfRel subtree tree, fromAcc subtree (Acc_inv tree_acc subtree_R_tree) `elem` x >>.
