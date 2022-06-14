@@ -365,15 +365,15 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   End AczelSet_unions.
 
-  Section AczelSet_emptyset.
+  Section AczelSet_empty.
 
-  Definition emptyset : AczelSet := Node (fun hyp_false : False => @False_rect AczelSet hyp_false).
+  Definition empty : AczelSet := Node (fun hyp_false : False => @False_rect AczelSet hyp_false).
 
-  Lemma AczelSet_emptyset_spec
-    : forall z : AczelSet, z `elem` emptyset <-> << IN_emptyset : False >>.
-  Proof. unnw. intros z. unfold emptyset. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
+  Lemma AczelSet_empty_spec
+    : forall z : AczelSet, z `elem` empty <-> << IN_empty : False >>.
+  Proof. unnw. intros z. unfold empty. split; [intros [c z_eq_c] | tauto]; eauto with *. Qed.
 
-  End AczelSet_emptyset.
+  End AczelSet_empty.
 
   Section AczelSet_union.
 
@@ -408,7 +408,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Fixpoint natToAczelSet (n : nat) {struct n} : AczelSet :=
     match n with
-    | O => emptyset
+    | O => empty
     | S n' => sucOf (natToAczelSet n')
     end
   .
@@ -599,12 +599,12 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section EXAMPLES_OF_ORDINAL.
 
-  Lemma emptyset_isOrdinal
-    : isOrdinal emptyset.
+  Lemma empty_isOrdinal
+    : isOrdinal empty.
   Proof.
     econstructor; ii; desnw.
-    - apply AczelSet_emptyset_spec in y_in. unnw. tauto.
-    - apply AczelSet_emptyset_spec in IS_ELEMENT. unnw. tauto.
+    - apply AczelSet_empty_spec in y_in. unnw. tauto.
+    - apply AczelSet_empty_spec in IS_ELEMENT. unnw. tauto.
   Qed.
 
   Lemma sucOf_isOrdinal (alpha : AczelSet)
