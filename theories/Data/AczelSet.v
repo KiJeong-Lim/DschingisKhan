@@ -43,7 +43,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   .
 
   Lemma AczelSet_eta (x : AczelSet)
-    : x = Node (fun child : getChildren x => getChildTrees x child).
+    : x = @Node (getChildren x) (fun child : getChildren x => getChildTrees x child).
   Proof. destruct x; reflexivity. Defined.
 
 (** "Relations on Set" *)
