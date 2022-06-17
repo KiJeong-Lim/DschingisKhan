@@ -9,7 +9,7 @@ Module ExclusiveMiddle.
   Lemma NNPP (P : Prop)
     (NNP : ~ ~ P)
     : P.
-  Proof. pose proof (classic P) as [H_yes | H_no]; [exact (H_yes) | contradiction NNP]. Qed.
+  Proof. pose proof (classic P) as [? | ?]; [trivial | contradiction NNP]. Qed.
 
   Lemma proof_irrelevance (P : Prop)
     : pirrel_STMT P.

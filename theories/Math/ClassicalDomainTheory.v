@@ -48,4 +48,14 @@ Module BasicCpoTheory.
     now contradiction f_x2_in_U_f_x2.
   Qed.
 
+  Lemma MonotonicMap_preservesDirected {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) (X : ensemble dom)
+    (f_isMonotonicMap : isMonotonicMap f)
+    (X_isDirected : isDirectedSubset X)
+    : isDirectedSubset (image f X).
+  Proof.
+    ii; desnw. apply in_image_iff in H_IN1, H_IN2. des.
+    pose proof (X_isDirected x0 H1 x H0) as [? [? [? ?]]]; unnw.
+    eexists; unnw. split; eauto. econstructor; eauto.
+  Qed.
+
 End BasicCpoTheory.
