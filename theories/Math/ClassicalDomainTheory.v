@@ -30,12 +30,12 @@ Module BasicCpoTheory.
     - intros y z y_in_U_x y_le_z z_le_x. unnw.
       contradiction y_in_U_x. now transitivity (z).
     - intros X X_nonempty X_isDirected sup_X sup_X_isSupremumOf_X sup_X_in_U_x. unnw.
-      assert (JunyoungJang'sAdvice : ~ (forall z : D, member z X -> z =< x)).
+      assert (JunyoungJang'sAdvice : ~ << UPPER_BOUND : forall z : D, member z X -> z =< x >>).
       { intros UPPER_BOUND. contradiction (sup_X_in_U_x). now eapply sup_X_isSupremumOf_X. }
       pose proof (ExclusiveMiddle.classic (exists z : D, z \in X /\ z \in U x)) as [H_yes | H_no]; trivial.
-      contradiction (JunyoungJang'sAdvice). intros y y_in_X.
+      contradiction JunyoungJang'sAdvice. intros y y_in_X.
       pose proof (ExclusiveMiddle.classic (y =< x)) as [y_le_x | y_in_U_x]; trivial.
-      contradiction (H_no). now exists (y).
+      contradiction H_no. now exists (y).
   Qed.
 
 End BasicCpoTheory.
