@@ -6,6 +6,11 @@ Module ExclusiveMiddle.
 
   Axiom classic : forall P : Prop, P \/ ~ P.
 
+  Lemma NNPP (P : Prop)
+    (NNP : ~ ~ P)
+    : P.
+  Proof. pose proof (classic P) as [H_yes | H_no]; [exact (H_yes) | contradiction NNP]. Qed.
+
   Lemma proof_irrelevance (P : Prop)
     : pirrel_STMT P.
   Proof. eapply exclusive_middle_implies_proof_irrelevance; exact classic. Qed.
