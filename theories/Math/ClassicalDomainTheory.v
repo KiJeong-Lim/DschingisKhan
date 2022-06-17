@@ -38,7 +38,7 @@ Module BasicCpoTheory.
       contradiction H_false. now exists (y).
   Qed.
 
-  Lemma ScottContinuousMaps_monotonic {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+  Lemma ContinuousMap_isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isContinuousMap : isContinuousMap f)
     : isMonotonicMap f.
   Proof.
