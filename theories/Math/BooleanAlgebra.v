@@ -540,7 +540,6 @@ Module CountableBooleanAlgebra.
   Qed.
 
   Corollary corollary_of_1_2_16_aux1 (X : ensemble BA) (F : ensemble BA) (b : BA)
-    (EQUICONSISTENT : equiconsistent (completeFilterOf X) F)
     (SUBSET : isSubsetOf (completeFilterOf X) F)
     (H_IN : member b F)
     (INCONSISTENT : inconsistent (cl (insert b (completeFilterOf X))))
@@ -568,7 +567,7 @@ Module CountableBooleanAlgebra.
       exists (botBA). split; trivial.
       eapply fact3_of_1_2_8. now right.
     - eapply EQUICONSISTENT.
-      pose proof (corollary_of_1_2_16_aux1 X F b EQUICONSISTENT SUBSET H_IN INCONSISTENT) as [botBA [botBA_in botBA_eq_falseBA]].
+      pose proof (corollary_of_1_2_16_aux1 X F b SUBSET H_IN INCONSISTENT) as [botBA [botBA_in botBA_eq_falseBA]].
       exists (botBA). split; trivial.
       eapply fact5_of_1_2_8; trivial.
       now eapply claim1.
