@@ -420,7 +420,7 @@ Module CountableBooleanAlgebra.
     inversion z_in; subst. reflexivity.
   Qed.
 
-  Lemma lemma1_of_1_2_13 (n : nat) (F : ensemble BA)
+  Lemma lemma1_of_1_2_13 (F : ensemble BA) (n : nat)
     (F_isFilter : isFilter F)
     : equiconsistent F (iterInsertion F n).
   Proof.
@@ -436,22 +436,154 @@ Module CountableBooleanAlgebra.
       { destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
         destruct botBA_in as [xs [? ?]]; desnw.
         pose proof (lemma1_of_1_2_11 n F F_isFilter) as claim1. inversion claim1; unnw.
+        assert (claim2 : isSubsetOf (cl (Insertion (iterInsertion F n) n)) (cl (insert (enum n) (iterInsertion F n)))).
+        { eapply fact4_of_1_2_8, lemma1_of_1_2_13_aux2. }
         pose proof (lemma1_of_1_2_13_aux1 xs F n F_isFilter xs_isFiniteSubsetOf) as [H_in | [b [b_in b_in_insertion]]].
         - exists (andBA botBA (andsBA xs)). split.
           + eapply CLOSED_UPWARD with (x := andsBA xs); trivial.
             rewrite <- andsBA_xs_le, andBA_idem. reflexivity.
           + rewrite botBA_eq_falseBA. change (falseBA =< andsBA xs).
             eapply falseBA_isBottom.
-        - inversion b_in_insertion; subst.
-          eapply EQUICONSISTENT.
-          assert (claim2 : isSubsetOf (cl (Insertion (iterInsertion F n) n)) (cl (insert (enum n) (iterInsertion F n)))).
-          { eapply fact4_of_1_2_8, lemma1_of_1_2_13_aux2. }
-          exists (andsBA xs). split.
+        - inversion b_in_insertion; subst. eapply EQUICONSISTENT. exists (andsBA xs). split.
           + eapply claim2. exists (xs). split; unnw; trivial. reflexivity.
           + eapply @leProp_Antisymmetric with (requiresPoset := BooleanAlgebra_isPoset).
             { now rewrite <- botBA_eq_falseBA. }
             { eapply falseBA_isBottom. }
       }
+  Qed.
+
+  Lemma lemma2_of_1_2_13 (F : ensemble BA) (n1 : nat) (n2 : nat)
+    (F_isFilter : isFilter F)
+    : equiconsistent (iterInsertion F n1) (iterInsertion F n2).
+  Proof.
+    transitivity (F).
+    - symmetry. now eapply lemma1_of_1_2_13.
+    - now eapply lemma1_of_1_2_13.
+  Qed.
+
+  Lemma lemma3_of_1_2_13 (F : ensemble BA)
+    (F_isFilter : isFilter F)
+    : equiconsistent F (completeFilterOf F).
+  Proof.
+    split; intros [botBA [botBA_in botBA_eq_falseBA]].
+    - exists (botBA). split.
+      + exists (0). trivial.
+      + trivial.
+    - destruct botBA_in as [n H_IN].
+      eapply lemma1_of_1_2_13; trivial.
+      exists (botBA); eauto.
+  Qed.
+
+  Theorem theorem_of_1_2_14_aux1 (F : ensemble BA) (n : nat)
+    (F_isFilter : isFilter F)
+    (EQUICONSISTENT : equiconsistent (completeFilterOf F) (cl (insert (enum n) (completeFilterOf F))))
+    : equiconsistent (iterInsertion F n) (cl (insert (enum n) (iterInsertion F n))).
+  Proof.
+    split.
+    - intros [botBA [botBA_in botBA_eq_falseBA]].
+      exists (botBA). split; trivial.
+      eapply fact3_of_1_2_8. now right.
+    - intros INCONSISTENT.
+      pose proof (claim1 := lemma1_of_1_2_13 F n F_isFilter).
+      pose proof (claim2 := lemma3_of_1_2_13 F F_isFilter).
+      assert (claim3 : inconsistent (cl (insert (enum n) (completeFilterOf F)))).
+      { eapply inconsistent_compatWith_isSubsetOf.
+        - exact (INCONSISTENT).
+        - eapply fact4_of_1_2_8.
+          intros z z_in. apply in_insert_iff in z_in. destruct z_in as [eq_z | z_in].
+          + subst z. now left.
+          + right. now exists (n).
+      }
+      unfold equiconsistent in *. tauto. 
+  Qed.
+
+  Variant propertiesOfFilter (F : ensemble BA) : Prop :=
+  | propertiesOfFilter_areTheFollowings
+    (SUBSET : isSubsetOf F (completeFilterOf F))
+    (IS_FILTER : isFilter (completeFilterOf F))
+    (COMPLETE : isComplete (completeFilterOf F))
+    (EQUICONSISTENT : equiconsistent F (completeFilterOf F))
+    : propertiesOfFilter F
+  .
+
+  Theorem theorem_of_1_2_14 (F : ensemble BA)
+    (F_isFilter : isFilter F)
+    : propertiesOfFilter F.
+  Proof.
+    inversion F_isFilter. split.
+    - intros z z_in. exists (0). trivial.
+    - eapply isFilter_intro.
+      + exists (trueBA). exists (0). eapply fact2_of_1_2_8. trivial.
+      + ii; desnw. destruct x1_inFilter as [n1 H_IN1]. destruct x2_inFilter as [n2 H_IN2].
+        pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m n1 n2) as [n1_le_n2 | n2_lt_n1].
+        { pose proof (lemma1_of_1_2_12 n1 n2 n1_le_n2 F x1 H_IN1) as claim1.
+          pose proof (lemma1_of_1_2_11 n2 F F_isFilter) as [claim2 claim3].
+          exists (n2). eapply claim3 with (x := andsBA [x1; x2]); unnw.
+          - eapply claim2. now intros z [z_eq | [z_eq | []]]; subst z.
+          - now rewrite andsBA_two.
+        }
+        { pose proof (lemma1_of_1_2_12 n2 n1 (le_transitivity (le_S _ _ le_reflexitivity) n2_lt_n1) F x2 H_IN2) as claim1.
+          pose proof (lemma1_of_1_2_11 n1 F F_isFilter) as [claim2 claim3].
+          exists (n1). eapply claim3 with (x := andsBA [x1; x2]); unnw.
+          - eapply claim2. now intros z [z_eq | [z_eq | []]]; subst z.
+          - now rewrite andsBA_two.
+        }
+      + ii; desnw. destruct x_inFilter as [n H_IN].
+        pose proof (lemma1_of_1_2_11 n F F_isFilter) as [claim1 claim2].
+        exists (n). eapply claim2; eauto.
+    - ii. pose proof (enum_isSurjective b) as [n b_eq_enum_n]; unnw. subst b.
+      pose proof (claim1 := theorem_of_1_2_14_aux1 F n F_isFilter EQUICONSISTENT).
+      exists (1 + n). simpl. exists ([enum n]). split.
+      + intros z [z_eq | []]; subst z. right. now econstructor.
+      + unnw. now rewrite andsBA_one.
+    - now eapply lemma3_of_1_2_13.
+  Qed.
+
+  Corollary corollary_of_1_2_16_aux1 (X : ensemble BA) (F : ensemble BA) (b : BA)
+    (EQUICONSISTENT : equiconsistent (completeFilterOf X) F)
+    (SUBSET : isSubsetOf (completeFilterOf X) F)
+    (H_IN : member b F)
+    (INCONSISTENT : inconsistent (cl (insert b (completeFilterOf X))))
+    : inconsistent (cl (insert b F)).
+  Proof.
+    assert (claim1 : isSubsetOf (insert b (completeFilterOf X)) (insert b F)).
+    { intros z [z_in | z_in]; [now left | right; now eapply SUBSET]. }
+    destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
+    assert (claim2 : isSubsetOf (cl (insert b (completeFilterOf X))) (cl (insert b F))).
+    { now eapply fact4_of_1_2_8. }
+    exists (botBA). split; trivial. now eapply claim2.
+  Qed.
+
+  Corollary corollary_of_1_2_16_aux2 (X : ensemble BA) (F : ensemble BA)
+    (F_isFilter : isFilter F)
+    (EQUICONSISTENT : equiconsistent (completeFilterOf X) F)
+    (SUBSET : isSubsetOf (completeFilterOf X) F)
+    : forall b : BA, member b F -> equiconsistent (completeFilterOf X) (cl (insert b (completeFilterOf X))).
+  Proof.
+    intros b H_IN.
+    assert (claim1 : isSubsetOf (cl (insert b F)) (cl F)).
+    { eapply fact4_of_1_2_8. intros z [z_in | z_in]; trivial. repeat red in z_in. congruence. }
+    split; intros INCONSISTENT.
+    - destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
+      exists (botBA). split; trivial.
+      eapply fact3_of_1_2_8. now right.
+    - eapply EQUICONSISTENT.
+      pose proof (corollary_of_1_2_16_aux1 X F b EQUICONSISTENT SUBSET H_IN INCONSISTENT) as [botBA [botBA_in botBA_eq_falseBA]].
+      exists (botBA). split; trivial.
+      eapply fact5_of_1_2_8; trivial.
+      now eapply claim1.
+  Qed.
+
+  Corollary corollary_of_1_2_16 (F : ensemble BA)
+    (F_isFilter : isFilter F)
+    : isUltraFilter (completeFilterOf F).
+  Proof.
+    pose proof (theorem_of_1_2_14 F F_isFilter) as [? ? ? ?]. split; trivial.
+    intros F' IS_FILTER' EQUICONSISTENT' SUBSET' b; unnw. split.
+    - exact (SUBSET' b).
+    - intros H_IN.
+      enough (claim1 : equiconsistent (completeFilterOf F) (cl (insert b (completeFilterOf F)))) by now eapply COMPLETE.
+      eapply corollary_of_1_2_16_aux2; eauto.
   Qed.
 
   End section_2_of_chapter_1_PART2.
