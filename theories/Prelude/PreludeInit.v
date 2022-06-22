@@ -126,7 +126,7 @@ Module Cat.
     }
   .
 
-  Polymorphic Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
+  Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
 
   Global Bind Scope type_scope with Functor_t isCategory hom.
 
@@ -134,19 +134,19 @@ Module Cat.
 
   Section BasicConceptsOfCategoryTheory.
 
-  Polymorphic Context {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs}.
+  Context {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs}.
 
-  Polymorphic Class isCovariantFunctor (F : src_cat -----> tgt_cat) : Type :=
+  Class isCovariantFunctor (F : src_cat -----> tgt_cat) : Type :=
     { fmap {dom : src_objs} {cod : src_objs} (arr : hom dom cod) : hom (F dom) (F cod)
     }
   .
 
-  Polymorphic Class isContravariantFunctor (F : src_cat -----> tgt_cat) : Type :=
+  Class isContravariantFunctor (F : src_cat -----> tgt_cat) : Type :=
     { contramap {dom : src_objs} {cod : src_objs} (arr : hom cod dom) : hom (F dom) (F cod)
     }
   .
 
-  Polymorphic Class isNaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
+  Class isNaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
     component (obj : src_objs) : hom (F_from obj) (F_to obj)
   .
 
@@ -206,7 +206,7 @@ Module PreludeInit_MAIN.
 
 (** "2. Category and Functor with Equality" *)
 
-  Polymorphic Class isCategory_withLaws (objs : Type) : Type :=
+  Class isCategory_withLaws (objs : Type) : Type :=
     { Category_withLaws_requiresCategory_asSelf :> isCategory objs
     ; hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
     ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs}
@@ -241,7 +241,7 @@ Module PreludeInit_MAIN.
 
   Context {src_objs : Type} {tgt_objs : Type}.
 
-  Polymorphic Class CovariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isCovariantFunctor F} : Prop :=
+  Class CovariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isCovariantFunctor F} : Prop :=
     { covarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_r : hom obj obj_r)
       (arr_l : hom obj_l obj)
@@ -251,7 +251,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Class ContravariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isContravariantFunctor F} : Prop :=
+  Class ContravariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isContravariantFunctor F} : Prop :=
     { contravarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
       (arr_l : hom obj_l obj)
       (arr_r : hom obj obj_r)
@@ -284,18 +284,18 @@ Module PreludeInit_MAIN.
 
   Section SETOID_ACCESSORIES.
 
-  Polymorphic Context {A : Type} {requiresSetoid : isSetoid A}.
+  Context {A : Type} {requiresSetoid : isSetoid A}.
 
-  Polymorphic Lemma eqProp_Reflexive (x : A)
+  Lemma eqProp_Reflexive (x : A)
     : x == x.
   Proof. eapply Equivalence_Reflexive; eauto. Qed.
 
-  Polymorphic Lemma eqProp_Symmetric (x : A) (y : A)
+  Lemma eqProp_Symmetric (x : A) (y : A)
     (x_eq_y : x == y)
     : y == x.
   Proof. eapply Equivalence_Symmetric; eauto. Qed.
 
-  Polymorphic Lemma eqProp_Transitive (x : A) (y : A) (z : A)
+  Lemma eqProp_Transitive (x : A) (y : A) (z : A)
     (x_eq_y : x == y)
     (y_eq_z : y == z)
     : x == z.
@@ -307,24 +307,24 @@ Module PreludeInit_MAIN.
 
   Section POSET_ACCESSORIES.
 
-  Polymorphic Context {A : Type} {requiresPoset : isPoset A}.
+  Context {A : Type} {requiresPoset : isPoset A}.
 
-  Polymorphic Lemma leProp_Reflexive (x : A)
+  Lemma leProp_Reflexive (x : A)
     : x =< x.
   Proof. eapply PreOrder_Reflexive; eauto. Qed.
 
-  Polymorphic Lemma leProp_Transitive (x : A) (y : A) (z : A)
+  Lemma leProp_Transitive (x : A) (y : A) (z : A)
     (x_le_y : x =< y)
     (y_le_z : y =< z)
     : x =< z.
   Proof. eapply PreOrder_Transitive; eauto. Qed.
 
-  Polymorphic Lemma eqProp_implies_leProp (x : A) (y : A)
+  Lemma eqProp_implies_leProp (x : A) (y : A)
     (x_eq_y : x == y)
     : x =< y.
   Proof. now rewrite x_eq_y. Qed.
 
-  Polymorphic Lemma leProp_Antisymmetric (x : A) (y : A)
+  Lemma leProp_Antisymmetric (x : A) (y : A)
     (x_le_y : x =< y)
     (y_le_x : y =< x)
     : x == y.
@@ -338,7 +338,7 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_eq.
 
-  Local Polymorphic Instance theFinestSetoidOf (A : Type) : isSetoid A :=
+  Local Instance theFinestSetoidOf (A : Type) : isSetoid A :=
     { eqProp := @eq A
     ; eqProp_Equivalence := eq_equivalence
     }
@@ -370,9 +370,9 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_image.
 
-  Polymorphic Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
+  Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
 
-  Local Polymorphic Instance relation_on_image_liftsEquivalence {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Instance relation_on_image_liftsEquivalence {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresEquivalence : Equivalence eq_cod)
     : Equivalence (binary_relation_on_image eq_cod f).
   Proof.
@@ -382,7 +382,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1EQ2 H_2EQ3. exact (Equivalence_Transitive (f x1) (f x2) (f x3) H_1EQ2 H_2EQ3).
   Defined.
 
-  Local Polymorphic Instance relation_on_image_liftsPreOrder {dom : Type} {cod : Type} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Instance relation_on_image_liftsPreOrder {dom : Type} {cod : Type} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     (requiresPreOrder : PreOrder le_cod)
     : PreOrder (binary_relation_on_image le_cod f).
   Proof.
@@ -391,7 +391,7 @@ Module PreludeInit_MAIN.
     - intros x1 x2 x3 H_1LE2 H_2LE3. exact (PreOrder_Transitive (f x1) (f x2) (f x3) H_1LE2 H_2LE3).
   Defined.
 
-  Local Polymorphic Instance relation_on_image_liftsPartialOrder {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
+  Local Instance relation_on_image_liftsPartialOrder {dom : Type} {cod : Type} {eq_cod : cod -> cod -> Prop} {le_cod : cod -> cod -> Prop} (f : dom -> cod)
     {requiresEquivalence : Equivalence eq_cod}
     {requiresPreOrder : PreOrder le_cod}
     (requiresPartialOrder : PartialOrder eq_cod le_cod)
@@ -447,15 +447,15 @@ Module PreludeInit_MAIN.
 
   Section ImplFor_arrow.
 
-  Polymorphic Variable dom : Hask.t.
+  Variable dom : Hask.t.
 
-  Polymorphic Variable cod : Hask.t.
+  Variable cod : Hask.t.
 
-  Polymorphic Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+  Definition arrow_eqProp {cod_isSetoid : isSetoid cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x == rhs x
   .
 
-  Local Polymorphic Instance arrow_eqProp_Equivalence
+  Local Instance arrow_eqProp_Equivalence
     (cod_isSetoid : isSetoid cod)
     : Equivalence arrow_eqProp.
   Proof.
@@ -465,17 +465,17 @@ Module PreludeInit_MAIN.
     - intros f1 f2 f3 H_1EQ2 H_2EQ3 x. exact (Equivalence_Transitive (f1 x) (f2 x) (f3 x) (H_1EQ2 x) (H_2EQ3 x)).
   Defined.
 
-  Global Polymorphic Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
+  Global Instance arrow_isSetoid {cod_isSetoid : isSetoid cod} : isSetoid (Hask.arrow dom cod) :=
     { eqProp := arrow_eqProp (cod_isSetoid := cod_isSetoid)
     ; eqProp_Equivalence := arrow_eqProp_Equivalence cod_isSetoid
     }
   .
 
-  Polymorphic Definition arrow_leProp {cod_isPoset : isPoset cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
+  Definition arrow_leProp {cod_isPoset : isPoset cod} (lhs : Hask.arrow dom cod) (rhs : Hask.arrow dom cod) : Prop :=
     forall x : dom, lhs x =< rhs x
   .
 
-  Local Polymorphic Instance arrow_leProp_PreOrder
+  Local Instance arrow_leProp_PreOrder
     (cod_isPoset : isPoset cod)
     : PreOrder arrow_leProp.
   Proof.
@@ -484,7 +484,7 @@ Module PreludeInit_MAIN.
     - intros f1 f2 f3 H_1LE2 H_2LE3 x. exact (PreOrder_Transitive (f1 x) (f2 x) (f3 x) (H_1LE2 x) (H_2LE3 x)).
   Defined.
 
-  Local Polymorphic Instance arrow_leProp_PartialOrder
+  Local Instance arrow_leProp_PartialOrder
     (cod_isPoset : isPoset cod)
     : PartialOrder arrow_eqProp arrow_leProp.
   Proof.
@@ -497,7 +497,7 @@ Module PreludeInit_MAIN.
       + exact (proj2 H_EQ x).
   Defined.
 
-  Local Polymorphic Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
+  Local Instance arrow_isPoset {cod_isPoset : isPoset cod} : isPoset (Hask.arrow dom cod) :=
     { leProp := arrow_leProp
     ; Poset_requiresSetoid := arrow_isSetoid
     ; leProp_PreOrder := arrow_leProp_PreOrder cod_isPoset
