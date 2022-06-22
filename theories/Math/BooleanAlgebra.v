@@ -420,27 +420,39 @@ Module CountableBooleanAlgebra.
     inversion z_in; subst. reflexivity.
   Qed.
 
-  Lemma lemma1_of_1_2_13_aux3 (X : ensemble BA) (n : nat)
-    : isSubsetOf X (Insertion X n).
-  Proof. ii. now left. Qed.
-
-(*
   Lemma lemma1_of_1_2_13 (n : nat) (F : ensemble BA)
     (F_isFilter : isFilter F)
     : equiconsistent F (iterInsertion F n).
   Proof.
     revert F F_isFilter. induction n as [ | n IH]; simpl; ii.
     - reflexivity.
-    - split; intros INCONSISTENT.
+    - rewrite IH with (F_isFilter := F_isFilter) at 1.
+      split; intros INCONSISTENT.
       { eapply inconsistent_compatWith_isSubsetOf.
         - exact INCONSISTENT.
         - rewrite <- fact3_of_1_2_8.
-          rewrite <- lemma1_of_1_2_13_aux3.
-          eapply lemma1_of_1_2_12 with (n1 := 0).
-          eapply le_intro_0_le_n.
+          ii; now left.
+      }
+      { destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
+        destruct botBA_in as [xs [? ?]]; desnw.
+        pose proof (lemma1_of_1_2_11 n F F_isFilter) as claim1. inversion claim1; unnw.
+        pose proof (lemma1_of_1_2_13_aux1 xs F n F_isFilter xs_isFiniteSubsetOf) as [H_in | [b [b_in b_in_insertion]]].
+        - exists (andBA botBA (andsBA xs)). split.
+          + eapply CLOSED_UPWARD with (x := andsBA xs); trivial.
+            rewrite <- andsBA_xs_le, andBA_idem. reflexivity.
+          + rewrite botBA_eq_falseBA. change (falseBA =< andsBA xs).
+            eapply falseBA_isBottom.
+        - inversion b_in_insertion; subst.
+          eapply EQUICONSISTENT.
+          assert (claim2 : isSubsetOf (cl (Insertion (iterInsertion F n) n)) (cl (insert (enum n) (iterInsertion F n)))).
+          { eapply fact4_of_1_2_8, lemma1_of_1_2_13_aux2. }
+          exists (andsBA xs). split.
+          + eapply claim2. exists (xs). split; unnw; trivial. reflexivity.
+          + eapply @leProp_Antisymmetric with (requiresPoset := BooleanAlgebra_isPoset).
+            { now rewrite <- botBA_eq_falseBA. }
+            { eapply falseBA_isBottom. }
       }
   Qed.
-*)
 
   End section_2_of_chapter_1_PART2.
 
