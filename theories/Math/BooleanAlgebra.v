@@ -497,18 +497,18 @@ Module CountableBooleanAlgebra.
       unfold equiconsistent in *. tauto. 
   Qed.
 
-  Variant propertiesOfFilter (F : ensemble BA) : Prop :=
-  | propertiesOfFilter_areTheFollowings
-    (SUBSET : isSubsetOf F (completeFilterOf F))
-    (IS_FILTER : isFilter (completeFilterOf F))
-    (COMPLETE : isComplete (completeFilterOf F))
-    (EQUICONSISTENT : equiconsistent F (completeFilterOf F))
-    : propertiesOfFilter F
+  Variant completeFilterOf_spec (X : ensemble BA) (F : ensemble BA) : Prop :=
+  | completeFilterOfSpec_areTheFollowings
+    (SUBSET : isSubsetOf X F)
+    (IS_FILTER : isFilter F)
+    (COMPLETE : isComplete F)
+    (EQUICONSISTENT : equiconsistent X F)
+    : completeFilterOf_spec X F
   .
 
   Theorem theorem_of_1_2_14 (F : ensemble BA)
     (F_isFilter : isFilter F)
-    : propertiesOfFilter F.
+    : completeFilterOf_spec F (completeFilterOf F).
   Proof.
     inversion F_isFilter. split.
     - intros z z_in. exists (0). trivial.
@@ -566,11 +566,9 @@ Module CountableBooleanAlgebra.
     - destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
       exists (botBA). split; trivial.
       eapply fact3_of_1_2_8. now right.
-    - eapply EQUICONSISTENT.
-      pose proof (corollary_of_1_2_16_aux1 X F b SUBSET H_IN INCONSISTENT) as [botBA [botBA_in botBA_eq_falseBA]].
-      exists (botBA). split; trivial.
-      eapply fact5_of_1_2_8; trivial.
-      now eapply claim1.
+    - pose proof (corollary_of_1_2_16_aux1 X F b SUBSET H_IN INCONSISTENT) as [botBA [botBA_in botBA_eq_falseBA]].
+      eapply EQUICONSISTENT. exists (botBA). split; trivial.
+      eapply fact5_of_1_2_8; trivial. now eapply claim1.
   Qed.
 
   Corollary corollary_of_1_2_16 (F : ensemble BA)
