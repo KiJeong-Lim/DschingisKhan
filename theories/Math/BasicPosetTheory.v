@@ -559,27 +559,33 @@ Module DomainTheoryHelper.
 
   Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCoLa (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
 
-  Definition isDirectedSubset {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+  Definition isDirectedOrEmpty {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     forall x1 : D, << H_IN1 : member x1 X >> ->
     forall x2 : D, << H_IN2 : member x2 X >> ->
     exists x3 : D, << H_IN3 : member x3 X >> /\
     << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
   .
 
-  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirectedSubset X) : {sup_X : D | isSupremumOf sup_X X}.
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirectedOrEmpty X) : {sup_X : D | isSupremumOf sup_X X}.
 
   Global Reserved Notation " '⟬' X '⟶' Y '⟭' " (X at level 60, Y at level 60, at level 0, no associativity).
 
-  Global Hint Unfold isDirectedSubset : poset_hints.
+  Global Hint Unfold isDirectedOrEmpty : poset_hints.
+
+  Definition isDirected {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    << NONEMPTY : exists x0 : D, member x0 X >> /\ << DIRECTED_OR_EMPTY : isDirectedOrEmpty X >>
+  .
 
   Lemma preservesDirected_if_isMonotonic {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isMonotonic : isMonotonicMap f)
-    : forall X : ensemble dom, << IS_DIRECTED : isDirectedSubset X >> -> isDirectedSubset (image f X).
+    : forall X : ensemble dom, << DIRECTED : isDirected X >> -> isDirected (image f X).
   Proof.
-    intros X ? y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
-    destruct H_IN1 as [x1 [y1_eq x1_in]]; destruct H_IN2 as [x2 [y2_eq x2_in]]; subst y1 y2.
-    pose proof (IS_DIRECTED x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
-    exists (f x3). rewrite in_image_iff. split; eauto with *.
+    ii; desnw. destruct DIRECTED; desnw. split; unnw.
+    - exists (f x0). econstructor; eauto.
+    - intros y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
+      destruct H_IN1 as [x1 [y1_eq x1_in]]; destruct H_IN2 as [x2 [y2_eq x2_in]]; subst y1 y2.
+      pose proof (DIRECTED_OR_EMPTY x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
+      exists (f x3). rewrite in_image_iff. split; eauto with *.
   Qed.
 
 End DomainTheoryHelper.
