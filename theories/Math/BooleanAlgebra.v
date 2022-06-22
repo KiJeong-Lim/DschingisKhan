@@ -169,6 +169,25 @@ Module BooleanAlgebra.
     : forall x : BA, falseBA =< x.
   Proof. ii. red; simpl. eapply falseBA_ann_andBA. Qed.
 
+  Lemma andsBA_le_In (xs : list BA) (x : BA)
+    (x_in_xs : In x xs)
+    : andsBA xs =< x.
+  Proof.
+    revert x x_in_xs.
+    induction xs as [ | x1 xs1 IH]; simpl in *.
+    - tauto.
+    - intros x [x_eq_x1 | x_in_xs1].
+      + subst x.
+        rewrite <- @associativity with (Assoc := andBA_assoc) (x := x1) (y := andsBA xs1) (z := x1).
+        rewrite @commutativity with (Comm := andBA_comm) (x := andsBA xs1) (y := x1).
+        rewrite -> @associativity with (Assoc := andBA_assoc) (x := x1) (z := andsBA xs1) (y := x1).
+        rewrite @idemponence with (Idem := andBA_idem) (x := x1).
+        reflexivity.
+      + rewrite <- @associativity with (Assoc := andBA_assoc) (x := x1) (y := andsBA xs1) (z := x).
+        rewrite IH with (x := x) (x_in_xs := x_in_xs1).
+        reflexivity.
+  Qed.
+
   Variant isFilter (F : ensemble BA) : Prop :=
   | isFilterIf
     (CLOSED_andsBA : forall xs : list BA, ⟪ xs_isFiniteSubsetOfFilter : isFiniteSubsetOf xs F ⟫ -> member (andsBA xs) F)
@@ -205,8 +224,8 @@ Module BooleanAlgebra.
   .
 
   Lemma inconsistent_compatWith_isSubsetOf (X : ensemble BA) (X' : ensemble BA)
-    (SUBSET : isSubsetOf X X')
     (INCONSISTENT : inconsistent X)
+    (SUBSET : isSubsetOf X X')
     : inconsistent X'.
   Proof.
     destruct INCONSISTENT as [botBA [botBA_in_X botBA_eq_falseBA]].
@@ -216,7 +235,7 @@ Module BooleanAlgebra.
   Global Add Parametric Morphism :
     inconsistent with signature (eqProp ==> iff)
     as inconsistent_compatWith_eqProp.
-  Proof. intros X X' X_eq_X'. split; eapply inconsistent_compatWith_isSubsetOf. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
+  Proof. intros X X' X_eq_X'. split; ii; eapply inconsistent_compatWith_isSubsetOf; eauto. all: intros z z_in; eapply X_eq_X'; eauto. Qed.
 
   Definition isProperFilter (F : ensemble BA) : Prop :=
     << IS_FILTER : isFilter F >> /\ << CONSISTENT : ~ inconsistent F >>
@@ -369,6 +388,59 @@ Module CountableBooleanAlgebra.
     - intros z z_in; left...
     - simpl; eapply fact3_of_1_2_8...
   Qed.
+
+  Lemma lemma1_of_1_2_13_aux1 (bs : list BA) (F : ensemble BA) (n : nat)
+    (F_isFilter : isFilter F)
+    (FINITE_SUBSET : isFiniteSubsetOf bs (union (iterInsertion F n) (insertion (iterInsertion F n) n)))
+    : member (andsBA bs) (iterInsertion F n) \/ (exists b : BA, In b bs /\ member b (insertion (iterInsertion F n) n)).
+  Proof.
+    revert F n F_isFilter FINITE_SUBSET. induction bs as [ | b1 bs1 IH]; simpl; ii.
+    - left. now eapply fact2_of_1_2_8, lemma1_of_1_2_11.
+    - pose proof (lemma1_of_1_2_11 n F F_isFilter) as claim1. inversion claim1. unnw.
+      assert (H_IN : member b1 (iterInsertion F n) \/ member b1 (insertion (iterInsertion F n) n)).
+      { rewrite <- in_union_iff. eapply FINITE_SUBSET. now left. }
+      assert (claim2 : isFiniteSubsetOf bs1 (union (iterInsertion F n) (insertion (iterInsertion F n) n))).
+      { unfold isFiniteSubsetOf in *. ii. eapply FINITE_SUBSET. now right. }
+      specialize (IH F n F_isFilter claim2). destruct IH as [IH | [b [b_in b_in_insertion]]].
+      { destruct H_IN as [H_IN | H_IN].
+        - left. eapply CLOSED_andsBA with (xs := b1 :: bs1).
+          intros z [z_eq_b | z_in_bs1].
+          + now subst z.
+          + eapply CLOSED_UPWARD with (x := andsBA bs1); trivial.
+            now eapply andsBA_le_In.
+        - right. exists (b1). split; trivial. now left.
+      }
+      { right. exists (b). split; trivial. now right. }
+  Qed.
+
+  Lemma lemma1_of_1_2_13_aux2 (X : ensemble BA) (n : nat)
+    : isSubsetOf (Insertion (iterInsertion X n) n) (insert (enum n) (iterInsertion X n)).
+  Proof.
+    intros z [z_in | z_in]; [right | left]; trivial.
+    inversion z_in; subst. reflexivity.
+  Qed.
+
+  Lemma lemma1_of_1_2_13_aux3 (X : ensemble BA) (n : nat)
+    : isSubsetOf X (Insertion X n).
+  Proof. ii. now left. Qed.
+
+(*
+  Lemma lemma1_of_1_2_13 (n : nat) (F : ensemble BA)
+    (F_isFilter : isFilter F)
+    : equiconsistent F (iterInsertion F n).
+  Proof.
+    revert F F_isFilter. induction n as [ | n IH]; simpl; ii.
+    - reflexivity.
+    - split; intros INCONSISTENT.
+      { eapply inconsistent_compatWith_isSubsetOf.
+        - exact INCONSISTENT.
+        - rewrite <- fact3_of_1_2_8.
+          rewrite <- lemma1_of_1_2_13_aux3.
+          eapply lemma1_of_1_2_12 with (n1 := 0).
+          eapply le_intro_0_le_n.
+      }
+  Qed.
+*)
 
   End section_2_of_chapter_1_PART2.
 
