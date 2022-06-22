@@ -490,7 +490,7 @@ Module CountableBooleanAlgebra.
       { eapply inconsistent_compatWith_isSubsetOf.
         - exact (INCONSISTENT).
         - eapply fact4_of_1_2_8.
-          intros z z_in. apply in_insert_iff in z_in. destruct z_in as [eq_z | z_in].
+          intros z z_in. apply in_insert_iff in z_in. destruct z_in as [z_in | z_in].
           + subst z. now left.
           + right. now exists (n).
       }
@@ -581,7 +581,8 @@ Module CountableBooleanAlgebra.
     intros F' IS_FILTER' EQUICONSISTENT' SUBSET' b; unnw. split.
     - exact (SUBSET' b).
     - intros H_IN.
-      enough (claim1 : equiconsistent (completeFilterOf F) (cl (insert b (completeFilterOf F)))) by now eapply COMPLETE.
+      enough (claim1 : equiconsistent (completeFilterOf F) (cl (insert b (completeFilterOf F)))).
+      { now eapply COMPLETE. }
       eapply corollary_of_1_2_16_aux2; eauto.
   Qed.
 
