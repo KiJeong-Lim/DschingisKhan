@@ -201,8 +201,7 @@ Module PreludeInit_MAIN.
   Global Infix " =< " := leProp (at level 70, no associativity) : type_scope.
 
   Class isSetoid1 (F : Type -> Type) : Type :=
-    { liftSetoid1 {X : Type} (X_isSetoid : isSetoid X) :> isSetoid (F X)
-    }
+    liftSetoid1 (X : Type) (X_isSetoid : isSetoid X) :> isSetoid (F X)
   .
 
 (** "2. Category and Functor with Equality" *)
@@ -705,7 +704,7 @@ Module PreludeInit_MAIN.
     Cat.fmap (F := F) (dom := A) (cod := B)
   .
 
-  Local Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 (theFinestSetoidOf X).
+  Local Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 X (theFinestSetoidOf X).
 
   Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
     { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
