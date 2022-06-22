@@ -311,7 +311,7 @@ Module BasicPosetTheory.
 
   Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_preserves_eqProp_wrtEnsembles Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
-  Polymorphic Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
+  Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
     { compare (lhs : A) (rhs : A) : comparison
     ; compare_LT_implies (lhs : A) (rhs : A) (H_lt : compare lhs rhs = Lt) : lhs =< rhs /\ ~ lhs == rhs
     ; compare_EQ_implies (lhs : A) (rhs : A) (H_eq : compare lhs rhs = Eq) : lhs == rhs

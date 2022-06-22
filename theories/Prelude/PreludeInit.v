@@ -182,7 +182,7 @@ Module PreludeInit_MAIN.
 
 (** "1. Setoid and Poset" *)
 
-  Polymorphic Class isSetoid (A : Type) : Type :=
+  Class isSetoid (A : Type) : Type :=
     { eqProp (lhs : A) (rhs : A) : Prop
     ; eqProp_Equivalence :> @Equivalence A eqProp
     }
@@ -190,7 +190,7 @@ Module PreludeInit_MAIN.
 
   Global Infix " == " := eqProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isPoset (A : Type) : Type :=
+  Class isPoset (A : Type) : Type :=
     { leProp (lhs : A) (rhs : A) : Prop
     ; Poset_requiresSetoid :> isSetoid A
     ; leProp_PreOrder :> @PreOrder A leProp
@@ -200,7 +200,7 @@ Module PreludeInit_MAIN.
 
   Global Infix " =< " := leProp (at level 70, no associativity) : type_scope.
 
-  Polymorphic Class isSetoid1 (F : Type -> Type) : Type :=
+  Class isSetoid1 (F : Type -> Type) : Type :=
     { liftSetoid1 {X : Type} (X_isSetoid : isSetoid X) :> isSetoid (F X)
     }
   .
