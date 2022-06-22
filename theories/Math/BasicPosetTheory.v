@@ -557,6 +557,8 @@ Module DomainTheoryHelper.
 
   Import BasicPosetTheory.
 
+  Global Reserved Notation " '⟬' X '⟶' Y '⟭' " (X at level 60, Y at level 60, at level 0, no associativity).
+
   Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCoLa (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
 
   Definition isDirectedOrEmpty {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
@@ -566,15 +568,13 @@ Module DomainTheoryHelper.
     << FINITE_UPPER_BOUND_CLOSED : x1 =< x3 /\ x2 =< x3 >>
   .
 
-  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirectedOrEmpty X) : {sup_X : D | isSupremumOf sup_X X}.
-
-  Global Reserved Notation " '⟬' X '⟶' Y '⟭' " (X at level 60, Y at level 60, at level 0, no associativity).
-
   Global Hint Unfold isDirectedOrEmpty : poset_hints.
 
   Definition isDirected {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
     << NONEMPTY : exists x0 : D, member x0 X >> /\ << DIRECTED_OR_EMPTY : isDirectedOrEmpty X >>
   .
+
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : {sup_X : D | isSupremumOf sup_X X}.
 
   Lemma preservesDirected_if_isMonotonic {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isMonotonic : isMonotonicMap f)
