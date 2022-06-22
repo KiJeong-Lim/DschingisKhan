@@ -401,7 +401,7 @@ Module CountableBooleanAlgebra.
       { rewrite <- in_union_iff. eapply FINITE_SUBSET. now left. }
       assert (claim2 : isFiniteSubsetOf bs1 (union (iterInsertion F n) (insertion (iterInsertion F n) n))).
       { unfold isFiniteSubsetOf in *. ii. eapply FINITE_SUBSET. now right. }
-      specialize (IH F n F_isFilter claim2). destruct IH as [IH | [b [b_in b_in_insertion]]].
+      pose proof (IH F n F_isFilter claim2) as [H_in | [b [b_in b_in_insertion]]].
       { destruct H_IN as [H_IN | H_IN].
         - left. eapply CLOSED_andsBA with (xs := b1 :: bs1).
           intros z [z_eq_b | z_in_bs1].
