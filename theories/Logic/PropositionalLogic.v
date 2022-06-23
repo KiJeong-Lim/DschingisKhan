@@ -406,7 +406,18 @@ Module LindenbaumBooleanAlgebraOfPL.
 
   Import ListNotations BooleanAlgebra SyntaxOfPL InferenceRulesOfPL.
 
+  Global Instance formula_hasBooleanAlgebraMethods : BooleanAlgebra_sig formula :=
+    { andBA := ConjunctionF
+    ; orBA := DisjunctionF
+    ; notBA := NegationF
+    ; trueBA := ImplicationF ContradictionF ContradictionF
+    ; falseBA := ContradictionF
+    }
+  .
+
   Local Obligation Tactic := intros.
+
+(** (* Why universes are inconsistent? *)
 
   Global Program Instance formula_isSetoid : isSetoid formula :=
     { eqProp (lhs : formula) (rhs : formula) := singleton lhs ⊢ rhs /\ singleton rhs ⊢ lhs }.
@@ -420,16 +431,6 @@ Module LindenbaumBooleanAlgebraOfPL.
       all: ii; left...
   Qed.
 
-  Global Instance formula_hasBooleanAlgebraMethods : BooleanAlgebra_sig formula :=
-    { andBA := ConjunctionF
-    ; orBA := DisjunctionF
-    ; notBA := NegationF
-    ; trueBA := ImplicationF ContradictionF ContradictionF
-    ; falseBA := ContradictionF
-    }
-  .
-
-(**
   Global Instance formula_obeysBooleanAlgebra_axiom
     : BooleanAlgebra_axiom formula (requiresSetoid := formula_isSetoid) (requiresBooleanAlgebraMethods := formula_hasBooleanAlgebraMethods).
 *)
