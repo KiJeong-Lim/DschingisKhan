@@ -1,6 +1,8 @@
 Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
+Require Import Coq.Relations.Relation_Definitions.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
@@ -399,3 +401,37 @@ Module InferenceRulesOfPL.
   Qed.
 
 End InferenceRulesOfPL.
+
+Module LindenbaumBooleanAlgebraOfPL.
+
+  Import ListNotations BooleanAlgebra SyntaxOfPL InferenceRulesOfPL.
+
+  Local Obligation Tactic := intros.
+
+  Global Program Instance formula_isSetoid : isSetoid formula :=
+    { eqProp (lhs : formula) (rhs : formula) := singleton lhs ⊢ rhs /\ singleton rhs ⊢ lhs }.
+  Next Obligation with eauto with *.
+    split.
+    - ii. split; eapply ByAssumption...
+    - ii. des...
+    - ii. des.
+      all: eapply Cut_Property...
+      all: eapply extend_infers...
+      all: ii; left...
+  Qed.
+
+  Global Instance formula_hasBooleanAlgebraMethods : BooleanAlgebra_sig formula :=
+    { andBA := ConjunctionF
+    ; orBA := DisjunctionF
+    ; notBA := NegationF
+    ; trueBA := ImplicationF ContradictionF ContradictionF
+    ; falseBA := ContradictionF
+    }
+  .
+
+(**
+  Global Instance formula_obeysBooleanAlgebra_axiom
+    : BooleanAlgebra_axiom formula (requiresSetoid := formula_isSetoid) (requiresBooleanAlgebraMethods := formula_hasBooleanAlgebraMethods).
+*)
+
+End LindenbaumBooleanAlgebraOfPL.

@@ -210,10 +210,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Global Instance subseteq_PartialOrder
     : PartialOrder eqProp subseteq.
-  Proof.
-    intros lhs rhs. simpl. rewrite AczelSet_extensional_equality.
-    unfold relation_conjunction, flip, subseteq. cbn; unnw. now firstorder.
-  Qed.
+  Proof. intros lhs rhs. simpl. rewrite AczelSet_extensional_equality. now firstorder. Qed.
 
   Lemma eqTree_intro (lhs : AczelSet) (rhs : AczelSet)
     (lhs_subseteq_rhs : lhs `subseteq` rhs)
