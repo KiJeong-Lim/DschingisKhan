@@ -13,7 +13,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
 
   Global Notation compose := compose.
   Global Notation id := id.
-  Global Notation " 'id_{' A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
+  Global Notation " 'id_{'  A  '}' " := (@id A) (A at level 100, at level 0, no associativity) : program_scope.
 
 (** "\S2" *)
 
@@ -126,7 +126,7 @@ Module Cat.
     }
   .
 
-  Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
+  Polymorphic Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
 
   Global Bind Scope type_scope with Functor_t isCategory hom.
 
@@ -536,7 +536,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Definition ensemble : Hask.cat -----> Hask.cat := fun X : Hask.t => Hask.arrow X Prop.
+  Polymorphic Definition ensemble : Hask.cat -----> Hask.cat := fun X : Hask.t => Hask.arrow X Prop.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
