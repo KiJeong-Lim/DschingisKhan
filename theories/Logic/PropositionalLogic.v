@@ -369,7 +369,7 @@ Module InferenceRulesOfPL.
     - eapply ByAssumption. left...
   Qed.
 
-  Lemma Cut (Gamma : ensemble formula) (A : formula) (B : formula)
+  Lemma Cut_property (Gamma : ensemble formula) (A : formula) (B : formula)
     (INFERS : Gamma ⊢ A)
     (CUT : insert A Gamma ⊢ B)
     : Gamma ⊢ B.
@@ -424,7 +424,7 @@ Module LindenbaumBooleanAlgebraOfPL.
     - ii. split; eapply ByAssumption...
     - ii. des...
     - ii. des.
-      all: eapply Cut...
+      all: eapply Cut_property...
       all: eapply extend_infers...
       all: ii; left...
   Qed.
@@ -435,18 +435,18 @@ Module LindenbaumBooleanAlgebraOfPL.
   Proof with reflexivity || eauto with *.
     split; iis; simpl in *; des.
     { eapply ConjunctionI.
-      - eapply Cut with (A := lhs1).
+      - eapply Cut_property with (A := lhs1).
         + eapply ConjunctionE1, ByAssumption...
         + eapply extend_infers... ii; left...
-      - eapply Cut with (A := lhs2).
+      - eapply Cut_property with (A := lhs2).
         + eapply ConjunctionE2, ByAssumption...
         + eapply extend_infers... ii; left...
     }
     { eapply ConjunctionI.
-      - eapply Cut with (A := rhs1).
+      - eapply Cut_property with (A := rhs1).
         + eapply ConjunctionE1, ByAssumption...
         + eapply extend_infers... ii; left...
-      - eapply Cut with (A := rhs2).
+      - eapply Cut_property with (A := rhs2).
         + eapply ConjunctionE2, ByAssumption...
         + eapply extend_infers... ii; left...
     }
@@ -683,7 +683,7 @@ Module LindenbaumBooleanAlgebraOfPL.
     : lhs =< rhs <-> singleton lhs ⊢ rhs.
   Proof.
     simpl. split.
-    - intros [INFERS INFERS']. eapply Cut with (A := ConjunctionF lhs rhs); trivial.
+    - intros [INFERS INFERS']. eapply Cut_property with (A := ConjunctionF lhs rhs); trivial.
       eapply ConjunctionE2, ByAssumption. left. reflexivity.
     - intros INFERS. split.
       + eapply ConjunctionE1, ByAssumption. reflexivity.
