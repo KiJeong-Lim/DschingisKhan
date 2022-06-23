@@ -417,8 +417,6 @@ Module LindenbaumBooleanAlgebraOfPL.
 
   Local Obligation Tactic := intros.
 
-(** (* Why universes are inconsistent? *)
-
   Global Program Instance formula_isSetoid : isSetoid formula :=
     { eqProp (lhs : formula) (rhs : formula) := singleton lhs ⊢ rhs /\ singleton rhs ⊢ lhs }.
   Next Obligation with eauto with *.
@@ -431,6 +429,7 @@ Module LindenbaumBooleanAlgebraOfPL.
       all: ii; left...
   Qed.
 
+(**
   Global Instance formula_obeysBooleanAlgebra_axiom
     : BooleanAlgebra_axiom formula (requiresSetoid := formula_isSetoid) (requiresBooleanAlgebraMethods := formula_hasBooleanAlgebraMethods).
 *)
