@@ -663,7 +663,7 @@ Module LindenbaumBooleanAlgebraOfPL.
     { eapply ImplicationI, ByAssumption. left... }
     { eapply extend_infers.
       - eapply Law_of_Exclusive_Middle.
-      - intros z [].
+      - eapply isSubsetOf_empty_if.
     }
   Qed.
 
@@ -678,5 +678,17 @@ Module LindenbaumBooleanAlgebraOfPL.
     ; CBA_requiresCountable := formula_isCountable
     }
   .
+
+  Lemma leBA_iff (lhs : formula) (rhs : formula)
+    : lhs =< rhs <-> singleton lhs ⊢ rhs.
+  Proof.
+    simpl. split.
+    - intros [INFERS INFERS']. eapply Cut with (A := ConjunctionF lhs rhs); trivial.
+      eapply ConjunctionE2, ByAssumption. left. reflexivity.
+    - intros INFERS. split.
+      + eapply ConjunctionE1, ByAssumption. reflexivity.
+      + eapply ConjunctionI; trivial.
+        eapply ByAssumption. reflexivity.
+  Qed.
 
 End LindenbaumBooleanAlgebraOfPL.
