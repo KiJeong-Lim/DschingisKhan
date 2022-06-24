@@ -794,7 +794,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     intros z z_in. eapply xs_isFiniteSubsetOf, xs_repr_X'...
   Qed.
 
-  Theorem infers_compact (X : ensemble formula) (b : formula)
+  Theorem inference_is_finite (X : ensemble formula) (b : formula)
     (INFERS : X ⊢ b)
     : exists xs : list formula, exists X' : ensemble formula, isFiniteSubsetOf xs X /\ isListRepOf xs X' /\ X' ⊢ b.
   Proof with eauto with *.
@@ -919,7 +919,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     : isSubsetOf (Th X) (cl X).
   Proof.
     intros b [INFERS].
-    pose proof (infers_compact X b INFERS) as [xs [X' [? [? ?]]]].
+    pose proof (inference_is_finite X b INFERS) as [xs [X' [? [? ?]]]].
     exists (xs). unnw. split; eauto.
     eapply andsBA_le_iff. exists (X'). eauto.
   Qed.
