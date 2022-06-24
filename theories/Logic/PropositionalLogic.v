@@ -956,15 +956,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     - eapply Th_isSubsetOf_cl.
   Qed.
 
-  Definition filter (X : ensemble formula) : nat -> ensemble formula :=
-    iterInsertion (Th X)
-  .
-
   Definition axiom_set (X : ensemble formula) : nat -> ensemble formula :=
     fix axiom_set_fix (n : nat) {struct n} : ensemble formula :=
     match n with
     | O => X
-    | S n' => union (axiom_set_fix n') (insertion (axiom_set_fix n') n')
+    | S n' => Insertion (axiom_set_fix n') n'
     end
   .
 
@@ -1001,8 +997,13 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     - intros EQUICONSISTENT. split; intros INCONSISTENT.
       + eapply inconsistent_compatWith_isSubsetOf with (X := cl F')...
         eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
-      +  eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
+      + eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
         eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
   Qed.
+
+(**
+  Lemma lemma1_of_1_3_9 (X : ensemble formula) (n : nat)
+    : iterInsertion (Th X) n == Th (axiom_set X n).
+*)
 
 End ConstructiveMetaTheoryOnPropositonalLogic.
