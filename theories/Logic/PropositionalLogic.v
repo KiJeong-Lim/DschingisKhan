@@ -993,11 +993,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
         eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
   Qed.
 
-  Definition axiom_set (X : ensemble formula) : nat -> ensemble formula :=
-    fix axiom_set_fix (n : nat) {struct n} : ensemble formula :=
+  Fixpoint axiom_set (X : ensemble formula) (n : nat) {struct n} : ensemble formula :=
     match n with
     | O => X
-    | S n' => union (axiom_set_fix n') (insertion (iterInsertion (Th X) n') n')
+    | S n' => union (axiom_set X n') (insertion (iterInsertion (Th X) n') n')
     end
   .
 
@@ -1009,7 +1008,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     - simpl. unfold Insertion. rewrite cl_eq_Th, IH. split; intros b_in.
       + rewrite <- cl_eq_Th. rewrite <- cl_eq_Th in b_in. revert b b_in.
         change (isSubsetOf (cl (union (Th (axiom_set X n)) (insertion (Th (axiom_set X n)) n))) (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
-        transitivity (cl ((cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n))))).
+        transitivity (cl (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
         { eapply fact4_of_1_2_8. intros b [b_in | b_in].
           - rewrite <- cl_eq_Th in b_in. revert b b_in. eapply fact4_of_1_2_8. ii; left...
           - rewrite cl_eq_Th. econstructor. eapply ByAssumption. right...
