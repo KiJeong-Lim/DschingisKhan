@@ -681,14 +681,14 @@ Module LindenbaumBooleanAlgebraOfPL.
 
   Lemma leBA_iff (lhs : formula) (rhs : formula)
     : lhs =< rhs <-> singleton lhs ⊢ rhs.
-  Proof.
+  Proof with reflexivity || trivial.
     simpl. split.
-    - intros [INFERS INFERS']. eapply Cut_property with (A := ConjunctionF lhs rhs); trivial.
-      eapply ConjunctionE2, ByAssumption. left. reflexivity.
+    - intros [INFERS INFERS']. eapply Cut_property with (A := ConjunctionF lhs rhs)...
+      eapply ConjunctionE2, ByAssumption. left...
     - intros INFERS. split.
-      + eapply ConjunctionE1, ByAssumption. reflexivity.
-      + eapply ConjunctionI; trivial.
-        eapply ByAssumption. reflexivity.
+      + eapply ConjunctionE1, ByAssumption...
+      + eapply ConjunctionI...
+        eapply ByAssumption...
   Qed.
 
 End LindenbaumBooleanAlgebraOfPL.
