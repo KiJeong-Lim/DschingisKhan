@@ -430,7 +430,7 @@ Module LindenbaumBooleanAlgebraOfPL.
   Qed.
 
 
-  Global Instance LBA_obeysBooleanAlgebra_axiom
+  Local Instance LBA_obeysBooleanAlgebra_axiom
     : BooleanAlgebra_axiom formula (requiresSetoid := formula_isSetoid) (requiresBooleanAlgebraMethods := formula_hasBooleanAlgebraMethods).
   Proof with reflexivity || eauto with *.
     split; iis; simpl in *; des.
@@ -673,7 +673,7 @@ Module LindenbaumBooleanAlgebraOfPL.
     }
   .
 
-  Global Instance LindenbaumBooleanAlgebra_pl : isCBA formula (requiresSetoid := formula_isSetoid) :=
+  Global Instance LBA_pl_asCBA : isCBA formula (requiresSetoid := formula_isSetoid) :=
     { CBA_requiresBooleanAlgebra := LBA_pl
     ; CBA_requiresCountable := formula_isCountable
     }
