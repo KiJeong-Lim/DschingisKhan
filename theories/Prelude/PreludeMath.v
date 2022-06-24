@@ -427,6 +427,27 @@ Module Ensembles.
 
   Context {A : Type}.
 
+  Lemma isFiniteSubsetOf_nil
+    : isFiniteSubsetOf [] (@empty A).
+  Proof. unfold isFiniteSubsetOf in *. simpl. tauto. Qed.
+
+  Lemma isListRepOf_nil
+    : isListRepOf [] (@empty A).
+  Proof.
+    unfold isListRepOf in *. intro. simpl.
+    rewrite in_empty_iff. tauto.
+  Qed.
+
+  Lemma isFiniteSubsetOf_cons (x : A) (xs : list A) (X : ensemble A)
+    (xs_isFiniteSubsetOf_X : isFiniteSubsetOf xs X)
+    : isFiniteSubsetOf (x :: xs) (insert x X).
+  Proof. unfold isFiniteSubsetOf in *. simpl. now firstorder. Qed.
+
+  Lemma isListRepOf_cons (x : A) (xs : list A) (X : ensemble A)
+    (xs_isListRepOf_X : isListRepOf xs X)
+    : isListRepOf (x :: xs) (insert x X).
+  Proof. unfold isListRepOf in *. simpl. now firstorder. Qed.
+
   Lemma isFiniteSubsetOf_append (xs1 : list A) (xs2 : list A) (X : ensemble A)
     (xs1_isFiniteSubsetOf_X : isFiniteSubsetOf xs1 X)
     (xs2_isFiniteSubsetOf_X : isFiniteSubsetOf xs2 X)
