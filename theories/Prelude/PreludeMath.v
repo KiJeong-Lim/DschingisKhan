@@ -556,6 +556,33 @@ Module Ensembles.
     fun '(lhs, rhs) => exists x : B, member (lhs, x) X /\ member (x, rhs) X'
   .
 
+  Global Add Parametric Morphism (A : Type) :
+    (@union A) with signature (eqProp ==> eqProp ==> eqProp)
+    as union_lifts_eqProp.
+  Proof.
+    intros X X' X_eq_X' Y Y' Y_eq_Y' z.
+    do 2 rewrite in_union_iff.
+    do 3 red in X_eq_X', Y_eq_Y'. now firstorder.
+  Qed.
+
+  Global Add Parametric Morphism (A : Type) :
+    (@insert A) with signature (eq ==> eqProp ==> eqProp)
+    as insert_lifts_eqProp.
+  Proof.
+    intros x X X' X_eq_X' z.
+    do 2 rewrite in_insert_iff.
+    do 3 red in X_eq_X'. now firstorder.
+  Qed.
+
+  Global Add Parametric Morphism (A : Type) :
+    (@intersection A) with signature (eqProp ==> eqProp ==> eqProp)
+    as intersection_lifts_eqProp.
+  Proof.
+    intros X X' X_eq_X' Y Y' Y_eq_Y' z.
+    do 2 rewrite in_intersection_iff.
+    do 3 red in X_eq_X', Y_eq_Y'. now firstorder.
+  Qed.
+
 (** "Ensemble Tactics" *)
 
   Ltac ensemble_rewrite := autorewrite with ensemble_hints using eauto.

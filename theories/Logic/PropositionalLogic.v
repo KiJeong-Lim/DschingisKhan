@@ -3,6 +3,8 @@ Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
 Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Relations.Relation_Operators.
+Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
@@ -759,6 +761,19 @@ Module LindenbaumBooleanAlgebraOfPL.
     }
   Qed.
 
+  Global Add Parametric Morphism :
+    infers with signature (eqProp ==> eqProp ==> iff)
+    as infers_compatWith_eqProp.
+  Proof.
+    intros X X' X_eq_X' b b' [INFERS1 INFERS2]. split.
+    - intros INFERS. eapply Cut_property with (A := b).
+      + eapply extend_infers; eauto. now rewrite X_eq_X'.
+      + eapply extend_infers; eauto. ii. now left.
+    - intros INFERS. eapply Cut_property with (A := b').
+      + eapply extend_infers; eauto. now rewrite X_eq_X'.
+      + eapply extend_infers; eauto. ii. now left.
+  Qed.
+
 End LindenbaumBooleanAlgebraOfPL.
 
 Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive Completeness Proofs and Delimited Control >> written by "Danko Ilik" *)
@@ -770,6 +785,15 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
   .
 
   Local Hint Constructors Th : core.
+
+  Global Add Parametric Morphism :
+    Th with signature (eqProp ==> eqProp)
+    as Th_lifts_eqProp.
+  Proof.
+    intros X X' X_eq_X' b. split; intros [INFERS]; econstructor.
+    - now rewrite <- X_eq_X'.
+    - now rewrite -> X_eq_X'.
+  Qed.
 
   Lemma lemma1_of_1_3_8 (X : ensemble formula)
     : isFilter (Th X).
@@ -922,6 +946,63 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     pose proof (inference_is_finite X b INFERS) as [xs [X' [? [? ?]]]].
     exists (xs). unnw. split; eauto.
     eapply andsBA_le_iff. exists (X'). eauto.
+  Qed.
+
+  Corollary cl_eq_Th (X : ensemble formula)
+    : cl X == Th X.
+  Proof.
+    iis.
+    - eapply cl_isSubsetOf_Th.
+    - eapply Th_isSubsetOf_cl.
+  Qed.
+
+  Definition filter (X : ensemble formula) : nat -> ensemble formula :=
+    iterInsertion (Th X)
+  .
+
+  Definition axiom_set (X : ensemble formula) : nat -> ensemble formula :=
+    fix axiom_set_fix (n : nat) {struct n} : ensemble formula :=
+    match n with
+    | O => X
+    | S n' => union (axiom_set_fix n') (insertion (axiom_set_fix n') n')
+    end
+  .
+
+  Lemma inconsistent_cl_iff (X : ensemble formula)
+    : inconsistent (cl X) <-> X ⊢ ContradictionF.
+  Proof.
+    change (inconsistent (cl X) <-> X ⊢ falseBA). split.
+    - intros [botBA [botBA_in botBA_eq_falseBA]].
+      pose proof (cl_isSubsetOf_Th X botBA botBA_in) as [INFERS].
+      now rewrite <- botBA_eq_falseBA.
+    - intros INFERS. exists (falseBA). split; eauto with *.
+      eapply Th_isSubsetOf_cl; eauto.
+  Qed.
+
+  Local Hint Resolve fact1_of_1_2_8 fact2_of_1_2_8 fact3_of_1_2_8 fact4_of_1_2_8 fact5_of_1_2_8 lemma1_of_1_2_11 inconsistent_compatWith_isSubsetOf inconsistent_cl_iff : core.
+
+  Lemma two_filters_are_equiconsistent_iff (F : ensemble formula) (F' : ensemble formula)
+    (IS_FILTER : isFilter F)
+    (IS_FILTER' : isFilter F')
+    : equiconsistent F F' <-> ⟪ EQUICONSISTENT : F ⊢ ContradictionF <-> F' ⊢ ContradictionF ⟫.
+  Proof with eauto with *.
+    unnw. split.
+    - intros EQUICONSISTENT. split; intros INCONSISTENT.
+      + eapply inconsistent_cl_iff.
+        eapply inconsistent_compatWith_isSubsetOf with (X := F')...
+        eapply EQUICONSISTENT.
+        eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
+        eapply inconsistent_cl_iff...
+      + eapply inconsistent_cl_iff.
+        eapply inconsistent_compatWith_isSubsetOf with (X := F)...
+        eapply EQUICONSISTENT.
+        eapply inconsistent_compatWith_isSubsetOf with (X := cl F')...
+        eapply inconsistent_cl_iff...
+    - intros EQUICONSISTENT. split; intros INCONSISTENT.
+      + eapply inconsistent_compatWith_isSubsetOf with (X := cl F')...
+        eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
+      +  eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
+        eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
   Qed.
 
 End ConstructiveMetaTheoryOnPropositonalLogic.

@@ -259,9 +259,38 @@ Module BooleanAlgebra.
     relation_on_image_liftsEquivalence inconsistent iff_equivalence
   .
 
+  Global Add Parametric Morphism :
+    equiconsistent with signature (eqProp ==> eqProp ==> iff)
+    as equiconsistent_compatWith_eqProp.
+  Proof.
+    intros X X' X_eq_X' Y Y' Y_eq_Y'. split; intros EQUICONSISTENT.
+    - split; intros INCONSISTENT.
+      + rewrite <- X_eq_X' in INCONSISTENT.
+        apply EQUICONSISTENT in INCONSISTENT.
+        now rewrite -> Y_eq_Y' in INCONSISTENT.
+      + rewrite <- Y_eq_Y' in INCONSISTENT.
+        apply EQUICONSISTENT in INCONSISTENT.
+        now rewrite -> X_eq_X' in INCONSISTENT.
+    - split; intros INCONSISTENT.
+      + rewrite -> X_eq_X' in INCONSISTENT.
+        apply EQUICONSISTENT in INCONSISTENT.
+        now rewrite <- Y_eq_Y' in INCONSISTENT.
+      + rewrite -> Y_eq_Y' in INCONSISTENT.
+        apply EQUICONSISTENT in INCONSISTENT.
+        now rewrite <- X_eq_X' in INCONSISTENT.
+  Qed.
+
   Definition cl (X : ensemble BA) : ensemble BA :=
     fun x : BA => exists xs : list BA, ⟪ xs_isFiniteSubsetOf : isFiniteSubsetOf xs X ⟫ /\ ⟪ andsBA_xs_le : andsBA xs =< x ⟫
   .
+
+  Global Add Parametric Morphism :
+    cl with signature (eqProp ==> eqProp)
+    as cl_lifts_eqProp.
+  Proof.
+    intros X X' X_eq_X' b. split; intros [xs [? ?]]; desnw; exists (xs); unnw; split; eauto.
+    all: ii; now eapply X_eq_X', xs_isFiniteSubsetOf.
+  Qed.
 
   Lemma fact1_of_1_2_8 (X : ensemble BA)
     : isFilter (cl X).
@@ -358,6 +387,20 @@ Module CountableBooleanAlgebra.
     (EQUICONSISTENT : equiconsistent X (cl (insert (enum n) X)))
     : member (enum n) (insertion X n)
   .
+
+  Global Add Parametric Morphism :
+    insertion with signature (eqProp ==> eq ==> eqProp)
+    as insertion_lifts_eqProp.
+  Proof with eauto with *.
+    enough (to_show : forall X : ensemble BA, forall X' : ensemble BA, X == X' -> forall n : nat, isSubsetOf (insertion X n) (insertion X' n)).
+    { ii. split; eapply to_show... }
+    intros X X' X_eq_X' n b b_in.
+    inversion b_in; subst. econstructor. rewrite <- X_eq_X' at 1.
+    rewrite EQUICONSISTENT. clear EQUICONSISTENT b_in.
+    enough (EQUAL : cl (insert (enum n) X) == cl (insert (enum n) X')).
+    { red. now rewrite EQUAL. }
+    now eapply cl_lifts_eqProp, insert_lifts_eqProp.
+  Qed.
 
   Definition Insertion (X : ensemble BA) (n : nat) : ensemble BA := union X (insertion X n).
 
