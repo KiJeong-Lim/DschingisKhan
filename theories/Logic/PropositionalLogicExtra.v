@@ -46,7 +46,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     : Gamma ⊧ NegationF A.
   Proof with (simpl in *; tauto) || eauto with *.
     ii. econstructor. simpl. intros EVAL_TO_TRUE.
-    assert (claim1 : forall b : formula, member b (insert A Gamma) -> satisfies env b).
+    assert (claim1 : forall b : formula, member b (insert A Gamma) -> env `satisfies` b).
     { intros b. rewrite in_insert_iff. intros [A_eq_b | b_in_Gamma]...
       subst b. econstructor...
     }
@@ -59,7 +59,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     : Gamma ⊧ A.
   Proof with (simpl in *; tauto) || eauto with *.
     ii. econstructor. eapply NNPP. intros EVAL_TO_FALSE.
-    assert (claim1 : forall b : formula, member b (insert (NegationF A) Gamma) -> satisfies env b).
+    assert (claim1 : forall b : formula, member b (insert (NegationF A) Gamma) -> env `satisfies` b).
     { intros b. rewrite in_insert_iff. intros [NegationF_A_eq_b | b_in_Gamma]...
       subst b. econstructor...
     }
@@ -118,13 +118,13 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     pose proof (ENTAILS1 env env_satisfies) as claim1.
     inversion claim1; subst.
     destruct EVAL_TO_TRUE as [EVAL_TO_TRUE | EVAL_TO_TRUE].
-    - assert (claim2 : forall b : formula, member b (insert A Gamma) -> satisfies env b).
+    - assert (claim2 : forall b : formula, member b (insert A Gamma) -> env `satisfies` b).
       { intros b. rewrite in_insert_iff. intros [A_eq_b | b_in_Gamma]...
         subst b. econstructor...
       }
       pose proof (ENTAILS2 env claim2) as claim3.
       inversion claim3; subst...
-    - assert (claim2 : forall b : formula, member b (insert B Gamma) -> satisfies env b).
+    - assert (claim2 : forall b : formula, member b (insert B Gamma) -> env `satisfies` b).
       { intros b. rewrite in_insert_iff. intros [B_eq_b | b_in_Gamma]...
         subst b. econstructor...
       }
@@ -137,7 +137,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     : Gamma ⊧ ImplicationF A B.
   Proof with (simpl in *; tauto) || eauto with *.
     ii. econstructor. simpl. intros EVAL_TO_TRUE.
-    assert (claim1 : forall b : formula, member b (insert A Gamma) -> satisfies env b).
+    assert (claim1 : forall b : formula, member b (insert A Gamma) -> env `satisfies` b).
     { intros b. rewrite in_insert_iff. intros [A_eq_b | b_in_Gamma]...
       subst b. econstructor...
     }
@@ -161,13 +161,13 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     : Gamma ⊧ BiconditionalF A B.
   Proof with (simpl in *; tauto) || eauto with *.
     ii. econstructor. simpl. split; intros EVAL_TO_TRUE.
-    - assert (claim1 : forall b : formula, member b (insert A Gamma) -> satisfies env b).
+    - assert (claim1 : forall b : formula, member b (insert A Gamma) -> env `satisfies` b).
       { intros b. rewrite in_insert_iff. intros [A_eq_b | b_in_Gamma]...
         subst b. econstructor...
       }
       pose proof (ENTAILS1 env claim1) as claim2.
       inversion claim2; subst...
-    - assert (claim1 : forall b : formula, member b (insert B Gamma) -> satisfies env b).
+    - assert (claim1 : forall b : formula, member b (insert B Gamma) -> env `satisfies` b).
       { intros b. rewrite in_insert_iff. intros [B_eq_b | b_in_Gamma]...
         subst b. econstructor...
       }
