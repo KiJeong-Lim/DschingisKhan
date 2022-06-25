@@ -781,7 +781,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
   Import ListNotations BooleanAlgebra CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOfPL.
 
   Variant Th (X : ensemble formula) (b : formula) : Prop :=
-  | in_Th (INFERS : X ⊢ b) : b \in Th X
+  | In_Th (INFERS : X ⊢ b) : b \in Th X
   .
 
   Local Hint Constructors Th : core.
@@ -969,28 +969,15 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
 
   Local Hint Resolve fact1_of_1_2_8 fact2_of_1_2_8 fact3_of_1_2_8 fact4_of_1_2_8 fact5_of_1_2_8 lemma1_of_1_2_11 inconsistent_compatWith_isSubsetOf inconsistent_cl_iff : core.
 
-  Lemma two_filters_are_equiconsistent_iff (F : ensemble formula) (F' : ensemble formula)
-    (IS_FILTER : isFilter F)
-    (IS_FILTER' : isFilter F')
-    : equiconsistent F F' <-> ⟪ EQUICONSISTENT : F ⊢ ContradictionF <-> F' ⊢ ContradictionF ⟫.
+  Lemma filters_is_inconsistent_iff (F : ensemble formula)
+    (F_isFilter : isFilter F)
+    : inconsistent F <-> F ⊢ ContradictionF.
   Proof with eauto with *.
-    unnw. split.
-    - intros EQUICONSISTENT. split; intros INCONSISTENT.
-      + eapply inconsistent_cl_iff.
-        eapply inconsistent_compatWith_isSubsetOf with (X := F')...
-        eapply EQUICONSISTENT.
-        eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
-        eapply inconsistent_cl_iff...
-      + eapply inconsistent_cl_iff.
-        eapply inconsistent_compatWith_isSubsetOf with (X := F)...
-        eapply EQUICONSISTENT.
-        eapply inconsistent_compatWith_isSubsetOf with (X := cl F')...
-        eapply inconsistent_cl_iff...
-    - intros EQUICONSISTENT. split; intros INCONSISTENT.
-      + eapply inconsistent_compatWith_isSubsetOf with (X := cl F')...
-        eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
-      + eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
-        eapply inconsistent_cl_iff, EQUICONSISTENT, inconsistent_cl_iff...
+    split; intros INCONSISTENT.
+    - eapply inconsistent_cl_iff.
+      eapply inconsistent_compatWith_isSubsetOf with (X := F)...
+    - eapply inconsistent_compatWith_isSubsetOf with (X := cl F)...
+      eapply inconsistent_cl_iff...
   Qed.
 
   Fixpoint axiom_set (X : ensemble formula) (n : nat) {struct n} : ensemble formula :=
@@ -1003,21 +990,103 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
   Lemma lemma1_of_1_3_9 (X : ensemble formula) (n : nat)
     : iterInsertion (Th X) n == Th (axiom_set X n).
   Proof with eauto with *.
-    revert X. induction n as [ | n IH]; intros X b.
-    - reflexivity.
-    - simpl. unfold Insertion. rewrite cl_eq_Th, IH. split; intros b_in.
-      + rewrite <- cl_eq_Th. rewrite <- cl_eq_Th in b_in. revert b b_in.
-        change (isSubsetOf (cl (union (Th (axiom_set X n)) (insertion (Th (axiom_set X n)) n))) (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
-        transitivity (cl (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
-        { eapply fact4_of_1_2_8. intros b [b_in | b_in].
-          - rewrite <- cl_eq_Th in b_in. revert b b_in. eapply fact4_of_1_2_8. ii; left...
-          - rewrite cl_eq_Th. econstructor. eapply ByAssumption. right...
+    revert X. induction n as [ | n IH]; [reflexivity | intros X b].
+    simpl. unfold Insertion. rewrite cl_eq_Th, IH. split; intros b_in.
+    - rewrite <- cl_eq_Th. rewrite <- cl_eq_Th in b_in. revert b b_in.
+      change (isSubsetOf (cl (union (Th (axiom_set X n)) (insertion (Th (axiom_set X n)) n))) (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
+      transitivity (cl (cl (union (axiom_set X n) (insertion (Th (axiom_set X n)) n)))).
+      + eapply fact4_of_1_2_8. intros b [b_in | b_in].
+        * rewrite <- cl_eq_Th in b_in. revert b b_in. eapply fact4_of_1_2_8. ii; left...
+        * rewrite cl_eq_Th. econstructor. eapply ByAssumption. right...
+      + eapply fact5_of_1_2_8...
+    - rewrite <- cl_eq_Th. rewrite <- cl_eq_Th in b_in. revert b b_in.
+      eapply fact4_of_1_2_8. intros b [b_in | b_in].
+      + left. econstructor. eapply ByAssumption...
+      + right...
+  Qed.
+
+  Lemma completeness_theorem_prototype (X : ensemble formula) (b : formula) (env : propVarEnv)
+    (ENTAILS : X ⊧ b)
+    (EQUICONSISTENT : equiconsistent (Th (insert (NegationF b) X)) (evalFormula env))
+    (SUBSET : isSubsetOf (Th (insert (NegationF b) X)) (evalFormula env))
+    (IS_FILTER : isFilter (evalFormula env))
+    : X ⊢ b.
+  Proof with eauto with *.
+    revert EQUICONSISTENT SUBSET IS_FILTER.
+    keep (evalFormula env) as X' into (ensemble formula).
+    fold X'. ii.
+    assert (claim1 : env `satisfies` b).
+    { eapply ENTAILS. ii. econstructor.
+      eapply SUBSET. econstructor.
+      eapply ByAssumption. right...
+    }
+    assert (claim2 : inconsistent (cl X')).
+    { eapply inconsistent_cl_iff.
+      eapply ContradictionI with (A := b).
+      - eapply ByAssumption. inversion claim1...
+      - eapply ByAssumption. eapply SUBSET.
+        econstructor. eapply ByAssumption. left...
+    }
+    assert (claim3 : inconsistent (Th (insert (NegationF b) X))).
+    { eapply EQUICONSISTENT. eapply inconsistent_compatWith_isSubsetOf with (X := cl X')... }
+    eapply NegationE. eapply inconsistent_cl_iff. rewrite cl_eq_Th...
+  Qed.
+
+  Definition MaximalConsistentSet (X : ensemble formula) : ensemble formula :=
+    completeFilterOf (Th X)
+  .
+
+  Variant full_axiom_set (X : ensemble formula) (b : formula) : Prop :=
+  | In_full_axiom_set (n : nat)
+    (ELEM : member b (axiom_set X n))
+    : member b (full_axiom_set X)
+  .
+
+  Lemma lemma2_of_1_3_9 (X : ensemble formula)
+    : isSubsetOf (MaximalConsistentSet X) (Th (full_axiom_set X)).
+  Proof.
+    intros z [n z_in].
+    pose proof (proj1 (lemma1_of_1_3_9 X n z) z_in) as [INFERS].
+    econstructor. eapply extend_infers; eauto. ii. now exists (n).
+  Qed.
+
+  Lemma lemma3_of_1_3_9_aux1 (xs : list formula) (X : ensemble formula)
+    (xs_isFiniteSubsetOf : isFiniteSubsetOf xs (full_axiom_set X))
+    : exists m : nat, isFiniteSubsetOf xs (iterInsertion (Th X) m).
+  Proof with eauto with *.
+    revert X xs_isFiniteSubsetOf. unfold isFiniteSubsetOf.
+    induction xs as [ | x xs IH]; simpl; ii.
+    - exists (0). tauto.
+    - assert (claim1 : forall z : formula, In z xs -> z \in full_axiom_set X) by now firstorder.
+      assert (claim2 : x \in full_axiom_set X) by now firstorder.
+      inversion claim2.
+      assert (claim3 : member x (iterInsertion (Th X) n)).
+      { eapply lemma1_of_1_3_9. econstructor. eapply ByAssumption... }
+      pose proof (IH X claim1) as [m claim4].
+      pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m m n) as [m_le_n | n_lt_m].
+      + exists (n). intros z [x_eq_z | z_in_xs].
+        { subst z... }
+        { eapply lemma1_of_1_2_12... }
+      + exists (m). intros z [x_eq_z | z_in_xs].
+        { subst z.
+          assert (n_le_m : n <= m) by now eapply le_S, lt_elim_n_lt_S_m in n_lt_m.
+          eapply lemma1_of_1_2_12...
         }
-        { eapply fact5_of_1_2_8... }
-      + rewrite <- cl_eq_Th. rewrite <- cl_eq_Th in b_in. revert b b_in.
-        eapply fact4_of_1_2_8. intros b [b_in | b_in].
-        { left. econstructor. eapply ByAssumption... }
-        { right... }
+        { eapply claim4... }
+  Qed.
+
+  Lemma lemma3_of_1_3_9 (X : ensemble formula)
+    : isSubsetOf (Th (full_axiom_set X)) (MaximalConsistentSet X).
+  Proof with eauto with *.
+    intros z [INFERS].
+    pose proof (inference_is_finite (full_axiom_set X) z INFERS) as [xs [X' [xs_isFiniteSubsetOf [xs_isListRepOf INFERS']]]].
+    pose proof (lemma3_of_1_3_9_aux1 xs X xs_isFiniteSubsetOf) as [m claim1].
+    assert (claim2 : isFilter (iterInsertion (Th X) m)).
+    { eapply @lemma1_of_1_2_11 with (requiresCBA := LBA_pl_asCBA). eapply lemma1_of_1_3_8. }
+    inversion claim2. exists (m). unnw.
+    eapply CLOSED_UPWARD with (x := andsBA xs).
+    - eapply fact5_of_1_2_8... exists (xs)...
+    - eapply andsBA_le_iff. now firstorder.
   Qed.
 
 End ConstructiveMetaTheoryOnPropositonalLogic.
