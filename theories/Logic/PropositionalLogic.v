@@ -1089,4 +1089,92 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     - eapply andsBA_le_iff. now firstorder.
   Qed.
 
+  Variant MaximalConsistentSet_spec (X : ensemble formula) (F : ensemble formula) : Prop :=
+  | MaximalConsistentSetSpec_areTheFollowings
+    (SUBSET : isSubsetOf (Th X) F)
+    (EQUICONSISTENT : equiconsistent (Th X) F)
+    (CLOSED_infers : forall b : formula, member b F <-> F ⊢ b)
+    (META_DN : forall b : formula, << NEGATION : member (NegationF b) F -> member ContradictionF F >> -> member b F)
+    (IMPLICATION_FAITHFUL : forall b : formula, forall b' : formula, member (ImplicationF b b') F <-> << IMPLICATION : member b F -> member b' F >>)
+    : MaximalConsistentSet_spec X F
+  .
+
+  Theorem theorem_of_1_3_10 (X : ensemble formula)
+    : MaximalConsistentSet_spec X (MaximalConsistentSet X).
+  Proof with eauto with *.
+    pose proof (lemma1 := @lemma1_of_1_3_8).
+    pose proof (theorem_of_1_2_14 (Th X) (lemma1 X)) as [? ? ? ?].
+    fold (MaximalConsistentSet X) in SUBSET, IS_FILTER, COMPLETE, EQUICONSISTENT.
+    assert (CLOSED_infers : forall b : formula, b \in MaximalConsistentSet X <-> MaximalConsistentSet X ⊢ b).
+    { intros b. split; intros b_in.
+      - enough (to_show : member b (Th (MaximalConsistentSet X))) by now inversion to_show.
+        rewrite <- cl_eq_Th. eapply fact3_of_1_2_8...
+      - eapply fact5_of_1_2_8...
+        rewrite -> cl_eq_Th...
+    }
+    assert (META_DN : forall b : formula, (NegationF b \in MaximalConsistentSet X -> ContradictionF \in MaximalConsistentSet X) -> b \in MaximalConsistentSet X).
+    { intros b NEGATION. eapply COMPLETE. split.
+      - intros INCONSISTENT.
+        eapply inconsistent_compatWith_isSubsetOf...
+        transitivity (insert b (MaximalConsistentSet X)).
+        + ii; right...
+        + eapply fact3_of_1_2_8.
+      - intros INCONSISTENT.
+        assert (claim1 : insert b (MaximalConsistentSet X) ⊢ ContradictionF).
+        { now eapply inconsistent_cl_iff. }
+        exists (ContradictionF). split...
+        eapply NEGATION, CLOSED_infers, NegationI...
+    }
+    assert (IMPLICATION_FAITHFUL : forall b : formula, forall b' : formula, member (ImplicationF b b') (MaximalConsistentSet X) <-> (member b (MaximalConsistentSet X) -> member b' (MaximalConsistentSet X))).
+    { intros b b'. split.
+      - intros IMPLICATION b_in.
+        eapply CLOSED_infers. eapply ImplicationE with (A := b).
+        + eapply CLOSED_infers...
+        + eapply CLOSED_infers...
+      - intros IMPLICATION. eapply META_DN.
+        intros H_in. eapply CLOSED_infers.
+        assert (claim1 : insert (ImplicationF b b') (MaximalConsistentSet X) ⊢ ContradictionF).
+        { eapply ContradictionI with (A := ImplicationF b b').
+          - eapply ByAssumption. left...
+          - eapply extend_infers with (Gamma := MaximalConsistentSet X).
+            + eapply CLOSED_infers...
+            + ii; right...
+        }
+        assert (claim2 : MaximalConsistentSet X ⊢ ConjunctionF b (NegationF b')).
+        { eapply DisjunctionE with (A := b) (B := NegationF b).
+          - eapply extend_infers with (Gamma := empty).
+            + eapply Law_of_Exclusive_Middle.
+            + eapply isSubsetOf_empty_if.
+          - eapply DisjunctionE with (A := b') (B := NegationF b').
+            + eapply extend_infers with (Gamma := empty).
+              { eapply Law_of_Exclusive_Middle. }
+              { eapply isSubsetOf_empty_if. }
+            + eapply ContradictionE.
+              eapply Cut_property with (A := ImplicationF b b').
+              { eapply ImplicationI, ByAssumption. right; left... }
+              { eapply extend_infers...
+                eapply isSubsetOf_insert_if. ii; right; right...
+              }
+            + eapply ConjunctionI.
+              { eapply ByAssumption. right; left... }
+              { eapply ByAssumption. left... }
+          - eapply ContradictionE.
+            eapply Cut_property with (A := ImplicationF b b').
+            + eapply ImplicationI, ContradictionE.
+              eapply ContradictionI with (A := b).
+              { eapply ByAssumption. left... }
+              { eapply ByAssumption. right; left... }
+            + eapply extend_infers...
+              eapply isSubsetOf_insert_if. ii; right...
+        }
+        assert (claim3 : MaximalConsistentSet X ⊢ b).
+        { eapply ConjunctionE1... }
+        assert (claim4 : MaximalConsistentSet X ⊢ NegationF b').
+        { eapply ConjunctionE2... }
+        eapply ContradictionI with (A := b')...
+        eapply CLOSED_infers, IMPLICATION, CLOSED_infers...
+    }
+    split...
+  Qed.
+
 End ConstructiveMetaTheoryOnPropositonalLogic.
