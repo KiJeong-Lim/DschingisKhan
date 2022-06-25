@@ -19,6 +19,7 @@ theories/Logic/LambdaCalculus.v #
 theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/InteractionTreeTheory.v #
 theories/Logic/PropositionalLogic.v #
+theories/Logic/PropositionalLogicExtra.v #
 #
 theories/Index/Index.v #
 #

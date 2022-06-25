@@ -14,3 +14,4 @@ Require Import DschingisKhan.Logic.LambdaCalculus.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
 Require Import DschingisKhan.Logic.InteractionTreeTheory.
 Require Import DschingisKhan.Logic.PropositionalLogic.
+Require Import DschingisKhan.Logic.PropositionalLogicExtra.

@@ -248,10 +248,10 @@ Module SemanticsOfPL.
 
   Global Infix " ⊧ " := entails (at level 70, no associativity) : type_scope.
 
-  Lemma extend_entails (Gamma1 : ensemble formula) (Gamma2 : ensemble formula) (C : formula)
-    (ENTAILS : Gamma1 ⊧ C)
-    (Gamma1_isSubsetOf_Gamma2 : isSubsetOf Gamma1 Gamma2)
-    : Gamma2 ⊧ C.
+  Lemma extend_entails (Gamma : ensemble formula) (Gamma' : ensemble formula) (C : formula)
+    (ENTAILS : Gamma ⊧ C)
+    (Gamma_isSubsetOf_Gamma' : isSubsetOf Gamma Gamma')
+    : Gamma' ⊧ C.
   Proof. ii. eauto with *. Qed.
 
   Definition isStructure (Gamma : ensemble formula) : Prop :=
