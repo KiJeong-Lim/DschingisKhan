@@ -383,17 +383,17 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     (ENTAILS : X ⊧ b)
     : X ⊢ b.
   Proof with eauto with *.
-    eapply NNPP. intros it_is_false_that_hs_infers_c.
+    eapply NNPP. intros it_is_false_that_X_infers_b.
     set (X' := insert (NegationF b) X).
     assert (CONSISTENT : ~ X' ⊢ ContradictionF).
-    { intros INCONSISTENT. contradiction it_is_false_that_hs_infers_c. eapply NegationE... }
+    { intros INCONSISTENT. contradiction it_is_false_that_X_infers_b. eapply NegationE... }
     pose proof (theorem_of_1_2_14 (Th X') (lemma1_of_1_3_8 X')) as [SUBSET' IS_FILTER' COMPLETE' EQUICONSISTENT'].
     fold (MaximalConsistentSet X') in SUBSET', IS_FILTER', COMPLETE', EQUICONSISTENT'.
     pose proof (hasModelIfConsistent X' CONSISTENT) as [INCL IS_STRUCTURE].
     unfold isStructure in IS_STRUCTURE.
     pose proof (theorem_of_1_3_10 X) as [? ? ? ? ?]; unnw.
     pose proof (inconsistent_compatWith_isSubsetOf (requiresBooleanAlgebra := LBA_pl)) as claim1.
-    contradiction it_is_false_that_hs_infers_c.
+    contradiction it_is_false_that_X_infers_b.
     eapply completeness_theorem_prototype with (env := preimage AtomF (MaximalConsistentSet X')); trivial.
     - unfold equiconsistent in *.
       transitivity (inconsistent (MaximalConsistentSet X'))...
@@ -403,6 +403,17 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     - transitivity (MaximalConsistentSet X')...
       ii. eapply IS_STRUCTURE...
     - eapply isFilter_compatWith_eqProp...
+  Qed.
+
+  Corollary the_propositional_compactness_theorem (X : ensemble formula) (b : formula)
+    : X ⊧ b <-> << FINITE_ENTAILS : exists xs : list formula, exists X' : ensemble formula, isFiniteSubsetOf xs X /\ isListRepOf xs X' /\ X' ⊧ b >>.
+  Proof with eauto.
+    unnw. split.
+    - intros ENTAILS.
+      apply the_propositional_completeness_theorem in ENTAILS.
+      apply inference_is_finite in ENTAILS. des. exists (xs), (X').
+      split... split... eapply the_propositional_soundness_theorem...
+    - intros [xs [X' [? [? ?]]]]. eapply extend_entails... now firstorder.
   Qed.
 
 End ClassicalMetaTheoryOnPropositonalLogic.
