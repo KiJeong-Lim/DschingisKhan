@@ -48,4 +48,55 @@ Module BasicCpoTheory.
     now contradiction f_x2_in_U_f_x2.
   Qed.
 
+  Global Hint Resolve ContinuousMap_isMonotonicMap : poset_hints.
+
+  Lemma f_sup_X_eq_sup_image_f_X {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom)
+    (f_isContinuousMap : isContinuousMap f)
+    (X_isDirected : isDirected X)
+    (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
+    (image_f_X_isDirected : isDirected (image f X))
+    : f sup_X == proj1_sig (getSupremumOf_inCPO (image f X) image_f_X_isDirected).
+  Proof with eauto with *.
+    assert (f_isMonotonicMap : isMonotonicMap f) by now eapply ContinuousMap_isMonotonicMap.
+    revert image_f_X_isDirected. keep (image f X) as Y into (ensemble cod). fold Y. ii.
+    destruct (getSupremumOf_inCPO Y image_f_X_isDirected) as [sup_Y sup_Y_isSupremumOf_Y]; simpl.
+    assert (claim1 : sup_Y =< f sup_X).
+    { eapply sup_Y_isSupremumOf_Y. intros y y_in_Y. unnw.
+      apply in_image_iff in y_in_Y. des.
+      eapply f_isMonotonicMap, sup_X_isSupremumOf_X...
+    }
+    assert (claim2 : f sup_X =< sup_Y).
+    { eapply NNPP. intros f_sup_X_in_U_sup_Y.
+      assert (sup_X_in_preimage_f_U_sup_Y : member sup_X (preimage f (U sup_Y))) by now constructor.
+      assert (f_U_sup_Y_isOpen : isOpen (preimage f (U sup_Y))) by now eapply f_isContinuousMap, U_x_isOpen.
+      inversion f_U_sup_Y_isOpen. pose proof (LIMIT X X_isDirected sup_X sup_X_isSupremumOf_X sup_X_in_preimage_f_U_sup_Y) as [x1 [x1_in_X x1_in_preimage_f_U_sup_Y]].
+      assert (f_x1_in_image_f_X : member (f x1) (image f X)).
+      { econstructor... }
+      assert (f_x1_in_U_sup_Y : member (f x1) (U sup_Y)).
+      { apply in_preimage_iff in x1_in_preimage_f_U_sup_Y. des... }
+      contradiction f_x1_in_U_sup_Y. eapply sup_Y_isSupremumOf_Y...
+    }
+    eapply @leProp_Antisymmetric with (requiresPoset := cod_isPoset)...
+  Qed.
+
+  Lemma isSupremumOf_image_f_X_iff_f_sup_X_eq  {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom) (sup_Y : cod)
+    (f_isContinuousMap : isContinuousMap f)
+    (X_isDirected : isDirected X)
+    (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
+    : isSupremumOf sup_Y (image f X) <-> f sup_X == sup_Y.
+  Proof.
+    assert (image_f_X_isDirected : isDirected (image f X)).
+    { eapply preservesDirected_if_isMonotonicMap; eauto with *. }
+    split.
+    - intros sup_Y_isSupremumOf_image_f_X.
+      rewrite f_sup_X_eq_sup_image_f_X with (f := f) (f_isContinuousMap := f_isContinuousMap) (X_isDirected := X_isDirected) (sup_X_isSupremumOf_X := sup_X_isSupremumOf_X) (image_f_X_isDirected := image_f_X_isDirected).
+      eapply Supremum_preserves_eqProp_wrtEnsembles.
+      + exact (proj2_sig (getSupremumOf_inCPO (image f X) image_f_X_isDirected)).
+      + exact (sup_Y_isSupremumOf_image_f_X).
+      + reflexivity.
+    - intros f_sup_X_eq_sup_Y. rewrite <- f_sup_X_eq_sup_Y.
+      rewrite f_sup_X_eq_sup_image_f_X with (f := f) (f_isContinuousMap := f_isContinuousMap) (X_isDirected := X_isDirected) (sup_X_isSupremumOf_X := sup_X_isSupremumOf_X) (image_f_X_isDirected := image_f_X_isDirected).
+      exact (proj2_sig (getSupremumOf_inCPO (image f X) image_f_X_isDirected)).
+  Qed.
+
 End BasicCpoTheory.

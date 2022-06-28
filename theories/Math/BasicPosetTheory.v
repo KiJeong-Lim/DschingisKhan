@@ -105,12 +105,12 @@ Module BasicPosetTheory.
   Lemma Supremum_congruence (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
     (sup_X_eq_sup_Y : sup_X == sup_Y)
     (X_eq_Y : X == Y)
-    (sup_x_isSupremumOf_X : isSupremumOf sup_X X)
+    (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
     : isSupremumOf sup_Y Y.
   Proof with eauto with *.
     intros z. unnw. rewrite <- sup_X_eq_sup_Y. split.
-    - intros sup_X_le_z. rewrite <- X_eq_Y. eapply sup_x_isSupremumOf_X...
-    - intros z_isUpperBoundOf_Y. eapply sup_x_isSupremumOf_X. unnw. rewrite -> X_eq_Y...
+    - intros sup_X_le_z. rewrite <- X_eq_Y. eapply sup_X_isSupremumOf_X...
+    - intros z_isUpperBoundOf_Y. eapply sup_X_isSupremumOf_X. unnw. rewrite -> X_eq_Y...
   Qed.
 
   Local Hint Resolve Supremum_congruence : poset_hints.
@@ -151,9 +151,9 @@ Module BasicPosetTheory.
       apply in_MapSuprema_iff in sup_X_i_in_MapSuprema.
       destruct sup_X_i_in_MapSuprema as [X_i [X_i_in_Xs sup_X_i_isSupremumOf_X_i]].
       eapply sup_X_i_isSupremumOf_X_i. ii. desnw. eapply UPPER_BOUND. eapply in_unions_iff...
-    - apply in_MapSuprema_iff in H_IN. destruct H_IN as [X [X_in_Xs sup_x_isSupremumOf_X]].
+    - apply in_MapSuprema_iff in H_IN. destruct H_IN as [X [X_in_Xs sup_X_isSupremumOf_X]].
       rename x into sup_X. enough (to_show : sup_X =< sup) by now transitivity (sup).
-      eapply sup_x_isSupremumOf_X. ii; desnw. eapply H_supremum... eapply in_unions_iff...
+      eapply sup_X_isSupremumOf_X. ii; desnw. eapply H_supremum... eapply in_unions_iff...
     - eapply H_supremum. ii; desnw. apply in_unions_iff in H_IN.
       destruct H_IN as [X [x_in_X X_in_Xs]]. pose proof (SUPS_EXIST X X_in_Xs) as [sup_X sup_X_isSupremumOf_X].
       transitivity (sup_X).
@@ -576,8 +576,8 @@ Module DomainTheoryHelper.
 
   Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : {sup_X : D | isSupremumOf sup_X X}.
 
-  Lemma preservesDirected_if_isMonotonic {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
-    (f_isMonotonic : isMonotonicMap f)
+  Lemma preservesDirected_if_isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+    (f_isMonotonicMap : isMonotonicMap f)
     : forall X : ensemble dom, << DIRECTED : isDirected X >> -> isDirected (image f X).
   Proof.
     ii; desnw. destruct DIRECTED; desnw. split; unnw.
