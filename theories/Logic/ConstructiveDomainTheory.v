@@ -10,8 +10,6 @@ Module BasicCoLaTheory.
 
   Local Existing Instances pair_isPoset arrow_isPoset.
 
-  Global Hint Constructors image finite : poset_hints.
-
   Definition getInfimumOf_inCoLa {D : Type} {requiresPoset : isPoset D} {requiresCoLa : isCoLa D} (X : ensemble D) : {inf_X : D | isInfimumOf inf_X X} :=
     let inf_X : D := proj1_sig (getSupremumOf_inCoLa (LowerBoundsOf X)) in
     @exist D (fun inf : D => isInfimumOf inf X) inf_X (proj2 (SupremumOfLowerBounds_isInfimum inf_X X) (proj2_sig (getSupremumOf_inCoLa (LowerBoundsOf X))))

@@ -1,3 +1,4 @@
+Require Import Coq.Lists.List.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeClassic.
@@ -7,7 +8,7 @@ Require Import DschingisKhan.Logic.ScottTopology.
 
 Module BasicCpoTheory.
 
-  Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExclusiveMiddle.
+  Import ListNotations MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExclusiveMiddle.
 
   Definition ScottContinuousMaps (dom : Type) (cod : Type) {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} : Type :=
     @sig (Hask.arrow dom cod) (isContinuousMap (dom_isTopology := TopologyOfDanaScott dom) (cod_isTopology := TopologyOfDanaScott cod))
@@ -18,8 +19,6 @@ Module BasicCpoTheory.
   .
 
   Local Notation " ⟬ dom ⟶ cod ⟭ " := (ScottContinuousMaps dom cod) : type_scope.
-
-(**
 
   Definition U {D : Type} {D_isPoset : isPoset D} (x : D) : ensemble D :=
     fun z : D => ~ z =< x
@@ -116,6 +115,31 @@ Module BasicCpoTheory.
     (f_preserves_eqProp : preserves_eqProp1 f)
     (f_preservesSupremum : preservesSupremum f)
     : isMonotonicMap f.
-  *)
+  Proof.
+    intros x1 x2 x1_le_x2.
+    keep (finite [x1; x2]) as X into (ensemble dom).
+    keep (image f X) as Y into (ensemble cod).
+    assert (claim1 : isSupremumOf x2 X).
+    { intros z. split; unnw.
+      - intros x2_le_z x x_in_X. apply in_finite_iff in x_in_X.
+        destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x; trivial.
+        etransitivity; eauto.
+      - intros z_isUpperBoundOf_X. eapply z_isUpperBoundOf_X.
+        eapply in_finite_iff. right. left. reflexivity.
+    }
+    assert (X_isDirected : isDirected X).
+    { split.
+      - exists (x1). eapply in_finite_iff. left. reflexivity.
+      - intros z1 ? z2 ?; desnw. apply in_finite_iff in H_IN1, H_IN2.
+        destruct H_IN1 as [z1_eq_x1 | [z1_eq_x2 | []]], H_IN2 as [z2_eq_x1 | [z2_eq_x2 | []]]; subst z1 z2.
+        all: exists (x2); split; [eapply in_finite_iff; right; left; reflexivity | split; eauto with *].
+    }
+    pose proof (f_preservesSupremum X X_isDirected) as [sup_X [sup_Y [sup_X_isSupremum_of_X [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]]]].
+    assert (it_is_sufficient_to_show : f sup_X == f x2).
+    { eapply f_preserves_eqProp. eapply Supremum_preserves_eqProp_wrtEnsembles; eauto with *. }
+    transitivity (sup_Y).
+    - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremum_of_Y; eauto with *.
+    - rewrite <- f_sup_X_eq_sup_Y. now eapply eqProp_implies_leProp.
+  Qed.
 
 End BasicCpoTheory.

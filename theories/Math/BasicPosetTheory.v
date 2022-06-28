@@ -574,7 +574,11 @@ Module DomainTheoryHelper.
     << NONEMPTY : exists x0 : D, member x0 X >> /\ << DIRECTED_OR_EMPTY : isDirectedOrEmpty X >>
   .
 
-  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : {sup_X : D | isSupremumOf sup_X X}.
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type :=
+    { getBottom_inCPO : {bot : D | forall x : D, bot =< x}
+    ; getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : {sup_X : D | isSupremumOf sup_X X}
+    }
+  .
 
   Lemma preservesDirected_if_isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
     (f_isMonotonicMap : isMonotonicMap f)
@@ -587,5 +591,7 @@ Module DomainTheoryHelper.
       pose proof (DIRECTED_OR_EMPTY x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
       exists (f x3). rewrite in_image_iff. split; eauto with *.
   Qed.
+
+  Global Hint Constructors image finite : poset_hints.
 
 End DomainTheoryHelper.
