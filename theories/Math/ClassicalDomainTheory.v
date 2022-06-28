@@ -80,7 +80,7 @@ Module BasicCpoTheory.
     eapply @leProp_Antisymmetric with (requiresPoset := cod_isPoset)...
   Qed.
 
-  Lemma isSupremumOf_image_f_X_iff_f_sup_X_eq  {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom) (sup_Y : cod)
+  Lemma sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y  {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom) (sup_Y : cod)
     (f_isContinuousMap : isContinuousMap f)
     (X_isDirected : isDirected X)
     (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
@@ -105,7 +105,7 @@ Module BasicCpoTheory.
     (X_isDirected : isDirected X)
     (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
     : isSupremumOf (f sup_X) (image f X).
-  Proof. eapply isSupremumOf_image_f_X_iff_f_sup_X_eq; eauto with *. Qed.
+  Proof. eapply sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y; eauto with *. Qed.
 
   Definition preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) : Prop :=
     forall X : ensemble dom, isDirected X -> exists sup_X : dom, exists sup_Y : cod, isSupremumOf sup_X X /\ isSupremumOf sup_Y (image f X) /\ f sup_X == sup_Y
@@ -122,8 +122,9 @@ Module BasicCpoTheory.
     assert (claim1 : isSupremumOf x2 X).
     { intros z. split; unnw.
       - intros x2_le_z x x_in_X. apply in_finite_iff in x_in_X.
-        destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x; trivial.
-        etransitivity; eauto.
+        destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x.
+        + etransitivity; eauto.
+        + eauto.
       - intros z_isUpperBoundOf_X. eapply z_isUpperBoundOf_X.
         eapply in_finite_iff; right; left; reflexivity.
     }
