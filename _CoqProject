@@ -13,13 +13,13 @@ theories/Math/BasicPosetTheory.v #
 theories/Math/BooleanAlgebra.v #
 theories/Math/BasicGeneralTopology.v #
 theories/Math/ClassicalDomainTheory.v #
+theories/Math/PropositionalLogicExtra.v #
 #
 theories/Logic/ScottTopology.v #
 theories/Logic/LambdaCalculus.v #
 theories/Logic/ConstructiveDomainTheory.v #
 theories/Logic/InteractionTreeTheory.v #
 theories/Logic/PropositionalLogic.v #
-theories/Logic/PropositionalLogicExtra.v #
 #
 theories/Index/Index.v #
 #

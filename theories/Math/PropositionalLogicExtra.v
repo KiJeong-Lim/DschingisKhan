@@ -248,9 +248,6 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
       eapply inconsistent_compatWith_isSubsetOf with (X := cl X_dagger)...
       eapply fact5_of_1_2_8...
     }
-    split.
-    { transitivity (Th X)... ii. econstructor. eapply ByAssumption... }
-    unfold isStructure.
     assert (caseAtomF :
       forall i : propVar,
       AtomF i \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (AtomF i)
@@ -371,7 +368,9 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
         - intros [H_in1 H_in2]. eapply caseImplicationF in H_in1, H_in2...
       }
     }
-    induction A...
+    split.
+    { transitivity (Th X)... ii. econstructor. eapply ByAssumption... }
+    { unfold isStructure. induction A... }
   Qed.
 
   Corollary the_propositional_completeness_theorem (X : ensemble formula) (b : formula)
