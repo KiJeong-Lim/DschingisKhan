@@ -125,7 +125,7 @@ Module BasicCpoTheory.
         destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x; trivial.
         etransitivity; eauto.
       - intros z_isUpperBoundOf_X. eapply z_isUpperBoundOf_X.
-        eapply in_finite_iff. right. left. reflexivity.
+        eapply in_finite_iff; right; left; reflexivity.
     }
     assert (X_isDirected : isDirected X).
     { split.
@@ -140,6 +140,20 @@ Module BasicCpoTheory.
     transitivity (sup_Y).
     - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremum_of_Y; eauto with *.
     - rewrite <- f_sup_X_eq_sup_Y. now eapply eqProp_implies_leProp.
+  Qed.
+
+  Lemma liftsDirected_if_preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod)
+    (f_preserves_eqProp : preserves_eqProp1 f)
+    (f_preservesSupremum : preservesSupremum f)
+    : forall X : ensemble dom, << DIRECTED : isDirected X >> -> isDirected (image f X).
+  Proof with eauto with *.
+    pose proof (isMonotonicMap_if_preservesSupremum f f_preserves_eqProp f_preservesSupremum) as claim1.
+    ii; desnw. inversion DIRECTED. desnw. split.
+    - exists (f x0)...
+    - intros y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
+      destruct H_IN1 as [x1 [y1_eq_f_x1 x1_in_X]], H_IN2 as [x2 [y1_eq_f_x2 x2_in_X]]; subst y1 y2.
+      pose proof (DIRECTED_OR_EMPTY x1 x1_in_X x2 x2_in_X) as [x3 [x3_in_X [? ?]]]; unnw.
+      exists (f x3); split...
   Qed.
 
 End BasicCpoTheory.
