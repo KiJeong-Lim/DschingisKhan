@@ -19,6 +19,8 @@ Module BasicCpoTheory.
 
   Local Notation " ⟬ dom ⟶ cod ⟭ " := (ScottContinuousMaps dom cod) : type_scope.
 
+(**
+
   Definition U {D : Type} {D_isPoset : isPoset D} (x : D) : ensemble D :=
     fun z : D => ~ z =< x
   .
@@ -35,7 +37,7 @@ Module BasicCpoTheory.
       eapply NNPP. intros y_in_U_x. contradiction H_false. now exists (y).
   Qed.
 
-  Lemma ContinuousMap_isMonotonicMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod)
+  Lemma ScottContinuousMap_isMonotonicMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod)
     (f_isContinuousMap : isContinuousMap f)
     : isMonotonicMap f.
   Proof.
@@ -48,7 +50,7 @@ Module BasicCpoTheory.
     now contradiction f_x2_in_U_f_x2.
   Qed.
 
-  Global Hint Resolve ContinuousMap_isMonotonicMap : poset_hints.
+  Global Hint Resolve ScottContinuousMap_isMonotonicMap : poset_hints.
 
   Lemma f_sup_X_eq_sup_image_f_X {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom)
     (f_isContinuousMap : isContinuousMap f)
@@ -57,7 +59,7 @@ Module BasicCpoTheory.
     (image_f_X_isDirected : isDirected (image f X))
     : f sup_X == proj1_sig (getSupremumOf_inCPO (image f X) image_f_X_isDirected).
   Proof with eauto with *.
-    assert (f_isMonotonicMap : isMonotonicMap f) by now eapply ContinuousMap_isMonotonicMap.
+    assert (f_isMonotonicMap : isMonotonicMap f) by now eapply ScottContinuousMap_isMonotonicMap.
     revert image_f_X_isDirected. keep (image f X) as Y into (ensemble cod). fold Y. ii.
     destruct (getSupremumOf_inCPO Y image_f_X_isDirected) as [sup_Y sup_Y_isSupremumOf_Y]; simpl.
     assert (claim1 : sup_Y =< f sup_X).
@@ -98,5 +100,22 @@ Module BasicCpoTheory.
       rewrite f_sup_X_eq_sup_image_f_X with (f := f) (f_isContinuousMap := f_isContinuousMap) (X_isDirected := X_isDirected) (sup_X_isSupremumOf_X := sup_X_isSupremumOf_X) (image_f_X_isDirected := image_f_X_isDirected).
       exact (proj2_sig (getSupremumOf_inCPO (image f X) image_f_X_isDirected)).
   Qed.
+
+  Corollary ScottContinuousMap_preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod) (X : ensemble dom) (sup_X : dom)
+    (f_isContinuousMap : isContinuousMap f)
+    (X_isDirected : isDirected X)
+    (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
+    : isSupremumOf (f sup_X) (image f X).
+  Proof. eapply isSupremumOf_image_f_X_iff_f_sup_X_eq; eauto with *. Qed.
+
+  Definition preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) : Prop :=
+    forall X : ensemble dom, isDirected X -> exists sup_X : dom, exists sup_Y : cod, isSupremumOf sup_X X /\ isSupremumOf sup_Y (image f X) /\ f sup_X == sup_Y
+  .
+
+  Lemma isMonotonicMap_if_preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod)
+    (f_preserves_eqProp : preserves_eqProp1 f)
+    (f_preservesSupremum : preservesSupremum f)
+    : isMonotonicMap f.
+  *)
 
 End BasicCpoTheory.
