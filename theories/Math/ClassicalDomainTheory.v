@@ -135,11 +135,11 @@ Module BasicCpoTheory.
         destruct H_IN1 as [z1_eq_x1 | [z1_eq_x2 | []]], H_IN2 as [z2_eq_x1 | [z2_eq_x2 | []]]; subst z1 z2.
         all: exists (x2); split; [eapply in_finite_iff; right; left; reflexivity | split; eauto with *].
     }
-    pose proof (f_preservesSupremum X X_isDirected) as [sup_X [sup_Y [sup_X_isSupremum_of_X [sup_Y_isSupremum_of_Y f_sup_X_eq_sup_Y]]]].
+    pose proof (f_preservesSupremum X X_isDirected) as [sup_X [sup_Y [sup_X_isSupremumOf_X [sup_Y_isSupremumOf_Y f_sup_X_eq_sup_Y]]]].
     assert (it_is_sufficient_to_show : f sup_X == f x2).
     { eapply f_preserves_eqProp. eapply Supremum_preserves_eqProp_wrtEnsembles; eauto with *. }
     transitivity (sup_Y).
-    - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremum_of_Y; eauto with *.
+    - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremumOf_Y; eauto with *.
     - rewrite <- f_sup_X_eq_sup_Y. now eapply eqProp_implies_leProp.
   Qed.
 
@@ -155,6 +155,35 @@ Module BasicCpoTheory.
       destruct H_IN1 as [x1 [y1_eq_f_x1 x1_in_X]], H_IN2 as [x2 [y1_eq_f_x2 x2_in_X]]; subst y1 y2.
       pose proof (DIRECTED_OR_EMPTY x1 x1_in_X x2 x2_in_X) as [x3 [x3_in_X [? ?]]]; unnw.
       exists (f x3); split...
+  Qed.
+
+  Theorem the_main_reason_for_introducing_ScottTopology {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod)
+    (f_preserves_eqProp : preserves_eqProp1 f)
+    : isContinuousMap f <-> preservesSupremum f.
+  Proof with eauto with *.
+    split; [intros f_isContinuousMap | intros f_preservesSupremum].
+    - intros X X_isDirected. keep (image f X) as Y into (ensemble cod). fold Y.
+      assert (Y_isDirected : isDirected Y).
+      { eapply preservesDirected_if_isMonotonicMap... }
+      pose proof (getSupremumOf_inCPO X X_isDirected) as [sup_X sup_X_isSupremumOf_X].
+      exists (sup_X), (f sup_X). pose proof (proj2 (sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y f X sup_X (f sup_X) f_isContinuousMap X_isDirected sup_X_isSupremumOf_X) (eqProp_Reflexive (f sup_X))) as claim1...
+    - ii; desnw. inversion TGT_OPEN; unnw.
+      pose proof (isMonotonicMap_if_preservesSupremum f f_preserves_eqProp f_preservesSupremum) as f_isMonotonicMap.
+      split; ii; desnw.
+      + econstructor. eapply UPWARD_CLOSED; [inversion H_IN | eapply f_isMonotonicMap]...
+      + pose proof (f_preservesSupremum X DIRECTED) as [sup [sup_Y [? [? ?]]]].
+        assert (sup_X_eq_sup : sup_X == sup).
+        { eapply Supremum_preserves_eqProp_wrtEnsembles... }
+        assert (f_sup_X_in_Y : member (f sup_X) Y).
+        { now inversion SUPREMUM_IN. }
+        pose proof (liftsDirected_if_preservesSupremum f f_preserves_eqProp f_preservesSupremum X DIRECTED) as image_f_X_isDirected.
+        assert (sup_Y_eq_f_sup_X : sup_Y == f sup_X).
+        { rewrite sup_X_eq_sup... }
+        assert (claim1 : exists y : cod, member y (image f X) /\ member y Y).
+        { eapply LIMIT... }
+        destruct claim1 as [y [y_in_image_f_X y_in_Y]].
+        inversion y_in_image_f_X; subst y.
+        exists (x). split... econstructor...
   Qed.
 
 End BasicCpoTheory.
