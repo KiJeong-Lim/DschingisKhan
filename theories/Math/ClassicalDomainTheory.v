@@ -108,7 +108,7 @@ Module BasicCpoTheory.
   Proof. eapply sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y; eauto with *. Qed.
 
   Definition preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (f : dom -> cod) : Prop :=
-    forall X : ensemble dom, isDirected X -> exists sup_X : dom, exists sup_Y : cod, isSupremumOf sup_X X /\ isSupremumOf sup_Y (image f X) /\ f sup_X == sup_Y
+    forall X : ensemble dom, ⟪ DIRECTED : isDirected X ⟫ -> exists sup_X : dom, exists sup_Y : cod, isSupremumOf sup_X X /\ isSupremumOf sup_Y (image f X) /\ f sup_X == sup_Y
   .
 
   Lemma isMonotonicMap_if_preservesSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (f : dom -> cod)
@@ -185,5 +185,21 @@ Module BasicCpoTheory.
         inversion y_in_image_f_X; subst y.
         exists (x). split... econstructor...
   Qed.
+
+  Lemma supremumOfScottContinuousMaps_isWellDefined {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭)
+    (F_isDirected : isDirected F)
+    : forall x : dom, isDirected (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x) F).
+  Proof with eauto with *.
+    inversion F_isDirected. desnw in *. ii. destruct NONEMPTY as [f0 f0_in_F]. split; unnw.
+    - exists (proj1_sig f0 x)...
+    - intros y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
+      destruct H_IN1 as [f1 [y1_eq f1_in_F]], H_IN2 as [f2 [y2_eq f2_in_F]]; subst y1 y2.
+      pose proof (DIRECTED_OR_EMPTY f1 f1_in_F f2 f2_in_F) as [f3 [f3_in_F [f1_le_f3 f2_le_f3]]]; unnw.
+      exists (proj1_sig f3 x)...
+  Qed.
+
+  Definition supremumOfScottContinuousMaps {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭) (F_isDirected : isDirected F) : dom -> cod :=
+    fun x : dom => proj1_sig (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected x))
+  .
 
 End BasicCpoTheory.
