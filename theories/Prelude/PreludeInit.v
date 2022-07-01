@@ -857,6 +857,21 @@ Module PreludeInit_MAIN.
 
   End Hask_with_laws.
 
+  Section PAIR.
+
+  Set Primitive Projections.
+
+  Record Pair (A : Type) (B : Type) : Type :=
+    mkPair { getFst : A; getSnd : B }
+  .
+
+  End PAIR.
+
+  Global Arguments Pair {A} {B}.
+  Global Arguments mkPair {A} {B} (getFst) (getSnd).
+  Global Arguments getFst {A} {B}.
+  Global Arguments getSnd {A} {B}.
+
 End PreludeInit_MAIN.
 
 Export PreludeInit_MAIN.
