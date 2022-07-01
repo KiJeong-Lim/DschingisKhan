@@ -867,7 +867,8 @@ Module PreludeInit_MAIN.
 
   End PAIR.
 
-  Global Arguments Pair {A} {B}.
+  Global Infix " \times " := Pair (at level 60, right associativity) : type_scope.
+
   Global Arguments mkPair {A} {B} (getFst) (getSnd).
   Global Arguments getFst {A} {B}.
   Global Arguments getSnd {A} {B}.
