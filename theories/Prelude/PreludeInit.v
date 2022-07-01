@@ -857,21 +857,22 @@ Module PreludeInit_MAIN.
 
   End Hask_with_laws.
 
-  Section PAIR.
+  Section MyPair.
 
   Set Primitive Projections.
 
   Record Pair (A : Type) (B : Type) : Type :=
-    mkPair { getFst : A; getSnd : B }
+    { getFst : A; getSnd : B }
   .
 
-  End PAIR.
+  Unset Primitive Projections.
 
-  Global Infix " \times " := Pair (at level 60, right associativity) : type_scope.
+  End MyPair.
 
-  Global Arguments mkPair {A} {B} (getFst) (getSnd).
   Global Arguments getFst {A} {B}.
   Global Arguments getSnd {A} {B}.
+  Global Notation mkPair x y := ({| getFst := x; getSnd := y |}).
+  Global Infix " \times " := Pair (at level 60, right associativity) : type_scope.
 
 End PreludeInit_MAIN.
 
