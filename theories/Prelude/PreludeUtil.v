@@ -56,7 +56,7 @@ Module EQ_FACTS.
 
   Definition elim_eq_r (x1 : A) (x2 : A) (hyp_eq : x1 = x2) (pf : B x2) : B x1 := eq_rect x2 B pf x1 (eq_symmetry x1 x2 hyp_eq).
 
-  Local Notation " 'pi_A_B' " := (forall x : A, B x) : type_scope.
+  Local Notation pi_A_B := (forall x : A, B x).
 
   Lemma elim_eq_l_spec (x1 : A) (x2 : A) (f : pi_A_B) (hyp_eq : x1 = x2)
     : elim_eq_l x1 x2 hyp_eq (f x1) = elim_eq_l x2 x2 (eq_reflexivity x2) (f x2).
