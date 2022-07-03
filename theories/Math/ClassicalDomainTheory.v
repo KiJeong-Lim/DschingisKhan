@@ -202,4 +202,38 @@ Module BasicCpoTheory.
     fun x : dom => proj1_sig (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected x))
   .
 
+  Lemma supremumOfScottContinuousMaps_isMonotonicMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭)
+    (F_isDirected : isDirected F)
+    : isMonotonicMap (supremumOfScottContinuousMaps F F_isDirected).
+  Proof with eauto with *.
+    intros x1 x2 x1_le_x2. apply (proj2_sig (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x1) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected x1))). unnw.
+    ii; desnw. apply in_image_iff in H_IN. destruct H_IN as [f0 [? f0_in_F]]; subst x. transitivity (proj1_sig f0 x2).
+    - eapply ScottContinuousMap_isMonotonicMap... exact (proj2_sig f0).
+    - apply (proj2_sig (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x2) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected x2)))...
+  Qed.
+
+  Lemma supremumOfScottContinuousMaps_F_sup_X_isSupremumOf_unions_i_image_f_i_X_F  {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭) (X : ensemble dom) (sup_X : dom)
+    (F_isDirected : isDirected F)
+    (X_isDirected : isDirected X)
+    (sup_X_isSupremumOf_X : isSupremumOf sup_X X)
+    : isSupremumOf (supremumOfScottContinuousMaps F F_isDirected sup_X) (unions (image (fun f_i : ⟬ dom ⟶ cod ⟭ => image (fun x : dom => proj1_sig f_i x) X) F)).
+  Proof with eauto with *.
+    assert (claim1 : forall f_i : ⟬ dom ⟶ cod ⟭, f_i \in F -> isSupremumOf (proj1_sig f_i sup_X) (image (fun x : dom => proj1_sig f_i x) X)).
+    { intros f_i f_i_in. eapply sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y... exact (proj2_sig f_i). }
+    assert (claim2 : isSupremumOf (supremumOfScottContinuousMaps F F_isDirected sup_X) (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i sup_X) F)).
+    { exact (proj2_sig (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i sup_X) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected sup_X))). }
+    eapply SupremumOfMapSuprema_isSupremumOf_unions.
+    - intros Y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f0 [? f0_in_F]]; subst Y...
+    - intros y. split.
+      + intros f_sup_X_le_y sup_Y [Y [Y_in sup_Y_isSupremumOf_Y]]. apply in_image_iff in Y_in. destruct Y_in as [f_i [? f_i_in]]; subst Y.
+        pose proof (f_i_sup_X_isSupremum := claim1 f_i f_i_in).
+        assert (sup_Y_eq : sup_Y == proj1_sig f_i sup_X).
+        { eapply Supremum_preserves_eqProp_wrtEnsembles... }
+        assert (f_i_sup_X_in : member (proj1_sig f_i sup_X) (image (fun f : ⟬ dom ⟶ cod ⟭ => proj1_sig f sup_X) F)).
+        { econstructor... }
+        rewrite sup_Y_eq. red in sup_Y_isSupremumOf_Y, f_sup_X_le_y. rewrite <- f_sup_X_le_y. eapply claim2...
+      + intros ?; desnw. eapply claim2. intros y' ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f_i [? f_i_in]]; subst y'.
+        eapply UPPER_BOUND. exists (image (fun x : dom => proj1_sig f_i x) X). split...
+  Qed.
+
 End BasicCpoTheory.
