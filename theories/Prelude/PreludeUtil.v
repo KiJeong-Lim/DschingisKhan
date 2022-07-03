@@ -1452,11 +1452,15 @@ Module SCRATCH.
   Set Primitive Projections.
 
   CoInductive circuit (Input : Type) (Output : Type) : Type :=
-    Circuit_go { Circuit_observe : Input -> (circuit Input Output) * Output }
+    { Circuit_observe : Input -> (circuit Input Output) * Output }
   .
 
-  Global Arguments Circuit_go {Input} {Output}.
+  Unset Primitive Projections.
+
+  End SYNCHRONOUS_CIRCUIT.
+
   Global Arguments Circuit_observe {Input} {Output}.
+  Global Notation Circuit_go oc := ({| Circuit_observe := oc |}).
 
   Definition delayWithInit {I : Type} : I -> circuit I I :=
     cofix delayWithInit_cofix (x : I) : circuit I I :=
@@ -1476,7 +1480,5 @@ Module SCRATCH.
       (combineCircuit_cofix circuit1' circuit2', (y1, y2))
     )
   .
-
-  End SYNCHRONOUS_CIRCUIT.
 
 End SCRATCH.
