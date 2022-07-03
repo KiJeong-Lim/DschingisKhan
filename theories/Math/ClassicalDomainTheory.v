@@ -285,4 +285,20 @@ Module BasicCpoTheory.
       + eapply UPPER_BOUND...
   Qed.
 
+  Corollary supremumOfScottContinuousMaps_isContinuousMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭)
+    (F_isDirected : isDirected F)
+    : isContinuousMap (supremumOfScottContinuousMaps F F_isDirected).
+  Proof with eauto with *.
+    eapply the_main_reason_for_introducing_ScottTopology.
+    - ii. eapply leProp_Antisymmetric; eapply supremumOfScottContinuousMaps_isMonotonicMap...
+    - intros X X_isDirected; unnw.
+      pose proof (getSupremumOf_inCPO X X_isDirected) as [sup_X sup_X_isSupremumOf_X].
+      exists (sup_X), (supremumOfScottContinuousMaps F F_isDirected sup_X).
+      pose proof (supremumOfScottContinuousMaps_preservesSupremum F X sup_X F_isDirected X_isDirected sup_X_isSupremumOf_X) as claim1...
+  Qed.
+
+  Definition SupremumOfScottContinuousMaps {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭) (F_isDirected : isDirected F) : ⟬ dom ⟶ cod ⟭ :=
+    @exist (dom -> cod) isContinuousMap (supremumOfScottContinuousMaps F F_isDirected) (supremumOfScottContinuousMaps_isContinuousMap F F_isDirected)
+  .
+
 End BasicCpoTheory.
