@@ -301,4 +301,42 @@ Module BasicCpoTheory.
     @exist (dom -> cod) isContinuousMap (supremumOfScottContinuousMaps F F_isDirected) (supremumOfScottContinuousMaps_isContinuousMap F F_isDirected)
   .
 
+  Lemma SupremumOfScottContinuousMaps_isSupremum {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} (F : ensemble ⟬ dom ⟶ cod ⟭) (F_isDirected : isDirected F)
+    : isSupremumOf (SupremumOfScottContinuousMaps F F_isDirected) F.
+  Proof with eauto with *.
+    intros f. split.
+    - intros ? f_i ?; desnw. rewrite <- SUPREMUM_LE_UPPER_BOUND. intros x. simpl.
+      eapply proj2_sig_supremumOfScottContinuousMaps with (F := F) (F_isDirected := F_isDirected)...
+    - intros ?; desnw. intros x; simpl. unfold supremumOfScottContinuousMaps.
+      destruct (getSupremumOf_inCPO (image (fun f_i : ⟬ dom ⟶ cod ⟭ => proj1_sig f_i x) F) (supremumOfScottContinuousMaps_isWellDefined F F_isDirected x)) as [sup_F_x sup_F_x_isSupremum]; simpl.
+      eapply sup_F_x_isSupremum. intros y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f_i [? f_i_in]]; subst y. eapply UPPER_BOUND...
+  Qed.
+
+  Definition bottomOfScottContinuousMaps {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} : dom -> cod :=
+    fun x : dom => proj1_sig getBottom_inCPO
+  .
+
+  Lemma bottomOfScottContinuousMaps_isContinuousMap {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod}
+    : isContinuousMap (bottomOfScottContinuousMaps (dom := dom) (cod := cod)).
+  Proof with eauto with *.
+    intros O O_isOpen. unfold bottomOfScottContinuousMaps. unnw. inversion O_isOpen. unnw. split.
+    - ii; desnw. apply in_preimage_iff in H_IN. des. econstructor...
+    - ii; desnw. destruct DIRECTED as [[x0 x0_in_X] ?]; desnw. apply in_preimage_iff in SUPREMUM_IN. des.
+      exists (x0). split... econstructor...
+  Qed.
+
+  Definition BottomOfScottContinuousMaps {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod} : ⟬ dom ⟶ cod ⟭ :=
+    @exist (dom -> cod) isContinuousMap bottomOfScottContinuousMaps bottomOfScottContinuousMaps_isContinuousMap
+  .
+
+  Lemma BottomOfScottContinuousMaps_isBottom {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} {dom_isCPO : isCPO dom} {cod_isCPO : isCPO cod}
+    : forall f : ⟬ dom ⟶ cod ⟭, BottomOfScottContinuousMaps =< f.
+  Proof. exact (fun f : ⟬ dom ⟶ cod ⟭ => fun x : dom => proj2_sig getBottom_inCPO (proj1_sig f x)). Qed.
+
+  Global Instance ScottContinuousMaps_asCPO {dom : Type} {cod : Type} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (dom_isCPO : isCPO dom) (cod_isCPO : isCPO cod) : isCPO ⟬ dom ⟶ cod ⟭ :=
+    { getBottom_inCPO := @exist _ _ BottomOfScottContinuousMaps BottomOfScottContinuousMaps_isBottom
+    ; getSupremumOf_inCPO (F : ensemble ⟬ dom ⟶ cod ⟭) (F_isDirected : isDirected F) := @exist _ _ (SupremumOfScottContinuousMaps F F_isDirected) (SupremumOfScottContinuousMaps_isSupremum F F_isDirected)
+    }
+  .
+
 End BasicCpoTheory.
