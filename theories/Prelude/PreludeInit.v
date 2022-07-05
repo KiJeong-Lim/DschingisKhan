@@ -33,7 +33,7 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
     (match type of H with _ -> REFERENCE_HOLDER _ => red in H | REFERENCE_HOLDER _ => red in H | _ => idtac end)
   .
 
-  Global Tactic Notation "desnw" "in" hyp( H ) :=
+  Global Tactic Notation "desnw'" "in" hyp( H ) :=
     match type of H with
     | REFERENCE_HOLDER (fun z => _) =>
       let H' := fresh z in
@@ -52,13 +52,13 @@ Module Khan. (* Reference: "https://github.com/snu-sf/sflib/blob/master/sflib.v"
       destruct H as [x' y']; rednw in x'; rednw in y'
     end
   .
-  Global Tactic Notation "desnw" "in" "*" := repeat (match goal with [ H : _ |- _ ] => desnw in H end).
 
   Ltac unnw := unfold REFERENCE_HOLDER in *.
+  Ltac desnw' := repeat (match goal with [ H : _ |- _ ] => desnw' in H end).
   Ltac desnw := repeat
     match goal with
     | [ H : exists x, ?P |- _ ] => let x' := fresh x in destruct H as [x' H]
-    | [ H : _ |- _ ] => desnw in H
+    | [ H : _ |- _ ] => desnw' in H
     end
   .
 
