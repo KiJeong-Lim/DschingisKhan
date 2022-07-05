@@ -244,35 +244,35 @@ Module BasicPosetTheory.
   Local Hint Unfold isLeastFixedPointOf isGreatestFixedPointOf : poset_hints.
 
   Theorem theLeastFixedPointOfMonotonicMap (f : D -> D) (lfp : D)
-    (f_isMonotonic : isMonotonicMap f)
+    (f_isMonotonicMap : isMonotonicMap f)
     (lfp_isInfimumOfPrefixedPoints : isInfimumOf lfp (PrefixedPoints f))
     : isLeastFixedPointOf lfp f.
   Proof with eauto with *.
     assert (claim1 : forall x : D, member x (FixedPoints f) -> lfp =< x).
     { intros x H_IN. transitivity (f x).
-      - eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonic...
+      - eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonicMap...
       - eapply eqProp_implies_leProp...
     }
     assert (claim2 : f lfp =< lfp).
     { eapply lfp_isInfimumOfPrefixedPoints. ii; desnw. transitivity (f x); trivial.
-      eapply f_isMonotonic, lfp_isInfimumOfPrefixedPoints...
+      eapply f_isMonotonicMap, lfp_isInfimumOfPrefixedPoints...
     }
     assert (claim3 : lfp =< f lfp).
-    { eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonic... }
+    { eapply lfp_isInfimumOfPrefixedPoints... eapply f_isMonotonicMap... }
     split... eapply leProp_Antisymmetric...
   Qed.
 
   Lemma theGreatestFixedPointOfMonotonicMap (f : D -> D) (gfp : D)
-    (f_isMonotonic : isMonotonicMap f)
+    (f_isMonotonicMap : isMonotonicMap f)
     (gfp_isSupremumOfPostfixedPoints : isSupremumOf gfp (PostfixedPoints f))
     : isGreatestFixedPointOf gfp f.
   Proof with eauto with *.
     assert (claim1 : gfp =< f gfp).
     { eapply gfp_isSupremumOfPostfixedPoints... ii; desnw. transitivity (f x); trivial.
-      eapply f_isMonotonic, gfp_isSupremumOfPostfixedPoints...
+      eapply f_isMonotonicMap, gfp_isSupremumOfPostfixedPoints...
     }
     assert (claim2 : f gfp =< gfp).
-    { eapply gfp_isSupremumOfPostfixedPoints... eapply f_isMonotonic... }
+    { eapply gfp_isSupremumOfPostfixedPoints... eapply f_isMonotonicMap... }
     split.
     - eapply leProp_Antisymmetric...
     - intros fix_f H_in. desnw.
@@ -575,8 +575,10 @@ Module DomainTheoryHelper.
   .
 
   Class isCPO (D : Type) {requiresPoset : isPoset D} : Type :=
-    { getBottom_inCPO : {bot : D | forall x : D, bot =< x}
-    ; getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : {sup_X : D | isSupremumOf sup_X X}
+    { getBottom_inCPO : D
+    ; getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : D
+    ; getBottom_inCPO_isBottom : forall x : D, getBottom_inCPO =< x
+    ; getSupremumOf_inCPO_isSupremum (X : ensemble D) (X_isDirected : isDirected X) : isSupremumOf (getSupremumOf_inCPO X X_isDirected) X
     }
   .
 
