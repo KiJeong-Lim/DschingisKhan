@@ -18,7 +18,7 @@ Module MathProps.
 
   Global Add Parametric Morphism {dom : Hask.t} {cod : Hask.t} {dom_isSetoid : isSetoid dom} {cod_isSetoid : isSetoid cod} (unary_op : dom -> cod) {preserves_eqProp : preserves_eqProp1 unary_op} :
     unary_op with signature (eqProp ==> eqProp)
-    as congruence_if_eqProp_lifted1.
+    as congruence_guarantees_eqProp_lifted1.
   Proof. intros x1 x2 H_x_eq; exact (eqProp_lifted1 x1 x2 H_x_eq). Defined.
 
   Class preserves_eqProp2 {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (binary_op : dom1 -> dom2 -> cod) : Prop :=
@@ -30,7 +30,7 @@ Module MathProps.
 
   Global Add Parametric Morphism {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isSetoid : isSetoid dom1} {dom2_isSetoid : isSetoid dom2} {cod_isSetoid : isSetoid cod} (binary_op : dom1 -> dom2 -> cod) {preserves_eqProp : preserves_eqProp2 binary_op} :
     binary_op with signature (eqProp ==> eqProp ==> eqProp)
-    as congruence_if_eqProp_lifted2.
+    as congruence_guaranteeseqProp_lifted2.
   Proof. intros x1 x2 H_x_eq y1 y2 H_y_eq; exact (eqProp_lifted2 x1 x2 y1 y2 H_x_eq H_y_eq). Defined.
 
   Class preserves_leProp1 {dom : Hask.t} {cod : Hask.t} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (unary_op : dom -> cod) : Prop :=
@@ -41,12 +41,12 @@ Module MathProps.
 
   Global Add Parametric Morphism {dom : Hask.t} {cod : Hask.t} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (unary_op : dom -> cod) {preserves_leProp : preserves_leProp1 unary_op} :
     unary_op with signature (leProp ==> leProp)
-    as monotonic_if_leProp_lifted1.
+    as monotonic_guarantees_leProp_lifted1.
   Proof. intros x1 x2 H_x_le; exact (leProp_lifted1 x1 x2 H_x_le). Defined.
 
   Global Add Parametric Morphism {dom : Hask.t} {cod : Hask.t} {dom_isPoset : isPoset dom} {cod_isPoset : isPoset cod} (unary_op : dom -> cod) {preserves_leProp : preserves_leProp1 unary_op} :
     unary_op with signature (eqProp ==> eqProp)
-    as monotonic_if_eqProp_lifted1.
+    as monotonic_guarantees_eqProp_lifted1.
   Proof. ii. eapply leProp_Antisymmetric; eapply preserves_leProp; now eapply eqProp_implies_leProp. Qed.
 
   Class preserves_leProp2 {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isPoset : isPoset dom1} {dom2_isPoset : isPoset dom2} {cod_isPoset : isPoset cod} (binary_op : dom1 -> dom2 -> cod) : Prop :=
@@ -58,12 +58,12 @@ Module MathProps.
 
   Global Add Parametric Morphism {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isPoset : isPoset dom1} {dom2_isPoset : isPoset dom2} {cod_isPoset : isPoset cod} (binary_op : dom1 -> dom2 -> cod) {preserves_leProp : preserves_leProp2 binary_op} :
     binary_op with signature (leProp ==> leProp ==> leProp)
-    as monotonic_if_leProp_lifted2.
+    as monotonic_guarantees_leProp_lifted2.
   Proof. intros x1 x2 H_x_le y1 y2 H_y_le; exact (leProp_lifted2 x1 x2 y1 y2 H_x_le H_y_le). Defined.
 
   Global Add Parametric Morphism {dom1 : Hask.t} {dom2 : Hask.t} {cod : Hask.t} {dom1_isPoset : isPoset dom1} {dom2_isPoset : isPoset dom2} {cod_isSetoid : isPoset cod} (binary_op : dom1 -> dom2 -> cod) {preserves_leProp : preserves_leProp2 binary_op} :
     binary_op with signature (eqProp ==> eqProp ==> eqProp)
-    as monotonic_if_eqProp_lifted2.
+    as monotonic_guarantees_eqProp_lifted2.
   Proof. ii. eapply leProp_Antisymmetric; eapply preserves_leProp; now eapply eqProp_implies_leProp. Qed.
 
   Section STATEMENTS_FOR_OPERATION_PROPERTIES.

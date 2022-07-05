@@ -62,7 +62,7 @@ Module BasicPosetTheory.
     - intros x x_in_X. eapply H_lower_bound. unnw. rewrite <- X_eq_Y...
   Qed.
 
-  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles monotonic_if_leProp_lifted1 monotonic_if_leProp_lifted2 monotonic_if_eqProp_lifted1 monotonic_if_eqProp_lifted2 : poset_hints.
+  Global Hint Resolve UpperBoundsOf_compatWith_eqProp_wrtEnsembles LowerBoundsOf_compatWith_eqProp_wrtEnsembles monotonic_guarantees_leProp_lifted1 monotonic_guarantees_leProp_lifted2 monotonic_guarantees_eqProp_lifted1 monotonic_guarantees_eqProp_lifted2 : poset_hints.
 
   Section BASIC_FACTS_ON_SUPREMUM.
 
