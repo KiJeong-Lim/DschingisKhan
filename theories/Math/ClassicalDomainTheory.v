@@ -29,8 +29,8 @@ Module BasicCpoTheory.
   Proof. (* Thanks to Junyoung Jang *)
     split.
     - intros y z y_in_U_x y_le_z z_le_x. unnw. contradiction y_in_U_x. now transitivity (z).
-    - intros X [X_nonempty X_isDirected] sup_X sup_X_isSupremumOf_X sup_X_in_U_x. unnw.
-      assert (NOT_UPPER_BOUND : ~ << UPPER_BOUND : forall z : D, member z X -> z =< x >>).
+    - intros X [X_nonempty DIRECTED_OR_EMPTY] sup_X sup_X_isSupremumOf_X sup_X_in_U_x; unnw.
+      assert (NOT_UPPER_BOUND : ~ member x (UpperBoundsOf X)).
       { ii; desnw. contradiction sup_X_in_U_x. now eapply sup_X_isSupremumOf_X. }
       eapply NNPP. intros H_false. contradiction NOT_UPPER_BOUND. intros y y_in_X.
       eapply NNPP. intros y_in_U_x. contradiction H_false. now exists (y).
