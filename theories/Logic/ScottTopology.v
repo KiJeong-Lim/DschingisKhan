@@ -7,8 +7,6 @@ Module ScottTopology.
 
   Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper.
 
-(* "2022-07-06: REFACTOR ME!"
-
   Section BUILD_SCOTT_TOPOLOGY.
 
   Context {D : Type} {requiresPoset : isPoset D}.
@@ -26,24 +24,24 @@ Module ScottTopology.
     : Topology_axiom isOpen_Scott.
   Proof with (now vm_compute; firstorder) || eauto with *.
     split.
-    - econstructor; ii; desnw in *; unnw...
-    - ii. econstructor; ii; desnw in *; unnw...
+    - econstructor; ii; desnw'; unnw...
+    - ii. econstructor; ii; desnw'; unnw...
       apply in_unions_iff in SUPREMUM_IN.
       destruct SUPREMUM_IN as [X_i [sup_X_in_X_i X_i_in_Xs]].
       exploit (every_member_of_Xs_isOpen X_i X_i_in_Xs) as [? ?].
       pose proof (LIMIT X DIRECTED sup_X IS_SUPREMUM sup_X_in_X_i) as [x [x_in_X x_in_X_i]]...
-    - ii. econstructor; ii; desnw in *; unnw...
+    - ii. econstructor; ii; desnw'; unnw...
       apply in_intersection_iff in SUPREMUM_IN.
       destruct SUPREMUM_IN as [SUPREMUM_IN1 SUPREMUM_IN2].
       destruct XL_isOpen as [XL_UPWARD_CLOSED XL_LIMIT].
       destruct XR_isOpen as [XR_UPWARD_CLOSED XR_LIMIT].
       exploit XL_LIMIT as [x1 [x1_in_X x1_in_XL]]...
       exploit XR_LIMIT as [x2 [x2_in_X x2_in_XR]]...
-      inversion DIRECTED; desnw in *.
+      inversion DIRECTED; desnw'.
       pose proof (DIRECTED_OR_EMPTY x1 x1_in_X x2 x2_in_X) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]...
-    - ii; desnw in *; unnw. destruct X_isOpen as [? ?]. econstructor.
-      + ii; desnw in *. rewrite <- X_eq_X'. eapply UPWARD_CLOSED with (x := x)...
-      + ii; desnw in *. unnw. exploit LIMIT as [? [? ?]]...
+    - ii; desnw'; unnw. destruct X_isOpen as [? ?]. econstructor.
+      + ii; desnw'. rewrite <- X_eq_X'. eapply UPWARD_CLOSED with (x := x)...
+      + ii; desnw'. unnw. exploit LIMIT as [? [? ?]]...
   Qed.
 
   End BUILD_SCOTT_TOPOLOGY.
@@ -53,7 +51,5 @@ Module ScottTopology.
     ; TopologicalSpace_obeysTopology_axiom := theScottTopology (requiresPoset := requiresPoset)
     }
   .
-
-*)
 
 End ScottTopology.

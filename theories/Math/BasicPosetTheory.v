@@ -555,12 +555,70 @@ End BasicPosetTheory.
 
 Module DomainTheoryHelper.
 
-  Import BasicPosetTheory.
+  Import ListNotations BasicPosetTheory.
 
   Global Reserved Notation " '⟬' X '⟶' Y '⟭' " (X at level 60, Y at level 60, at level 0, no associativity).
 
   Class isCoLa (D : Type) {requiresPoset : isPoset D} : Type := getSupremumOf_inCoLa (X : ensemble D) : {sup_X : D | isSupremumOf sup_X X}.
 
   Global Hint Constructors image finite : poset_hints.
+
+  Definition isDirectedOrEmpty {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    forall x1 : D, << H_IN1 : member x1 X >> ->
+    forall x2 : D, << H_IN2 : member x2 X >> ->
+    exists x3 : D, << H_IN3 : member x3 X >> /\
+    << UPPER_BOUND : x1 =< x3 /\ x2 =< x3 >>
+  .
+
+  Definition isDirected {D : Type} {requiresPoset : isPoset D} (X : ensemble D) : Prop :=
+    << NONEMPTY : exists x0 : D, member x0 X >> /\ << DIRECTED_OR_EMPTY : isDirectedOrEmpty X >>
+  .
+
+  Lemma isDirected_iff {D : Type} {requiresPoset : isPoset D} (X : ensemble D)
+    : isDirected X <-> << DIRECTED : forall xs : list D, forall xs_isFiniteSubsetOf : isFiniteSubsetOf xs X, exists y : D, << H_IN : y \in X >> /\ << UPPER_BOUND : forall x : D, In x xs -> x =< y >> >>.
+  Proof with eauto with *.
+    split; intros DIRECTED.
+    - ii. destruct DIRECTED; desnw. induction xs as [ | x xs IH].
+      + exists (x0). split... intros z [].
+      + assert (xs_isFiniteSubsetOf' : isFiniteSubsetOf xs X).
+        { ii. eapply xs_isFiniteSubsetOf. right... }
+        pose proof (IH xs_isFiniteSubsetOf') as [y' ?]; desnw.
+        assert (x_in_X : x \in X).
+        { eapply xs_isFiniteSubsetOf. left... }
+        pose proof (DIRECTED_OR_EMPTY x x_in_X y' H_IN) as [y [? [? ?]]].
+        exists (y). split... intros x1 [x1_eq_x | x1_in_xs].
+        { subst x1... }
+        { transitivity (y')... }
+    - unnw. split.
+      + assert (xs_isFiniteSubsetOf : isFiniteSubsetOf [] X).
+        { intros z []. }
+        pose proof (DIRECTED [] xs_isFiniteSubsetOf) as [x0 ?]; desnw.
+        exists (x0)...
+      + ii. set (xs := [x1; x2]).
+        assert (xs_isFiniteSubsetOf : isFiniteSubsetOf xs X).
+        { intros z [z_eq_x1 | [z_eq_x2 | []]]; subst z... }
+        pose proof (DIRECTED xs xs_isFiniteSubsetOf) as [y [H_IN UPPER_BOUND]].
+        exists (y). split... split; eapply UPPER_BOUND; [left | right; left]...
+  Qed.
+
+  Class isCPO (D : Type) {requiresPoset : isPoset D} : Type :=
+    { getBottom_inCPO : D
+    ; getSupremumOf_inCPO (X : ensemble D) (X_isDirected : isDirected X) : D
+    ; getBottom_inCPO_isBottom : forall x : D, getBottom_inCPO =< x
+    ; getSupremumOf_inCPO_isSupremum (X : ensemble D) (X_isDirected : isDirected X) : isSupremumOf (getSupremumOf_inCPO X X_isDirected) X
+    }
+  .
+
+  Lemma preservesDirected_if_isMonotonicMap {dom : Type} {cod : Type} {dom_requiresPoset : isPoset dom} {cod_requiresPoset : isPoset cod} (f : dom -> cod)
+    (f_isMonotonicMap : isMonotonicMap f)
+    : forall X : ensemble dom, << DIRECTED : isDirected X >> -> isDirected (image f X).
+  Proof.
+    ii; desnw. destruct DIRECTED; desnw. split; unnw.
+    - exists (f x0). econstructor; eauto.
+    - intros y1 ? y2 ?; desnw. apply in_image_iff in H_IN1, H_IN2.
+      destruct H_IN1 as [x1 [y1_eq x1_in]]; destruct H_IN2 as [x2 [y2_eq x2_in]]; subst y1 y2.
+      pose proof (DIRECTED_OR_EMPTY x1 x1_in x2 x2_in) as [x3 [x3_in [x1_le_x3 x2_le_x3]]]; unnw.
+      exists (f x3). rewrite in_image_iff. split; eauto with *.
+  Qed.
 
 End DomainTheoryHelper.
