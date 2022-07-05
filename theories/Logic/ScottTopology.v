@@ -7,6 +7,8 @@ Module ScottTopology.
 
   Import MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper.
 
+(* "2022-07-06: REFACTOR ME!"
+
   Section BUILD_SCOTT_TOPOLOGY.
 
   Context {D : Type} {requiresPoset : isPoset D}.
@@ -51,5 +53,7 @@ Module ScottTopology.
     ; TopologicalSpace_obeysTopology_axiom := theScottTopology (requiresPoset := requiresPoset)
     }
   .
+
+*)
 
 End ScottTopology.

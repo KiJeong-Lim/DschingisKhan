@@ -10,6 +10,8 @@ Module BasicCpoTheory.
 
   Import ListNotations MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExclusiveMiddle.
 
+(* "2022-07-06: REFACTOR ME!"
+
   Definition ScottContinuousMaps (D1 : Type) (D2 : Type) {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} : Type :=
     @sig (Hask.arrow D1 D2) (isContinuousMap (dom_isTopology := TopologyOfDanaScott D1) (cod_isTopology := TopologyOfDanaScott D2))
   .
@@ -50,8 +52,6 @@ Module BasicCpoTheory.
   Qed.
 
   Global Hint Resolve ScottContinuousMap_isMonotonicMap : poset_hints.
-
-(* "2022-07-05: REFACTOR ME!"
 
   Lemma f_sup_X_eq_sup_image_f_X {D1 : Type} {D2 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} (f : D1 -> D2) (X : ensemble D1) (sup_X : D1)
     (f_isContinuousMap : isContinuousMap f)
