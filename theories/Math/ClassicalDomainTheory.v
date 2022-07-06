@@ -569,4 +569,89 @@ Module BasicCpoTheory.
       + reflexivity.
   Qed.
 
+  Lemma f_sup_X1_sup_X2_eq_sup_f_X1_X2 {D1 : Type} {D2 : Type} {D3 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D3_isPoset : isPoset D3} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} {D3_isCPO : isCPO D3} (f : D1 * D2 -> D3) (X : ensemble (D1 * D2)) (sup_X1 : D1) (sup_X2 : D2)
+    (f1_cont : forall x2 : D2, isContinuousMap (fun x1 : D1 => f (x1, x2)))
+    (f2_cont : forall x1 : D1, isContinuousMap (fun x2 : D2 => f (x1, x2)))
+    (X_isDirected : isDirected X)
+    (sup_X1_isSupremumOf_X1 : isSupremumOf sup_X1 (image fst X))
+    (sup_X2_isSupremumOf_X2 : isSupremumOf sup_X2 (image snd X))
+    : isSupremumOf (f (sup_X1, sup_X2)) (image f X).
+  Proof with eauto with *.
+    revert X X_isDirected sup_X1 sup_X2 sup_X1_isSupremumOf_X1 sup_X2_isSupremumOf_X2.
+    assert (f1_monotonic : forall x2 : D2, isMonotonicMap (fun x1 : D1 => f (x1, x2))).
+    { intros x2. eapply ScottContinuousMap_isMonotonicMap... }
+    assert (f2_monotonic : forall x1 : D1, isMonotonicMap (fun x2 : D2 => f (x1, x2))).
+    { intros x1. eapply ScottContinuousMap_isMonotonicMap... }
+    assert (f1_preserves_eqProp : forall x2 : D2, preserves_eqProp1 (fun x1 : D1 => f (x1, x2))).
+    { ii. eapply monotonic_guarantees_eqProp_lifted1 with (unary_op := fun x1 : D1 => f (x1, x2))... eapply f1_monotonic. }
+    assert (f2_preserves_eqProp : forall x1 : D1, preserves_eqProp1 (fun x2 : D2 => f (x1, x2))).
+    { ii. eapply monotonic_guarantees_eqProp_lifted1 with (unary_op := fun x2 : D2 => f (x1, x2))... eapply f2_monotonic. }
+    assert (f_preserves_eqProp : preserves_eqProp1 f).
+    { intros [x1 x2] [x1' x2'] [? ?]; simpl in *. transitivity (f (x1', x2)); [eapply f1_preserves_eqProp | eapply f2_preserves_eqProp]... }
+    intros X X_isDirected. set (X1 := image fst X). set (X2 := image snd X).
+    set (image_fst_liftsDirected X X_isDirected) as X1_isDirected. fold X1 in X1_isDirected.
+    set (image_snd_liftsDirected X X_isDirected) as X2_isDirected. fold X2 in X2_isDirected.
+    assert (mayday : isSupremumOf (getSupremumOf_inCPO X1 X1_isDirected, getSupremumOf_inCPO X2 X2_isDirected) X) by exact (getSupremumOf_inCPO_isSupremum X X_isDirected).
+    assert (claim1 : forall x1 : D1, exists sup_X2_x1 : D2, exists sup_f_X2_x1 : D3, isSupremumOf sup_X2_x1 X2 /\ isSupremumOf sup_f_X2_x1 (image (fun x2 : D2 => f (x1, x2)) X2) /\ f (x1, sup_X2_x1) == sup_f_X2_x1).
+    { intros x1. eapply the_main_reason_for_introducing_ScottTopology with (f := fun x2 : D2 => f (x1, x2))... }
+    assert (claim2 : forall x2 : D2, exists sup_X1_x2 : D1, exists sup_f_X1_x2 : D3, isSupremumOf sup_X1_x2 X1 /\ isSupremumOf sup_f_X1_x2 (image (fun x1 : D1 => f (x1, x2)) X1) /\ f (sup_X1_x2, x2) == sup_f_X1_x2).
+    { intros x2. eapply the_main_reason_for_introducing_ScottTopology with (f := fun x1 : D1 => f (x1, x2))... }
+    set (sup_X1 := getSupremumOf_inCPO X1 X1_isDirected). fold sup_X1 in mayday.
+    set (sup_X2 := getSupremumOf_inCPO X2 X2_isDirected). fold sup_X2 in mayday.
+    pose proof (sup_X1_isSupremumOf_X1 := getSupremumOf_inCPO_isSupremum X1 X1_isDirected). fold sup_X1 in sup_X1_isSupremumOf_X1.
+    pose proof (sup_X2_isSupremumOf_X2 := getSupremumOf_inCPO_isSupremum X2 X2_isDirected). fold sup_X2 in sup_X2_isSupremumOf_X2.
+    assert (claim3 : isSupremumOf (f (sup_X1, sup_X2)) (image (fun x2 : D2 => f (sup_X1, x2)) X2)).
+    { pose proof (claim1 sup_X1) as [sup_X2_x1 [sup_f_X2_x1 [sup_X2_x1_isSupremum [sup_f_X1_x2_isSupremum H_EQ]]]].
+      eapply Supremum_congruence with (sup_X := sup_f_X2_x1).
+      - rewrite <- H_EQ. eapply f_preserves_eqProp. split; simpl.
+        + reflexivity.
+        + eapply Supremum_unique...
+      - reflexivity.
+      - exact (sup_f_X1_x2_isSupremum).
+    }
+    assert (claim4 : forall x2 : D2, member x2 X2 -> isSupremumOf (f (sup_X1, x2)) (image (fun x1 : D1 => f (x1, x2)) X1)).
+    { intros x2 x2_in. pose proof (claim2 x2) as [sup_X1' [sup_f_X1_x2' [sup_X1'_isSupremum [sup_f_X1_x2'_isSupremum H_EQ]]]].
+      eapply Supremum_congruence with (sup_X := sup_f_X1_x2').
+      - rewrite <- H_EQ. eapply f_preserves_eqProp. split; simpl.
+        + eapply Supremum_unique...
+        + reflexivity.
+      - reflexivity.
+      - exact (sup_f_X1_x2'_isSupremum).
+    }
+    assert (claim5 : isSupremumOf (f (sup_X1, sup_X2)) (MapSuprema (image (fun x2 : D2 => image (fun x1 : D1 => f (x1, x2)) X1) X2))).
+    { intros upper_bound. split.
+      - intros ? sup_Y [Y [Y_in sup_Y_isSupremum]]; desnw. red in sup_Y_isSupremum.
+        apply in_image_iff in Y_in. destruct Y_in as [x2 [? x2_in]]; subst Y.
+        eapply sup_Y_isSupremum. intros y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [x1 [? x1_in]]; subst y.
+        rewrite <- SUPREMUM_LE_UPPER_BOUND. transitivity (f (sup_X1, x2)).
+        + eapply f1_monotonic. eapply sup_X1_isSupremumOf_X1...
+        + eapply f2_monotonic. eapply sup_X2_isSupremumOf_X2...
+      - intros ?; desnw. eapply claim3. intros y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [x2 [? x2_in]]; subst y.
+        eapply UPPER_BOUND. exists (image (fun x1 : D1 => f (x1, x2)) X1)...
+    }
+    assert (claim6 : isSupremumOf (f (sup_X1, sup_X2)) (unions (image (fun x2 : D2 => image (fun x1 : D1 => f (x1, x2)) X1) X2))).
+    { eapply SupremumOfMapSuprema_isSupremumOf_unions...
+      intros Y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [x2 [? x2_in]]; subst Y. exists (f (sup_X1, x2))...
+    }
+    assert (claim7 : isSupremumOf (f (sup_X1, sup_X2)) (image f X)).
+    { intros upper_bound. split.
+      - intros ? y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [[x1 x2] [? H_IN]]; subst y.
+        eapply claim6... eapply in_unions_iff. exists (image (fun x1' : D1 => f (x1', x2)) X1). split...
+      - ii; desnw. eapply claim6. intros y y_in; unnw.
+        apply in_unions_iff in y_in. destruct y_in as [Y [y_in_Y Y_in]].
+        apply in_image_iff in Y_in. destruct Y_in as [x2 [? x2_in_X2]]; subst Y.
+        apply in_image_iff in y_in_Y. destruct y_in_Y as [x1 [? x1_in_X1]]; subst y.
+        apply in_image_iff in x1_in_X1. destruct x1_in_X1 as [[x1_1 x2_1] [? x1_in_X]]; subst x1.
+        apply in_image_iff in x2_in_X2. destruct x2_in_X2 as [[x1_2 x2_2] [? x2_in_X]]; subst x2.
+        pose proof (proj2 X_isDirected (x1_1, x2_1) x1_in_X (x1_2, x2_2) x2_in_X) as [[x1_3 x2_3] [x3_in [[x1_1_le_x1_3 x2_1_le_x2_3] [x1_2_le_x1_3 x2_2_le_x2_3]]]]; simpl in *. unnw.
+        transitivity (f (x1_3, x2_3)).
+        + transitivity (f (x1_1, x2_3)); [eapply f2_monotonic | eapply f1_monotonic]...
+        + eapply UPPER_BOUND...
+    }
+    intros sup_X1' sup_X2' sup_X1'_isSupremum sup_X2'_isSupremum.
+    assert (to_show : f (sup_X1, sup_X2) == f (sup_X1', sup_X2')).
+    { eapply f_preserves_eqProp. split; simpl; eapply Supremum_unique... }
+    rewrite <- to_show...
+  Qed.
+
 End BasicCpoTheory.
