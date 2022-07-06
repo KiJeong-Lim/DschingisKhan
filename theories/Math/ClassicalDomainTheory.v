@@ -890,7 +890,7 @@ Module BasicCpoTheory.
       + now rewrite <- y_eq_f_y.
   Qed.
 
-  Let iterS_isMonotonicMap (n : nat)
+  Lemma iterS_isMonotonicMap (n : nat)
     : isMonotonicMap (fun '(f, x) => iterS n (@proj1_sig (D -> D) isContinuousMap f) x).
   Proof with eauto with *.
     induction n as [ | n IH]; intros [f1 x1] [f2 x2] [f1_le_f2 x1_le_x2]; simpl in *; trivial.
@@ -901,9 +901,11 @@ Module BasicCpoTheory.
       + eapply IH with (x := (f1, x1)) (x' := (f2, x2)). split...
   Qed.
 
-  Let f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n
+  Lemma f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n
     : forall n : nat, isMonotonicMap (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO).
   Proof. ii. eapply iterS_isMonotonicMap with (n := n) (x := (x, getBottom_inCPO)) (x' := (x', getBottom_inCPO)). split; eauto with *. Qed.
+
+  Local Hint Resolve iterS_isMonotonicMap f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n : core.
 
   Lemma f_mapsto_iterS_n_f_bottom_isContinuousMap_for_any_n
     : forall n : nat, isContinuousMap (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO).
