@@ -39,7 +39,7 @@ Module InteractionTreeTheory.
     enough (claim2 : isSupremumOf itreeBisim' (PostfixedPoints (proj1_sig f))).
     enough (claim3 : eqITreeF' cola_empty == itreeBisim').
     - ii. exact (claim3 (lhs, rhs)).
-    - eapply @Supremum_preserves_eqProp_wrtEnsembles with (requiresPoset := ensemble_isPoset (itree E R * itree E R)%type) (X1 := PostfixedPoints (proj1_sig f)) (X2 := PostfixedPoints (proj1_sig f)).
+    - eapply @Supremum_unique with (requiresPoset := ensemble_isPoset (itree E R * itree E R)%type) (X1 := PostfixedPoints (proj1_sig f)) (X2 := PostfixedPoints (proj1_sig f)).
       + rewrite paco_init with (F_monotonic := eqITreeF_isMonotonicMap). eapply nu_isSupremumOf_PostfixedPoints.
       + exact (claim2).
       + reflexivity.

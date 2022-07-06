@@ -92,7 +92,7 @@ Module BasicCpoTheory.
     split.
     - intros sup_Y_isSupremumOf_image_f_X.
       rewrite f_sup_X_eq_sup_image_f_X with (f := f) (f_isContinuousMap := f_isContinuousMap) (X_isDirected := X_isDirected) (sup_X_isSupremumOf_X := sup_X_isSupremumOf_X) (image_f_X_isDirected := image_f_X_isDirected).
-      eapply Supremum_preserves_eqProp_wrtEnsembles.
+      eapply Supremum_unique.
       + exact (getSupremumOf_inCPO_isSupremum (image f X) image_f_X_isDirected).
       + exact (sup_Y_isSupremumOf_image_f_X).
       + reflexivity.
@@ -136,7 +136,7 @@ Module BasicCpoTheory.
     }
     pose proof (f_preservesSupremum X X_isDirected) as [sup_X [sup_Y [sup_X_isSupremumOf_X [sup_Y_isSupremumOf_Y f_sup_X_eq_sup_Y]]]].
     assert (it_is_sufficient_to_show : f sup_X == f x2).
-    { eapply f_preserves_eqProp. eapply Supremum_preserves_eqProp_wrtEnsembles; eauto with *. }
+    { eapply f_preserves_eqProp. eapply Supremum_unique; eauto with *. }
     transitivity (sup_Y).
     - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremumOf_Y; eauto with *.
     - rewrite <- f_sup_X_eq_sup_Y. now eapply eqProp_implies_leProp.
@@ -173,7 +173,7 @@ Module BasicCpoTheory.
       + econstructor. eapply UPWARD_CLOSED; [inversion H_IN | eapply f_isMonotonicMap]...
       + pose proof (f_preservesSupremum X DIRECTED) as [sup [sup_Y [? [? ?]]]].
         assert (sup_X_eq_sup : sup_X == sup).
-        { eapply Supremum_preserves_eqProp_wrtEnsembles... }
+        { eapply Supremum_unique... }
         assert (f_sup_X_in_Y : member (f sup_X) Y).
         { now inversion SUPREMUM_IN. }
         pose proof (liftsDirected_if_preservesSupremum f f_preserves_eqProp f_preservesSupremum X DIRECTED) as image_f_X_isDirected.
@@ -231,7 +231,7 @@ Module BasicCpoTheory.
       + intros f_sup_X_le_y sup_Y [Y [Y_in sup_Y_isSupremumOf_Y]]. apply in_image_iff in Y_in. destruct Y_in as [f_i [? f_i_in]]; subst Y.
         pose proof (f_i_sup_X_isSupremum := claim1 f_i f_i_in).
         assert (sup_Y_eq : sup_Y == proj1_sig f_i sup_X).
-        { eapply Supremum_preserves_eqProp_wrtEnsembles... }
+        { eapply Supremum_unique... }
         assert (f_i_sup_X_in : member (proj1_sig f_i sup_X) (image (fun f : ⟬ D1 ⟶ D2 ⟭ => proj1_sig f sup_X) F)).
         { econstructor... }
         rewrite sup_Y_eq. red in sup_Y_isSupremumOf_Y, f_sup_X_le_y. rewrite <- f_sup_X_le_y. eapply claim2...
@@ -278,7 +278,7 @@ Module BasicCpoTheory.
       repeat red in H_IN. destruct H_IN as [Y [Y_in upper_bound_in]].
       apply in_image_iff in Y_in. destruct Y_in as [x [? x_in]]; subst Y.
       red in upper_bound_in. transitivity (supremumOfScottContinuousMaps F F_isDirected x).
-      + eapply eqProp_implies_leProp, Supremum_preserves_eqProp_wrtEnsembles.
+      + eapply eqProp_implies_leProp, Supremum_unique.
         { exact (upper_bound_in). }
         { eapply supremumOfScottContinuousMaps_isSupremum. }
         { reflexivity. }
@@ -444,7 +444,7 @@ Module BasicCpoTheory.
     intros sup_X2 sup_X2_isSupremumOf_X2.
     set (sup_X := getSupremumOf_inCPO X X_isDirected). pose proof (getSupremumOf_inCPO_isSupremum X X_isDirected) as sup_X_isSupremumOf_X. fold sup_X in sup_X_isSupremumOf_X.
     assert (claim1 : (x1, sup_X2) == sup_X).
-    { eapply Supremum_preserves_eqProp_wrtEnsembles with (X2 := X); [intros [x_1 x_2] | trivial | reflexivity]. split.
+    { eapply Supremum_unique with (X2 := X); [intros [x_1 x_2] | trivial | reflexivity]. split.
       - intros [x1_le_x_1 sup_X2_le_x2] [x_1' x_2'] H_IN'.
         apply in_image_iff in H_IN'. destruct H_IN' as [x2 [H_EQ x2_in]].
         apply pair_equal_spec in H_EQ. destruct H_EQ; subst x_1' x_2'. split; simpl in *.
@@ -461,7 +461,7 @@ Module BasicCpoTheory.
     destruct PRESERVES_SUPREMUM as [sup_X' [sup_Y' [sup_X'_isSupremum [sup_Y'_isSupremum f_x1_sup_X'_eq_sup_Y']]]].
     assert (claim3 : isSupremumOf (f sup_X) (image f X)).
     { eapply Supremum_congruence with (sup_X := f sup_X') (X := image f X).
-      - eapply f_preserves_eqProp. symmetry. eapply Supremum_preserves_eqProp_wrtEnsembles...
+      - eapply f_preserves_eqProp. symmetry. eapply Supremum_unique...
       - reflexivity.
       - rewrite f_x1_sup_X'_eq_sup_Y'...
     }
@@ -486,8 +486,7 @@ Module BasicCpoTheory.
     intros x1. eapply the_main_reason_for_introducing_ScottTopology.
     - ii. eapply f_preserves_eqProp. split...
     - intros X2 X2_isDirected; unnw. set (sup_X2 := getSupremumOf_inCPO X2 X2_isDirected). exists (sup_X2), (f (x1, sup_X2)).
-      pose proof (getSupremumOf_inCPO_isSupremum X2 X2_isDirected) as claim1.
-      split; trivial. split.
+      pose proof (getSupremumOf_inCPO_isSupremum X2 X2_isDirected) as claim1. split; trivial. split.
       + eapply f_x1_sup_X2_eq_sup_f_x1_X2...
       + reflexivity.
   Qed.

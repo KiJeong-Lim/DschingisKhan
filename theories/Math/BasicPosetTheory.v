@@ -90,7 +90,7 @@ Module BasicPosetTheory.
 
   Local Hint Resolve Supremum_monotonic_wrtEnsembles : poset_hints.
 
-  Lemma Supremum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
+  Lemma Supremum_unique (X1 : ensemble D) (X2 : ensemble D) (sup_X1 : D) (sup_X2 : D)
     (sup_X1_isSupremumOf_X1 : isSupremumOf sup_X1 X1)
     (sup_X2_isSupremumOf_X2 : isSupremumOf sup_X2 X2)
     (X1_eq_X2 : X1 == X2)
@@ -100,7 +100,7 @@ Module BasicPosetTheory.
     pose proof (eqProp_implies_leProp X2 X1 X1_eq_X2) as claim2. eapply leProp_Antisymmetric; eauto with *.
   Qed.
 
-  Local Hint Resolve Supremum_preserves_eqProp_wrtEnsembles : poset_hints.
+  Local Hint Resolve Supremum_unique : poset_hints.
 
   Lemma Supremum_congruence (sup_X : D) (sup_Y : D) (X : ensemble D) (Y : ensemble D)
     (sup_X_eq_sup_Y : sup_X == sup_Y)
@@ -205,7 +205,7 @@ Module BasicPosetTheory.
 
   Local Hint Resolve Infimum_monotonic_wrtEnsembles : poset_hints.
 
-  Lemma Infimum_preserves_eqProp_wrtEnsembles (X1 : ensemble D) (X2 : ensemble D) (inf_X1 : D) (inf_X2 : D)
+  Lemma Infimum_unique (X1 : ensemble D) (X2 : ensemble D) (inf_X1 : D) (inf_X2 : D)
     (inf_X1_isInfimumOf_X1 : isInfimumOf inf_X1 X1)
     (inf_X2_isInfimumOf_X2 : isInfimumOf inf_X2 X2)
     (X1_eq_X2 : X1 == X2)
@@ -226,7 +226,7 @@ Module BasicPosetTheory.
     - intros z_isLowerBoundOf_Y. eapply inf_X_isInfimumOf_X. unnw. rewrite -> X_eq_Y...
   Qed.
 
-  Local Hint Resolve Infimum_preserves_eqProp_wrtEnsembles Infimum_congruence : core.
+  Local Hint Resolve Infimum_unique Infimum_congruence : core.
 
   Global Add Parametric Morphism :
     (@isInfimumOf D requiresPoset) with signature (eqProp ==> eqProp ==> iff)
@@ -309,7 +309,7 @@ Module BasicPosetTheory.
 
   End BASIC_FACTS_ON_SUPREMUM.
 
-  Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_preserves_eqProp_wrtEnsembles Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
+  Global Hint Resolve Supremum_monotonic_wrtEnsembles Supremum_unique Supremum_congruence Supremum_compatWith_eqProp_wrtEnsembles : poset_hints.
 
   Class isDecidableTotalOrder (A : Type) {requiresPoset : isPoset A} : Type :=
     { compare (lhs : A) (rhs : A) : comparison
