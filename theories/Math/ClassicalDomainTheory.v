@@ -837,10 +837,7 @@ Module BasicCpoTheory.
     : forall n1 : nat, forall n2 : nat, n1 <= n2 -> iterS n1 f getBottom_inCPO =< iterS n2 f getBottom_inCPO.
   Proof with eauto with *.
     assert (claim1 : forall n : nat, iterS n f getBottom_inCPO =< iterS (S n) f getBottom_inCPO).
-    { induction n as [ | n IH].
-      - eapply getBottom_inCPO_isBottom.
-      - simpl. eapply f_isMonotonicMap...
-    }
+    { induction n as [ | n IH]; [eapply getBottom_inCPO_isBottom | simpl]... }
     intros n1 n2 n1_le_n2. induction n1_le_n2 as [ | n2 n1_le_n2 IH].
     - reflexivity.
     - rewrite IH...
@@ -859,7 +856,132 @@ Module BasicCpoTheory.
       exists (iterS (max n1 n2) f getBottom_inCPO). split...
   Qed.
 
-  Definition scottRec1 (f : ⟬ D ⟶ D ⟭) : D := getSupremumOf_inCPO (IterS (proj1_sig f) getBottom_inCPO) (IterS_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ScottContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))).
+  Definition getLfpOf_inCPO (f : ⟬ D ⟶ D ⟭) : D := getSupremumOf_inCPO (IterS (proj1_sig f) getBottom_inCPO) (IterS_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ScottContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))).
+
+  Lemma every_ScottContinuousMap_has_a_fixed_point (f : ⟬ D ⟶ D ⟭)
+    : member (getLfpOf_inCPO f) (FixedPoints (proj1_sig f)).
+  Proof with eauto with *.
+    pose proof (lfp_f_isSupremumOf_F := getSupremumOf_inCPO_isSupremum (IterS (proj1_sig f) getBottom_inCPO) (IterS_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ScottContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f)))). fold (getLfpOf_inCPO f) in lfp_f_isSupremumOf_F.
+    pose proof (sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y (proj1_sig f) (IterS (proj1_sig f) getBottom_inCPO)) as claim1.
+    enough (to_show : proj1_sig f (getLfpOf_inCPO f) == getLfpOf_inCPO f) by now do 2 red.
+    eapply claim1.
+    - exact (proj2_sig f).
+    - eapply IterS_f_bottom_isDirected_if_f_isMonotonicMap. eapply ScottContinuousMap_isMonotonicMap. exact (proj2_sig f).
+    - exact (lfp_f_isSupremumOf_F).
+    - ii; split.
+      + intros ? y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [x [? H_IN]]; subst y. inversion H_IN; subst.
+        rewrite <- SUPREMUM_LE_UPPER_BOUND. eapply lfp_f_isSupremumOf_F...
+        change (iterS (S n) (proj1_sig f) getBottom_inCPO \in IterS (proj1_sig f) getBottom_inCPO)...
+      + ii; desnw. unnw. eapply lfp_f_isSupremumOf_F. ii; desnw. inversion H_IN; subst.
+        destruct n as [ | n']; simpl.
+        { eapply getBottom_inCPO_isBottom. }
+        { eapply UPPER_BOUND... }
+  Qed.
+
+  Lemma getLfpOf_returns_the_least_fixed_point (f : ⟬ D ⟶ D ⟭)
+    : isLeastFixedPointOf (getLfpOf_inCPO f) (proj1_sig f).
+  Proof with eauto with *.
+    pose proof (every_ScottContinuousMap_has_a_fixed_point f) as claim1.
+    split; trivial. intros y ?; desnw. do 2 red in H_IN. rename H_IN into y_eq_f_y.
+    eapply getSupremumOf_inCPO_isSupremum. ii; desnw. inversion H_IN; subst. induction n as [ | n IH].
+    - eapply getBottom_inCPO_isBottom.
+    - transitivity (proj1_sig f y).
+      + simpl. eapply ScottContinuousMap_isMonotonicMap; [exact (proj2_sig f) | eapply IH]...
+      + now rewrite <- y_eq_f_y.
+  Qed.
+
+  Let iterS_isMonotonicMap (n : nat)
+    : isMonotonicMap (fun '(f, x) => iterS n (@proj1_sig (D -> D) isContinuousMap f) x).
+  Proof with eauto with *.
+    induction n as [ | n IH]; intros [f1 x1] [f2 x2] [f1_le_f2 x1_le_x2]; simpl in *; trivial.
+    transitivity (proj1_sig f2 (iterS n (proj1_sig f1) x1)).
+    - eapply f1_le_f2.
+    - eapply ScottContinuousMap_isMonotonicMap.
+      + exact (proj2_sig f2).
+      + eapply IH with (x := (f1, x1)) (x' := (f2, x2)). split...
+  Qed.
+
+  Let f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n
+    : forall n : nat, isMonotonicMap (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO).
+  Proof. ii. eapply iterS_isMonotonicMap with (n := n) (x := (x, getBottom_inCPO)) (x' := (x', getBottom_inCPO)). split; eauto with *. Qed.
+
+  Lemma f_mapsto_iterS_n_f_bottom_isContinuousMap_for_any_n
+    : forall n : nat, isContinuousMap (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO).
+  Proof with eauto with *.
+    induction n as [ | n IH].
+    - eapply bottomOfScottContinuousMaps_isContinuousMap.
+    - eapply the_main_reason_for_introducing_ScottTopology.
+      + ii. eapply leProp_Antisymmetric; eapply f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n...
+      + intros F F_isDirected.
+        set (sup_F := getSupremumOf_inCPO F F_isDirected).
+        assert (sup_F_isSupremumOf_F : isSupremumOf sup_F F) by exact (getSupremumOf_inCPO_isSupremum F F_isDirected).
+        set (Y := image (fun f : ⟬ D ⟶ D ⟭ => iterS (S n) (proj1_sig f) getBottom_inCPO) F).
+        assert (Y_isDirected : isDirected Y).
+        { eapply preservesDirected_if_isMonotonicMap... }
+        set (X := image (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO) F).
+        assert (X_isDirected : isDirected X).
+        { eapply preservesDirected_if_isMonotonicMap... }
+        set (sup_X := iterS n (proj1_sig sup_F) getBottom_inCPO).
+        assert (sup_X_isSupremumOf_X : isSupremumOf sup_X X).
+        { eapply ScottContinuousMap_preservesSupremum with (f := fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO)... }
+        set (sup_Y := proj1_sig sup_F (iterS n (proj1_sig sup_F) getBottom_inCPO)).
+        assert (claim1 : proj1_sig sup_F sup_X == sup_Y).
+        { eapply monotonic_guarantees_eqProp_lifted1.
+          - eapply ScottContinuousMap_isMonotonicMap. exact (proj2_sig sup_F).
+          - reflexivity.
+        }
+        assert (claim2 : iterS n (proj1_sig sup_F) getBottom_inCPO == sup_X).
+        { eapply sup_Y_isSupremumOf_image_f_X_iff_f_sup_X_eq_sup_Y with (f := fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO).
+          - exact (IH).
+          - exact (F_isDirected).
+          - exact (sup_F_isSupremumOf_F).
+          - exact (sup_X_isSupremumOf_X).
+        }
+        assert (claim3 : isSupremumOf (proj1_sig sup_F sup_X) (unions (image (fun f_i : ⟬ D ⟶ D ⟭ => image (fun x : D => proj1_sig f_i x) X) F))).
+        { eapply supremumOfScottContinuousMaps_F_sup_X_isSupremumOf_unions_i_image_f_i_X_F... }
+        exists (sup_F), (sup_Y). split; trivial. split; trivial. ii; split.
+        { intros ? y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f_i [? H_IN]]; subst y. transitivity (proj1_sig f_i sup_X).
+          - simpl. eapply ScottContinuousMap_isMonotonicMap; [exact (proj2_sig f_i) | eapply sup_X_isSupremumOf_X]...
+          - rewrite <- SUPREMUM_LE_UPPER_BOUND, <- claim1. eapply sup_F_isSupremumOf_F...
+        }
+        { ii; desnw. unnw. rewrite <- claim1. eapply claim3. intros y ?; desnw.
+          apply in_unions_iff in H_IN. destruct H_IN as [Z [Z_in H_IN]].
+          apply in_image_iff in H_IN. destruct H_IN as [f1 [? H_IN1]]; subst Z.
+          apply in_image_iff in Z_in. destruct Z_in as [x [? x_in_X]]; subst y.
+          apply in_image_iff in x_in_X. destruct x_in_X as [f2 [? H_IN2]]; subst x.
+          pose proof (proj2 DIRECTED f1 H_IN1 f2 H_IN2) as [f3 [? [f1_le_f3 f2_le_f3]]]; desnw.
+          transitivity (proj1_sig f3 (iterS n (proj1_sig f3) getBottom_inCPO)).
+          - etransitivity; [eapply f1_le_f3 | eapply ScottContinuousMap_isMonotonicMap].
+            + exact (proj2_sig f3).
+            + eapply f_mapsto_iterS_n_f_bottom_isMonotonicMap_for_any_n...
+          - eapply UPPER_BOUND...
+        }
+  Qed.
+
+  Lemma getLfpOf_inCPO_isContinuousMap
+    : isContinuousMap getLfpOf_inCPO.
+  Proof with eauto with *.
+    intros O O_isOpen; unnw.
+    assert (claim1 : forall n : nat, isOpen (preimage (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO) O)).
+    { ii. eapply f_mapsto_iterS_n_f_bottom_isContinuousMap_for_any_n... }
+    assert (claim2 : isOpen (unions (fun F : ensemble ⟬ D ⟶ D ⟭ => exists n : nat, F == preimage (fun f : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f) getBottom_inCPO) O))).
+    { eapply unions_isOpen. intros F [n H_EQ]. rewrite H_EQ... }
+    eapply isOpen_compatWith_eqProp.
+    - exact (claim2).
+    - inversion O_isOpen. intros f. split.
+      + intros f_in. apply in_unions_iff in f_in. destruct f_in as [F [f_in H_IN]].
+        red in H_IN. destruct H_IN as [n H_EQ]. rewrite H_EQ in f_in.
+        apply in_preimage_iff in f_in. destruct f_in as [y [? H_IN]]; subst y.
+        eapply in_preimage_iff. exists (getLfpOf_inCPO f). split...
+        eapply UPWARD_CLOSED... eapply getSupremumOf_inCPO_isSupremum...
+      + intros f_in. apply in_preimage_iff in f_in. destruct f_in as [y [? H_IN]]; subst y.
+        pose proof (LIMIT (IterS (proj1_sig f) getBottom_inCPO) (IterS_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ScottContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))) (getLfpOf_inCPO f) (getSupremumOf_inCPO_isSupremum _ _) H_IN) as [x [x_in x_in']].
+        inversion x_in; subst. exists (preimage (fun f_i : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f_i) getBottom_inCPO) O)... econstructor...
+  Qed.
+
+  Definition ScottRec : ⟬ ⟬ D ⟶ D ⟭ ⟶ D ⟭ :=
+    @exist (⟬ D ⟶ D ⟭ -> D) isContinuousMap getLfpOf_inCPO getLfpOf_inCPO_isContinuousMap
+  .
 
   End SCOTT_REC.
 
