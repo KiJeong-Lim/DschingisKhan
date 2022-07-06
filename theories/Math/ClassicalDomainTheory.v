@@ -772,6 +772,44 @@ Module BasicCpoTheory.
 
   Let scottLam3 (f : ⟬ D1 * D2 ⟶ D3 ⟭) : ⟬ D1 ⟶ ⟬ D2 ⟶ D3 ⟭ ⟭ := @exist (D1 -> ⟬ D2 ⟶ D3 ⟭) isContinuousMap (scottLam2 f) (scottLam2_isContinuousMap f).
 
+  Lemma scottLam3_isContinuousMap
+    : isContinuousMap scottLam3.
+  Proof with eauto with *.
+    assert (scottLam3_isMonotonicMap : isMonotonicMap scottLam3).
+    { ii. eapply x_le_x'. }
+    assert (scottLam3_preserves_eqProp : preserves_eqProp1 scottLam3).
+    { ii. eapply H_EQ1. }
+    eapply the_main_reason_for_introducing_ScottTopology; trivial.
+    intros F F_isDirected; unnw. set (Y := image scottLam3 F). set (sup_F := getSupremumOf_inCPO F F_isDirected).
+    assert (sup_F_isSupremumOf_F : isSupremumOf sup_F F) by exact (getSupremumOf_inCPO_isSupremum F F_isDirected).
+    assert (Y_isDirected : isDirected Y).
+    { eapply preservesDirected_if_isMonotonicMap... }
+    set (sup_Y := getSupremumOf_inCPO Y Y_isDirected).
+    assert (sup_Y_isSupremumOf_Y : isSupremumOf sup_Y Y) by exact (getSupremumOf_inCPO_isSupremum Y Y_isDirected).
+    exists (sup_F), (sup_Y). split; trivial. split; trivial.
+    eapply Supremum_unique with (X1 := image (fun f_i : ⟬ D1 * D2 ⟶ D3 ⟭ => scottLam3 f_i) F).
+    - intros z. split.
+      + intros ? f ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f1 [? H_IN]]; subst f. 
+        rewrite <- SUPREMUM_LE_UPPER_BOUND. intros x1 x2. simpl. unfold scottLam1.
+        generalize (x1, x2). clear x1 x2. change (f1 =< @exist _ _ (supremumOfScottContinuousMaps F F_isDirected) (supremumOfScottContinuousMaps_isContinuousMap F F_isDirected)).
+        eapply getSupremumOf_inCPO_isSupremum...
+      + intros ?; desnw. unnw. intros x1 x2. simpl.
+        eapply supremumOfScottContinuousMaps_isSupremum with (F := F) (F_isDirected := F_isDirected) (x := (x1, x2)).
+        intros y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f_i [? H_IN]]; subst y.
+        change (proj1_sig (proj1_sig (scottLam3 f_i) x1) x2 =< proj1_sig (proj1_sig z x1) x2).
+        revert x2. change (proj1_sig (scottLam3 f_i) x1 =< proj1_sig z x1).
+        revert x1. change (scottLam3 f_i =< z).
+        eapply UPPER_BOUND...
+    - exact (sup_Y_isSupremumOf_Y).
+    - intros z. split.
+      + intros H_IN. apply in_image_iff in H_IN. destruct H_IN as [f_i [? H_IN]]; subst z...
+      + intros H_IN. apply in_image_iff in H_IN. destruct H_IN as [f_i [? H_IN]]; subst z...
+  Qed.
+
+  Definition ScottLam : ⟬ ⟬ D1 * D2 ⟶ D3 ⟭ ⟶ ⟬ D1 ⟶ ⟬ D2 ⟶ D3 ⟭ ⟭ ⟭ :=
+    @exist (⟬ D1 * D2 ⟶ D3 ⟭ -> ⟬ D1 ⟶ ⟬ D2 ⟶ D3 ⟭ ⟭) isContinuousMap scottLam3 scottLam3_isContinuousMap
+  .
+
   End SCOTT_LAM.
 
 End BasicCpoTheory.
