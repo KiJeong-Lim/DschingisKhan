@@ -430,8 +430,8 @@ Module BasicCpoTheory.
     assert (f_preserves_eqProp_at2 : preserves_eqProp1 (fun x2 : D2 => f (x1, x2))).
     { ii. eapply leProp_Antisymmetric; eapply f_isMonotonicMap_at2... }
     intros X2 X2_isDirected.
-    set (X := (image (fun x2 : D2 => (x1, x2)) X2)).
-    set (Y := (image (fun x2 : D2 => f (x1, x2)) X2)).
+    set (X := image (fun x2 : D2 => (x1, x2)) X2).
+    set (Y := image (fun x2 : D2 => f (x1, x2)) X2).
     assert (X_isDirected : isDirected X).
     { inversion X2_isDirected; desnw. rename x0 into x2_0. split; unnw.
       - exists (x1, x2_0)...
@@ -451,7 +451,7 @@ Module BasicCpoTheory.
         + trivial.
         + eapply sup_X2_isSupremumOf_X2...
       - intros ?; desnw. split; simpl.
-        + inversion X2_isDirected; desnw. eapply UPPER_BOUND with (x := (x1, x0))...
+        + inversion X2_isDirected; desnw. enough (to_show : (x1, x0) =< (x_1, x_2)) by exact (proj1 to_show). eapply UPPER_BOUND...
         + eapply sup_X2_isSupremumOf_X2. intros x2 ?; desnw. eapply UPPER_BOUND with (x := (x1, x2))...
     }
     assert (claim2 : f (x1, sup_X2) == f sup_X).
@@ -479,7 +479,7 @@ Module BasicCpoTheory.
     revert x1.
     assert (f_monotonic : isMonotonicMap f).
     { eapply ScottContinuousMap_isMonotonicMap... }
-    assert (f1_monotonic : forall x1 : D1, isMonotonicMap (fun x2 : D2 => f (x1, x2))).
+    assert (f2_monotonic : forall x1 : D1, isMonotonicMap (fun x2 : D2 => f (x1, x2))).
     { ii. eapply ScottContinuousMap_isMonotonicMap; trivial. split... }
     assert (f_preserves_eqProp : preserves_eqProp1 f).
     { intros [x1 x2] [x1' x2'] [? ?]; simpl in *. eapply monotonic_guarantees_eqProp_lifted1; trivial. split... }
@@ -488,6 +488,84 @@ Module BasicCpoTheory.
     - intros X2 X2_isDirected; unnw. set (sup_X2 := getSupremumOf_inCPO X2 X2_isDirected). exists (sup_X2), (f (x1, sup_X2)).
       pose proof (getSupremumOf_inCPO_isSupremum X2 X2_isDirected) as claim1. split; trivial. split.
       + eapply f_x1_sup_X2_eq_sup_f_x1_X2...
+      + reflexivity.
+  Qed.
+
+  Lemma f_sup_X1_x2_eq_sup_f_X1_x2 {D1 : Type} {D2 : Type} {D3 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D3_isPoset : isPoset D3} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} {D3_isCPO : isCPO D3} (f : D1 * D2 -> D3) (x2 : D2) (X1 : ensemble D1) (sup_X1 : D1)
+    (f_isContinuousMap : isContinuousMap f)
+    (X1_isDirected : isDirected X1)
+    (sup_X1_isSupremumOf_X1 : isSupremumOf sup_X1 X1)
+    : isSupremumOf (f (sup_X1, x2)) (image (fun x1 : D1 => f (x1, x2)) X1).
+  Proof with eauto with *.
+    revert x2 X1 X1_isDirected sup_X1 sup_X1_isSupremumOf_X1.
+    assert (f_isMonotonicMap : isMonotonicMap f).
+    { eapply ScottContinuousMap_isMonotonicMap... }
+    assert (f_isMonotonicMap_at2 : forall x2 : D2, isMonotonicMap (fun x1 : D1 => f (x1, x2))).
+    { eapply seperately_monotonic_iff_monotonic... }
+    assert (f_preserves_eqProp : preserves_eqProp1 f).
+    { intros [x1 x2] [x1' x2'] [H_eq1 H_eq2]; simpl in *. eapply leProp_Antisymmetric; eapply f_isMonotonicMap; split... }
+    intros x2.
+    assert (f_preserves_eqProp_at2 : preserves_eqProp1 (fun x1 : D1 => f (x1, x2))).
+    { ii. eapply leProp_Antisymmetric; eapply f_isMonotonicMap_at2... }
+    intros X1 X1_isDirected.
+    set (X := image (fun x1 : D1 => (x1, x2)) X1).
+    set (Y := image (fun x1 : D1 => f (x1, x2)) X1).
+    assert (X_isDirected : isDirected X).
+    { inversion X1_isDirected; desnw. rename x0 into x1_0. split; unnw.
+      - exists (x1_0, x2)...
+      - intros [x1_1 x2_1] x1_in_X [x1_2 x2_2] x2_in_X; unnw. apply in_image_iff in x1_in_X, x2_in_X.
+        destruct x1_in_X as [x1 [H_eq x1_1_in]]. inversion H_eq; subst x2_1 x1. clear H_eq.
+        destruct x2_in_X as [x1 [H_eq x1_2_in]]. inversion H_eq; subst x2_2 x1. clear H_eq.
+        pose proof (DIRECTED_OR_EMPTY x1_1 x1_1_in x1_2 x1_2_in) as [x1_3 [? [x1_1_le_x1_3 x1_2_le_x1_3]]]; desnw.
+        exists (x1_3, x2). repeat split...
+    }
+    intros sup_X1 sup_X1_isSupremumOf_X1.
+    set (sup_X := getSupremumOf_inCPO X X_isDirected). pose proof (getSupremumOf_inCPO_isSupremum X X_isDirected) as sup_X_isSupremumOf_X. fold sup_X in sup_X_isSupremumOf_X.
+    assert (claim1 : (sup_X1, x2) == sup_X).
+    { eapply Supremum_unique with (X2 := X); [intros [x_1 x_2] | trivial | reflexivity]. split.
+      - intros [sup_X1_le_x1 x2_le_x_2] [x_1' x_2'] H_IN'.
+        apply in_image_iff in H_IN'. destruct H_IN' as [x1 [H_EQ x1_in]].
+        apply pair_equal_spec in H_EQ. destruct H_EQ; subst x_1' x_2'. split; simpl in *.
+        + eapply sup_X1_isSupremumOf_X1...
+        + trivial.
+      - intros ?; desnw. split; simpl.
+        + eapply sup_X1_isSupremumOf_X1. intros x1 ?; desnw. eapply UPPER_BOUND with (x := (x1, x2))...
+        + inversion X1_isDirected; desnw. enough (to_show : (x0, x2) =< (x_1, x_2)) by exact (proj2 to_show). eapply UPPER_BOUND...
+    }
+    assert (claim2 : f (sup_X1, x2) == f sup_X).
+    { eapply f_preserves_eqProp... }
+    assert (PRESERVES_SUPREMUM : exists sup_X' : D1 * D2, exists sup_Y' : D3, isSupremumOf sup_X' X /\ isSupremumOf sup_Y' (image f X) /\ f sup_X' == sup_Y').
+    { eapply the_main_reason_for_introducing_ScottTopology with (f := f)... }
+    destruct PRESERVES_SUPREMUM as [sup_X' [sup_Y' [sup_X'_isSupremum [sup_Y'_isSupremum f_x1_sup_X'_eq_sup_Y']]]].
+    assert (claim3 : isSupremumOf (f sup_X) (image f X)).
+    { eapply Supremum_congruence with (sup_X := f sup_X') (X := image f X).
+      - eapply f_preserves_eqProp. symmetry. eapply Supremum_unique...
+      - reflexivity.
+      - rewrite f_x1_sup_X'_eq_sup_Y'...
+    }
+    eapply Supremum_congruence with (sup_X := f sup_X) (X := image f X); trivial.
+    - symmetry...
+    - intros y. split; intros H_IN.
+      + apply in_image_iff in H_IN. destruct H_IN as [[x_1 x_2] [? H_IN]]; subst y. apply in_image_iff in H_IN. destruct H_IN as [x1 [H_EQ H_IN]]. apply pair_equal_spec in H_EQ. des...
+      + apply in_image_iff in H_IN. destruct H_IN as [x1 [? H_IN]]; subst y...
+  Qed.
+
+  Corollary f1_cont_if_f_cont {D1 : Type} {D2 : Type} {D3 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D3_isPoset : isPoset D3} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} {D3_isCPO : isCPO D3} (f : D1 * D2 -> D3) (x2 : D2)
+    (f_isContinuousMap : isContinuousMap f)
+    : isContinuousMap (fun x1 : D1 => f (x1, x2)).
+  Proof with eauto with *.
+    revert x2.
+    assert (f_monotonic : isMonotonicMap f).
+    { eapply ScottContinuousMap_isMonotonicMap... }
+    assert (f1_monotonic : forall x2 : D2, isMonotonicMap (fun x1 : D1 => f (x1, x2))).
+    { ii. eapply ScottContinuousMap_isMonotonicMap; trivial. split... }
+    assert (f_preserves_eqProp : preserves_eqProp1 f).
+    { intros [x1 x2] [x1' x2'] [? ?]; simpl in *. eapply monotonic_guarantees_eqProp_lifted1; trivial. split... }
+    intros x2. eapply the_main_reason_for_introducing_ScottTopology.
+    - ii. eapply f_preserves_eqProp. split...
+    - intros X1 X1_isDirected; unnw. set (sup_X1 := getSupremumOf_inCPO X1 X1_isDirected). exists (sup_X1), (f (sup_X1, x2)).
+      pose proof (getSupremumOf_inCPO_isSupremum X1 X1_isDirected) as claim1. split; trivial. split.
+      + eapply f_sup_X1_x2_eq_sup_f_X1_x2...
       + reflexivity.
   Qed.
 
