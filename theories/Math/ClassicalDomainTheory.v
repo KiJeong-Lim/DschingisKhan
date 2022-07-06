@@ -1,6 +1,7 @@
 Require Import Coq.Lists.List.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
+Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Prelude.PreludeClassic.
 Require Import DschingisKhan.Math.BasicPosetTheory.
 Require Import DschingisKhan.Math.BasicGeneralTopology.
@@ -811,5 +812,55 @@ Module BasicCpoTheory.
   .
 
   End SCOTT_LAM.
+
+  Section SCOTT_REC.
+
+  Context {D : Type}.
+
+  Fixpoint iterS (n : nat) (f : D -> D) (x : D) {struct n} : D :=
+    match n with
+    | O => x
+    | S n' => f (iterS n' f x)
+    end
+  .
+
+  Variant IterS (f : D -> D) (x : D) : ensemble D :=
+  | in_IterS (n : nat) : iterS n f x \in IterS f x
+  .
+
+  Local Hint Constructors IterS : core.
+
+  Context {D_isPoset : isPoset D} {D_isCPO : isCPO D}.
+
+  Lemma iterS_monotonic (f : D -> D)
+    (f_isMonotonicMap : isMonotonicMap f)
+    : forall n1 : nat, forall n2 : nat, n1 <= n2 -> iterS n1 f getBottom_inCPO =< iterS n2 f getBottom_inCPO.
+  Proof with eauto with *.
+    assert (claim1 : forall n : nat, iterS n f getBottom_inCPO =< iterS (S n) f getBottom_inCPO).
+    { induction n as [ | n IH].
+      - eapply getBottom_inCPO_isBottom.
+      - simpl. eapply f_isMonotonicMap...
+    }
+    intros n1 n2 n1_le_n2. induction n1_le_n2 as [ | n2 n1_le_n2 IH].
+    - reflexivity.
+    - rewrite IH...
+  Qed.
+
+  Lemma IterS_f_bottom_isDirected_if_f_isMonotonicMap (f : D -> D)
+    (f_isMonotonicMap : isMonotonicMap f)
+    : isDirected (IterS f getBottom_inCPO).
+  Proof with eauto with *.
+    pose proof (claim1 := n1_le_max_n1_n2).
+    pose proof (claim2 := n2_le_max_n1_n2).
+    pose proof (claim3 := iterS_monotonic).
+    split.
+    - exists (iterS 0 f getBottom_inCPO)...
+    - ii; desnw. inversion H_IN1; subst. rename n into n1. inversion H_IN2; subst. rename n into n2.
+      exists (iterS (max n1 n2) f getBottom_inCPO). split...
+  Qed.
+
+  Definition scottRec1 (f : ⟬ D ⟶ D ⟭) : D := getSupremumOf_inCPO (IterS (proj1_sig f) getBottom_inCPO) (IterS_f_bottom_isDirected_if_f_isMonotonicMap (proj1_sig f) (ScottContinuousMap_isMonotonicMap (proj1_sig f) (proj2_sig f))).
+
+  End SCOTT_REC.
 
 End BasicCpoTheory.
