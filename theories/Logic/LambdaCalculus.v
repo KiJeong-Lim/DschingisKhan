@@ -53,6 +53,8 @@ Module UntypedLambdaCalculus.
     { pose proof (ivarEqDec y y') as [y_eq_y' | y_ne_y']; pose proof (IH Q') as [Q_eq_Q' | Q_ne_Q']... }
   Defined.
 
+  Section SUBSTITUTION. (* Reference: "https://github.com/ernius/formalmetatheory-stoughton/tree/7eea5b526ec58a49838daa7b21b02fafcbf9065e" *)
+
   Fixpoint getFVs (M : tmExpr) {struct M} : list ivar :=
     match M with
     | Var x => [x]
@@ -73,6 +75,18 @@ Module UntypedLambdaCalculus.
     : forall z : ivar, In z (getFVs M) <-> isFreeIn z M = true.
   Proof. induction M as [x | P1 IH1 P2 IH2 | y Q IH]; resolver. Qed.
 
+  Definition last_ivar (M : tmExpr) : ivar := maxs (getFVs M).
+
+  Lemma last_ivar_lt (M : tmExpr) (x : ivar)
+    (last_ivar_lt : last_ivar M < x)
+    : isFreeIn x M = false.
+  Proof.
+    enough (to_show : ~ In x (getFVs M)).
+    { now rewrite getFVs_isFreeIn, not_true_iff_false in to_show. }
+    revert x last_ivar_lt. pose proof (maxs_in (getFVs M)) as claim1.
+    intros x last_ivar_lt H_in. contradiction (le_gt_False (claim1 x H_in) last_ivar_lt).
+  Qed.
+
   Definition tmSubst : Set := ivar -> tmExpr.
 
   Definition nilSubst : tmSubst :=
@@ -84,7 +98,43 @@ Module UntypedLambdaCalculus.
   .
 
   Definition chi (sigma : tmSubst) (M : tmExpr) : ivar :=
-    suc (maxs (map (fun z : ivar => maxs (getFVs (sigma z))) (getFVs M)))
+    suc (maxs (map (fun z : ivar => last_ivar (sigma z)) (getFVs M)))
   .
+
+  Definition isFreshIn_tmSubst (x : ivar) (sigma : tmSubst) (M : tmExpr) : bool :=
+    forallb (fun z : ivar => negb (isFreeIn x (sigma z))) (getFVs M)
+  .
+
+  Lemma chi_sigma_M_sigma_x_not_free (sigma : tmSubst) (M : tmExpr) (x : ivar)
+    (OCCURS_FREE : isFreeIn x M = true)
+    : isFreeIn (chi sigma M) (sigma x) = false.
+  Proof.
+    enough (claim1 : last_ivar (sigma x) < chi sigma M) by now eapply last_ivar_lt.
+    unfold chi, maxs. eapply le_intro_S_n_le_S_m. rewrite <- getFVs_isFreeIn in OCCURS_FREE.
+    eapply maxs_in; resolver.
+  Qed.
+
+  Theorem chi_spec (M : tmExpr) (sigma : tmSubst)
+    : isFreshIn_tmSubst (chi sigma M) sigma M = true.
+  Proof with resolver. unfold isFreshIn_tmSubst... ii... eapply chi_sigma_M_sigma_x_not_free. now eapply getFVs_isFreeIn. Qed.
+
+  Lemma chi_nil (M : tmExpr)
+    : isFreeIn (chi nilSubst M) M = false.
+  Proof.
+    pose proof (chi_spec M nilSubst) as claim1.
+    unfold isFreshIn_tmSubst in claim1. rewrite forallb_true_iff in claim1. simpl in claim1.
+    eapply not_true_iff_false. intros H_false. specialize (claim1 (chi nilSubst M) (proj2 (getFVs_isFreeIn _ _) H_false)).
+    rewrite negb_true_iff, Nat.eqb_neq in claim1. contradiction.
+  Qed.
+
+  Fixpoint runSubst (sigma : tmSubst) (M : tmExpr) {struct M} : tmExpr :=
+    match M with
+    | Var x => sigma x
+    | App P1 P2 => App (runSubst sigma P1) (runSubst sigma P2)
+    | Lam y Q => let z : ivar := chi sigma M in Lam z (runSubst (consSubst y (Var z) sigma) Q)
+    end
+  .
+
+  End SUBSTITUTION.
 
 End UntypedLambdaCalculus.

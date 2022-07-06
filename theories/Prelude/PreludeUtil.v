@@ -354,6 +354,13 @@ Module NAT_FACTS.
     }
   Qed.
 
+  Fixpoint le_gt_False {n : nat} {m : nat} (hyp_le : n <= m) {struct hyp_le} : ~ n > m :=
+    match hyp_le in le _ m' return n > m' -> False with
+    | le_n _ => not_n_lt_n n
+    | le_S _ m' hyp_le' => fun hyp_gt : n > S m' => le_gt_False hyp_le' (le_transitivity (le_S (S m') (S m') (le_n (S m'))) hyp_gt)
+    end
+  .
+
   Theorem lt_strong_ind {phi : nat -> Prop}
     (IND : forall n : nat, << IH : forall m : nat, m < n -> phi m >> -> phi n)
     : forall n : nat, phi n.
