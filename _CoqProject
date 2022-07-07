@@ -1,20 +1,25 @@
--Q . DschingisKhan #
+-Q ./theories DschingisKhan #
 #
-pure/MyUtilities.v #
-pure/FunFacts.v #
-pure/MyStructures.v #
-pure/DomainTheory.v #
-pure/UntypedLambdaCalculus.v #
-pure/AczelSet.v #
-pure/CBA.v #
-pure/Data.v #
+theories/Prelude/PreludeInit.v #
+theories/Prelude/PreludeMath.v #
+theories/Prelude/PreludeUtil.v #
+theories/Prelude/PreludeClassic.v #
 #
-classical/ExclusiveMiddle.v #
-classical/DomainTheory.v #
-classical/ITree.v #
+theories/Data/AczelSet.v #
+theories/Data/Vector.v #
+theories/Data/InteractionTree.v #
 #
-projects/PropositionalLogic/Base.v #
-projects/PropositionalLogic/ConstructiveMetaTheories.v #
-projects/PropositionalLogic/ClassicalMetaTheories.v #
-projects/PropositionalLogic.v #
+theories/Math/BasicPosetTheory.v #
+theories/Math/BooleanAlgebra.v #
+theories/Math/BasicGeneralTopology.v #
+theories/Math/ClassicalDomainTheory.v #
+theories/Math/PropositionalLogicExtra.v #
+#
+theories/Logic/ScottTopology.v #
+theories/Logic/LambdaCalculus.v #
+theories/Logic/ConstructiveDomainTheory.v #
+theories/Logic/InteractionTreeTheory.v #
+theories/Logic/PropositionalLogic.v #
+#
+theories/Index/Index.v #
 #
