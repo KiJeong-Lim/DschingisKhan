@@ -7,7 +7,7 @@ Require Import DschingisKhan.Math.BasicPosetTheory.
 Require Import DschingisKhan.Math.BasicGeneralTopology.
 Require Import DschingisKhan.Logic.ScottTopology.
 
-Module BasicCpoTheory.
+Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Semantics >> of "H. P. Barendregt" *)
 
   Import ListNotations MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExclusiveMiddle.
 
@@ -788,12 +788,11 @@ Module BasicCpoTheory.
     set (sup_Y := getSupremumOf_inCPO Y Y_isDirected).
     assert (sup_Y_isSupremumOf_Y : isSupremumOf sup_Y Y) by exact (getSupremumOf_inCPO_isSupremum Y Y_isDirected).
     exists (sup_F), (sup_Y). split; trivial. split; trivial.
-    eapply Supremum_unique with (X1 := image (fun f_i : ⟬ D1 * D2 ⟶ D3 ⟭ => scottLam3 f_i) F).
+    eapply Supremum_unique with (X1 := image scottLam3 F).
     - intros z. split.
       + intros ? f ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f1 [? H_IN]]; subst f. 
         rewrite <- SUPREMUM_LE_UPPER_BOUND. intros x1 x2. simpl. unfold scottLam1.
-        generalize (x1, x2). clear x1 x2. change (f1 =< @exist _ _ (supremumOfScottContinuousMaps F F_isDirected) (supremumOfScottContinuousMaps_isContinuousMap F F_isDirected)).
-        eapply getSupremumOf_inCPO_isSupremum...
+        generalize (x1, x2). clear x1 x2. change (f1 =< getSupremumOf_inCPO F F_isDirected). eapply getSupremumOf_inCPO_isSupremum...
       + intros ?; desnw. unnw. intros x1 x2. simpl.
         eapply supremumOfScottContinuousMaps_isSupremum with (F := F) (F_isDirected := F_isDirected) (x := (x1, x2)).
         intros y ?; desnw. apply in_image_iff in H_IN. destruct H_IN as [f_i [? H_IN]]; subst y.
