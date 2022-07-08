@@ -983,12 +983,12 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
   Fixpoint axiom_set (X : ensemble formula) (n : nat) {struct n} : ensemble formula :=
     match n with
     | O => X
-    | S n' => union (axiom_set X n') (insertion (iterInsertion (Th X) n') n')
+    | S n' => union (axiom_set X n') (insertion (improveFilter (Th X) n') n')
     end
   .
 
   Lemma lemma1_of_1_3_9 (X : ensemble formula) (n : nat)
-    : iterInsertion (Th X) n == Th (axiom_set X n).
+    : improveFilter (Th X) n == Th (axiom_set X n).
   Proof with eauto with *.
     revert X. induction n as [ | n IH]; [reflexivity | intros X b].
     simpl. unfold Insertion. rewrite cl_eq_Th, IH. split; intros b_in.
@@ -1052,7 +1052,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
 
   Lemma lemma3_of_1_3_9_aux1 (xs : list formula) (X : ensemble formula)
     (xs_isFiniteSubsetOf : isFiniteSubsetOf xs (full_axiom_set X))
-    : exists m : nat, isFiniteSubsetOf xs (iterInsertion (Th X) m).
+    : exists m : nat, isFiniteSubsetOf xs (improveFilter (Th X) m).
   Proof with eauto with *.
     revert X xs_isFiniteSubsetOf. unfold isFiniteSubsetOf.
     induction xs as [ | x xs IH]; simpl; ii.
@@ -1060,7 +1060,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     - assert (claim1 : forall z : formula, In z xs -> z \in full_axiom_set X) by now firstorder.
       assert (claim2 : x \in full_axiom_set X) by now firstorder.
       inversion claim2.
-      assert (claim3 : member x (iterInsertion (Th X) n)).
+      assert (claim3 : member x (improveFilter (Th X) n)).
       { eapply lemma1_of_1_3_9. econstructor. eapply ByAssumption... }
       pose proof (IH X claim1) as [m claim4].
       pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m m n) as [m_le_n | n_lt_m].
@@ -1081,7 +1081,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     intros z [INFERS].
     pose proof (inference_is_finite (full_axiom_set X) z INFERS) as [xs [X' [xs_isFiniteSubsetOf [xs_isListRepOf INFERS']]]].
     pose proof (lemma3_of_1_3_9_aux1 xs X xs_isFiniteSubsetOf) as [m claim1].
-    assert (claim2 : isFilter (iterInsertion (Th X) m)).
+    assert (claim2 : isFilter (improveFilter (Th X) m)).
     { eapply @lemma1_of_1_2_11 with (requiresCBA := LBA_pl_asCBA). eapply lemma1_of_1_3_8. }
     inversion claim2. exists (m). unnw.
     eapply CLOSED_UPWARD with (x := andsBA xs).

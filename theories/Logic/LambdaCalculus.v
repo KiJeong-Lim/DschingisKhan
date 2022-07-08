@@ -21,8 +21,6 @@ Module LambdaCalculusHelper.
 
   Global Instance tvarEqDec : EqDec tvar := natEqDec.
 
-  Global Reserved Notation " '(∀' ty_var ')' ty_expr " (at level 100, right associativity).
-
   Global Declare Scope tyExpr_scope.
   Global Declare Scope tmExpr_scope.
 

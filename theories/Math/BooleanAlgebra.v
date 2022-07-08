@@ -404,45 +404,45 @@ Module CountableBooleanAlgebra.
 
   Definition Insertion (X : ensemble BA) (n : nat) : ensemble BA := union X (insertion X n).
 
-  Definition iterInsertion (X : ensemble BA) : nat -> ensemble BA :=
-    fix iterInsertion_fix (n : nat) {struct n} : ensemble BA :=
+  Definition improveFilter (X : ensemble BA) : nat -> ensemble BA :=
+    fix improveFilter_fix (n : nat) {struct n} : ensemble BA :=
     match n with
     | O => X
-    | S n' => cl (Insertion (iterInsertion_fix n') n')
+    | S n' => cl (Insertion (improveFilter_fix n') n')
     end
   .
 
   Definition completeFilterOf (X : ensemble BA) : ensemble BA :=
-    fun b : BA => exists n : nat, member b (iterInsertion X n)
+    fun b : BA => exists n : nat, member b (improveFilter X n)
   .
 
   Lemma lemma1_of_1_2_11 (n : nat)
-    : forall X : ensemble BA, << IS_FILTER : isFilter X >> -> isFilter (iterInsertion X n).
+    : forall X : ensemble BA, << IS_FILTER : isFilter X >> -> isFilter (improveFilter X n).
   Proof.
     induction n as [ | n IH]; simpl; eauto.
     ii; desnw. eapply fact1_of_1_2_8.
   Qed.
 
   Lemma lemma1_of_1_2_12 (n1 : nat) (n2 : nat) (n1_le_n2 : n1 <= n2)
-    : forall X : ensemble BA, isSubsetOf (iterInsertion X n1) (iterInsertion X n2).
+    : forall X : ensemble BA, isSubsetOf (improveFilter X n1) (improveFilter X n2).
   Proof with eauto with *.
     induction n1_le_n2 as [ | n2 n1_le_n2 IH]; intros X...
-    rewrite IH with (X := X). transitivity (Insertion (iterInsertion X n2) n2).
+    rewrite IH with (X := X). transitivity (Insertion (improveFilter X n2) n2).
     - intros z z_in; left...
     - simpl; eapply fact3_of_1_2_8...
   Qed.
 
   Lemma lemma1_of_1_2_13_aux1 (bs : list BA) (F : ensemble BA) (n : nat)
     (F_isFilter : isFilter F)
-    (FINITE_SUBSET : isFiniteSubsetOf bs (union (iterInsertion F n) (insertion (iterInsertion F n) n)))
-    : member (andsBA bs) (iterInsertion F n) \/ (exists b : BA, In b bs /\ member b (insertion (iterInsertion F n) n)).
+    (FINITE_SUBSET : isFiniteSubsetOf bs (union (improveFilter F n) (insertion (improveFilter F n) n)))
+    : member (andsBA bs) (improveFilter F n) \/ (exists b : BA, In b bs /\ member b (insertion (improveFilter F n) n)).
   Proof.
     revert F n F_isFilter FINITE_SUBSET. induction bs as [ | b1 bs1 IH]; simpl; ii.
     - left. now eapply fact2_of_1_2_8, lemma1_of_1_2_11.
     - pose proof (lemma1_of_1_2_11 n F F_isFilter) as claim1. inversion claim1. unnw.
-      assert (H_IN : member b1 (iterInsertion F n) \/ member b1 (insertion (iterInsertion F n) n)).
+      assert (H_IN : member b1 (improveFilter F n) \/ member b1 (insertion (improveFilter F n) n)).
       { rewrite <- in_union_iff. eapply FINITE_SUBSET. now left. }
-      assert (claim2 : isFiniteSubsetOf bs1 (union (iterInsertion F n) (insertion (iterInsertion F n) n))).
+      assert (claim2 : isFiniteSubsetOf bs1 (union (improveFilter F n) (insertion (improveFilter F n) n))).
       { unfold isFiniteSubsetOf in *. ii. eapply FINITE_SUBSET. now right. }
       pose proof (IH F n F_isFilter claim2) as [H_in | [b [b_in b_in_insertion]]].
       { destruct H_IN as [H_IN | H_IN].
@@ -457,7 +457,7 @@ Module CountableBooleanAlgebra.
   Qed.
 
   Lemma lemma1_of_1_2_13_aux2 (X : ensemble BA) (n : nat)
-    : isSubsetOf (Insertion (iterInsertion X n) n) (insert (enum n) (iterInsertion X n)).
+    : isSubsetOf (Insertion (improveFilter X n) n) (insert (enum n) (improveFilter X n)).
   Proof.
     intros z [z_in | z_in]; [right | left]; trivial.
     inversion z_in; subst. reflexivity.
@@ -465,7 +465,7 @@ Module CountableBooleanAlgebra.
 
   Lemma lemma1_of_1_2_13 (F : ensemble BA) (n : nat)
     (F_isFilter : isFilter F)
-    : equiconsistent F (iterInsertion F n).
+    : equiconsistent F (improveFilter F n).
   Proof.
     revert F F_isFilter. induction n as [ | n IH]; simpl; ii.
     - reflexivity.
@@ -479,7 +479,7 @@ Module CountableBooleanAlgebra.
       { destruct INCONSISTENT as [botBA [botBA_in botBA_eq_falseBA]].
         destruct botBA_in as [xs [? ?]]; desnw.
         pose proof (lemma1_of_1_2_11 n F F_isFilter) as claim1. inversion claim1; unnw.
-        assert (claim2 : isSubsetOf (cl (Insertion (iterInsertion F n) n)) (cl (insert (enum n) (iterInsertion F n)))).
+        assert (claim2 : isSubsetOf (cl (Insertion (improveFilter F n) n)) (cl (insert (enum n) (improveFilter F n)))).
         { eapply fact4_of_1_2_8, lemma1_of_1_2_13_aux2. }
         pose proof (lemma1_of_1_2_13_aux1 xs F n F_isFilter xs_isFiniteSubsetOf) as [H_in | [b [b_in b_in_insertion]]].
         - exists (andBA botBA (andsBA xs)). split.
@@ -497,7 +497,7 @@ Module CountableBooleanAlgebra.
 
   Lemma lemma2_of_1_2_13 (F : ensemble BA) (n1 : nat) (n2 : nat)
     (F_isFilter : isFilter F)
-    : equiconsistent (iterInsertion F n1) (iterInsertion F n2).
+    : equiconsistent (improveFilter F n1) (improveFilter F n2).
   Proof.
     transitivity (F).
     - symmetry. now eapply lemma1_of_1_2_13.
@@ -520,7 +520,7 @@ Module CountableBooleanAlgebra.
   Theorem theorem_of_1_2_14_aux1 (F : ensemble BA) (n : nat)
     (F_isFilter : isFilter F)
     (EQUICONSISTENT : equiconsistent (completeFilterOf F) (cl (insert (enum n) (completeFilterOf F))))
-    : equiconsistent (iterInsertion F n) (cl (insert (enum n) (iterInsertion F n))).
+    : equiconsistent (improveFilter F n) (cl (insert (enum n) (improveFilter F n))).
   Proof.
     split.
     - intros [botBA [botBA_in botBA_eq_falseBA]].
