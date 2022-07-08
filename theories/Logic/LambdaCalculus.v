@@ -104,11 +104,11 @@ Module UntypedLambdaCalculus.
   .
 
   Lemma chi_sigma_M_sigma_x_not_free (sigma : tmSubst) (M : tmExpr) (x : ivar)
-    (OCCURS_FREE : isFreeIn x M = true)
+    (FREE_IN : isFreeIn x M = true)
     : isFreeIn (chi sigma M) (sigma x) = false.
   Proof.
     enough (claim1 : last_ivar (sigma x) < chi sigma M) by now eapply last_ivar_lt.
-    unfold chi, maxs. eapply le_intro_S_n_le_S_m. rewrite <- getFVs_isFreeIn in OCCURS_FREE.
+    unfold chi, maxs. eapply le_intro_S_n_le_S_m. rewrite <- getFVs_isFreeIn in FREE_IN.
     eapply maxs_in; resolver.
   Qed.
 
@@ -253,9 +253,9 @@ Module UntypedLambdaCalculus.
   Qed.
 
   Theorem composeSubst_spec (M : tmExpr) (sigma1 : tmSubst) (sigma2 : tmSubst)
-    : runSubst sigma2 (runSubst sigma1 M) = runSubst (composeSubst sigma2 sigma1) M.
+    : runSubst (composeSubst sigma2 sigma1) M = runSubst sigma2 (runSubst sigma1 M).
   Proof with resolver.
-    revert sigma1 sigma2. induction M as [x | P1 IH1 P2 IH2 | y Q IH]; simpl...
+    symmetry. revert sigma1 sigma2. induction M as [x | P1 IH1 P2 IH2 | y Q IH]; simpl...
     - rewrite IH1, IH2...
     - enough (to_show : chi sigma2 (runSubst sigma1 (Lam y Q)) = chi (composeSubst sigma2 sigma1) (Lam y Q)).
       { set (x := chi sigma1 (Lam y Q)).
@@ -290,18 +290,18 @@ Module UntypedLambdaCalculus.
   Qed.
 
   Corollary compose_one (M : tmExpr) (N : tmExpr) (sigma : tmSubst) (x : ivar)
-    : runSubst (consSubst x (runSubst sigma N) sigma) M = runSubst sigma (runSubst (consSubst x N nilSubst) M).
-  Proof with try now firstorder.
+    : runSubst sigma (runSubst (consSubst x N nilSubst) M) = runSubst (consSubst x (runSubst sigma N) sigma) M.
+  Proof.
     replace (runSubst (consSubst x (runSubst sigma N) sigma) M) with (runSubst (consSubst x (runSubst sigma N) (composeSubst sigma nilSubst)) M).
     replace (runSubst (consSubst x (runSubst sigma N) (composeSubst sigma nilSubst)) M) with (runSubst (composeSubst sigma (consSubst x N nilSubst)) M).
-    rewrite composeSubst_spec... all: eapply equivSubstWrt_spec, equivSubstWrt_trivialIntro; unfold composeSubst, consSubst, nilSubst; intros z; destruct (ivarEqDec x z)...
+    rewrite <- composeSubst_spec. all: eapply equivSubstWrt_spec, equivSubstWrt_trivialIntro; unfold composeSubst, consSubst, nilSubst; intros z; destruct (ivarEqDec x z); now firstorder.
   Qed.
 
   Theorem consSubst_spec (y : ivar) (z : ivar) (Q : tmExpr) (M : tmExpr) (sigma : tmSubst)
     (NOT_FREE_IN : isFreeIn z (Lam y Q) = false)
     : runSubst (consSubst y M sigma) Q = runSubst (consSubst z M sigma) (runSubst (consSubst y (Var z) nilSubst) Q).
   Proof with resolver.
-    rewrite composeSubst_spec. eapply equivSubstWrt_spec.
+    rewrite <- composeSubst_spec. eapply equivSubstWrt_spec.
     intros w FREE_IN. unfold consSubst, nilSubst, composeSubst.
     destruct (ivarEqDec y w) as [y_eq_w | y_ne_w]; [red in y_eq_w | unfold member in y_ne_w]; simpl.
     - destruct (ivarEqDec z z)...
