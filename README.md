@@ -14,7 +14,7 @@ make -j2 -k
 
 ## COMPATIBLE COQ VERSIONS
 
-- With `The Coq Proof Assistant, version 8.15.1 compiled with OCaml 4.13.1`, everything works fine in `WSL Ubuntu-20.04 2`.
+- With `The Coq Proof Assistant, version 8.15.2 compiled with OCaml 4.13.1`, everything works fine in `WSL Ubuntu-20.04 2`.
 
 ## THANKS TO
 
