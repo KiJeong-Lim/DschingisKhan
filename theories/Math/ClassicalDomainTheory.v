@@ -328,7 +328,7 @@ Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Sema
   Qed.
 
   Definition BottomOfScottContinuousMaps {D1 : Type} {D2 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} : ⟬ D1 ⟶ D2 ⟭ :=
-    @exist (D1 -> D2) isContinuousMap bottomOfScottContinuousMaps bottomOfScottContinuousMaps_isContinuousMap
+    @exist (Hask.arrow D1 D2) isContinuousMap bottomOfScottContinuousMaps bottomOfScottContinuousMaps_isContinuousMap
   .
 
   Lemma BottomOfScottContinuousMaps_isBottom {D1 : Type} {D2 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2}
@@ -812,7 +812,7 @@ Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Sema
 
   End SCOTT_LAM.
 
-  Section SCOTT_REC.
+  Section SCOTT_FIX.
 
   Context {D : Type}.
 
@@ -980,10 +980,10 @@ Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Sema
         inversion x_in; subst. exists (preimage (fun f_i : ⟬ D ⟶ D ⟭ => iterS n (proj1_sig f_i) getBottom_inCPO) O)... econstructor...
   Qed.
 
-  Definition ScottRec : ⟬ ⟬ D ⟶ D ⟭ ⟶ D ⟭ :=
+  Definition ScottFix : ⟬ ⟬ D ⟶ D ⟭ ⟶ D ⟭ :=
     @exist (⟬ D ⟶ D ⟭ -> D) isContinuousMap getLfpOf_inCPO getLfpOf_inCPO_isContinuousMap
   .
 
-  End SCOTT_REC.
+  End SCOTT_FIX.
 
 End BasicCpoTheory.
