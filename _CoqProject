@@ -8,6 +8,8 @@ theories/Prelude/PreludeClassic.v #
 theories/Data/AczelSet.v #
 theories/Data/Vector.v #
 theories/Data/InteractionTree.v #
+theories/Data/BinTree.v #
+theories/Data/Regex.v #
 #
 theories/Math/BasicPosetTheory.v #
 theories/Math/BooleanAlgebra.v #
