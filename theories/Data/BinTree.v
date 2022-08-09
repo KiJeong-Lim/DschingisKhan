@@ -3,7 +3,7 @@ Require Import Coq.Lists.List.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module BinaryTree.
+Module BinTree.
 
   Import ListNotations.
 
@@ -28,7 +28,7 @@ Module BinaryTree.
     end
   .
 
-  Section QUEUE_SEARCH.
+  Section BFS.
 
   Fixpoint rk_bt (t : bintree) {struct t} : nat :=
     match t with
@@ -95,8 +95,8 @@ Module BinaryTree.
     all: eapply bfs_spec_iff; reflexivity.
   Qed.
 
-  End QUEUE_SEARCH.
+  End BFS.
 
   End ACCESSORIES.
 
-End BinaryTree.
+End BinTree.
