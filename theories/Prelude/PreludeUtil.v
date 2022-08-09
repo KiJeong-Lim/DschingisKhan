@@ -208,7 +208,7 @@ Module NAT_FACTS.
     n_le_pred_m_if_n_lt_m hyp_lt
   .
 
-  Definition le_reflexitivity {n1 : nat} : n1 <= n1 := le_n n1.
+  Definition le_reflexivity {n1 : nat} : n1 <= n1 := le_n n1.
 
   Fixpoint le_transitivity {n1 : nat} {n2 : nat} {n3 : nat} (hyp1 : n1 <= n2) {struct hyp1} : n2 <= n3 -> n1 <= n3 :=
     match hyp1 in le _ x return x <= n3 -> n1 <= n3 with
@@ -266,6 +266,20 @@ Module NAT_FACTS.
       | O => le_intro_0_le_n
       | S n2' => le_intro_S_n_le_S_m (n2_le_max_n1_n2 n1' n2')
       end
+    end
+  .
+
+  Fixpoint le_intro_plus_l (n1 : nat) (n2 : nat) {struct n1} : n1 <= n1 + n2 :=
+    match n1 with
+    | O => le_intro_0_le_n
+    | S n1' => le_intro_S_n_le_S_m (le_intro_plus_l n1' n2)
+    end
+  .
+
+  Fixpoint le_intro_plus_r (n1 : nat) (n2 : nat) {struct n1} : n2 <= n1 + n2 :=
+    match n1 with
+    | O => le_reflexivity
+    | S n1' => le_transitivity (le_intro_plus_r n1' n2) (le_S (n1' + n2) (n1' + n2) le_reflexivity)
     end
   .
 

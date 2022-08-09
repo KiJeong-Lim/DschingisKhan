@@ -161,7 +161,7 @@ Module SyntaxOfPL.
   Theorem formula_is_enumerable (p : formula)
     : {seed : nat | enumFormula seed = p}.
   Proof.
-    pose proof (specOf_enumFormula' p (getRankOfFormula p) le_reflexitivity) as [seed0 H_EQ].
+    pose proof (specOf_enumFormula' p (getRankOfFormula p) le_reflexivity) as [seed0 H_EQ].
     exists (cantor_pairing_inv (getRankOfFormula p) seed0). unfold cantor_pairing_inv, enumFormula.
     now repeat rewrite <- cantor_pairing_is_surjective.
   Qed.

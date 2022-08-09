@@ -565,7 +565,7 @@ Module CountableBooleanAlgebra.
           - eapply claim2. now intros z [z_eq | [z_eq | []]]; subst z.
           - now rewrite andsBA_two.
         }
-        { pose proof (lemma1_of_1_2_12 n2 n1 (le_transitivity (le_S _ _ le_reflexitivity) n2_lt_n1) F x2 H_IN2) as claim1.
+        { pose proof (lemma1_of_1_2_12 n2 n1 (le_transitivity (le_S _ _ le_reflexivity) n2_lt_n1) F x2 H_IN2) as claim1.
           pose proof (lemma1_of_1_2_11 n1 F F_isFilter) as [claim2 claim3].
           exists (n1). eapply claim3 with (x := andsBA [x1; x2]); unnw.
           - eapply claim2. now intros z [z_eq | [z_eq | []]]; subst z.
