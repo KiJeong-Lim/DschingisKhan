@@ -9,8 +9,6 @@ Module BinaryTrees.
 
   Import ListNotations.
 
-  Local Open Scope program_scope.
-
   Inductive direction : Set := LeftDir | RightDir.
 
   Definition encode (ds : list direction) : nat := fold_left (fun i : nat => direction_rect (fun _ : direction => nat) (2 * i + 1) (2 * i + 2)) ds 0.
@@ -129,11 +127,9 @@ Module BinaryTrees.
       | BTnode t_l x t_r => goto ds' t_r
       end
     end.
-  Proof.
-    destruct ds as [ | [ | ] ds'].
-    - reflexivity.
-    - destruct t as [ | t_l x t_r]; reflexivity.
-    - destruct t as [ | t_l x t_r]; reflexivity.
+  Proof with try reflexivity.
+    destruct ds as [ | [ | ] ds']...
+    all: destruct t as [ | t_l x t_r]...
   Qed.
 
   Definition lookup (t : bintree) (ds : list direction) : option A :=
