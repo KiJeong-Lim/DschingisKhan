@@ -14,6 +14,15 @@ Module RegularExpressions.
 
   Context {A : Type}.
 
+  Inductive regex : Type :=
+  | ReZero : regex
+  | ReUnit : regex
+  | ReChar (ch : A) : regex
+  | RePlus (re1 : regex) (re2 : regex) : regex
+  | ReMult (re1 : regex) (re2 : regex) : regex
+  | ReStar (re1 : regex) : regex
+  .
+
   Let lang : Type := ensemble (list A).
 
   Inductive langStar (L : lang) : lang :=
@@ -29,21 +38,12 @@ Module RegularExpressions.
     langStar with signature (eqProp ==> eqProp)
     as langStar_compatWith_eqProp.
   Proof with eauto with *.
-    enough (forall L : lang, forall L' : lang, L == L' -> forall str : list A, str \in langStar L -> str \in langStar L').
+    enough (to_show : forall L : lang, forall L' : lang, L == L' -> forall str : list A, str \in langStar L -> str \in langStar L').
     { iis... }
     intros L L' H_EQ str H_IN. induction H_IN as [ | str1 str2 H_IN_L H_IN IH].
     - econstructor 1.
     - econstructor 2... rewrite <- H_EQ...
   Qed.
-
-  Inductive regex : Type :=
-  | ReZero : regex
-  | ReUnit : regex
-  | ReChar (ch : A) : regex
-  | RePlus (re1 : regex) (re2 : regex) : regex
-  | ReMult (re1 : regex) (re2 : regex) : regex
-  | ReStar (re1 : regex) : regex
-  .
 
   Fixpoint evalRegex (re : regex) {struct re} : lang :=
     match re with
