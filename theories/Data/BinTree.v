@@ -138,7 +138,7 @@ Module BinaryTrees.
 
   Definition lookup (t : bintree) (ds : list direction) : option A := (getKey <=< goto ds) t.
 
-  Definition toList (t : bintree) : list A := map (lookup t ∘ decode) (seq 0 (2 ^ getSize t)) >>= maybe [] pure.
+  Definition toList (t : bintree) : list A := map (lookup t ∘ decode) (seq 0 (2 ^ getHeight t)) >>= maybe [] pure.
 
   Section COMPLETE_TREE.
 
