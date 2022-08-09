@@ -26,9 +26,9 @@ Module RegularExpressions.
   Let lang : Type := ensemble (list A).
 
   Inductive langStar (L : lang) : lang :=
-  | langStar_zero
+  | nil_in_langStar
     : [] \in langStar L
-  | langStar_succ (str1 : list A) (str2 : list A)
+  | app_in_langStar (str1 : list A) (str2 : list A)
     (str1_in : str1 \in L)
     (str2_in : str2 \in langStar L)
     : str1 ++ str2 \in langStar L
