@@ -44,8 +44,7 @@ Module BinaryTrees.
   Proof with lia || eauto.
     induction idx as [[ | i'] IH] using NotherianRecursion.
     - exists ([])...
-    - set (i := S i').
-      destruct (i mod 2) as [ | [ | i_mod_2]] eqn: H_obs.
+    - set (i := S i'). destruct (i mod 2) as [ | [ | i_mod_2]] eqn: H_obs.
       + assert (claim1 : i = 2 * ((i - 2) / 2) + 2).
         { eapply positive_even with (n := (i - 2) / 2)... }
         assert (claim2 : (i - 2) / 2 < i)...
@@ -75,6 +74,13 @@ Module BinaryTrees.
     match t with
     | BTnull => 0
     | BTnode t_l x t_r => 1 + max (getHeight t_l) (getHeight t_r)
+    end
+  .
+
+  Fixpoint getSize (t : bintree) {struct t} : nat :=
+    match t with
+    | BTnull => 0
+    | BTnode t_l x t_r => 1 + (getSize t_l + getSize t_r)
     end
   .
 
@@ -126,6 +132,8 @@ Module BinaryTrees.
     - destruct t as [ | t_l x t_r]; reflexivity.
     - destruct t as [ | t_l x t_r]; reflexivity.
   Qed.
+
+  Definition lookup (t : bintree) (ds : list direction) : option A := (getKey <=< goto ds) t.
 
   Section BREADTH_FIRST_SEARCH.
 
@@ -191,6 +199,20 @@ Module BinaryTrees.
   Qed.
 
   End BREADTH_FIRST_SEARCH.
+
+  Section COMPLETE_TREE.
+
+  Definition isComplete (t : bintree) : Prop := forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None.
+
+  Definition toQueue (t : bintree) : list A := bfs [t].
+
+(*
+  Theorem complete_queue (t : bintree) (idx : nat)
+    (COMPLETE : isComplete t)
+    : nth_error (toQueue t) idx = lookup t (decode idx).
+*)
+
+  End COMPLETE_TREE.
 
   End BINARY_TREE.
 
