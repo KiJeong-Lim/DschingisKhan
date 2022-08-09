@@ -1,5 +1,6 @@
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Lists.List.
+Require Import Coq.micromega.Lia.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
@@ -7,14 +8,70 @@ Module BinaryTrees.
 
   Import ListNotations.
 
+  Inductive direction : Set := LeftDir | RightDir.
+
+  Definition encode (ds : list direction) : nat :=
+    fold_left (fun i : nat => direction_rect (fun _ : direction => nat) (2 * i + 1) (2 * i + 2)) ds 0
+  .
+
+  Lemma encode_inj (ds1 : list direction) (ds2 : list direction)
+    (ENCODE_EQ : encode ds1 = encode ds2)
+    : ds1 = ds2.
+  Proof with lia || eauto.
+    revert ENCODE_EQ. unfold encode; do 2 rewrite <- fold_left_rev_right.
+    intros ENCODE_EQ; eapply rev_inj; revert ENCODE_EQ.
+    generalize (rev ds2) as xs2. generalize (rev ds1) as xs1. clear ds1 ds2.
+    set (myF := fold_right (fun d : direction => fun i : nat => direction_rect (fun _ : direction => nat) (2 * i + 1) (2 * i + 2) d) 0).
+    induction xs1 as [ | x1 xs1 IH], xs2 as [ | x2 xs2]; simpl...
+    - destruct x2; simpl direction_rect...
+    - destruct x1; simpl direction_rect...
+    - destruct x1; destruct x2; simpl direction_rect...
+      all: intros H_eq; assert (claim1 : myF xs1 = myF xs2)...
+      all: apply eq_congruence...
+  Qed.
+
+  Lemma encode_last (ds : list direction) (d : direction) :
+    encode (ds ++ [d]) =
+    match d with
+    | LeftDir => 2 * encode ds + 1
+    | RightDir => 2 * encode ds + 2
+    end.
+  Proof.
+    unfold encode at 1. rewrite <- fold_left_rev_right. rewrite rev_unit.
+    unfold fold_right. unfold encode. rewrite <- fold_left_rev_right. destruct d; eauto.
+  Qed.
+
+  Lemma decodable (idx : nat)
+    : {ds : list direction | encode ds = idx}.
+  Proof with lia || eauto.
+    induction idx as [[ | i'] IH] using NotherianRecursion.
+    - exists ([])...
+    - set (i := S i').
+      destruct (i mod 2) as [ | [ | i_mod_2]] eqn: H_obs.
+      + assert (claim1 : i = 2 * ((i - 2) / 2) + 2).
+        { apply (positive_even i ((i - 2) / 2))... }
+        assert (claim2 : (i - 2) / 2 < i)...
+        destruct (IH ((i - 2) / 2) claim2) as [ds H_ds].
+        exists (ds ++ [RightDir]).
+        unfold encode. rewrite fold_left_last. unfold direction_rect at 1.
+        unfold encode in H_ds. rewrite H_ds...
+      + assert (claim1 : i = 2 * ((i - 1) / 2) + 1).
+        { apply (positive_odd i ((i - 1) / 2))... }
+        assert (claim2 : (i - 1) / 2 < i)...
+        destruct (IH ((i - 1) / 2) claim2) as [ds H_ds].
+        exists (ds ++ [LeftDir]).
+        unfold encode. rewrite fold_left_last. unfold direction_rect at 1.
+        unfold encode in H_ds. rewrite H_ds...
+      + pose (Nat.mod_bound_pos i 2)...
+  Defined.
+
+  Definition decode (idx : nat) : list direction := proj1_sig (decodable idx).
+
   Section BINARY_TREE.
 
   Context {A : Type}.
 
-  Inductive bintree : Type :=
-  | BTnull : bintree
-  | BTnode (t_l : bintree) (x : A) (t_r : bintree) : bintree
-  .
+  Inductive bintree : Type := BTnull | BTnode (t_l : bintree) (x : A) (t_r : bintree).
 
   Fixpoint getHeight (t : bintree) {struct t} : nat :=
     match t with
@@ -22,6 +79,55 @@ Module BinaryTrees.
     | BTnode t_l x t_r => 1 + max (getHeight t_l) (getHeight t_r)
     end
   .
+
+  Definition getLeftChild (t : bintree) : option bintree :=
+    match t with
+    | BTnull => None
+    | BTnode t_l x t_r => Some t_l
+    end
+  .
+
+  Definition getRightChild (t : bintree) : option bintree :=
+    match t with
+    | BTnull => None
+    | BTnode t_l x t_r => Some t_r
+    end
+  .
+
+  Definition getKey (t : bintree) : option A :=
+    match t with
+    | BTnull => None
+    | BTnode t_l x t_r => Some x
+    end
+  .
+
+  Definition goto : list direction -> bintree -> option bintree :=
+    let k_step := @direction_rect _ (fun k : bintree -> option bintree => k <=< getLeftChild) (fun k : bintree -> option bintree => k <=< getRightChild) in
+    let k_base := @Some _ in
+    fold_right (A := bintree -> option bintree) (B := direction) k_step k_base
+  .
+
+  Theorem goto_unfold (ds : list direction) (t : bintree) :
+    goto ds t =
+    match ds with
+    | [] => Some t
+    | LeftDir :: ds' =>
+      match t with
+      | BTnull => None
+      | BTnode t_l x t_r => goto ds' t_l
+      end
+    | RightDir :: ds' =>
+      match t with
+      | BTnull => None
+      | BTnode t_l x t_r => goto ds' t_r
+      end
+    end.
+  Proof.
+    destruct ds as [ | [ | ] ds'].
+    - reflexivity.
+    - destruct t as [ | t_l x t_r]; reflexivity.
+    - destruct t as [ | t_l x t_r]; reflexivity.
+  Qed.
 
   Section BREADTH_FIRST_SEARCH.
 
@@ -32,9 +138,7 @@ Module BinaryTrees.
     end
   .
 
-  Definition rk_queue (ts : list bintree) : nat :=
-    list_sum (map rk_bt ts)
-  .
+  Definition rk_queue (ts : list bintree) : nat := list_sum (map rk_bt ts).
 
   Inductive bfs_spec : list bintree -> list A -> Prop :=
   | bfs_nil
@@ -70,9 +174,7 @@ Module BinaryTrees.
       + intros ?; subst xs'. econstructor 3. eapply IH_bfs. reflexivity.
   Defined.
 
-  Definition bfs (ts : list bintree) : list A :=
-    proj1_sig (bfs_withSpec ts)
-  .
+  Definition bfs (ts : list bintree) : list A := proj1_sig (bfs_withSpec ts).
 
   Lemma bfs_spec_iff (ts : list bintree) (xs : list A)
     : bfs_spec ts xs <-> bfs ts = xs.

@@ -575,11 +575,13 @@ Module MyData.
 
   Section LIST.
 
+  Import ListNotations.
+
   Definition safe_nth {A : Type} : forall xs : list A, Fin (length xs) -> A :=
     fix safe_nth_fix (xs : list A) {struct xs} : Fin (length xs) -> A :=
     match xs as this return Fin (length this) -> A with
-    | nil => Fin_case0
-    | cons x xs => Fin_caseS x (safe_nth_fix xs)
+    | [] => Fin_case0
+    | x :: xs => Fin_caseS x (safe_nth_fix xs)
     end
   .
 
@@ -591,6 +593,19 @@ Module MyData.
     induction lhs as [ | x1 xs1 IH], rhs as [ | x2 xs2]...
     pose proof (requiresEqDec x1 x2) as [ | ]; pose proof (IH xs2) as [ | ]...
   Defined.
+
+  Lemma rev_inj {A : Type} (xs1 xs2 : list A)
+    (REV_EQ : rev xs1 = rev xs2)
+    : xs1 = xs2.
+  Proof.
+    rewrite <- rev_involutive with (l := xs1).
+    rewrite <- rev_involutive with (l := xs2).
+    now eapply eq_congruence.
+  Qed.
+
+  Lemma fold_left_last {A : Type} {B : Type} (f : B -> A -> B) (z0 : B) (xs : list A) (x0 : A)
+    : fold_left f (xs ++ [x0]) z0 = f (fold_left f xs z0) x0.
+  Proof. revert z0 x0; induction xs as [ | x xs IH]; simpl; eauto. Qed.
 
   End LIST.
 
