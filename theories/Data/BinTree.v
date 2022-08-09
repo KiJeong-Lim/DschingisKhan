@@ -185,16 +185,16 @@ Module BinaryTrees.
       + intros ?; subst xs'. econstructor 1.
     - assert (IH_rk : rk_queue ts < rk_queue (BTnull :: ts)).
       { cbn. eapply le_intro_S_n_le_S_m. reflexivity. }
-      pose proof (IH ts IH_rk) as [xs IH_bfs].
+      pose proof (IH ts IH_rk) as [xs IH_xs].
       exists (xs). intros xs'. split.
-      + intros SPEC. inversion SPEC; subst. eapply IH_bfs. exact (IH_SPEC).
-      + intros ?; subst xs'. econstructor 2. eapply IH_bfs. reflexivity.
+      + intros SPEC. inversion SPEC; subst. eapply IH_xs. exact (IH_SPEC).
+      + intros ?; subst xs'. econstructor 2. eapply IH_xs. reflexivity.
     - assert (IH_rk : rk_queue ([t_l; t_r] ++ ts) < rk_queue (BTnode t_l x t_r :: ts)).
       { cbn. eapply le_intro_S_n_le_S_m. rewrite Nat.add_assoc. reflexivity. }
-      pose proof (IH ([t_l; t_r] ++ ts) IH_rk) as [xs IH_bfs].
+      pose proof (IH ([t_l; t_r] ++ ts) IH_rk) as [xs IH_xs].
       exists (x :: xs). intros xs'. split.
-      + intros SPEC. inversion SPEC; subst. eapply eq_congruence. eapply IH_bfs. exact (IH_SPEC).
-      + intros ?; subst xs'. econstructor 3. eapply IH_bfs. reflexivity.
+      + intros SPEC. inversion SPEC; subst. eapply eq_congruence. eapply IH_xs. exact (IH_SPEC).
+      + intros ?; subst xs'. econstructor 3. eapply IH_xs. reflexivity.
   Defined.
 
   Definition bfsAux (ts : list bintree) : list A := proj1_sig (bfsAux_withSpec ts).
