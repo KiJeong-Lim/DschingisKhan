@@ -1,12 +1,15 @@
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Lists.List.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Program.Basics.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module BinaryTrees.
 
   Import ListNotations.
+
+  Local Open Scope program_scope.
 
   Inductive direction : Set := LeftDir | RightDir.
 
@@ -111,7 +114,7 @@ Module BinaryTrees.
     fold_right (A := bintree -> option bintree) (B := direction) k_step k_base
   .
 
-  Theorem goto_unfold (ds : list direction) (t : bintree) :
+  Lemma goto_unfold (ds : list direction) (t : bintree) :
     goto ds t =
     match ds with
     | [] => Some t
@@ -134,6 +137,14 @@ Module BinaryTrees.
   Qed.
 
   Definition lookup (t : bintree) (ds : list direction) : option A := (getKey <=< goto ds) t.
+
+  Definition toList (t : bintree) : list A := map (lookup t ∘ decode) (seq 0 (2 ^ getSize t)) >>= maybe [] pure.
+
+  Section COMPLETE_TREE.
+
+  Definition isComplete (t : bintree) : Prop := forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None.
+
+  End COMPLETE_TREE.
 
   Section BREADTH_FIRST_SEARCH.
 
@@ -198,21 +209,9 @@ Module BinaryTrees.
     all: eapply bfsAux_spec_iff; reflexivity.
   Qed.
 
-  End BREADTH_FIRST_SEARCH.
-
-  Section COMPLETE_TREE.
-
-  Definition isComplete (t : bintree) : Prop := forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None.
-
   Definition bfs (t : bintree) : list A := bfsAux [t].
 
-(*
-  Theorem complete_queue (t : bintree) (idx : nat)
-    (COMPLETE : isComplete t)
-    : nth_error (bfs t) idx = lookup t (decode idx).
-*)
-
-  End COMPLETE_TREE.
+  End BREADTH_FIRST_SEARCH.
 
   End BINARY_TREE.
 

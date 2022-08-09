@@ -367,6 +367,18 @@ Module PreludeInit_MAIN.
 
   End ImplFor_option.
 
+  Section ImplFor_list.
+
+  Import ListNotations.
+
+  Global Instance list_isMonad : isMonad list :=
+    { pure {A : Hask.t} (x : A) := [x]
+    ; bind {A : Hask.t} {B : Hask.t} (xs : list A) (k : A -> list B) := concat (map k xs)
+    }
+  .
+
+  End ImplFor_list.
+
   Section ImplFor_image.
 
   Definition binary_relation_on_image@{dom_lv cod_lv} {dom : Type@{dom_lv}} {cod : Type@{cod_lv}} (bin_rel : cod -> cod -> Prop) (f : dom -> cod) (lhs : dom) (rhs : dom) : Prop := bin_rel (f lhs) (f rhs).
