@@ -136,13 +136,19 @@ Module BinaryTrees.
     - destruct t as [ | t_l x t_r]; reflexivity.
   Qed.
 
-  Definition lookup (t : bintree) (ds : list direction) : option A := (getKey <=< goto ds) t.
+  Definition lookup (t : bintree) (ds : list direction) : option A :=
+    (getKey <=< goto ds) t
+  .
 
-  Definition toList (t : bintree) : list A := map (lookup t ∘ decode) (seq 0 (2 ^ getHeight t)) >>= maybe [] pure.
+  Definition toList (t : bintree) : list A :=
+    map (lookup t ∘ decode) (seq 0 (2 ^ getHeight t)) >>= maybe [] pure
+  .
 
   Section COMPLETE_TREE.
 
-  Definition isComplete (t : bintree) : Prop := forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None.
+  Definition isComplete (t : bintree) : Prop :=
+    forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None
+  .
 
   End COMPLETE_TREE.
 
