@@ -146,19 +146,19 @@ Module BinaryTrees.
 
   Definition rk_queue (ts : list bintree) : nat := list_sum (map rk_bt ts).
 
-  Inductive bfs_spec : list bintree -> list A -> Prop :=
-  | bfs_nil
-    : bfs_spec [] []
-  | bfs_cons_null (ts : list bintree) (xs : list A)
-    (IH_SPEC : bfs_spec ts xs)
-    : bfs_spec (BTnull :: ts) xs
-  | bfs_cons_node (t_l : bintree) (x : A) (t_r : bintree) (ts : list bintree) (xs : list A)
-    (IH_SPEC : bfs_spec ([t_l; t_r] ++ ts) xs)
-    : bfs_spec (BTnode t_l x t_r :: ts) (x :: xs)
+  Inductive bfsAux_spec : list bintree -> list A -> Prop :=
+  | bfsAux_nil
+    : bfsAux_spec [] []
+  | bfsAux_cons_null (ts : list bintree) (xs : list A)
+    (IH_SPEC : bfsAux_spec ts xs)
+    : bfsAux_spec (BTnull :: ts) xs
+  | bfsAux_cons_node (t_l : bintree) (x : A) (t_r : bintree) (ts : list bintree) (xs : list A)
+    (IH_SPEC : bfsAux_spec ([t_l; t_r] ++ ts) xs)
+    : bfsAux_spec (BTnode t_l x t_r :: ts) (x :: xs)
   .
 
-  Definition bfs_withSpec (ts : list bintree)
-    : {xs : list A | forall xs' : list A, bfs_spec ts xs' <-> xs = xs'}.
+  Definition bfsAux_withSpec (ts : list bintree)
+    : {xs : list A | forall xs' : list A, bfsAux_spec ts xs' <-> xs = xs'}.
   Proof.
     assert (WF_REC : forall ts : list bintree, Acc (fun lhs : list bintree => fun rhs : list bintree => rk_queue lhs < rk_queue rhs) ts).
     { exact (well_founded_relation_on_image rk_queue Nat.lt (@lt_strong_ind (@Acc nat Nat.lt) (@Acc_intro nat Nat.lt))). }
@@ -180,22 +180,22 @@ Module BinaryTrees.
       + intros ?; subst xs'. econstructor 3. eapply IH_bfs. reflexivity.
   Defined.
 
-  Definition bfs (ts : list bintree) : list A := proj1_sig (bfs_withSpec ts).
+  Definition bfsAux (ts : list bintree) : list A := proj1_sig (bfsAux_withSpec ts).
 
-  Lemma bfs_spec_iff (ts : list bintree) (xs : list A)
-    : bfs_spec ts xs <-> bfs ts = xs.
-  Proof. revert xs. exact (proj2_sig (bfs_withSpec ts)). Qed.
+  Lemma bfsAux_spec_iff (ts : list bintree) (xs : list A)
+    : bfsAux_spec ts xs <-> bfsAux ts = xs.
+  Proof. revert xs. exact (proj2_sig (bfsAux_withSpec ts)). Qed.
 
-  Theorem bfs_unfold (ts : list bintree) :
-    bfs ts =
+  Theorem bfsAux_unfold (ts : list bintree) :
+    bfsAux ts =
     match ts with
     | [] => []
-    | BTnull :: ts' => bfs ts'
-    | BTnode t_l x t_r :: ts' => x :: bfs ([t_l; t_r] ++ ts')
+    | BTnull :: ts' => bfsAux ts'
+    | BTnode t_l x t_r :: ts' => x :: bfsAux ([t_l; t_r] ++ ts')
     end.
   Proof.
-    destruct ts as [ | [ | t_l x t_r] ts']; eapply bfs_spec_iff; econstructor.
-    all: eapply bfs_spec_iff; reflexivity.
+    destruct ts as [ | [ | t_l x t_r] ts']; eapply bfsAux_spec_iff; econstructor.
+    all: eapply bfsAux_spec_iff; reflexivity.
   Qed.
 
   End BREADTH_FIRST_SEARCH.
@@ -204,12 +204,12 @@ Module BinaryTrees.
 
   Definition isComplete (t : bintree) : Prop := forall idx : nat, idx < getSize t -> lookup t (decode idx) <> None.
 
-  Definition toQueue (t : bintree) : list A := bfs [t].
+  Definition bfs (t : bintree) : list A := bfsAux [t].
 
 (*
   Theorem complete_queue (t : bintree) (idx : nat)
     (COMPLETE : isComplete t)
-    : nth_error (toQueue t) idx = lookup t (decode idx).
+    : nth_error (bfs t) idx = lookup t (decode idx).
 *)
 
   End COMPLETE_TREE.
