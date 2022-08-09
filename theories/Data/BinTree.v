@@ -3,23 +3,18 @@ Require Import Coq.Lists.List.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module BinTree.
+Module BinaryTrees.
 
   Import ListNotations.
 
-  Inductive bintree (A : Type) : Type :=
-  | BTnull : bintree A
-  | BTnode (t_l : bintree A) (x : A) (t_r : bintree A) : bintree A
-  .
-
-  Global Arguments BTnull {A}.
-  Global Arguments BTnode {A} (t_l) (x) (t_r).
-
-  Section ACCESSORIES.
+  Section BINARY_TREE.
 
   Context {A : Type}.
 
-  Local Notation bintree := (bintree A).
+  Inductive bintree : Type :=
+  | BTnull : bintree
+  | BTnode (t_l : bintree) (x : A) (t_r : bintree) : bintree
+  .
 
   Fixpoint getHeight (t : bintree) {struct t} : nat :=
     match t with
@@ -28,7 +23,7 @@ Module BinTree.
     end
   .
 
-  Section BFS.
+  Section BREADTH_FIRST_SEARCH.
 
   Fixpoint rk_bt (t : bintree) {struct t} : nat :=
     match t with
@@ -55,9 +50,9 @@ Module BinTree.
   Definition bfs_withSpec (ts : list bintree)
     : {xs : list A | forall xs' : list A, bfs_spec ts xs' <-> xs = xs'}.
   Proof.
-    assert (RECURSOR : forall ts : list bintree, Acc (fun lhs : list bintree => fun rhs : list bintree => rk_queue lhs < rk_queue rhs) ts).
-    { exact (well_founded_relation_on_image rk_queue Nat.lt (@lt_strong_ind (@Acc nat lt) (@Acc_intro nat lt))). }
-    induction (RECURSOR ts) as [ts H_acc_inv IH]. clear H_acc_inv RECURSOR. destruct ts as [ | [ | t_l x t_r]].
+    assert (WF_REC : forall ts : list bintree, Acc (fun lhs : list bintree => fun rhs : list bintree => rk_queue lhs < rk_queue rhs) ts).
+    { exact (well_founded_relation_on_image rk_queue Nat.lt (@lt_strong_ind (@Acc nat Nat.lt) (@Acc_intro nat Nat.lt))). }
+    induction (WF_REC ts) as [ts H_acc_inv IH]. clear H_acc_inv WF_REC. destruct ts as [ | [ | t_l x t_r] ts].
     - exists ([]). intros xs'. split.
       + intros SPEC. inversion SPEC; subst. reflexivity.
       + intros ?; subst xs'. econstructor 1.
@@ -95,8 +90,10 @@ Module BinTree.
     all: eapply bfs_spec_iff; reflexivity.
   Qed.
 
-  End BFS.
+  End BREADTH_FIRST_SEARCH.
 
-  End ACCESSORIES.
+  End BINARY_TREE.
 
-End BinTree.
+  Global Arguments bintree : clear implicits.
+
+End BinaryTrees.
