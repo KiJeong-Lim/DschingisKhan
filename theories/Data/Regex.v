@@ -19,7 +19,9 @@ Module RegularExpressions.
   | ReStar (re1 : regex) : regex
   .
 
-  Inductive langStar (L : ensemble (list A)) : ensemble (list A) :=
+  Let lang : Type := ensemble (list A).
+
+  Inductive langStar (L : lang) : lang :=
   | langStar_zero
     : [] \in langStar L
   | langStar_succ (str1 : list A) (str2 : list A)
@@ -28,7 +30,7 @@ Module RegularExpressions.
     : str1 ++ str2 \in langStar L
   .
 
-  Fixpoint evalRegex (re : regex) {struct re} : ensemble (list A) :=
+  Fixpoint evalRegex (re : regex) {struct re} : lang :=
     match re with
     | ReZero => empty
     | ReUnit => singleton []
