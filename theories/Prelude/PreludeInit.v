@@ -857,6 +857,10 @@ Module PreludeInit_MAIN.
 
 (** "5. Extras" *)
 
+  Definition liftM2 {M : Type -> Type} {M_isMonad : isMonad M} {A : Type} {B : Type} {C : Type} (f : A -> B -> C) (m1 : M A) (m2 : M B) : M C :=
+    m1 >>= fun x1 : A => m2 >>= fun x2 : B => pure (f x1 x2)
+  .
+
   Section Hask_with_laws.
 
   Local Obligation Tactic := ii; vm_compute in *; congruence.
