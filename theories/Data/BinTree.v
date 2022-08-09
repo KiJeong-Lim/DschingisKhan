@@ -10,9 +10,7 @@ Module BinaryTrees.
 
   Inductive direction : Set := LeftDir | RightDir.
 
-  Definition encode (ds : list direction) : nat :=
-    fold_left (fun i : nat => direction_rect (fun _ : direction => nat) (2 * i + 1) (2 * i + 2)) ds 0
-  .
+  Definition encode (ds : list direction) : nat := fold_left (fun i : nat => direction_rect (fun _ : direction => nat) (2 * i + 1) (2 * i + 2)) ds 0.
 
   Lemma encode_inj (ds1 : list direction) (ds2 : list direction)
     (ENCODE_EQ : encode ds1 = encode ds2)
@@ -38,7 +36,7 @@ Module BinaryTrees.
     end.
   Proof.
     unfold encode at 1. rewrite <- fold_left_rev_right. rewrite rev_unit.
-    unfold fold_right. unfold encode. rewrite <- fold_left_rev_right. destruct d; eauto.
+    unfold fold_right. unfold encode. rewrite <- fold_left_rev_right. destruct d as [ | ]; eauto.
   Qed.
 
   Lemma decodable (idx : nat)
@@ -49,16 +47,16 @@ Module BinaryTrees.
     - set (i := S i').
       destruct (i mod 2) as [ | [ | i_mod_2]] eqn: H_obs.
       + assert (claim1 : i = 2 * ((i - 2) / 2) + 2).
-        { apply (positive_even i ((i - 2) / 2))... }
+        { eapply positive_even with (n := (i - 2) / 2)... }
         assert (claim2 : (i - 2) / 2 < i)...
-        destruct (IH ((i - 2) / 2) claim2) as [ds H_ds].
+        pose proof (IH ((i - 2) / 2) claim2) as [ds H_ds].
         exists (ds ++ [RightDir]).
         unfold encode. rewrite fold_left_last. unfold direction_rect at 1.
         unfold encode in H_ds. rewrite H_ds...
       + assert (claim1 : i = 2 * ((i - 1) / 2) + 1).
-        { apply (positive_odd i ((i - 1) / 2))... }
+        { eapply positive_odd with (n := (i - 1) / 2)... }
         assert (claim2 : (i - 1) / 2 < i)...
-        destruct (IH ((i - 1) / 2) claim2) as [ds H_ds].
+        pose proof (IH ((i - 1) / 2) claim2) as [ds H_ds].
         exists (ds ++ [LeftDir]).
         unfold encode. rewrite fold_left_last. unfold direction_rect at 1.
         unfold encode in H_ds. rewrite H_ds...
