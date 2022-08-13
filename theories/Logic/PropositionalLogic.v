@@ -13,10 +13,10 @@ Require Import DschingisKhan.Math.BooleanAlgebra.
 
 Module SyntaxOfPL.
 
-  Definition propVar : Set := nat.
+  Definition propLetter : Set := nat.
 
   Inductive formula : Set :=
-  | AtomF (i : propVar) : formula
+  | AtomF (i : propLetter) : formula
   | ContradictionF : formula
   | NegationF (p1 : formula) : formula
   | ConjunctionF (p1 : formula) (p2 : formula) : formula
@@ -220,9 +220,9 @@ Module SemanticsOfPL.
 
   Global Delimit Scope type_scope with truth_value.
 
-  Definition propVarEnv : Type := propVar -> truth_value.
+  Definition truthValueAssignment : Type := propLetter -> truth_value.
 
-  Fixpoint evalFormula (env : propVarEnv) (p : formula) {struct p} : truth_value :=
+  Fixpoint evalFormula (env : truthValueAssignment) (p : formula) {struct p} : truth_value :=
     match p with
     | \pl[ p_{ i } ] => env i
     | \pl[ _|_ ] => False
@@ -234,7 +234,7 @@ Module SemanticsOfPL.
     end
   .
 
-  Variant satisfies (env : propVarEnv) (A : formula) : Prop :=
+  Variant satisfies (env : truthValueAssignment) (A : formula) : Prop :=
   | IsModel
     (EVAL_TO_TRUE : evalFormula env A)
     : satisfies env A
@@ -243,7 +243,7 @@ Module SemanticsOfPL.
   Global Infix " `satisfies` " := satisfies (at level 70, no associativity) : type_scope.
 
   Definition entails (Gamma : ensemble formula) (A : formula) : Prop :=
-    forall env : propVarEnv, forall env_satisfies : forall B : formula, forall B_IN : B \in Gamma, env `satisfies` B, env `satisfies` A
+    forall env : truthValueAssignment, forall env_satisfies : forall B : formula, forall B_IN : B \in Gamma, env `satisfies` B, env `satisfies` A
   .
 
   Global Infix " ⊧ " := entails (at level 70, no associativity) : type_scope.
@@ -1005,7 +1005,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
       + right...
   Qed.
 
-  Lemma completeness_theorem_prototype (X : ensemble formula) (b : formula) (env : propVarEnv)
+  Lemma completeness_theorem_prototype (X : ensemble formula) (b : formula) (env : truthValueAssignment)
     (ENTAILS : X ⊧ b)
     (EQUICONSISTENT : equiconsistent (Th (insert (NegationF b) X)) (evalFormula env))
     (SUBSET : isSubsetOf (Th (insert (NegationF b) X)) (evalFormula env))

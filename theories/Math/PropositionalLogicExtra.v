@@ -249,7 +249,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
       eapply fact5_of_1_2_8...
     }
     assert (caseAtomF :
-      forall i : propVar,
+      forall i : propLetter,
       AtomF i \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (AtomF i)
     ).
     { ii. change (AtomF i \in X_dagger <-> i \in preimage AtomF X_dagger).
