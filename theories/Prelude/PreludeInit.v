@@ -120,18 +120,13 @@ Module Cat.
 
   Set Primitive Projections.
 
-  Polymorphic Record Category@{objs_lv hom_lv} : Type :=
+  Polymorphic Class Category@{objs_lv hom_lv} : Type :=
     { objs : Type@{objs_lv}
     ; hom (dom : objs) (cod : objs) : Type@{hom_lv}
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
     ; id {obj : objs} : hom obj obj
     }
   .
-
-  Global Arguments objs {Cat} : rename.
-  Global Arguments hom {Cat} (dom) (cod) : rename.
-  Global Arguments compose {Cat} {obj_l} {obj} {obj_r} (arr_r) (arr_l) : rename.
-  Global Arguments id {Cat} {obj} : rename.
 
   Unset Primitive Projections.
 
@@ -172,13 +167,12 @@ Module Hask.
   Global Delimit Scope type_scope with t.
   Global Delimit Scope type_scope with arrow.
 
-  Global Polymorphic Definition cat : Category :=
-    {|
-      objs := Hask.t;
-      hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod;
-      compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C);
-      id (A : Hask.t) := Khan.id (A := A);
-    |}
+  Global Polymorphic Instance cat : Category :=
+    { objs := Hask.t
+    ; hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
+    ; compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C)
+    ; id (A : Hask.t) := Khan.id (A := A)
+    }
   .
 
 End Hask.
@@ -800,9 +794,7 @@ Module PreludeInit_MAIN.
 
   Set Primitive Projections.
 
-  Record Pair (A : Type) (B : Type) : Type :=
-    { getFst : A; getSnd : B }
-  .
+  Record Pair (A : Type) (B : Type) : Type := { getFst : A; getSnd : B }.
 
   Unset Primitive Projections.
 

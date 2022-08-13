@@ -1072,7 +1072,7 @@ Module MyUtil.
   Section OPTION_ACCESSORIES.
 
   Definition Some_inj {A : Type} (x : A) (y : A) : Some x = Some y -> x = y :=
-    eq_congruence (maybe y (id (Cat := Hask.cat))) (Some x) (Some y)
+    eq_congruence (maybe y id) (Some x) (Some y)
   .
 
   Definition Some_ne_None {A : Type} (x : A) : Some x <> None :=
