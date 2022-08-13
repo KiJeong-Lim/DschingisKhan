@@ -120,7 +120,7 @@ Module Cat.
 
   Set Primitive Projections.
 
-  Polymorphic Class Category@{objs_lv hom_lv | objs_lv < hom_lv} : Type :=
+  Polymorphic Class isCategory@{objs_lv hom_lv} : Type@{max(objs_lv + 1, hom_lv + 1)} :=
     { objs : Type@{objs_lv}
     ; hom (dom : objs) (cod : objs) : Type@{hom_lv}
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
@@ -130,13 +130,13 @@ Module Cat.
 
   Unset Primitive Projections.
 
-  Polymorphic Definition Functor_t (src : Category) (tgt : Category) : Type := src.(objs) -> tgt.(objs).
+  Polymorphic Definition Functor_t (src : isCategory) (tgt : isCategory) : Type := src.(objs) -> tgt.(objs).
 
   Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
-  Context {src : Category} {tgt : Category}.
+  Context {src : isCategory} {tgt : isCategory}.
 
   Class isCovariantFunctor (F : src -----> tgt) : Type :=
     { fmap {dom : src.(objs)} {cod : src.(objs)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
@@ -167,9 +167,9 @@ Module Hask.
   Global Delimit Scope type_scope with t.
   Global Delimit Scope type_scope with arrow.
 
-  Global Polymorphic Instance cat : Category :=
+  Global Polymorphic Instance cat : isCategory :=
     { objs := Hask.t
-    ; hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
+    ; hom := Hask.arrow
     ; compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C)
     ; id (A : Hask.t) := Khan.id (A := A)
     }
