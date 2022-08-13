@@ -120,7 +120,7 @@ Module Cat.
 
   Set Primitive Projections.
 
-  Polymorphic Class Category@{objs_lv hom_lv} : Type :=
+  Polymorphic Class Category@{objs_lv hom_lv | objs_lv < hom_lv} : Type :=
     { objs : Type@{objs_lv}
     ; hom (dom : objs) (cod : objs) : Type@{hom_lv}
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
@@ -162,7 +162,7 @@ Module Hask.
 
   Polymorphic Definition t@{lv} : Type@{lv + 1} := Type@{lv}.
 
-  Polymorphic Definition arrow@{dom_lv cod_lv arrow_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{arrow_lv} := dom -> cod.
+  Polymorphic Definition arrow@{dom_lv cod_lv arrow_lv | dom_lv <= arrow_lv, cod_lv <= arrow_lv} (dom : Hask.t@{dom_lv}) (cod : Hask.t@{cod_lv}) : Hask.t@{arrow_lv} := dom -> cod.
 
   Global Delimit Scope type_scope with t.
   Global Delimit Scope type_scope with arrow.
