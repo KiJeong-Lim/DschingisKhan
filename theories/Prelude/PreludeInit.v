@@ -118,35 +118,41 @@ Export Khan.
 
 Module Cat.
 
-  Polymorphic Class isCategory@{objs_lv hom_lv} (objs : Type@{objs_lv}) : Type@{objs_lv} :=
-    { hom (dom : objs) (cod : objs) : Type@{hom_lv}
+  Set Primitive Projections.
+
+  Polymorphic Record Category@{objs_lv hom_lv} : Type :=
+    { objs : Type@{objs_lv}
+    ; hom (dom : objs) (cod : objs) : Type@{hom_lv}
     ; compose {obj_l : objs} {obj : objs} {obj_r : objs} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
     ; id {obj : objs} : hom obj obj
     }
   .
 
-  Polymorphic Definition Functor_t {src_objs : Type} {tgt_objs : Type} (src_cat : isCategory src_objs) (tgt_cat : isCategory tgt_objs) : Type := src_objs -> tgt_objs.
+  Global Arguments objs {Cat} : rename.
+  Global Arguments hom {Cat} (dom) (cod) : rename.
+  Global Arguments compose {Cat} {obj_l} {obj} {obj_r} (arr_r) (arr_l) : rename.
+  Global Arguments id {Cat} {obj} : rename.
 
-  Global Bind Scope type_scope with Functor_t isCategory hom.
+  Unset Primitive Projections.
+
+  Polymorphic Definition Functor_t (src : Category) (tgt : Category) : Type := src.(objs) -> tgt.(objs).
 
   Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
-  Context {src_objs : Type} {tgt_objs : Type} {src_cat : isCategory src_objs} {tgt_cat : isCategory tgt_objs}.
+  Context {src : Category} {tgt : Category}.
 
-  Class isCovariantFunctor (F : src_cat -----> tgt_cat) : Type :=
-    { fmap {dom : src_objs} {cod : src_objs} (arr : hom dom cod) : hom (F dom) (F cod)
-    }
+  Class isCovariantFunctor (F : src -----> tgt) : Type :=
+    { fmap {dom : src.(objs)} {cod : src.(objs)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
   .
 
-  Class isContravariantFunctor (F : src_cat -----> tgt_cat) : Type :=
-    { contramap {dom : src_objs} {cod : src_objs} (arr : hom cod dom) : hom (F dom) (F cod)
-    }
+  Class isContravariantFunctor (F : src -----> tgt) : Type :=
+    { contramap {dom : src.(objs)} {cod : src.(objs)} (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod) }
   .
 
-  Class isNaturalTransformation (F_from : src_cat -----> tgt_cat) (F_to : src_cat -----> tgt_cat) : Type :=
-    component (obj : src_objs) : hom (F_from obj) (F_to obj)
+  Class isNaturalTransformation (F_from : src -----> tgt) (F_to : src -----> tgt) : Type :=
+    component (obj : src.(objs)) : tgt.(hom) (F_from obj) (F_to obj)
   .
 
   End BasicConceptsOfCategoryTheory.
@@ -166,11 +172,13 @@ Module Hask.
   Global Delimit Scope type_scope with t.
   Global Delimit Scope type_scope with arrow.
 
-  Global Polymorphic Instance cat : isCategory Hask.t :=
-    { hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod
-    ; compose {A : Hask.t} {B : Hask.t} {C : Hask.t} := Khan.compose (A := A) (B := B) (C := C)
-    ; id {A : Hask.t} := Khan.id (A := A)
-    }
+  Global Polymorphic Definition cat : Category :=
+    {|
+      objs := Hask.t;
+      hom (dom : Hask.t) (cod : Hask.t) := Hask.arrow dom cod;
+      compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C);
+      id (A : Hask.t) := Khan.id (A := A);
+    |}
   .
 
 End Hask.
@@ -203,75 +211,10 @@ Module PreludeInit_MAIN.
     liftSetoid1 (X : Type) (X_isSetoid : isSetoid X) :> isSetoid (F X)
   .
 
-(** "2. Category and Functor with Equality" *)
-
-  Class isCategory_withLaws (objs : Type) : Type :=
-    { Category_withLaws_requiresCategory_asSelf :> isCategory objs
-    ; hom_isSetoid {dom : objs} {cod : objs} :> isSetoid (hom dom cod)
-    ; compose_assoc {A : objs} {B : objs} {C : objs} {D : objs}
-      (arr_l : hom C D)
-      (arr : hom B C)
-      (arr_r : hom A B)
-      : compose arr_l (compose arr arr_r) == compose (compose arr_l arr) arr_r
-    ; compose_id_l {A : objs} {B : objs}
-      (arr_r : hom A B)
-      : compose id arr_r == arr_r
-    ; compose_id_r {A : objs} {B : objs}
-      (arr_l : hom A B)
-      : compose arr_l id == arr_l
-    ; compose_fst_arg {A : objs} {B : objs} {C : objs}
-      (arr_r0 : hom A B)
-      (arr_l1 : hom B C)
-      (arr_l2 : hom B C)
-      (H_FST_ARG : arr_l1 == arr_l2)
-      : compose arr_l1 arr_r0 == compose arr_l2 arr_r0 
-    ; compose_snd_arg {A : objs} {B : objs} {C : objs}
-      (arr_l0 : hom B C)
-      (arr_r1 : hom A B)
-      (arr_r2 : hom A B)
-      (H_SND_ARG : arr_r1 == arr_r2)
-      : compose arr_l0 arr_r1 == compose arr_l0 arr_r2 
-    }
-  .
-
-  Global Coercion Category_withLaws_requiresCategory_asSelf : isCategory_withLaws >-> isCategory.
-
-  Section FUNCTOR_WITH_LAWS.
-
-  Context {src_objs : Type} {tgt_objs : Type}.
-
-  Class CovariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isCovariantFunctor F} : Prop :=
-    { covarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
-      (arr_r : hom obj obj_r)
-      (arr_l : hom obj_l obj)
-      : fmap (dom := obj_l) (cod := obj_r) (compose arr_r arr_l) == compose (fmap arr_r) (fmap arr_l)
-    ; covarianceMap_compatWith_id {obj : src_objs}
-      : fmap (dom := obj) (cod := obj) id == id
-    }
-  .
-
-  Class ContravariantFunctor_Laws {src_cat : isCategory src_objs} {tgt_cat : isCategory_withLaws tgt_objs} (F : src_cat -----> tgt_cat) {F_isFunctor : isContravariantFunctor F} : Prop :=
-    { contravarianceMap_compatWith_compose {obj_l : src_objs} {obj : src_objs} {obj_r : src_objs}
-      (arr_l : hom obj_l obj)
-      (arr_r : hom obj obj_r)
-      : contramap (dom := obj_r) (cod := obj_l) (compose arr_r arr_l) == compose (contramap arr_l) (contramap arr_r)
-    ; contravarianceMap_compatWith_id {obj : src_objs}
-      : contramap (dom := obj) (cod := obj) id == id
-    }
-  .
-
-  End FUNCTOR_WITH_LAWS.
-
-(** "3. Accessories" *)
+(** "2. Accessories" *)
 
   Global Notation " E '~~>' F " := (forall X : Type, E X -> F X) (at level 100, no associativity) : type_scope.
-
-  Global Add Parametric Morphism (objs : Type) {cat : isCategory_withLaws objs} {A : objs} {B : objs} {C : objs} :
-    (@compose objs cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
-    as compose_compatWith_eqProp.
-  Proof. ii; etransitivity; [eapply compose_fst_arg | eapply compose_snd_arg]; eauto. Qed.
-
-  Global Notation isFunctor := (isCovariantFunctor (src_cat := Hask.cat) (tgt_cat := Hask.cat)).
+  Global Notation isFunctor := (isCovariantFunctor (src := Hask.cat) (tgt := Hask.cat)).
 
   Class isMonad (M : Hask.cat -----> Hask.cat) : Type :=
     { pure {A : Hask.t} (x : A) : M A
@@ -566,10 +509,6 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Lemma unfold_ensemble_isSetoid {A : Type}
-    : ensemble_isSetoid A = @arrow_isSetoid A Prop Prop_isSetoid.
-  Proof. reflexivity. Qed.
-
   Definition isSubsetOf {A : Type} (lhs : ensemble A) (rhs : ensemble A) : Prop :=
     forall x : A, member x lhs -> member x rhs
   .
@@ -589,10 +528,6 @@ Module PreludeInit_MAIN.
   Global Instance isSubsetOf_PartialOrder (A : Type) : PartialOrder eqProp (@isSubsetOf A) :=
     @leProp_PartialOrder (ensemble A) (ensemble_isPoset A)
   .
-
-  Lemma unfold_ensemble_isPoset {A : Type}
-    : ensemble_isPoset A = @arrow_isPoset A Prop Prop_isPoset.
-  Proof. reflexivity. Defined.
 
   End ImplFor_ensemble.
 
@@ -773,7 +708,7 @@ Module PreludeInit_MAIN.
   Proof. ii; etransitivity; [eapply bind_compatWith_eqProp_on_1st_arg | eapply bind_compatWith_eqProp_on_2nd_arg]; eauto. Qed.
 
   Local Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
-    { fmap {dom : Hask.t} {cod : Hask.t} (f : hom dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
+    { fmap {dom : Hask.t} {cod : Hask.t} (f : Hask.cat.(hom) dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
     }
   .
 
@@ -860,17 +795,6 @@ Module PreludeInit_MAIN.
   Definition liftM2 {M : Type -> Type} {M_isMonad : isMonad M} {A : Type} {B : Type} {C : Type} (f : A -> B -> C) (m1 : M A) (m2 : M B) : M C :=
     m1 >>= fun x1 : A => m2 >>= fun x2 : B => pure (f x1 x2)
   .
-
-  Section Hask_with_laws.
-
-  Local Obligation Tactic := ii; vm_compute in *; congruence.
-  Local Program Instance Hask_withLaws : isCategory_withLaws Hask.t :=
-    { Category_withLaws_requiresCategory_asSelf := Hask.cat
-    ; hom_isSetoid {dom : Hask.t} {cod : Hask.t} := arrow_isSetoid dom cod (cod_isSetoid := theFinestSetoidOf cod)
-    }
-  .
-
-  End Hask_with_laws.
 
   Section MyPair.
 

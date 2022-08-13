@@ -91,7 +91,7 @@ Module InteractionTrees.
     }
   .
 
-  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E =====> M) : itree E =====> M :=
+  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
     fun R : Type =>
     iterMonad (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
       match observe t0 with
@@ -102,7 +102,7 @@ Module InteractionTrees.
     )
   .
 
-  Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E =====> stateT ST (itree E')) : itree E =====> stateT ST (itree E') :=
+  Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E ~~> stateT ST (itree E')) : itree E ~~> stateT ST (itree E') :=
     itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_isMonadIter ST (itree E') (M_isMonadIter := itree_isMonadIter E')) handle
   .
 
@@ -116,7 +116,7 @@ Module InteractionTrees.
 
   Local Notation endo X := (X -> X).
 
-  Definition itree_interpret_mrec {E1 : Type -> Type} {E2 : Type -> Type} (ctx : E1 =====> itree (E1 +' E2)) : itree (E1 +' E2) =====> itree E2 :=
+  Definition itree_interpret_mrec {E1 : Type -> Type} {E2 : Type -> Type} (ctx : E1 ~~> itree (E1 +' E2)) : itree (E1 +' E2) ~~> itree E2 :=
     fun R : Type =>
     itree_iter (E := E2) (I := itree (E1 +' E2) R) (R := R) (fun t0 : itree (E1 +' E2) R =>
       match observe t0 with
@@ -131,7 +131,7 @@ Module InteractionTrees.
     )
   .
 
-  Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E =====> itree (E +' E')) : E =====> itree E' :=
+  Definition itree_mrec {E : Type -> Type} {E' : Type -> Type} (ctx : E ~~> itree (E +' E')) : E ~~> itree E' :=
     fun R : Type => fun e : E R => itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
   .
 
@@ -143,7 +143,7 @@ Module InteractionTrees.
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition itree_ap {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R =====> itree E :=
+  Definition itree_ap {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
     @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
