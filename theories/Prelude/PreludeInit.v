@@ -285,8 +285,7 @@ Module PreludeInit_MAIN.
   Section ImplFor_option.
 
   Global Instance option_isFunctor : isFunctor option :=
-    { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B)
-    }
+    { fmap {A : Hask.t} {B : Hask.t} := option_map (A := A) (B := B) }
   .
 
   Definition maybe {A : Hask.t} {B : Hask.t} (runNOTHING : B) (runJUST : A -> B) (it : option A) : B :=
@@ -380,13 +379,13 @@ Module PreludeInit_MAIN.
   End ImplFor_image.
 
   Global Instance subSetoid (A : Hask.t) {requiresSetoid : isSetoid A} {P : A -> Prop} : isSetoid (@sig A P) :=
-    { eqProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs == proj1_sig rhs
+    { eqProp (lhs : @sig A P) (rhs : @sig A P) := proj1_sig lhs == proj1_sig rhs
     ; eqProp_Equivalence := equivalence_relation_on_image (@proj1_sig A P) requiresSetoid
     }
   .
 
   Global Instance subPoset (A : Hask.t) {requiresPoset : isPoset A} {P : A -> Prop} : isPoset (@sig A P) :=
-    { leProp := fun lhs : @sig A P => fun rhs : @sig A P => proj1_sig lhs =< proj1_sig rhs
+    { leProp (lhs : @sig A P) (rhs : @sig A P) := proj1_sig lhs =< proj1_sig rhs
     ; Poset_requiresSetoid := subSetoid A
     ; leProp_PreOrder := preorder_relation_on_image (@proj1_sig A P) requiresPoset
     ; leProp_PartialOrder := partialorder_relation_on_image (@proj1_sig A P) requiresPoset
@@ -484,7 +483,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Polymorphic Definition ensemble : Hask.cat -----> Hask.cat := fun X : Hask.t => Hask.arrow X Prop.
+  Polymorphic Definition ensemble@{lv} : Type@{lv} -> Type@{lv} := fun X : Hask.t@{lv} => Hask.arrow@{lv lv lv} X Prop.
 
   Definition member {A : Hask.t} (x : A) (xs : ensemble A) : Prop := xs x.
 
@@ -640,16 +639,12 @@ Module PreludeInit_MAIN.
 
   Section TypeclassesForProgrammers.
 
-  Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : Hask.arrow A B -> Hask.arrow (F A) (F B) :=
-    Cat.fmap (F := F) (dom := A) (cod := B)
-  .
+  Definition fmap {F : Hask.cat -----> Hask.cat} {F_isFunctor : isFunctor F} {A : Hask.t} {B : Hask.t} : Hask.arrow A B -> Hask.arrow (F A) (F B) := Cat.fmap (F := F) (dom := A) (cod := B).
 
   Local Instance freeSetoidFromSetoid1 (F : Hask.cat -----> Hask.cat) (X : Hask.t) {requiresSetoid1 : isSetoid1 F} : isSetoid (F X) := liftSetoid1 X (theFinestSetoidOf X).
 
   Class LawsOfFunctor (F : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 F} {requiresFunctor : isFunctor F} : Prop :=
-    { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t}
-      (arr_r : obj -> obj_r)
-      (arr_l : obj_l -> obj)
+    { fmap_compatWith_compose {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (arr_r : obj -> obj_r) (arr_l : obj_l -> obj)
       : fmap (arr_r ∘ arr_l) == (fmap arr_r ∘ fmap arr_l)
     ; fmap_compatWith_id {obj : Hask.t}
       : fmap id_{ obj } == id_{ F obj }
@@ -685,15 +680,13 @@ Module PreludeInit_MAIN.
   .
 
   Class isMonadTrans (T : (Hask.cat -----> Hask.cat) -> (Hask.cat -----> Hask.cat)) : Type :=
-    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M
-    }
+    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) :> M =====> T M }
   .
 
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I >=[ M ]=> I + R) : kleisli M I R
-    }
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I >=[ M ]=> I + R) : kleisli M I R }
   .
 
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} {obeysMonadLaws : @LawsOfMonad M requiresSetoid1 requiresMonad} {A : Hask.t} {B : Hask.t} :
@@ -702,8 +695,7 @@ Module PreludeInit_MAIN.
   Proof. ii; etransitivity; [eapply bind_compatWith_eqProp_on_1st_arg | eapply bind_compatWith_eqProp_on_2nd_arg]; eauto. Qed.
 
   Local Instance Monad_isFunctor (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : isFunctor M :=
-    { fmap {dom : Hask.t} {cod : Hask.t} (f : Hask.cat.(hom) dom cod) (m : M dom) := bind m (fun x : dom => pure (f x))
-    }
+    { fmap {dom : Type} {cod : Type} (f : dom -> cod) (m : M dom) := bind m (fun x : dom => pure (f x)) }
   .
 
   Global Instance LawsOfMonad_guarantees_LawsOfFunctor (M : Hask.cat -----> Hask.cat)
@@ -723,7 +715,8 @@ Module PreludeInit_MAIN.
         m >>= pure . (f . g)
         map (f . g) m
       *)
-      cbn. rewrite bind_assoc. eapply bind_compatWith_eqProp_on_2nd_arg.
+      cbn. rewrite bind_assoc.
+      eapply bind_compatWith_eqProp_on_2nd_arg.
       ii. rewrite pure_left_id_bind. reflexivity.
     - ii. eapply pure_right_id_bind.
   Qed.
@@ -734,9 +727,9 @@ Module PreludeInit_MAIN.
 
   Global Arguments stateT (ST)%type (M) (X)%type.
 
-  Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id_{ stateT ST M X }.
+  Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id.
 
-  Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id_{ stateT ST M X }.
+  Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id.
 
   Global Instance stateT_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
     { pure _ := StateT ∘ curry kempty
@@ -745,8 +738,7 @@ Module PreludeInit_MAIN.
   .
 
   Global Instance stateT_isMonadTrans (ST : Hask.t) : isMonadTrans (stateT ST) :=
-    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) (m : M X) := StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m)
-    }
+    { liftMonad (M : Hask.cat -----> Hask.cat) (M_isMonad : isMonad M) (X : Hask.t) (m : M X) := StateT (fun s : ST => fmap (F_isFunctor := Monad_isFunctor M) (fun x : X => (x, s)) m) }
   .
 
   Definition either {A : Type} {B : Type} {C : Type} (runLEFT : A -> C) (runRIGHT : B -> C) (it : A + B) : C :=
@@ -765,8 +757,7 @@ Module PreludeInit_MAIN.
   .
 
   Global Instance stateT_isMonadIter (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} : isMonadIter (stateT ST M) :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)) := curry (iterMonad (kempty ∘ prod_rdistr_sum <=< uncurry step))
-    }
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : I -> stateT ST M (I + R)) := curry (iterMonad (kempty ∘ prod_rdistr_sum <=< uncurry step)) }
   .
 
   Inductive sum1 (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) (X : Hask.t) : Hask.t :=
@@ -780,8 +771,7 @@ Module PreludeInit_MAIN.
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
   Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (FL +' FR) :=
-    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT))
-    }
+    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT)) }
   .
 
 (** "5. Extras" *)
