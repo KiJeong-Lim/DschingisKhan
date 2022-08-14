@@ -54,60 +54,32 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     end
   .
 
-  Lemma elem_well_founded
-    : forall root : AczelSet, Acc (fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)) root.
-  Proof.
-    enough (eqTree_Reflexive : forall x : AczelSet, eqTree x x).
-    enough (eqTree_Symmetric : forall x : AczelSet, forall y : AczelSet, eqTree x y -> eqTree y x).
-    enough (eqTree_Transitive : forall x : AczelSet, forall y : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
-    set (elem := fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)).
-    enough (Acc_compatWith_eqTree : forall lhs : AczelSet, forall rhs : AczelSet, eqTree lhs rhs -> Acc elem lhs -> Acc elem rhs).
-    - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_Symmetric; exact (y_eq_x_c)| exact (IH c_x)].
-    - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
-      econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
-      destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtrees]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
-      unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_Transitive; [exact (z_eq_y_c) | eapply eqTree_Symmetric; exact (x_c_eq_y_c)].
-    - induction x as [x_children x_childtrees IH], y as [y_children y_childtrees], z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
-      + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
-      + intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
-    - induction x as [x_children x_childtrees IH], y as [y_children y_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
-      + intros c_y. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
-      + intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
-    - induction x as [x_children x_childtrees IH]. simpl; unnw. split.
-      + intros c_x. exists (c_x). eapply IH.
-      + intros c_x. exists (c_x). eapply IH.
-  Defined.
-
   Global Instance eqTree_Reflexive
     : Reflexive eqTree.
   Proof.
-    intros x; induction x as [x_children x_childtrees IH].
-    cbn in *; split; unnw; eauto.
-  Qed.
-
-  Local Hint Resolve eqTree_Reflexive : khan_hints.
+    change (forall x : AczelSet, eqTree x x).
+    induction x as [x_children x_childtrees IH]. simpl; unnw. split.
+    - intros c_x. exists (c_x). eapply IH.
+    - intros c_x. exists (c_x). eapply IH.
+  Defined.
 
   Global Instance eqTree_Symmetric
     : Symmetric eqTree.
   Proof.
-    intros x; induction x as [x_children x_childtrees IH]; intros [y_children y_childtrees] [x_sim_y y_sim_x].
-    cbn in *; split; unnw; [intros c_y | intros c_x].
-    - exploit (y_sim_x c_y) as [c_x hyp_eq1]; eauto.
-    - exploit (x_sim_y c_x) as [c_y hyp_eq1]; eauto.
-  Qed.
-
-  Local Hint Resolve eqTree_Symmetric : khan_hints.
+    change (forall x : AczelSet, forall y : AczelSet, eqTree x y -> eqTree y x).
+    induction x as [x_children x_childtrees IH], y as [y_children y_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x]. split.
+    - intros c_y. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; exact (x_c_eq_y_c).
+    - intros c_x. pose proof (x_sim_y c_x) as [c_y y_c_eq_x_c]. exists (c_y). eapply IH; exact (y_c_eq_x_c).
+  Defined.
 
   Global Instance eqTree_Transitive
     : Transitive eqTree.
   Proof.
-    intros x y; revert x; induction y as [y_children y_childtrees IH]; intros [x_children x_childtrees] [z_children z_childtrees] [x_sim_y y_sim_x] [y_sim_z z_sim_y].
-    cbn in *; split; unnw; [intros c_x | intros c_z].
-    - exploit (x_sim_y c_x) as [c_y hyp_eq1]; exploit (y_sim_z c_y) as [c_z hyp_eq2]; eauto.
-    - exploit (z_sim_y c_z) as [c_y hyp_eq1]; exploit (y_sim_x c_y) as [c_x hyp_eq2]; eauto.
-  Qed.
-
-  Local Hint Resolve eqTree_Transitive : khan_hints.
+    change (forall x : AczelSet, forall y : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
+    induction x as [x_children x_childtrees IH], y as [y_children y_childtrees], z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
+    - intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
+    - intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
+  Defined.
 
   Local Instance eqTree_Equivalence : Equivalence eqTree :=
     { Equivalence_Reflexive := eqTree_Reflexive
@@ -126,11 +98,24 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     : eqTree = (fun lhs : AczelSet => fun rhs : AczelSet => lhs == rhs).
   Proof. reflexivity. Defined.
 
+  Local Hint Resolve eqTree_Reflexive eqTree_Symmetric eqTree_Transitive : core.
+
   Ltac unfold_eqTree := rewrite eqTree_unfold in *.
 
   Definition elem (finger : AczelSet) (hand : AczelSet) : Prop :=
     exists bone : getChildren hand, finger == getChildTrees hand bone
   .
+
+  Lemma elem_well_founded
+    : forall root : AczelSet, Acc (fun subtree : AczelSet => fun tree : AczelSet => exists key : getChildren tree, eqTree subtree (getChildTrees tree key)) root.
+  Proof.
+    enough (Acc_compatWith_eqTree : forall lhs : AczelSet, forall rhs : AczelSet, eqTree lhs rhs -> Acc elem lhs -> Acc elem rhs).
+    - induction root as [x_children x_childtrees IH]. econstructor. intros y [c_x y_eq_x_c]. eapply Acc_compatWith_eqTree; [eapply eqTree_Symmetric; exact (y_eq_x_c)| exact (IH c_x)].
+    - intros lhs rhs lhs_eq_rhs Acc_lhs. pose proof (@Acc_inv AczelSet elem lhs Acc_lhs) as claim1.
+      econstructor. intros z z_in_rhs. eapply claim1. revert z_in_rhs. unfold elem. clear Acc_lhs claim1.
+      destruct lhs as [x_children x_childtrees]; destruct rhs as [y_children y_childtrees]; destruct lhs_eq_rhs as [x_sim_y y_sim_x].
+      unnw; cbn. intros [c_y z_eq_y_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply eqTree_Transitive; [exact (z_eq_y_c) | eapply eqTree_Symmetric; exact (x_c_eq_y_c)].
+  Defined.
 
   Local Hint Unfold elem : khan_hints.
 

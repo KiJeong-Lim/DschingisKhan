@@ -260,11 +260,11 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
       ContradictionF \in X_dagger <-> evalFormula (preimage AtomF X_dagger) ContradictionF
     ) as caseContradictionF.
     { simpl. rewrite CLOSED_infers, <- inconsistent_cl_iff. tauto. }
-    assert (caseNegationF :
+    assert (
       forall p1 : formula,
       forall IH1 : p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p1,
       NegationF p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (NegationF p1)
-    ).
+    ) as caseNegationF.
     { ii. simpl. rewrite <- IH1, CLOSED_infers. split.
       - intros INFERS H_in.
         contradiction claim5.
