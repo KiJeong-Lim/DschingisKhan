@@ -213,7 +213,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     - eapply BiconditionalE2_preserves with (A := A) (B := B)...
   Qed.
 
-  Theorem hasModelIfConsistent (X : ensemble formula)
+  Lemma hasModelIfConsistent (X : ensemble formula)
     (CONSISTENT : ~ X ⊢ ContradictionF)
     : isSubsetOf X (MaximalConsistentSet X) /\ isStructure (MaximalConsistentSet X).
   Proof with eauto with *. (* Infinitely grateful for Taeseung's advice! *)
@@ -248,17 +248,17 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
       eapply inconsistent_compatWith_isSubsetOf with (X := cl X_dagger)...
       eapply fact5_of_1_2_8...
     }
-    assert (caseAtomF :
+    assert (
       forall i : propLetter,
       AtomF i \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (AtomF i)
-    ).
+    ) as caseAtomF.
     { ii. change (AtomF i \in X_dagger <-> i \in preimage AtomF X_dagger).
       rewrite in_preimage_iff. split...
       intros [p [? ?]]; subst p...
     }
-    assert (caseContradictionF :
+    assert (
       ContradictionF \in X_dagger <-> evalFormula (preimage AtomF X_dagger) ContradictionF
-    ).
+    ) as caseContradictionF.
     { simpl. rewrite CLOSED_infers, <- inconsistent_cl_iff. tauto. }
     assert (caseNegationF :
       forall p1 : formula,
@@ -281,13 +281,13 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
           eapply CLOSED_infers, IMPLICATION_FAITHFUL. tauto.
         + eapply ByAssumption...
     }
-    assert (caseConjunctionF :
+    assert (
       forall p1 : formula,
       forall p2 : formula,
       forall IH1 : p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p1,
       forall IH2 : p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p2,
       ConjunctionF p1 p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (ConjunctionF p1 p2)
-    ).
+    ) as caseConjunctionF.
     { ii. simpl. rewrite <- IH1, <- IH2. split.
       - intros H_in. split.
         + eapply CLOSED_infers, ConjunctionE1, CLOSED_infers...
@@ -295,13 +295,13 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
       - intros [H_in1 H_in2].
         eapply CLOSED_infers, ConjunctionI; eapply CLOSED_infers...
     }
-    assert (caseDisjunctionF :
+    assert (
       forall p1 : formula,
       forall p2 : formula,
       forall IH1 : p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p1,
       forall IH2 : p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p2,
       DisjunctionF p1 p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (DisjunctionF p1 p2)
-    ).
+    ) as caseDisjunctionF.
     { ii. simpl. rewrite <- IH1, <- IH2. split.
       - intros H_in. pose proof (classic (X_dagger ⊢ p1)) as [H_yes | H_no].
         + left. eapply CLOSED_infers...
@@ -322,21 +322,21 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
         + eapply CLOSED_infers, DisjunctionI1, CLOSED_infers...
         + eapply CLOSED_infers, DisjunctionI2, CLOSED_infers...
     }
-    assert (caseImplicationF :
+    assert (
       forall p1 : formula,
       forall p2 : formula,
       forall IH1 : p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p1,
       forall IH2 : p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p2,
       ImplicationF p1 p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (ImplicationF p1 p2)
-    ).
+    ) as caseImplicationF.
     { ii. rewrite IMPLICATION_FAITHFUL. simpl. unnw. tauto. }
-    assert (caseBiconditionalF :
+    assert (
       forall p1 : formula,
       forall p2 : formula,
       forall IH1 : p1 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p1,
       forall IH2 : p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) p2,
       BiconditionalF p1 p2 \in X_dagger <-> evalFormula (preimage AtomF X_dagger) (BiconditionalF p1 p2)
-    ).
+    ) as caseBiconditionalF.
     { ii. simpl. transitivity (ImplicationF p1 p2 \in X_dagger /\ ImplicationF p2 p1 \in X_dagger).
       { split.
         - intros H_in. split.
@@ -373,41 +373,40 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
     { unfold isStructure. induction A... }
   Qed.
 
-  Corollary the_propositional_completeness_theorem (X : ensemble formula) (b : formula)
-    (ENTAILS : X ⊧ b)
-    : X ⊢ b.
+  Theorem the_propositional_completeness_theorem (Gamma : ensemble formula) (C: formula)
+    (ENTAILS : Gamma ⊧ C)
+    : Gamma ⊢ C.
   Proof with eauto with *.
-    eapply NNPP. intros it_is_false_that_X_infers_b.
-    set (X' := insert (NegationF b) X).
-    assert (CONSISTENT : ~ X' ⊢ ContradictionF).
-    { intros INCONSISTENT. contradiction it_is_false_that_X_infers_b. eapply NegationE... }
-    pose proof (theorem_of_1_2_14 (Th X') (lemma1_of_1_3_8 X')) as [SUBSET' IS_FILTER' COMPLETE' EQUICONSISTENT'].
-    fold (MaximalConsistentSet X') in SUBSET', IS_FILTER', COMPLETE', EQUICONSISTENT'.
-    pose proof (hasModelIfConsistent X' CONSISTENT) as [INCL IS_STRUCTURE].
+    eapply NNPP. intros it_is_false_that_Gamma_infers_C.
+    set (X := insert (NegationF C) Gamma).
+    assert (CONSISTENT : ~ X ⊢ ContradictionF).
+    { intros INCONSISTENT. contradiction it_is_false_that_Gamma_infers_C. eapply NegationE... }
+    pose proof (theorem_of_1_2_14 (Th X) (lemma1_of_1_3_8 X)) as [SUBSET' IS_FILTER' COMPLETE' EQUICONSISTENT'].
+    fold (MaximalConsistentSet X) in SUBSET', IS_FILTER', COMPLETE', EQUICONSISTENT'.
+    pose proof (hasModelIfConsistent X CONSISTENT) as [INCL IS_STRUCTURE].
     unfold isStructure in IS_STRUCTURE.
-    pose proof (theorem_of_1_3_10 X) as [? ? ? ? ?]; unnw.
-    pose proof (inconsistent_compatWith_isSubsetOf (requiresBooleanAlgebra := LBA_pl)) as claim1.
-    contradiction it_is_false_that_X_infers_b.
-    eapply completeness_theorem_prototype with (env := preimage AtomF (MaximalConsistentSet X')); trivial.
+    pose proof (theorem_of_1_3_10 Gamma) as [? ? ? ? ?]; unnw.
+    contradiction it_is_false_that_Gamma_infers_C.
+    eapply completeness_theorem_prototype with (env := preimage AtomF (MaximalConsistentSet X)); trivial.
     - unfold equiconsistent in *.
-      transitivity (inconsistent (MaximalConsistentSet X'))...
+      transitivity (inconsistent (MaximalConsistentSet X))...
       split; intros [botBA [botBA_in botBA_eq_falseBA]].
       + exists (botBA). split... eapply IS_STRUCTURE...
       + exists (botBA). split... eapply IS_STRUCTURE...
-    - transitivity (MaximalConsistentSet X')...
+    - transitivity (MaximalConsistentSet X)...
       ii. eapply IS_STRUCTURE...
     - eapply isFilter_compatWith_eqProp...
   Qed.
 
-  Corollary the_propositional_compactness_theorem (X : ensemble formula) (b : formula)
-    : X ⊧ b <-> << FINITE_ENTAILS : exists xs : list formula, exists X' : ensemble formula, isFiniteSubsetOf xs X /\ isListRepOf xs X' /\ X' ⊧ b >>.
+  Corollary the_propositional_compactness_theorem (Gamma : ensemble formula) (C : formula)
+    : Gamma ⊧ C <-> << FINITE_ENTAILS : exists xs : list formula, exists X : ensemble formula, isFiniteSubsetOf xs Gamma /\ isListRepOf xs X /\ X ⊧ C >>.
   Proof with eauto.
     unnw. split.
     - intros ENTAILS.
       apply the_propositional_completeness_theorem in ENTAILS.
       apply inference_is_finite in ENTAILS. des. exists (xs), (X').
       split... split... eapply the_propositional_soundness_theorem...
-    - intros [xs [X' [? [? ?]]]]. eapply extend_entails... now firstorder.
+    - des. eapply extend_entails... now firstorder.
   Qed.
 
 End ClassicalMetaTheoryOnPropositonalLogic.
