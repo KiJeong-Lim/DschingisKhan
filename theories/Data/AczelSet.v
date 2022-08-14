@@ -721,8 +721,8 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     (lhs_lt_rhs : lhs `rLt` rhs)
     : lhs `rLe` rhs.
   Proof.
-    inversion lhs_lt_rhs. transitivity (getChildTrees rhs rhs_child); trivial.
-    clear lhs lhs_lt_rhs RANK_LE. revert rhs_child. induction rhs as [x_children x_childtrees IH].
+    inversion lhs_lt_rhs. rewrite RANK_LE. clear lhs lhs_lt_rhs RANK_LE.
+    revert rhs_child. induction rhs as [x_children x_childtrees IH].
     simpl in *. intros c_x. specialize IH with (c := c_x).
     destruct (x_childtrees c_x) as [z_children z_childtrees] eqn: x_c_eq_z.
     simpl in *. intros c_z. exists (c_x). rewrite x_c_eq_z. exact (IH c_z).
