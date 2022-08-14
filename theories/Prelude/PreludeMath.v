@@ -821,8 +821,6 @@ Module MathClasses.
 
   Class Has_unity (R : Hask.t) : Type := unity : R.
 
-  Class Has_recip (K : Hask.t) : Type := recip : K -> K.
-
   Global Notation " x '+' y " := (add x y) (in custom math_term_scope at level 4, left associativity).
   Global Notation " '0' " := (zero) (in custom math_term_scope at level 0, no associativity).
   Global Notation " '-' x " := (neg x) (in custom math_term_scope at level 2, right associativity).
@@ -856,20 +854,20 @@ Module MathClasses.
   .
 
   Class isRig (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rig_hasMonoid :> isMonoid R
+    { Rig_hasAdditiveMonoid :> isMonoid R
     ; Rig_has_mul :> Has_mul R
     ; Rig_has_unity :> Has_unity R
     ; Rig_add_comm :> Comm add
-    ; Rig_unity_id_mul :> Monoid_axiom R mul unity
+    ; Rig_hasMultiplicateMonoid :> Monoid_axiom R mul unity
     ; Rig_mul_distr_add :> mul `distributesOver` add
     }
   .
 
   Class isRng (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
-    { Rng_hasGroup :> isGroup R
+    { Rng_hasAdditiveGroup :> isGroup R
     ; Rng_has_mul :> Has_mul R
     ; Rng_add_comm :> Comm add
-    ; Rng_mul_assoc :> Semigroup_axiom R mul
+    ; Rng_hasMultiplicateSemigroup :> Semigroup_axiom R mul
     ; Rng_mul_distr_add :> mul `distributesOver` add
     }
   .
@@ -877,16 +875,17 @@ Module MathClasses.
   Class isRing (R : Hask.t) {requireSetoid : isSetoid R} : Type :=
     { Ring_hasRng :> isRng R
     ; Ring_has_unity :> Has_unity R
-    ; Ring_unity_id_mul :> Monoid_axiom R mul unity
+    ; Ring_unity_id_mul :> unity `isIdentityOf` mul
     }
   .
 
   Class isField (K : Hask.t) {requireSetoid : isSetoid K} : Type :=
     { Field_hasRing :> isRing K
-    ; Field_has_recip :> Has_recip (zero_removed K)
+    ; recip : zero_removed K -> zero_removed K
     ; Field_unity_nonzero : nonzero unity
-    ; Field_absenceOfZeroDivisor (x : zero_removed K) (y : zero_removed K) : nonzero (mul (proj1_sig x) (proj1_sig y))
-    ; Field_recip_inv_mul :> Group_axiom (zero_removed K) (fun x : zero_removed K => fun y : zero_removed K => @exist K nonzero (mul (proj1_sig x) (proj1_sig y)) (Field_absenceOfZeroDivisor x y)) (@exist K nonzero unity Field_unity_nonzero) recip
+    ; Field_absenceOfZeroDivisor
+      : forall x : zero_removed K, forall y : zero_removed K, nonzero (mul (proj1_sig x) (proj1_sig y))
+    ; Field_hasMultiplicateGroup :> Group_axiom (zero_removed K) (fun x : zero_removed K => fun y : zero_removed K => @exist K nonzero (mul (proj1_sig x) (proj1_sig y)) (Field_absenceOfZeroDivisor x y)) (@exist K nonzero unity Field_unity_nonzero) recip
     ; Field_mul_comm :> Comm mul
     }
   .

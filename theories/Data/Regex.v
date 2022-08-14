@@ -159,11 +159,11 @@ Module RegularExpressions.
   .
 
   Global Instance regex_isRig : isRig regex :=
-    { Rig_hasMonoid := regex_isMonoid
+    { Rig_hasAdditiveMonoid := regex_isMonoid
     ; Rig_has_mul := regex_has_mul
     ; Rig_has_unity := regex_has_unity
     ; Rig_add_comm := RePlus_comm
-    ; Rig_unity_id_mul := {| Monoid_requiresSemigroup := {| Semigroup_requiresMagma := ReMult_preserves_eqProp; Semigroup_requiresAssoc := ReMult_assoc |}; Monoid_requiresIdElem := ReUnit_id_ReMult |}
+    ; Rig_hasMultiplicateMonoid := {| Monoid_requiresSemigroup := {| Semigroup_requiresMagma := ReMult_preserves_eqProp; Semigroup_requiresAssoc := ReMult_assoc |}; Monoid_requiresIdElem := ReUnit_id_ReMult |}
     ; Rig_mul_distr_add := ReMult_distr_RePlus
     }
   .
