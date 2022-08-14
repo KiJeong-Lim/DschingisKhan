@@ -836,21 +836,22 @@ Module MathClasses.
 
   Class isSemigroup (S : Hask.t) {requireSetoid : isSetoid S} : Type :=
     { Semigroup_has_add :> Has_add S
-    ; Semigroup_add_assoc :> Semigroup_axiom S add
+    ; Semigroup_add_congru :> preserves_eqProp2 add
+    ; Semigroup_add_assoc :> Assoc add
     }
   .
 
   Class isMonoid (M : Hask.t) {requireSetoid : isSetoid M} : Type :=
     { Monoid_hasSemigroup :> isSemigroup M
     ; Monoid_has_zero :> Has_zero M
-    ; Monoid_zero_id_add :> Monoid_axiom M add zero
+    ; Monoid_zero_id_add :> zero `isIdentityOf` add
     }
   .
 
   Class isGroup (G : Hask.t) {requireSetoid : isSetoid G} : Type :=
     { Group_hasMonoid :> isMonoid G
     ; Group_has_neg :> Has_neg G
-    ; Group_neg_inv_add :> Group_axiom G add zero neg
+    ; Group_neg_inv_add :> neg `isInverseOpFor` add
     }
   .
 
