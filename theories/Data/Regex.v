@@ -57,9 +57,9 @@ Module RegularExpressions.
     end
   .
 
-  Lemma evalRegex_ReMult_iff (re1 : regex) (re2 : regex)
-    : forall str : list A, str \in evalRegex (ReMult re1 re2) <-> (exists str1 : list A, str1 \in evalRegex re1 /\ exists str2 : list A, str2 \in evalRegex re2 /\ str1 ++ str2 = str).
-  Proof. reflexivity. Qed.
+  Lemma in_evalRegex_ReMult_iff (re1 : regex) (re2 : regex) (str : list A)
+    : str \in evalRegex (ReMult re1 re2) <-> (exists str1 : list A, exists str2 : list A, str1 \in evalRegex re1 /\ str2 \in evalRegex re2 /\ str = str1 ++ str2).
+  Proof. transitivity (exists str1 : list A, str1 \in evalRegex re1 /\ exists str2 : list A, str2 \in evalRegex re2 /\ str1 ++ str2 = str); [reflexivity | now firstorder]. Qed.
 
   Global Instance regex_isSetoid : isSetoid regex :=
     { eqProp (lhs : regex) (rhs : regex) := forall str : list A, str \in evalRegex lhs <-> str \in evalRegex rhs
@@ -98,18 +98,20 @@ Module RegularExpressions.
 
   Global Instance ReMult_assoc
     : Assoc ReMult.
-  Proof.
+  Proof with eauto with *.
     iis.
-    - intros H_IN. rewrite evalRegex_ReMult_iff in H_IN.
-      destruct H_IN as [str1 [H_IN1 [str' [H_IN' ?]]]]; subst str.
-      rewrite evalRegex_ReMult_iff in H_IN'.
-      destruct H_IN' as [str2 [H_IN2 [str3 [H_IN3 ?]]]]; subst str'.
-      rewrite evalRegex_ReMult_iff; repeat esplit; eauto with *.
-    - intros H_IN. rewrite evalRegex_ReMult_iff in H_IN.
-      destruct H_IN as [str' [H_IN' [str3 [H_IN3 ?]]]]; subst str.
-      rewrite evalRegex_ReMult_iff in H_IN'.
-      destruct H_IN' as [str1 [H_IN1 [str2 [H_IN2 ?]]]]; subst str'.
-      rewrite evalRegex_ReMult_iff; repeat esplit; eauto with *.
+    - intros H_IN. rewrite in_evalRegex_ReMult_iff in H_IN.
+      destruct H_IN as [str1 [str' [H_IN1 [H_IN' ?]]]]; subst str.
+      rewrite in_evalRegex_ReMult_iff in H_IN'.
+      destruct H_IN' as [str2 [str3 [H_IN2 [H_IN3 ?]]]]; subst str'.
+      rewrite in_evalRegex_ReMult_iff. exists (str1 ++ str2), (str3).
+      split... rewrite in_evalRegex_ReMult_iff...
+    - intros H_IN. rewrite in_evalRegex_ReMult_iff in H_IN.
+      destruct H_IN as [str' [str3 [H_IN' [H_IN3 ?]]]]; subst str.
+      rewrite in_evalRegex_ReMult_iff in H_IN'.
+      destruct H_IN' as [str1 [str2 [H_IN1 [H_IN2 ?]]]]; subst str'.
+      rewrite in_evalRegex_ReMult_iff. exists (str1), (str2 ++ str3).
+      split... split... rewrite in_evalRegex_ReMult_iff...
   Qed.
 
   Global Instance ReMult_distr_RePlus
@@ -120,18 +122,18 @@ Module RegularExpressions.
     : ReUnit `isIdentityOf` ReMult.
   Proof with now firstorder.
     split; iis.
-    - rewrite evalRegex_ReMult_iff; unnw.
-      intros [str1 [H_IN1 [str2 [H_IN2 ?]]]]; subst str.
+    - rewrite in_evalRegex_ReMult_iff; unnw.
+      intros [str1 [str2 [H_IN1 [H_IN2 ?]]]]; subst str.
       do 3 red in H_IN1; subst str1.
       rewrite app_nil_l; exact (H_IN2).
-    - intros H_IN; rewrite evalRegex_ReMult_iff.
-      repeat esplit; eauto using app_nil_l.
-    - rewrite evalRegex_ReMult_iff; unnw.
-      intros [str1 [H_IN1 [str2 [H_IN2 ?]]]]; subst str.
+    - intros H_IN; rewrite in_evalRegex_ReMult_iff.
+      exists ([]), (str); rewrite app_nil_l...
+    - rewrite in_evalRegex_ReMult_iff; unnw.
+      intros [str1 [str2 [H_IN1 [H_IN2 ?]]]]; subst str.
       do 3 red in H_IN2; subst str2.
       rewrite app_nil_r; exact (H_IN1).
-    - intros H_IN; rewrite evalRegex_ReMult_iff.
-      repeat esplit; eauto using app_nil_r.
+    - intros H_IN; rewrite in_evalRegex_ReMult_iff.
+      exists (str), ([]); rewrite app_nil_r...
   Qed.
 
   Global Instance regex_has_add : Has_add regex := RePlus.
