@@ -660,13 +660,13 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Section RANK_OF_ACZEL_SET.
 
-  Local Instance lePropOnRank_Reflexive
+  Local Instance rLe_Reflexive
     : Reflexive lePropOnRank.
   Proof.
     intros x. induction x as [x_children x_childtrees IH]. simpl. eauto with *.
   Qed.
 
-  Local Instance lePropOnRank_Transitive
+  Local Instance rLe_Transitive
     : Transitive lePropOnRank.
   Proof.
     intros x y z x_le_y y_le_z. revert x x_le_y z y_le_z. induction y as [y_children y_childtrees IH].
@@ -674,21 +674,21 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     intros c_x; pose proof (x_le_y c_x) as [c_y ?]; pose proof (y_le_z c_y) as [c_z ?]; eauto with *.
   Qed.
 
-  Global Instance lePropOnRank_PreOrder : PreOrder lePropOnRank :=
-    { PreOrder_Reflexive := lePropOnRank_Reflexive
-    ; PreOrder_Transitive := lePropOnRank_Transitive
+  Global Instance rLe_PreOrder : PreOrder lePropOnRank :=
+    { PreOrder_Reflexive := rLe_Reflexive
+    ; PreOrder_Transitive := rLe_Transitive
     }
   .
 
-  Global Instance eqPropOnRank_Equivalence
+  Global Instance rEq_Equivalence
     : Equivalence eqPropOnRank.
   Proof with eauto with *. unfold eqPropOnRank. split; ii; des... all: etransitivity... Qed.
 
-  Global Instance lePropOnRank_PartialOrder
+  Global Instance rLe_PartialOrder
     : PartialOrder eqPropOnRank lePropOnRank.
   Proof. ii; red; reflexivity. Qed.
 
-  Lemma lePropOnRank_eqTree_lePropOnRank (x : AczelSet) (lhs : AczelSet) (rhs : AczelSet)
+  Lemma rLe_eqTree_rLe (x : AczelSet) (lhs : AczelSet) (rhs : AczelSet)
     (x_le_lhs : x `rLe` lhs)
     (lhs_eq_rhs : lhs == rhs)
     : x `rLe` rhs.
@@ -699,7 +699,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     pose proof (x_le_y c_x) as [c_y x_c_le_y_c]. pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. eauto with *.
   Qed.
 
-  Lemma eqTree_lePropOnRank_lePropOnRank (lhs : AczelSet) (rhs : AczelSet) (x : AczelSet)
+  Lemma eqTree_rLe_rLe (lhs : AczelSet) (rhs : AczelSet) (x : AczelSet)
     (lhs_eq_rhs : lhs == rhs)
     (rhs_le_x : rhs `rLe` x)
     : lhs `rLe` x.
@@ -710,14 +710,14 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. pose proof (z_le_x c_z) as [c_x z_c_le_x_c]. eauto with *.
   Qed.
 
-  Local Hint Resolve lePropOnRank_eqTree_lePropOnRank eqTree_lePropOnRank_lePropOnRank : core.
+  Local Hint Resolve rLe_eqTree_rLe eqTree_rLe_rLe : core.
 
   Global Add Parametric Morphism :
     lePropOnRank with signature (eqProp ==> eqProp ==> iff)
-    as lePropOnRank_compatWith_eqProp.
+    as rLe_compatWith_eqProp.
   Proof. iis; eauto with *. Qed.
 
-  Lemma ltPropOnRank_implies_lePropOnRank (lhs : AczelSet) (rhs : AczelSet)
+  Lemma rLt_implies_rLe (lhs : AczelSet) (rhs : AczelSet)
     (lhs_lt_rhs : lhs `rLt` rhs)
     : lhs `rLe` rhs.
   Proof.
@@ -728,18 +728,18 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     simpl in *. intros c_z. exists (c_x). rewrite x_c_eq_z. exact (IH c_z).
   Qed.
 
-  Corollary elem_implies_ltPropOnRank (lhs : AczelSet) (rhs : AczelSet)
+  Corollary elem_implies_rLt (lhs : AczelSet) (rhs : AczelSet)
     (lhs_in_rhs : lhs `elem` rhs)
     : lhs `rLt` rhs.
   Proof. destruct lhs_in_rhs as [rhs_child lhs_eq_rhs]. exists (rhs_child). now rewrite <- lhs_eq_rhs. Qed.
 
-  Corollary lePropOnRank_ltPropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
+  Corollary rLe_rLt_rLt (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_le_y : x `rLe` y)
     (y_lt_z : y `rLt` z)
     : x `rLt` z.
   Proof. destruct y_lt_z as [c_z y_le_z_c]. exists (c_z). etransitivity; eauto with *. Qed.
 
-  Lemma ltPropOnRank_lePropOnRank_lePropOnRank (x : AczelSet) (y : AczelSet) (z : AczelSet)
+  Lemma rLt_rLe_rLe (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_lt_y : x `rLt` y)
     (y_le_z : y `rLe` z)
     : x `rLt` z.
@@ -748,7 +748,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     simpl in *. pose proof (y_le_z c_y) as [c_z y_c_le_z_c]. exists (c_z). simpl. transitivity (y_childtrees c_y); eauto with *.
   Qed.
 
-  Theorem ltPropOnRank_isWellFounded
+  Theorem rLt_isWellFounded
     : forall alpha : AczelSet, Acc ltPropOnRank alpha.
   Proof.
     intros rhs. remember (rhs) as lhs eqn: lhs_eq_rhs.

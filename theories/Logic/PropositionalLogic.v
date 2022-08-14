@@ -216,13 +216,13 @@ Module SemanticsOfPL.
 
   Import SyntaxOfPL FormulaNotationsOfPL.
 
-  Definition truth_value : Type := Prop.
+  Definition truthValue : Type := Prop.
 
-  Global Delimit Scope type_scope with truth_value.
+  Global Delimit Scope type_scope with truthValue.
 
-  Definition truthValueAssignment : Type := propLetter -> truth_value.
+  Definition truthValueAssignment : Type := propLetter -> truthValue.
 
-  Fixpoint evalFormula (env : truthValueAssignment) (p : formula) {struct p} : truth_value :=
+  Fixpoint evalFormula (env : truthValueAssignment) (p : formula) {struct p} : truthValue :=
     match p with
     | \pl[ p_{ i } ] => env i
     | \pl[ _|_ ] => False
