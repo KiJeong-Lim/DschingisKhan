@@ -270,7 +270,7 @@ Module PreludeInit_MAIN.
 
   Global Hint Resolve leProp_Reflexive eqProp_implies_leProp leProp_Antisymmetric : khan_hints.
 
-(** "4. Basic Instances" *)
+(** "3. Basic Instances" *)
 
   Section ImplFor_eq.
 
@@ -298,6 +298,30 @@ Module PreludeInit_MAIN.
   Global Instance option_isMonad : isMonad option :=
     { pure {A : Hask.t} (x : A) := Some x
     ; bind {A : Hask.t} {B : Hask.t} (m : option A) (k : A -> option B) := maybe None k m
+    }
+  .
+
+  Definition option_binary_relation {A : Type} (R : A -> A -> Prop) (lhs : option A) (rhs : option A) : Prop :=
+    match lhs, rhs with
+    | Some x, Some y => R x y
+    | None, None => True
+    | _, _ => False
+    end
+  .
+
+  Lemma option_binary_relation_liftsEquivalence {A : Type} (R : A -> A -> Prop)
+    (R_Equivalence : Equivalence R)
+    : Equivalence (option_binary_relation R).
+  Proof with try now firstorder using Equivalence.
+    unfold option_binary_relation. split.
+    - intros [x | ]...
+    - intros [x | ] [y | ]...
+    - intros [x | ] [y | ] [z | ]... 
+  Qed.
+
+  Global Program Instance option_isSetoid {A : Type} (requiresSetoid : isSetoid A) : isSetoid (option A) :=
+    { eqProp := option_binary_relation eqProp
+    ; eqProp_Equivalence := option_binary_relation_liftsEquivalence eqProp (@eqProp_Equivalence A requiresSetoid)
     }
   .
 
@@ -774,7 +798,7 @@ Module PreludeInit_MAIN.
     { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT)) }
   .
 
-(** "5. Extras" *)
+(** "4. Extras" *)
 
   Definition liftM2 {M : Type -> Type} {M_isMonad : isMonad M} {A : Type} {B : Type} {C : Type} (f : A -> B -> C) (m1 : M A) (m2 : M B) : M C :=
     m1 >>= fun x1 : A => m2 >>= fun x2 : B => pure (f x1 x2)
