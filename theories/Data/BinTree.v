@@ -26,7 +26,7 @@ Module BinaryTrees.
     - destruct x1; simpl direction_rect...
     - destruct x1; destruct x2; simpl direction_rect...
       all: intros ?; assert (claim1 : myF xs1 = myF xs2)...
-      all: apply eq_congruence...
+      all: eapply eq_congruence...
   Qed.
 
   Lemma encode_last (ds : list direction) (d : direction) :
@@ -36,8 +36,9 @@ Module BinaryTrees.
     | RightDir => 2 * encode ds + 2
     end.
   Proof.
-    unfold encode at 1. rewrite <- fold_left_rev_right. rewrite rev_unit.
-    unfold fold_right. unfold encode. rewrite <- fold_left_rev_right. destruct d as [ | ]; eauto.
+    unfold encode at 1. rewrite <- fold_left_rev_right, rev_unit.
+    unfold fold_right, encode. rewrite <- fold_left_rev_right.
+    now destruct d as [ | ].
   Qed.
 
   Lemma decodable (idx : nat)
