@@ -301,7 +301,7 @@ Module PreludeInit_MAIN.
     }
   .
 
-  Definition option_binary_relation {A : Type} (R : A -> A -> Prop) (lhs : option A) (rhs : option A) : Prop :=
+  Definition option_liftProp2 {A : Type} (R : A -> A -> Prop) (lhs : option A) (rhs : option A) : Prop :=
     match lhs, rhs with
     | Some x, Some y => R x y
     | None, None => True
@@ -309,19 +309,19 @@ Module PreludeInit_MAIN.
     end
   .
 
-  Lemma option_binary_relation_liftsEquivalence {A : Type} (R : A -> A -> Prop)
+  Lemma option_liftProp2_liftsEquivalence {A : Type} (R : A -> A -> Prop)
     (R_Equivalence : Equivalence R)
-    : Equivalence (option_binary_relation R).
+    : Equivalence (option_liftProp2 R).
   Proof with try now firstorder using Equivalence.
-    unfold option_binary_relation. split.
+    unfold option_liftProp2. split.
     - intros [x | ]...
     - intros [x | ] [y | ]...
-    - intros [x | ] [y | ] [z | ]... 
+    - intros [x | ] [y | ] [z | ]...
   Qed.
 
   Global Program Instance option_isSetoid {A : Type} (requiresSetoid : isSetoid A) : isSetoid (option A) :=
-    { eqProp := option_binary_relation eqProp
-    ; eqProp_Equivalence := option_binary_relation_liftsEquivalence eqProp (@eqProp_Equivalence A requiresSetoid)
+    { eqProp := option_liftProp2 eqProp
+    ; eqProp_Equivalence := option_liftProp2_liftsEquivalence eqProp (@eqProp_Equivalence A requiresSetoid)
     }
   .
 
