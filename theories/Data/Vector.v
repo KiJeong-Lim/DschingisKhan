@@ -155,8 +155,7 @@ Module MyVec.
   .
 
   Local Instance vec_isSetoid1 (n : nat) : isSetoid1 (vec_n n) :=
-    { liftSetoid1 {A : Hask.t} (requiresSetoid : isSetoid A) := vector_isSetoid A n (requiresSetoid := requiresSetoid)
-    }
+    { liftSetoid1 {A : Hask.t} (requiresSetoid : isSetoid A) := vector_isSetoid A n (requiresSetoid := requiresSetoid) }
   .
 
   Global Instance vec_obeysMonadLaws (n : nat)
@@ -179,9 +178,7 @@ Module MyVec.
 
   End VectorIsMonad.
 
-  Definition vector_zipWith {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n) : vector C n :=
-    bind (isMonad := vec_isMonad n) xs (fun x : A => bind (isMonad := vec_isMonad n) ys (fun y : B => pure (isMonad := vec_isMonad n) (f x y)))
-  .
+  Definition vector_zipWith {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n) : vector C n := liftM2 (M_isMonad := vec_isMonad n) f xs ys.
 
   Lemma vector_zipWith_spec {A : Type} {B : Type} {C : Type} {n : nat} (f : A -> B -> C) (xs : vector A n) (ys : vector B n)
     : forall i : Fin n, f (xs !! i) (ys !! i) = vector_zipWith f xs ys !! i.
