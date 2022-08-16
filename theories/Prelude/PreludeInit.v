@@ -658,7 +658,6 @@ Module PreludeInit_MAIN.
   Global Arguments kempty {M} {requiresMonad} {obj}.
   Global Arguments kappend {M} {requiresMonad} {obj_l} {obj} {obj_r}.
 
-  Global Notation " dom '>=[' M ']=>' cod " := (kleisli M dom cod) (at level 100, no associativity) : type_scope.
   Global Infix " <=< " := kappend (at level 40, left associativity) : program_scope.
 
   Section TypeclassesForProgrammers.
@@ -710,7 +709,7 @@ Module PreludeInit_MAIN.
   Global Arguments liftMonad {T} {isMonadTrans} {M} {M_isMonad} {obj}.
 
   Class isMonadIter (M : Hask.cat -----> Hask.cat) {requiresMonad : isMonad M} : Type :=
-    { iterMonad {I : Hask.t} {R : Hask.t} (step : I >=[ M ]=> I + R) : kleisli M I R }
+    { iterMonad {I : Hask.t} {R : Hask.t} (step : kleisli M I (I + R)) : kleisli M I R }
   .
 
   Global Add Parametric Morphism (M : Hask.cat -----> Hask.cat) {requiresSetoid1 : isSetoid1 M} {requiresMonad : isMonad M} {obeysMonadLaws : @LawsOfMonad M requiresSetoid1 requiresMonad} {A : Hask.t} {B : Hask.t} :
