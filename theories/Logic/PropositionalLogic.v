@@ -1181,4 +1181,95 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     split...
   Qed.
 
+  Fixpoint collect_propLetters (p : formula) : list propLetter :=
+    match p with
+    | AtomF i => [i]
+    | ContradictionF => []
+    | NegationF p1 => collect_propLetters p1
+    | ConjunctionF p1 p2 => collect_propLetters p1 ++ collect_propLetters p2
+    | DisjunctionF p1 p2 => collect_propLetters p1 ++ collect_propLetters p2
+    | ImplicationF p1 p2 => collect_propLetters p1 ++ collect_propLetters p2
+    | BiconditionalF p1 p2 => collect_propLetters p1 ++ collect_propLetters p2
+    end
+  .
+
+  Lemma satisfies_env_ext (env : truthValueAssignment) (env' : truthValueAssignment) (A : formula)
+    (EXTENSIONALITY : forall i : propLetter, forall H_IN : In i (collect_propLetters A), env i <-> env' i)
+    : env `satisfies` A <-> env' `satisfies` A.
+  Proof with try now firstorder.
+    revert env env' EXTENSIONALITY.
+    enough (
+      forall env : truthValueAssignment,
+      forall env' : truthValueAssignment,
+      forall EXTENSIONALITY : forall i : propLetter, forall H_IN : In i (collect_propLetters A), env i <-> env' i,
+      evalFormula env A <-> evalFormula env' A
+    ) as to_show.
+    { iis; intros [?]; econstructor.
+      - eapply to_show with (env := env) (env' := env')...
+      - eapply to_show with (env := env') (env' := env)...
+    }
+    induction A as [i | | p1 IH1 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2 | p1 IH1 p2 IH2]; simpl.
+    { ii... }
+    { ii... }
+    { ii... }
+    { ii. split; iis; des.
+      - eapply IH1 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH2 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH1 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH2 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+    }
+    { ii. split; iis; des.
+      - left. eapply IH1 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - right. eapply IH2 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - left. eapply IH1 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - right. eapply IH2 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+    }
+    { ii. split; iis; des.
+      - eapply IH2 with (env' := env).
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H. eapply IH1 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH2 with (env := env').
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H. eapply IH1 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+    }
+    { ii. split; iis; des.
+      - eapply IH2 with (env' := env).
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H. eapply IH1 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH1 with (env' := env).
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H0. eapply IH2 with (env := env')...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH2 with (env := env').
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H. eapply IH1 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+      - eapply IH1 with (env := env').
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+        eapply H0. eapply IH2 with (env' := env)...
+        { ii. symmetry. eapply EXTENSIONALITY, in_app_iff... }
+    }
+  Qed.
+
+  Fixpoint generateCases (ls : list propLetter) : list truthValueAssignment :=
+    match ls with
+    | [] => pure (fun i : propLetter => False)
+    | l :: ls' =>
+      [True; False] >>= fun b : Prop =>
+      generateCases ls' >>= fun env : truthValueAssignment =>
+      pure (fun i : propLetter => if eq_dec i l then b else env i)
+    end
+  .
+
 End ConstructiveMetaTheoryOnPropositonalLogic.
