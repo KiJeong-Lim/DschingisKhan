@@ -1181,7 +1181,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     split...
   Qed.
 
-  Fixpoint collect_propLetters (p : formula) : list propLetter :=
+  Fixpoint collect_propLetters (p : formula) {struct p} : list propLetter :=
     match p with
     | AtomF i => [i]
     | ContradictionF => []
@@ -1262,13 +1262,10 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
     }
   Qed.
 
-  Fixpoint generateCases (ls : list propLetter) : list truthValueAssignment :=
+  Fixpoint generateCases (ls : list propLetter) {struct ls} : list truthValueAssignment :=
     match ls with
     | [] => pure (fun i : propLetter => False)
-    | l :: ls' =>
-      [True; False] >>= fun b : Prop =>
-      generateCases ls' >>= fun env : truthValueAssignment =>
-      pure (fun i : propLetter => if eq_dec i l then b else env i)
+    | l :: ls' => [True; False] >>= fun b : Prop => generateCases ls' >>= fun env : truthValueAssignment => pure (fun i : propLetter => if eq_dec i l then b else env i)
     end
   .
 
