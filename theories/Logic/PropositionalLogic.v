@@ -234,19 +234,21 @@ Module SemanticsOfPL.
     end
   .
 
+  Global Reserved Infix " `satisfies` " (at level 70, no associativity).
+
   Variant satisfies (env : truthValueAssignment) (A : formula) : Prop :=
   | IsModel
     (EVAL_TO_TRUE : evalFormula env A)
-    : satisfies env A
-  .
-
-  Global Infix " `satisfies` " := satisfies (at level 70, no associativity) : type_scope.
+    : env `satisfies` A
+  where " env `satisfies` A " := (satisfies env A) : type_scope.
 
   Definition entails (Gamma : ensemble formula) (A : formula) : Prop :=
     forall env : truthValueAssignment, forall env_satisfies : forall B : formula, forall B_IN : B \in Gamma, env `satisfies` B, env `satisfies` A
   .
 
   Global Infix " ⊧ " := entails (at level 70, no associativity) : type_scope.
+
+  Global Notation " Gamma ⊭ C " := (~ Gamma ⊧ C) (at level 70, no associativity) : type_scope.
 
   Lemma extend_entails (Gamma : ensemble formula) (Gamma' : ensemble formula) (C : formula)
     (ENTAILS : Gamma ⊧ C)
@@ -360,6 +362,8 @@ Module InferenceRulesOfPL.
   where " Gamma ⊢ C " := (infers Gamma C) : type_scope.
 
   Local Hint Constructors infers : core.
+
+  Global Notation " Gamma ⊬ C " := (~ Gamma ⊢ C) (at level 70, no associativity) : type_scope.
 
   Lemma Law_of_Exclusive_Middle (A : formula)
     : empty ⊢ \pl[ A \/ ~ A ].

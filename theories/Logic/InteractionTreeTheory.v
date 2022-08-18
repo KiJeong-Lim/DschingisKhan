@@ -130,7 +130,7 @@ Module InteractionTreeTheory.
     : Transitive eqITree.
   Proof. intros t1 t2 t3 t1_eq_t2 t2_eq_t3. exact (eqITree_transitivity (t1, t3) (@ex_intro _ _ t2 (@conj _ _ t1_eq_t2 t2_eq_t3))). Qed.
 
-  Global Instance eqITree_Equivalence : Equivalence (eqITree) :=
+  Global Instance eqITree_Equivalence : Equivalence eqITree :=
     { Equivalence_Reflexive := eqITree_Reflexive
     ; Equivalence_Symmetric := eqITree_Symmetric
     ; Equivalence_Transitive := eqITree_Transitive

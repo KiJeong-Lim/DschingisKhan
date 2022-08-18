@@ -379,7 +379,7 @@ Module ClassicalMetaTheoryOnPropositonalLogic.
   Proof with eauto with *.
     eapply NNPP. intros it_is_false_that_Gamma_infers_C.
     set (X := insert (NegationF C) Gamma).
-    assert (CONSISTENT : ~ X ⊢ ContradictionF).
+    assert (CONSISTENT : X ⊬ ContradictionF).
     { intros INCONSISTENT. contradiction it_is_false_that_Gamma_infers_C. eapply NegationE... }
     pose proof (theorem_of_1_2_14 (Th X) (lemma1_of_1_3_8 X)) as [SUBSET' IS_FILTER' COMPLETE' EQUICONSISTENT'].
     fold (MaximalConsistentSet X) in SUBSET', IS_FILTER', COMPLETE', EQUICONSISTENT'.
