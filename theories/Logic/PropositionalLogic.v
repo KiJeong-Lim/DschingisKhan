@@ -1265,7 +1265,7 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
   Fixpoint generateCases (ls : list propLetter) {struct ls} : list truthValueAssignment :=
     match ls with
     | [] => pure (fun i : propLetter => False)
-    | l :: ls' => [True; False] >>= fun b : Prop => generateCases ls' >>= fun env : truthValueAssignment => pure (fun i : propLetter => if eq_dec i l then b else env i)
+    | l :: ls' => [true; false] >>= fun b : bool => generateCases ls' >>= fun env : truthValueAssignment => pure (fun i : propLetter => if eq_dec i l then true = b else env i)
     end
   .
 
