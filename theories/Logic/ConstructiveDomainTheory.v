@@ -199,16 +199,16 @@ Module BasicCoLaTheory.
     @exist (⟬ D ⟶ D ⟭ -> ⟬ D ⟶ D ⟭) isMonotonicMap G1 G1_isMonotonicMap
   .
 
-  Variant ParameterizedGreatestFixedPointSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
-  | verifyParameterizedGreatestFixedPointSpec
+  Variant PacoSpec (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭) : Prop :=
+  | verifyPacoSpec
     (INIT_COFIXPOINT : proj1_sig (nu f) == proj1_sig G_f cola_empty)
     (UNFOLD_COFIXPOINT : forall x : D, proj1_sig G_f x == proj1_sig f (cola_union x (proj1_sig G_f x)))
     (ACCUM_COFIXPOINT : forall x : D, forall y : D, y =< proj1_sig G_f x <-> y =< proj1_sig G_f (cola_union x y))
-    : ParameterizedGreatestFixedPointSpec f G_f
+    : PacoSpec f G_f
   .
 
   Theorem G_specification (f : ⟬ D ⟶ D ⟭)
-    : ParameterizedGreatestFixedPointSpec f (proj1_sig G f).
+    : PacoSpec f (proj1_sig G f).
   Proof with eauto with *.
     pose proof (nu_isSupremumOf_PostfixedPoints (G_aux f cola_empty)) as claim1.
     pose proof (nu_isSupremumOf_PostfixedPoints f) as claim2.
@@ -243,7 +243,7 @@ Module BasicCoLaTheory.
   Qed.
 
   Theorem G_characterization (f : ⟬ D ⟶ D ⟭) (G_f : ⟬ D ⟶ D ⟭)
-    (G_f_spec : ParameterizedGreatestFixedPointSpec f G_f)
+    (G_f_spec : PacoSpec f G_f)
     : G_f == proj1_sig G f.
   Proof with eauto with *. (* Thanks to SoonWon Moon *)
     destruct G_f_spec as [INIT_COFIXPOINT' UNFOLD_COFIXPOINT' ACCUM_COFIXPOINT'].
@@ -444,7 +444,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
     : isSubsetOf (paco F Y) (F (cola_union Y (paco F Y))).
   Proof.
     intros z z_in. apply unfold_paco in z_in. apply inv_paco' in z_in. des; desnw.
-    revert z ELEM. change (F X =< F (cola_union Y (paco F Y))). now apply F_monotonic.
+    revert z ELEM. change (F X =< F (cola_union Y (paco F Y))). now eapply F_monotonic.
   Qed.
 
   Lemma paco_preserves_monotonicity (F : D -> D)
@@ -536,7 +536,7 @@ Module ParameterizedCoinduction. (* Reference: "The Power of Parameterization in
   Proof. eapply accumPaco with (f := @exist (D -> D) isMonotonicMap F F_monotonic). Qed.
 
   Corollary Paco_spec (f : ⟬ D ⟶ D ⟭)
-    : ParameterizedGreatestFixedPointSpec f (Paco f).
+    : PacoSpec f (Paco f).
   Proof. split; [exact (initPaco f) | exact (unfoldPaco f) | exact (accumPaco f)]. Qed.
 
   Corollary Paco_eq_G (f : ⟬ D ⟶ D ⟭)
