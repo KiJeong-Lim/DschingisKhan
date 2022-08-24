@@ -22,11 +22,15 @@ Module GIT.
 
   Local Existing Instances freeSetoidFromSetoid1.
 
-  Record isComputableFunction {arity : nat} (funGraph : ensemble (vector nat arity * nat)) : Type :=
+  Record muPartial {arity : nat} (funGraph : ensemble (vector nat arity * nat)) : Type :=
     { computer : vector nat arity -> itree void1 nat
-    ; computer_repr (args : vector nat arity) (rv : nat)
-      (CONVERGES : exists fuel : nat, burnTau_nat fuel (computer args) == Ret rv)
-      : forall result : nat, rv = result <-> member (args, result) funGraph
+    ; computer_repr (arg : vector nat arity) (rv : nat)
+      (CONVERGES : exists fuel : nat, burnTau_nat fuel (computer arg) == Ret rv)
+      : forall result : nat, rv = result <-> member (arg, result) funGraph
+    ; funGraph_unique (arg : vector nat arity) (result : nat) (result' : nat)
+      (H_result : member (arg, result) funGraph)
+      (H_result' : member (arg, result') funGraph)
+      : result = result'
     }
   .
 
