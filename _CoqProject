@@ -16,6 +16,7 @@ theories/Math/BooleanAlgebra.v #
 theories/Math/BasicGeneralTopology.v #
 theories/Math/ClassicalDomainTheory.v #
 theories/Math/PropositionalLogicExtra.v #
+theories/Math/GIT.v #
 #
 theories/Logic/ScottTopology.v #
 theories/Logic/LambdaCalculus.v #

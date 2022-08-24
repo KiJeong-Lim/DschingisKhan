@@ -189,8 +189,7 @@ Module InteractionTreeTheory.
   Local Notation eqITreeF' := (eqITreeF' (E := E) (requiresSetoid := theFinestSetoidOf _)).
 
   Global Instance itree_E_isSetoid1 : isSetoid1 (itree E) :=
-    { liftSetoid1 {R : Type} (R_isSetoid : isSetoid R) := itree_E_R_isSetoid (R := R) (requiresSetoid := R_isSetoid)
-    }
+    { liftSetoid1 {R : Type} (R_isSetoid : isSetoid R) := itree_E_R_isSetoid (R := R) (requiresSetoid := R_isSetoid) }
   .
 
   Theorem obs_eq_obs_implies_eqITree {R : Type} (lhs : itree E R) (rhs : itree E R)

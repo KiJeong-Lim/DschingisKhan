@@ -10,7 +10,6 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
-Require Import DschingisKhan.Prelude.PreludeClassic.
 
 Module PeanoArithmetic.
 
@@ -28,7 +27,7 @@ Module PeanoArithmetic.
 
   Inductive formula : Set :=
   | EqnF (t1 : term) (t2 : term) : formula
-  | LeqF (t1 : term) (t2 : term) : formula
+  | LtnF (t1 : term) (t2 : term) : formula
   | NegF (f1 : formula) : formula
   | ImpF (f1 : formula) (f2 : formula) : formula
   | AllF (y : ivar) (f1 : formula) : formula
@@ -49,7 +48,7 @@ Module PeanoArithmetic.
   Fixpoint eval_formula (env : ivar -> nat) (f : formula) {struct f} : Prop :=
     match f with
     | EqnF t1 t2 => eval_term env t1 = eval_term env t2
-    | LeqF t1 t2 => eval_term env t1 <= eval_term env t2
+    | LtnF t1 t2 => eval_term env t1 < eval_term env t2
     | NegF f1 => ~ eval_formula env f1
     | ImpF f1 f2 => eval_formula env f1 -> eval_formula env f2
     | AllF y f1 => forall n : nat, eval_formula (fun z : ivar => if eq_dec y z then n else env z) f1
@@ -83,7 +82,7 @@ Module PeanoArithmetic.
   Fixpoint fvs_formula (f : formula) {struct f} : list ivar :=
     match f with
     | EqnF t1 t2 => fvs_term t1 ++ fvs_term t2
-    | LeqF t1 t2 => fvs_term t1 ++ fvs_term t2
+    | LtnF t1 t2 => fvs_term t1 ++ fvs_term t2
     | NegF f1 => fvs_formula f1
     | ImpF f1 f2 => fvs_formula f1 ++ fvs_formula f2
     | AllF y f1 => remove eq_dec y (fvs_formula f1)
@@ -107,13 +106,13 @@ Module PeanoArithmetic.
   Fixpoint subst_formula (sigma : Subst) (f : formula) {struct f} : formula :=
     match f with
     | EqnF t1 t2 => EqnF (subst_term sigma t1) (subst_term sigma t2)
-    | LeqF t1 t2 => LeqF (subst_term sigma t1) (subst_term sigma t2)
+    | LtnF t1 t2 => LtnF (subst_term sigma t1) (subst_term sigma t2)
     | NegF f1 => NegF (subst_formula sigma f1)
     | ImpF f1 f2 => ImpF (subst_formula sigma f1) (subst_formula sigma f2)
     | AllF y f1 =>
-      let z : ivar := chi sigma f in
-      let sigma' : Subst := consSubst y (IVarT z) sigma in
-      AllF z (subst_formula sigma' f1)
+      let y' : ivar := chi sigma f in
+      let sigma' : Subst := consSubst y (IVarT y') sigma in
+      AllF y' (subst_formula sigma' f1)
     end
   .
 

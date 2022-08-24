@@ -794,7 +794,14 @@ Module PreludeInit_MAIN.
   Global Infix " +' " := sum1 (at level 60, no associativity) : type_scope.
 
   Global Instance sum1_isFunctor (FL : Hask.cat -----> Hask.cat) (FR : Hask.cat -----> Hask.cat) {FL_isFunctor : isFunctor FL} {FR_isFunctor : isFunctor FR} : isFunctor (FL +' FR) :=
-    { fmap {A : Hask.t} {B : Hask.t} (f : Hask.arrow A B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT)) }
+    { fmap {A : Type} {B : Type} (f : A -> B) := @sum1_rect _ _ _ (fun _ : sum1 FL FR A => sum1 FL FR B) (fun LEFT : FL A => inl1 (fmap f LEFT)) (fun RIGHT : FR A => inr1 (fmap f RIGHT)) }
+  .
+
+  Inductive void1 (X : Hask.t) : Hask.t :=
+  .
+
+  Global Instance void1_isFunctor : isFunctor void1 :=
+    { fmap {A : Type} {B : Type} (f : A -> B) := @void1_rect _ (fun _ : void1 A => void1 B) }
   .
 
 (** "4. Extras" *)
