@@ -1,7 +1,3 @@
-Require Import DschingisKhan.Prelude.PreludeClassic.
-Require Import DschingisKhan.Prelude.PreludeInit.
-Require Import DschingisKhan.Prelude.PreludeMath.
-Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Data.AczelSet.
 Require Import DschingisKhan.Data.BinTree.
 Require Import DschingisKhan.Data.InteractionTree.
@@ -15,5 +11,10 @@ Require Import DschingisKhan.Math.PropositionalLogicExtra.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
 Require Import DschingisKhan.Logic.InteractionTreeTheory.
 Require Import DschingisKhan.Logic.LambdaCalculus.
+Require Import DschingisKhan.Logic.PeanoArithmetic.
 Require Import DschingisKhan.Logic.PropositionalLogic.
 Require Import DschingisKhan.Logic.ScottTopology.
+Require Import DschingisKhan.Prelude.PreludeClassic.
+Require Import DschingisKhan.Prelude.PreludeInit.
+Require Import DschingisKhan.Prelude.PreludeMath.
+Require Import DschingisKhan.Prelude.PreludeUtil.

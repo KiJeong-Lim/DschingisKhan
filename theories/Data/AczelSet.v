@@ -134,11 +134,7 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
 
   Lemma elem_intro (x : AczelSet) (c_x : getChildren x)
     : getChildTrees x c_x `elem` x.
-  Proof.
-    exists (c_x). generalize (getChildTrees x c_x) as z. clear x c_x.
-    induction z as [z_children z_childtrees IH]. split.
-    all: intros c_z; exists (c_z); exact (IH c_z).
-  Defined.
+  Proof. exists (c_x). exact (eqTree_Reflexive (getChildTrees x c_x)). Defined.
 
   Lemma eqProp_elem_elem (x : AczelSet) (y : AczelSet) (z : AczelSet)
     (x_eq_y : x == y)

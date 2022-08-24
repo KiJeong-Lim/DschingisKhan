@@ -61,6 +61,23 @@ Module RegularExpressions.
     : str \in evalRegex (ReMult re1 re2) <-> (exists str1 : list A, exists str2 : list A, str1 \in evalRegex re1 /\ str2 \in evalRegex re2 /\ str = str1 ++ str2).
   Proof. transitivity (exists str1 : list A, str1 \in evalRegex re1 /\ exists str2 : list A, str2 \in evalRegex re2 /\ str1 ++ str2 = str); [reflexivity | now firstorder]. Qed.
 
+  Fixpoint of_string (str : list A) {struct str} : regex :=
+    match str with
+    | [] => ReUnit
+    | ch :: str' => ReMult (ReChar ch) (of_string str')
+    end
+  .
+
+  Lemma of_string_spec (str : list A)
+    : evalRegex (of_string str) == singleton str.
+  Proof.
+    induction str as [ | ch str IH]; ii.
+    - reflexivity.
+    - simpl of_string. rewrite in_evalRegex_ReMult_iff. split.
+      + intros [str1 [str2 [H_IN1 [H_IN2 ?]]]]; subst x. inversion H_IN1; subst str1. rewrite IH in H_IN2. inversion H_IN2; subst str. reflexivity.
+      + intros H_EQ. do 2 red in H_EQ; subst x. exists ([ch]), (str). rewrite IH. do 2 (split; simpl; try reflexivity).
+  Qed.
+
   Global Instance regex_isSetoid : isSetoid regex :=
     { eqProp (lhs : regex) (rhs : regex) := forall str : list A, str \in evalRegex lhs <-> str \in evalRegex rhs
     ; eqProp_Equivalence := relation_on_image_liftsEquivalence evalRegex (@eqProp_Equivalence (ensemble (list A)) (ensemble_isSetoid (list A)))
