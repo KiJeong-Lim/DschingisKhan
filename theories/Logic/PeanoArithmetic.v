@@ -36,11 +36,7 @@ Module PeanoArithmetic.
 
   Section SEMANTICS.
 
-  Let universe_of_discourse : Set := nat.
-
-  Let value_assignment : Set := ivar -> universe_of_discourse.
-
-  Fixpoint eval_term (env : value_assignment) (t : term) {struct t} : universe_of_discourse :=
+  Fixpoint eval_term (env : ivar -> nat) (t : term) {struct t} : nat :=
     match t with
     | IVarT x => env x
     | ZeroT => O
@@ -50,13 +46,13 @@ Module PeanoArithmetic.
     end
   .
 
-  Fixpoint eval_formula (env : value_assignment) (f : formula) {struct f} : Prop :=
+  Fixpoint eval_formula (env : ivar -> nat) (f : formula) {struct f} : Prop :=
     match f with
     | EqnF t1 t2 => eval_term env t1 = eval_term env t2
     | LeqF t1 t2 => eval_term env t1 <= eval_term env t2
     | NegF f1 => ~ eval_formula env f1
     | ImpF f1 f2 => eval_formula env f1 -> eval_formula env f2
-    | AllF y f1 => forall n : universe_of_discourse, eval_formula (fun z : ivar => if eq_dec y z then n else env z) f1
+    | AllF y f1 => forall n : nat, eval_formula (fun z : ivar => if eq_dec y z then n else env z) f1
     end
   .
 
@@ -114,7 +110,10 @@ Module PeanoArithmetic.
     | LeqF t1 t2 => LeqF (subst_term sigma t1) (subst_term sigma t2)
     | NegF f1 => NegF (subst_formula sigma f1)
     | ImpF f1 f2 => ImpF (subst_formula sigma f1) (subst_formula sigma f2)
-    | AllF y f1 => let z := chi sigma f in AllF z (subst_formula (consSubst y (IVarT z) sigma) f1)
+    | AllF y f1 =>
+      let z : ivar := chi sigma f in
+      let sigma' : Subst := consSubst y (IVarT z) sigma in
+      AllF z (subst_formula sigma' f1)
     end
   .
 
