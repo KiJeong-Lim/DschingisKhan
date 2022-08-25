@@ -87,8 +87,7 @@ Module InteractionTrees.
   .
 
   Global Instance itree_isMonadIter (E : Type -> Type) : isMonadIter (itree E) :=
-    { iterMonad {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R)
-    }
+    { iterMonad {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R) }
   .
 
   Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
@@ -103,10 +102,10 @@ Module InteractionTrees.
   .
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
-  | Call (arg : I) : callE I R R
+  | Call : I -> callE I R R
   .
 
-  Global Arguments Call {I} {R} (arg).
+  Global Arguments Call {I} {R}.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
