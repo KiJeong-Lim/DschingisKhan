@@ -90,17 +90,6 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     { iterMonad {I : Type} {R : Type} := itree_iter (E := E) (I := I) (R := R) }
   .
 
-  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
-    fun R : Type =>
-    iterMonad (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
-      match observe t0 with
-      | RetF r => pure (inr r)
-      | TauF t => pure (inl t)
-      | VisF X e k => bind (handle X e) (fun x : X => pure (inl (k x)))
-      end
-    )
-  .
-
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
   | Call : I -> callE I R R
   .
@@ -124,6 +113,17 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   .
 
   Section ITREE_HANDLER.
+
+  Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
+    fun R : Type =>
+    iterMonad (M := M) (I := itree E R) (R := R) (fun t0 : itree E R =>
+      match observe t0 with
+      | RetF r => pure (inr r)
+      | TauF t => pure (inl t)
+      | VisF X e k => bind (handle X e) (fun x : X => pure (inl (k x)))
+      end
+    )
+  .
 
   Local Instance handlerCat : isCategory :=
     { objs := Type -> Type
