@@ -22,8 +22,19 @@ Module GIT.
 
   Local Existing Instances freeSetoidFromSetoid1.
 
+  Definition isPartialFunctionGraph {arity : nat} (funGraph : ensemble (vector nat arity * nat)) : Prop :=
+    forall x : vector nat arity, forall y : nat, forall y' : nat, (x, y) \in funGraph -> (x, y') \in funGraph -> y = y'
+  .
+
   Definition converges_to {arity : nat} (computer : vector nat arity -> itree void1 nat) (arg : vector nat arity) (rv : nat) : Prop :=
     exists fuel : nat, burnTau_nat fuel (computer arg) == Ret rv
+  .
+
+  Record muPartial {arity : nat} (funGraph : ensemble (vector nat arity * nat)) : Type :=
+    { computer : vector nat arity -> itree void1 nat
+    ; computer_repr : forall arg : vector nat arity, forall rv : nat, converges_to computer arg rv <-> member (arg, rv) funGraph
+    ; partialness : isPartialFunctionGraph funGraph
+    }
   .
 
 End GIT.
