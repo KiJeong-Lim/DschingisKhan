@@ -135,7 +135,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     }
   .
 
-  Definition handler_bimap {E1} {E1'} {E2} {E2'} (h1 : E1 ~~> itree E1') (h2 : E2 ~~> itree E2') : E1 +' E2 ~~> itree (E1' +' E2') :=
+  Definition handler_bimap {E1 : Type -> Type} {E1' : Type -> Type} {E2 : Type -> Type} {E2' : Type -> Type} (h1 : E1 ~~> itree E1') (h2 : E2 ~~> itree E2') : E1 +' E2 ~~> itree (E1' +' E2') :=
     Case (compose Inl h1) (compose Inr h2)
   .
 
