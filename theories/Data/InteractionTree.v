@@ -101,7 +101,9 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     )
   .
 
-  Global Instance handlerCat : isCategory :=
+  Section ITREE_HANDLER.
+
+  Local Instance handlerCat : isCategory :=
     { objs := Type -> Type
     ; hom (E : Type -> Type) (E' : Type -> Type) := E ~~> itree E'
     ; compose {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h2 : E' ~~> itree E'') (h1 : E ~~> itree E') := fun R : Type => fun e : E R => itree_interpret (E := E') (M := itree E'') h2 R (h1 R e)
@@ -109,14 +111,10 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     }
   .
 
-  Definition htrigger {E : Type -> Type} {E' : Type -> Type} (map : E ~~> E') : E ~~> itree E' :=
-    fun R : Type => fun e : E R => itree_trigger R (map R e)
-  .
-
-  Global Instance handlerCat_hasCoproduct : hasCoproduct handlerCat :=
+  Local Instance handlerCat_hasCoproduct : hasCoproduct handlerCat :=
     { Sum := sum1
-    ; Inl {E : Type -> Type} {E' : Type -> Type} := htrigger (@inl1 E E')
-    ; Inr {E : Type -> Type} {E' : Type -> Type} := htrigger (@inr1 E E')
+    ; Inl {E : Type -> Type} {E' : Type -> Type} := fun R : Type => fun e : E R => itree_trigger R (@inl1 E E' R e)
+    ; Inr {E : Type -> Type} {E' : Type -> Type} := fun R : Type => fun e : E' R => itree_trigger R (@inr1 E E' R e)
     ; Case {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h1 : E ~~> itree E'') (h2 : E' ~~> itree E'') :=
       fun R : Type =>
       fun e : sum1 E E' R =>
@@ -127,7 +125,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     }
   .
 
-  Global Instance handlerCat_hasInitial : hasInitial handlerCat :=
+  Local Instance handlerCat_hasInitial : hasInitial handlerCat :=
     { Void := void1
     ; ExFalso {E : Type -> Type} :=
       fun R : Type =>
@@ -136,6 +134,12 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
       end
     }
   .
+
+  Definition handler_bimap {E1} {E1'} {E2} {E2'} (h1 : E1 ~~> itree E1') (h2 : E2 ~~> itree E2') : E1 +' E2 ~~> itree (E1' +' E2') :=
+    Case (compose Inl h1) (compose Inr h2)
+  .
+
+  End ITREE_HANDLER.
 
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
   | Call : I -> callE I R R
