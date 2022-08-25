@@ -102,10 +102,6 @@ Module InteractionTrees.
     )
   .
 
-  Definition itree_interpret_stateT {E : Type -> Type} {E' : Type -> Type} {ST : Type} (handle : E ~~> stateT ST (itree E')) : itree E ~~> stateT ST (itree E') :=
-    itree_interpret (E := E) (M := stateT ST (itree E')) (M_isMonadIter := stateT_isMonadIter ST (itree E') (M_isMonadIter := itree_isMonadIter E')) handle
-  .
-
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
   | Call (arg : I) : callE I R R
   .
@@ -143,12 +139,12 @@ Module InteractionTrees.
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition itree_ap {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
+  Definition callE_handle {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
     @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
-    itree_mrec (E := callE I R) (E' := E) (itree_ap body) R (Call arg)
+    itree_mrec (E := callE I R) (E' := E) (callE_handle body) R (Call arg)
   .
 
   Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
@@ -169,7 +165,7 @@ Module InteractionTrees.
   Global Arguments GetS {S}.
   Global Arguments PutS {S}.
 
-  Definition state_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
+  Definition stateE_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
     @stateE_rect S (fun X : Type => fun _ : stateE S X => stateT S (itree E) X) getS putS
   .
 
