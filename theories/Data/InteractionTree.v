@@ -101,6 +101,28 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     )
   .
 
+  Inductive callE (I : Type) (R : Type) : Type -> Type :=
+  | Call : I -> callE I R R
+  .
+
+  Global Arguments Call {I} {R}.
+
+  Definition callE_handle {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
+    @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
+  .
+
+  Inductive stateE (S : Type) : Type -> Type :=
+  | GetS : stateE S S
+  | PutS : S -> stateE S unit
+  .
+
+  Global Arguments GetS {S}.
+  Global Arguments PutS {S}.
+
+  Definition stateE_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
+    @stateE_rect S (fun X : Type => fun _ : stateE S X => stateT S (itree E) X) getS putS
+  .
+
   Section ITREE_HANDLER.
 
   Local Instance handlerCat : isCategory :=
@@ -137,12 +159,6 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
 
   End ITREE_HANDLER.
 
-  Inductive callE (I : Type) (R : Type) : Type -> Type :=
-  | Call : I -> callE I R R
-  .
-
-  Global Arguments Call {I} {R}.
-
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
   Local Notation endo X := (X -> X).
@@ -174,10 +190,6 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
   .
 
-  Definition callE_handle {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
-    @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
-  .
-
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
     itree_mrec (E := callE I R) (E' := E) (callE_handle body) R (Call arg)
   .
@@ -191,18 +203,6 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   .
 
   End RECURSION.
-
-  Inductive stateE (S : Type) : Type -> Type :=
-  | GetS : stateE S S
-  | PutS : S -> stateE S unit
-  .
-
-  Global Arguments GetS {S}.
-  Global Arguments PutS {S}.
-
-  Definition stateE_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
-    @stateE_rect S (fun X : Type => fun _ : stateE S X => stateT S (itree E) X) getS putS
-  .
 
   Section BISIMULATION.
 
