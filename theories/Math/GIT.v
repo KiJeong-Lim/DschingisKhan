@@ -22,8 +22,8 @@ Module GIT.
 
   Local Existing Instances freeSetoidFromSetoid1.
 
-  Definition converges_to {arity : nat} (computer : vector nat arity -> itree void1 nat) (args : vector nat arity) (rv : nat) : Prop :=
-    exists fuel : nat, burnTau_nat fuel (computer args) == Ret rv
+  Definition converges_to {arity : nat} (computer : vector nat arity -> itree void1 nat) (arg : vector nat arity) (rv : nat) : Prop :=
+    exists fuel : nat, burnTau_nat fuel (computer arg) == Ret rv
   .
 
 End GIT.
