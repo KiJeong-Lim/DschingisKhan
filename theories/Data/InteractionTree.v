@@ -101,6 +101,14 @@ Module InteractionTrees.
     )
   .
 
+  Global Instance handlerCat : isCategory :=
+    { objs := Type -> Type
+    ; hom (E : Type -> Type) (E' : Type -> Type) := E ~~> itree E'
+    ; compose {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h2 : E' ~~> itree E'') (h1 : E ~~> itree E') := fun R : Type => fun e : E R => itree_interpret (E := E') (M := itree E'') h2 R (h1 R e)
+    ; id {E : Type -> Type} := itree_trigger (E := E)
+    }
+  .
+
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
   | Call : I -> callE I R R
   .
