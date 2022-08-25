@@ -109,6 +109,34 @@ Module InteractionTrees.
     }
   .
 
+  Definition htrigger {E : Type -> Type} {E' : Type -> Type} (h : E ~~> E') : E ~~> itree E' :=
+    fun R : Type => fun e : E R => itree_trigger R (h R e)
+  .
+
+  Global Instance handlerCat_hasCoproduct : hasCoproduct handlerCat :=
+    { Sum := sum1
+    ; Inl {E : Type -> Type} {E' : Type -> Type} := htrigger (@inl1 E E')
+    ; Inr {E : Type -> Type} {E' : Type -> Type} := htrigger (@inr1 E E')
+    ; Case {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h1 : E ~~> itree E'') (h2 : E' ~~> itree E'') :=
+      fun R : Type =>
+      fun e : sum1 E E' R =>
+      match e with
+      | inl1 e1 => h1 R e1
+      | inr1 e2 => h2 R e2
+      end
+    }
+  .
+
+  Global Instance handlerCat_hasInitial : hasInitial handlerCat :=
+    { Void := void1
+    ; ExFalso {E : Type -> Type} :=
+      fun R : Type =>
+      fun e : void1 R =>
+      match e with
+      end
+    }
+  .
+
   Inductive callE (I : Type) (R : Type) : Type -> Type :=
   | Call : I -> callE I R R
   .
