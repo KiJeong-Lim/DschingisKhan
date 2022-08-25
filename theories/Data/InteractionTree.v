@@ -96,7 +96,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
 
   Global Arguments Call {I} {R}.
 
-  Definition callE_handle {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
+  Definition callE_handler {E : Type -> Type} {I : Type} {R : Type} (callee : I -> itree E R) : callE I R ~~> itree E :=
     @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
@@ -108,7 +108,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   Global Arguments GetS {ST}.
   Global Arguments PutS {ST}.
 
-  Definition stateE_handle {ST : Type} {E : Type -> Type} : stateE ST ~~> stateT ST (itree E) :=
+  Definition stateE_handler {ST : Type} {E : Type -> Type} : stateE ST ~~> stateT ST (itree E) :=
     @stateE_rect ST (fun X : Type => fun _ : stateE ST X => stateT ST (itree E) X) getS putS
   .
 
@@ -191,7 +191,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
-    itree_mrec (E := callE I R) (E' := E) (callE_handle body) R (Call arg)
+    itree_mrec (E := callE I R) (E' := E) (callE_handler body) R (Call arg)
   .
 
   Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
