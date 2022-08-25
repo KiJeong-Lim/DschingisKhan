@@ -161,6 +161,18 @@ Module InteractionTrees.
 
   End RECURSION.
 
+  Inductive stateE (S : Type) : Type -> Type :=
+  | GetS : stateE S S
+  | PutS : S -> stateE S unit
+  .
+
+  Global Arguments GetS {S}.
+  Global Arguments PutS {S}.
+
+  Definition state_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
+    @stateE_rect S (fun X : Type => fun _ : stateE S X => stateT S (itree E) X) getS putS
+  .
+
   Section BISIMULATION.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.

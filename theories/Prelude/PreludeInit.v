@@ -754,6 +754,14 @@ Module PreludeInit_MAIN.
 
   Definition runStateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (stateT ST M X) (ST -> M (X * ST)%type) := id.
 
+  Definition getS {ST : Type} {M : Type -> Type} {M_isMonad : isMonad M} : stateT ST M ST :=
+    StateT (fun s : ST => pure (s, s))
+  .
+
+  Definition putS {ST : Type} {M : Type -> Type} {M_isMonad : isMonad M} : ST -> stateT ST M unit :=
+    fun s : ST => StateT (fun _ : ST => pure (tt, s))
+  .
+
   Global Instance stateT_isMonad (ST : Hask.t) (M : Hask.cat -----> Hask.cat) {M_isMonad : isMonad M} : isMonad (stateT ST M) :=
     { pure _ := StateT ∘ curry kempty
     ; bind _ _ := fun m k => StateT (uncurry (runStateT ∘ k) <=< runStateT m)

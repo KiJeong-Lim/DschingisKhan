@@ -18,7 +18,7 @@ Require Import DschingisKhan.Logic.InteractionTreeTheory.
 
 Module GIT.
 
-  Import ListNotations InteractionTrees.
+  Import MyVec InteractionTrees.
 
   Local Existing Instances freeSetoidFromSetoid1.
 
@@ -30,7 +30,7 @@ Module GIT.
     exists fuel : nat, burnTau_nat fuel (computer arg) == Ret rv
   .
 
-  Record muPartial {arity : nat} (fun_graph : ensemble (vector nat arity * nat)) : Type :=
+  Record Computable {arity : nat} (fun_graph : ensemble (vector nat arity * nat)) : Type :=
     { computer : vector nat arity -> itree void1 nat
     ; computerRepresents : forall arg : vector nat arity, forall rv : nat, converges_to computer arg rv <-> (arg, rv) \in fun_graph
     ; partialness : isPartialFunctionGraph fun_graph
