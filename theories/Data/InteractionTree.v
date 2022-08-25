@@ -4,7 +4,7 @@ Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module InteractionTrees.
+Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
 
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
