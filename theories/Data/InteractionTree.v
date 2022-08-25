@@ -109,8 +109,8 @@ Module InteractionTrees.
     }
   .
 
-  Definition htrigger {E : Type -> Type} {E' : Type -> Type} (h : E ~~> E') : E ~~> itree E' :=
-    fun R : Type => fun e : E R => itree_trigger R (h R e)
+  Definition htrigger {E : Type -> Type} {E' : Type -> Type} (map : E ~~> E') : E ~~> itree E' :=
+    fun R : Type => fun e : E R => itree_trigger R (map R e)
   .
 
   Global Instance handlerCat_hasCoproduct : hasCoproduct handlerCat :=
