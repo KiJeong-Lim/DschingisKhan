@@ -896,6 +896,10 @@ Module PreludeInit_MAIN.
     }
   .
 
+  Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : objs} {obj1' : objs} {obj2 : objs} {obj2' : objs} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
+    Case (compose Inl arr1) (compose Inr arr2)
+  .
+
 End PreludeInit_MAIN.
 
 Export PreludeInit_MAIN.
