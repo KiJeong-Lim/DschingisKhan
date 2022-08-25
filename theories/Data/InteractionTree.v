@@ -100,19 +100,19 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
-  Inductive stateE (S : Type) : Type -> Type :=
-  | GetS : stateE S S
-  | PutS : S -> stateE S unit
+  Inductive stateE (ST : Type) : Type -> Type :=
+  | GetS : stateE ST ST
+  | PutS : ST -> stateE ST unit
   .
 
-  Global Arguments GetS {S}.
-  Global Arguments PutS {S}.
+  Global Arguments GetS {ST}.
+  Global Arguments PutS {ST}.
 
-  Definition stateE_handle {S : Type} {E : Type -> Type} : stateE S ~~> stateT S (itree E) :=
-    @stateE_rect S (fun X : Type => fun _ : stateE S X => stateT S (itree E) X) getS putS
+  Definition stateE_handle {ST : Type} {E : Type -> Type} : stateE ST ~~> stateT ST (itree E) :=
+    @stateE_rect ST (fun X : Type => fun _ : stateE ST X => stateT ST (itree E) X) getS putS
   .
 
-  Section ITREE_HANDLER.
+  Section HANDLER.
 
   Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
     fun R : Type =>
@@ -157,7 +157,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     }
   .
 
-  End ITREE_HANDLER.
+  End HANDLER.
 
   Section RECURSION. (* Reference: "https://github.com/DeepSpec/InteractionTrees/blob/5fe86a6bb72f85b5fcb125da10012d795226cf3a/theories/Interp/Recursion.v" *)
 
