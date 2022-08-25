@@ -32,10 +32,8 @@ Module GIT.
 
   Record muPartial {arity : nat} (fun_graph : ensemble (vector nat arity * nat)) : Type :=
     { computer : vector nat arity -> itree void1 nat
-    ; computer_repr
-      : forall arg : vector nat arity, forall rv : nat, converges_to computer arg rv <-> member (arg, rv) fun_graph
-    ; partialness
-      : isPartialFunctionGraph fun_graph
+    ; computerRepresents : forall arg : vector nat arity, forall rv : nat, converges_to computer arg rv <-> member (arg, rv) fun_graph
+    ; partialness : isPartialFunctionGraph fun_graph
     }
   .
 
