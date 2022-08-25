@@ -652,6 +652,14 @@ Module PreludeInit_MAIN.
 
   Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r := fun x_l => k_l x_l >>= fun x_r => k_r x_r.
 
+  Global Instance kleisliCat : isCategory :=
+    { objs := Type
+    ; hom := kleisli
+    ; compose {A : Type} {B : Type} {C : Type} := kappend (obj_l := A) (obj := B) (obj_r := C)
+    ; id {A : Type} := kempty (obj := A)
+    }
+  .
+
   End ImplFor_kleisli.
 
   Global Arguments kleisli (M)%type (dom)%type (cod)%type.
