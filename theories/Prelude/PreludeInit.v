@@ -858,6 +858,10 @@ Module PreludeInit_MAIN.
     }
   .
 
+  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : objs} {obj1' : objs} {obj2 : objs} {obj2' : objs} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
+    Case (compose Inl arr1) (compose Inr arr2)
+  .
+
   Local Instance Hask_hasCoproduct : hasCoproduct Hask.cat :=
     { Sum := sum
     ; Inl {A : Type} {B : Type} (x : A) := inl x
@@ -894,10 +898,6 @@ Module PreludeInit_MAIN.
     { Void := void1
     ; ExFalso (F : Type -> Type) (X : Type) := @void1_rect X (fun _ : void1 X => F X)
     }
-  .
-
-  Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : objs} {obj1' : objs} {obj2 : objs} {obj2' : objs} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
-    Case (compose Inl arr1) (compose Inr arr2)
   .
 
 End PreludeInit_MAIN.

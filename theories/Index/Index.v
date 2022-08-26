@@ -8,11 +8,9 @@ Require Import DschingisKhan.Math.BasicPosetTheory.
 Require Import DschingisKhan.Math.BooleanAlgebra.
 Require Import DschingisKhan.Math.ClassicalDomainTheory.
 Require Import DschingisKhan.Math.PropositionalLogicExtra.
-Require Import DschingisKhan.Math.GIT.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
 Require Import DschingisKhan.Logic.InteractionTreeTheory.
 Require Import DschingisKhan.Logic.LambdaCalculus.
-Require Import DschingisKhan.Logic.PeanoArithmetic.
 Require Import DschingisKhan.Logic.PropositionalLogic.
 Require Import DschingisKhan.Logic.ScottTopology.
 Require Import DschingisKhan.Prelude.PreludeClassic.
