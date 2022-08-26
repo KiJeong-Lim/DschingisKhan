@@ -182,12 +182,8 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     fun R : Type => fun e : E R => itree_interpret_mrec (E1 := E) (E2 := E') ctx R (ctx R e)
   .
 
-  Definition itree_trigger_inl1 {E : Type -> Type} {E' : Type -> Type} : E ~~> itree (E +' E') :=
-    fun R : Type => fun e : E R => itree_trigger (E := E +' E') R (inl1 e)
-  .
-
   Definition itree_mrec_fix {E : Type -> Type} {E' : Type -> Type} (ctx : endo (E ~~> itree (E +' E'))) : E ~~> itree E' :=
-    itree_mrec (E := E) (E' := E') (ctx itree_trigger_inl1)
+    itree_mrec (E := E) (E' := E') (ctx handlerCat_hasCoproduct.(Inl))
   .
 
   Definition itree_rec {E : Type -> Type} {I : Type} {R : Type} (body : I -> itree (callE I R +' E) R) (arg : I) : itree E R :=
@@ -195,7 +191,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   .
 
   Definition itree_call {E : Type -> Type} {I : Type} {R : Type} (arg : I) : itree (callE I R +' E) R :=
-    itree_trigger_inl1 (E := callE I R) (E' := E) R (Call arg)
+    handlerCat_hasCoproduct.(Inl) R (Call arg)
   .
 
   Definition itree_rec_fix {E : Type -> Type} {I : Type} {R : Type} (body : endo (I -> itree (callE I R +' E) R)) : I -> itree E R :=
