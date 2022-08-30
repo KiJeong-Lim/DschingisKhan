@@ -7,6 +7,8 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
+  Local Coercion Ob : isCategory >-> Sortclass.
+
   Section INSTANCES_OF_CATEGORY.
 
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
@@ -35,11 +37,11 @@ Module Categories.
     { Sum (obj_l : cat.(Ob)) (obj_r : cat.(Ob)) : cat.(Ob)
     ; Inl {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
     ; Inr {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
-    ; Case {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} {obj : cat.(Ob)} (left : cat.(hom) (obj_l) obj) (right : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
+    ; Case {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} {obj : cat.(Ob)} (fl : cat.(hom) (obj_l) obj) (fr : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
     }
   .
 
-  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : Ob} {obj1' : Ob} {obj2 : Ob} {obj2' : Ob} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
+  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : cat} {obj1' : cat} {obj2 : cat} {obj2' : cat} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
     Case (compose Inl arr1) (compose Inr arr2)
   .
 
@@ -55,7 +57,7 @@ Module Categories.
     { Sum := sum1
     ; Inl {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inl1 (FL := FL) (FR := FR) (X := X)
     ; Inr {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inr1 (FL := FL) (FR := FR) (X := X)
-    ; Case {FL : Type -> Type} {FR : Type -> Type} {F : Type -> Type} (f1 : FL ~~> F) (f2 : FR ~~> F) := fun X : Type => @sum1_rect _ _ _ (fun _ : sum1 FL FR X => F X) (f1 X) (f2 X)
+    ; Case {FL : Type -> Type} {FR : Type -> Type} {F : Type -> Type} (fl : FL ~~> F) (fr : FR ~~> F) := fun X : Type => @sum1_rect _ _ _ (fun _ : sum1 FL FR X => F X) (fl X) (fr X)
     }
   .
 

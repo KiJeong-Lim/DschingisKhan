@@ -140,23 +140,13 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     { Sum := sum1
     ; Inl {E : Type -> Type} {E' : Type -> Type} := fun R : Type => fun e : E R => itree_trigger R (@inl1 E E' R e)
     ; Inr {E : Type -> Type} {E' : Type -> Type} := fun R : Type => fun e : E' R => itree_trigger R (@inr1 E E' R e)
-    ; Case {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h1 : E ~~> itree E'') (h2 : E' ~~> itree E'') :=
-      fun R : Type =>
-      fun e : sum1 E E' R =>
-      match e with
-      | inl1 e1 => h1 R e1
-      | inr1 e2 => h2 R e2
-      end
+    ; Case {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h1 : E ~~> itree E'') (h2 : E' ~~> itree E'') := fun R : Type => @sum1_rect _ _ _ (fun _ : sum1 E E' R => itree E'' R) (h1 R) (h2 R)
     }
   .
 
   Local Instance handlerCat_hasInitial : hasInitial handlerCat :=
     { Void := void1
-    ; ExFalso {E : Type -> Type} :=
-      fun R : Type =>
-      fun e : void1 R =>
-      match e with
-      end
+    ; ExFalso {E : Type -> Type} := fun R : Type => @void1_rect _ (fun _ : void1 R => itree E R)
     }
   .
 
