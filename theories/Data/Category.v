@@ -47,8 +47,8 @@ Module Categories.
   Local Polymorphic Instance OppositeCategory (cat : Category) : Category :=
     { ob := cat.(ob)
     ; hom B A := cat.(hom) A B
-    ; compose {A : cat} {B : cat} {C : cat} f2 f1 := cat.(compose) f1 f2
-    ; id {A : cat} := cat.(id)
+    ; compose {C} {B} {A} f1 f2 := cat.(compose) f2 f1
+    ; id {A} := cat.(id)
     }
   .
 
