@@ -17,7 +17,7 @@ Module Categories.
     }
   .
 
-  Local Polymorphic Instance CategoryOfFunctors (src : isCategory) (tgt : isCategory) : isCategory :=
+  Local Polymorphic Instance CategoryOfFunctors {src : isCategory} {tgt : isCategory} : isCategory :=
     { objs := src -----> tgt
     ; hom F F' := F =====> F'
     ; compose {F} {F'} {F''} f2 f1 := fun X => compose (f2 X) (f1 X)
@@ -25,7 +25,7 @@ Module Categories.
     }
   .
 
-  Local Instance HaskEndo : isCategory := CategoryOfFunctors Hask.cat Hask.cat.
+  Local Instance HaskEndo : isCategory := CategoryOfFunctors (src := Hask.cat) (tgt := Hask.cat).
 
   End INSTANCES_OF_CATEGORY.
 
