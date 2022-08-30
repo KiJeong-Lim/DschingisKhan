@@ -7,12 +7,10 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
-  Local Coercion Ob : isCategory >-> Sortclass.
-
   Section INSTANCES_OF_CATEGORY.
 
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
-    { Ob := isCategory
+    { ob := isCategory
     ; hom D C := D -----> C
     ; compose {C} {C'} {C''} F2 F1 := fun X => F2 (F1 X)
     ; id {C} := fun X => X
@@ -20,7 +18,7 @@ Module Categories.
   .
 
   Local Polymorphic Instance CategoryOfFunctors {src : isCategory} {tgt : isCategory} : isCategory :=
-    { Ob := src -----> tgt
+    { ob := src -----> tgt
     ; hom F F' := F =====> F'
     ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
     ; id {F} := fun X => id
@@ -34,10 +32,10 @@ Module Categories.
   Section CATEGORICAL_SUM.
 
   Polymorphic Class hasCoproduct (cat : isCategory) : Type :=
-    { Sum (obj_l : cat.(Ob)) (obj_r : cat.(Ob)) : cat.(Ob)
-    ; Inl {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
-    ; Inr {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
-    ; Case {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} {obj : cat.(Ob)} (fl : cat.(hom) (obj_l) obj) (fr : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
+    { Sum (obj_l : cat) (obj_r : cat.(ob)) : cat.(ob)
+    ; Inl {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
+    ; Inr {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
+    ; Case {obj_l : cat.(ob)} {obj_r : cat.(ob)} {obj : cat.(ob)} (fl : cat.(hom) (obj_l) obj) (fr : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
     }
   .
 
@@ -66,8 +64,8 @@ Module Categories.
   Section INITIAL_OBJECT.
 
   Polymorphic Class hasInitial (cat : isCategory) : Type :=
-    { Void : cat.(Ob)
-    ; ExFalso {obj : cat.(Ob)} : cat.(hom) Void obj
+    { Void : cat.(ob)
+    ; ExFalso {obj : cat.(ob)} : cat.(hom) Void obj
     }
   .
 

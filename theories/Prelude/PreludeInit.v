@@ -120,34 +120,36 @@ Module Cat.
 
   Set Primitive Projections.
 
-  Polymorphic Class isCategory@{Ob_lv hom_lv} : Type@{max(Ob_lv + 1, hom_lv + 1)} :=
-    { Ob : Type@{Ob_lv}
-    ; hom (dom : Ob) (cod : Ob) : Type@{hom_lv}
-    ; compose {obj_l : Ob} {obj : Ob} {obj_r : Ob} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
-    ; id {obj : Ob} : hom obj obj
+  Polymorphic Class isCategory@{ob_lv hom_lv} : Type@{max(ob_lv + 1, hom_lv + 1)} :=
+    { ob : Type@{ob_lv}
+    ; hom (dom :ob) (cod : ob) : Type@{hom_lv}
+    ; compose {obj_l : ob} {obj : ob} {obj_r : ob} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
+    ; id {obj : ob} : hom obj obj
     }
   .
 
   Unset Primitive Projections.
 
-  Polymorphic Definition Functor_t (src : isCategory) (tgt : isCategory) : Type := src.(Ob) -> tgt.(Ob).
+  Polymorphic Definition Functor_t (src : isCategory) (tgt : isCategory) : Type := src.(ob) -> tgt.(ob).
 
   Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
+
+  Global Coercion ob : isCategory >-> Sortclass.
 
   Section BasicConceptsOfCategoryTheory.
 
   Context {src : isCategory} {tgt : isCategory}.
 
   Class isCovariantFunctor (F : src -----> tgt) : Type :=
-    { fmap {dom : src.(Ob)} {cod : src.(Ob)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
+    { fmap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
   .
 
   Class isContravariantFunctor (F : src -----> tgt) : Type :=
-    { contramap {dom : src.(Ob)} {cod : src.(Ob)} (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod) }
+    { contramap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod) }
   .
 
   Class isNaturalTransformation (F_from : src -----> tgt) (F_to : src -----> tgt) : Type :=
-    component (obj : src.(Ob)) : tgt.(hom) (F_from obj) (F_to obj)
+    component (obj : src.(ob)) : tgt.(hom) (F_from obj) (F_to obj)
   .
 
   End BasicConceptsOfCategoryTheory.
@@ -168,7 +170,7 @@ Module Hask.
   Global Delimit Scope type_scope with arrow.
 
   Global Polymorphic Instance cat : isCategory :=
-    { Ob := Hask.t
+    { ob := Hask.t
     ; hom := Hask.arrow
     ; compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C)
     ; id (A : Hask.t) := Khan.id (A := A)
@@ -654,7 +656,7 @@ Module PreludeInit_MAIN.
   Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r := fun x_l => k_l x_l >>= fun x_r => k_r x_r.
 
   Global Instance kleisliCat : isCategory :=
-    { Ob := Type
+    { ob := Type
     ; hom := kleisli
     ; compose {A : Type} {B : Type} {C : Type} := kappend (obj_l := A) (obj := B) (obj_r := C)
     ; id {A : Type} := kempty (obj := A)
