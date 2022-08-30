@@ -1,5 +1,6 @@
 Require Import DschingisKhan.Data.AczelSet.
 Require Import DschingisKhan.Data.BinTree.
+Require Import DschingisKhan.Data.Category.
 Require Import DschingisKhan.Data.InteractionTree.
 Require Import DschingisKhan.Data.Regex.
 Require Import DschingisKhan.Data.Vector.

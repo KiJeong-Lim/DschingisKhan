@@ -3,8 +3,11 @@ Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Setoids.Setoid.
 Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
+Require Import DschingisKhan.Data.Category.
 
 Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
+
+  Import Categories.
 
   Variant itreeF {itree_E_R : Type} (E : Type -> Type) (R : Type) : Type :=
   | RetF (r : R) : itreeF E R
