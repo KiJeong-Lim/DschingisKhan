@@ -12,7 +12,7 @@ Module Categories.
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
     { Ob := isCategory
     ; hom D C := D -----> C
-    ; compose {C} {C'} {C''} f2 f1 := fun X => f2 (f1 X)
+    ; compose {C} {C'} {C''} F2 F1 := fun X => F2 (F1 X)
     ; id {C} := fun X => X
     }
   .
@@ -20,7 +20,7 @@ Module Categories.
   Local Polymorphic Instance CategoryOfFunctors {src : isCategory} {tgt : isCategory} : isCategory :=
     { Ob := src -----> tgt
     ; hom F F' := F =====> F'
-    ; compose {F} {F'} {F''} f2 f1 := fun X => compose (f2 X) (f1 X)
+    ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
     ; id {F} := fun X => id
     }
   .
