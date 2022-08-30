@@ -130,9 +130,9 @@ Module Cat.
 
   Unset Primitive Projections.
 
-  Polymorphic Definition FunctorOb (src : isCategory) (tgt : isCategory) : Type := src.(Ob) -> tgt.(Ob).
+  Polymorphic Definition Functor_t (src : isCategory) (tgt : isCategory) : Type := src.(Ob) -> tgt.(Ob).
 
-  Global Infix " -----> " := FunctorOb (at level 100, no associativity) : type_scope.
+  Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
