@@ -128,7 +128,7 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     )
   .
 
-  Local Instance handlerCat : isCategory :=
+  Local Instance handlerCat : Category :=
     { ob := Type -> Type
     ; hom (E : Type -> Type) (E' : Type -> Type) := E ~~> itree E'
     ; compose {E : Type -> Type} {E' : Type -> Type} {E'' : Type -> Type} (h2 : E' ~~> itree E'') (h1 : E ~~> itree E') := fun R : Type => fun e : E R => itree_interpret (E := E') (M := itree E'') h2 R (h1 R e)

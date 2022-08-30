@@ -120,7 +120,7 @@ Module Cat.
 
   Set Primitive Projections.
 
-  Polymorphic Class isCategory@{ob_lv hom_lv} : Type@{max(ob_lv + 1, hom_lv + 1)} :=
+  Polymorphic Class Category@{ob_lv hom_lv} : Type@{max(ob_lv + 1, hom_lv + 1)} :=
     { ob : Type@{ob_lv}
     ; hom (dom :ob) (cod : ob) : Type@{hom_lv}
     ; compose {obj_l : ob} {obj : ob} {obj_r : ob} (arr_r : hom obj obj_r) (arr_l : hom obj_l obj) : hom obj_l obj_r
@@ -130,13 +130,13 @@ Module Cat.
 
   Unset Primitive Projections.
 
-  Polymorphic Definition Functor_t (src : isCategory) (tgt : isCategory) : Type := src.(ob) -> tgt.(ob).
+  Polymorphic Definition Functor_t (src : Category) (tgt : Category) : Type := src.(ob) -> tgt.(ob).
 
   Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
   Section BasicConceptsOfCategoryTheory.
 
-  Polymorphic Context {src : isCategory} {tgt : isCategory}.
+  Polymorphic Context {src : Category} {tgt : Category}.
 
   Polymorphic Class isCovariantFunctor (F : src -----> tgt) : Type :=
     { fmap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
@@ -154,7 +154,7 @@ Module Cat.
 
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
 
-  Global Coercion ob : isCategory >-> Sortclass.
+  Global Coercion ob : Category >-> Sortclass.
 
 End Cat.
 
@@ -169,7 +169,7 @@ Module Hask.
   Global Delimit Scope type_scope with t.
   Global Delimit Scope type_scope with arrow.
 
-  Global Polymorphic Instance cat : isCategory :=
+  Global Polymorphic Instance cat : Category :=
     { ob := Hask.t
     ; hom := Hask.arrow
     ; compose (A : Hask.t) (B : Hask.t) (C : Hask.t) := Khan.compose (A := A) (B := B) (C := C)
@@ -655,7 +655,7 @@ Module PreludeInit_MAIN.
 
   Definition kappend {obj_l : Hask.t} {obj : Hask.t} {obj_r : Hask.t} (k_r : kleisli obj obj_r) (k_l : kleisli obj_l obj) : kleisli obj_l obj_r := fun x_l => k_l x_l >>= fun x_r => k_r x_r.
 
-  Global Instance kleisliCat : isCategory :=
+  Global Instance kleisliCat : Category :=
     { ob := Type
     ; hom := kleisli
     ; compose {A : Type} {B : Type} {C : Type} := kappend (obj_l := A) (obj := B) (obj_r := C)

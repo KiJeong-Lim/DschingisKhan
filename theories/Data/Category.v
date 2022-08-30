@@ -7,31 +7,64 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
-  Section INSTANCES_OF_CATEGORY.
+  Set Primitive Projections.
 
-  Local Polymorphic Instance CategoryOfCategories : isCategory :=
-    { ob := isCategory
-    ; hom D C := D -----> C
-    ; compose {C} {C'} {C''} F2 F1 := fun X => F2 (F1 X)
-    ; id {C} := fun X => X
+  Polymorphic Record Funktor (D : Category) (C : Category) : Type :=
+    { map_ob : D -----> C
+    ; map_hom : isCovariantFunctor (src := D) (tgt := C) map_ob
     }
   .
 
-  Local Polymorphic Instance CategoryOfFunctors {src : isCategory} {tgt : isCategory} : isCategory :=
-    { ob := src -----> tgt
-    ; hom F F' := F =====> F'
+  Unset Primitive Projections.
+
+  Global Arguments map_ob {D} {C}.
+  Global Arguments map_hom {D} {C}.
+
+  Definition composeFunktor {C} {C'} {C''} (F2 : Funktor C' C'') (F1 : Funktor C C') : Funktor C C'' :=
+    {|
+      map_ob := fun X => F2.(map_ob) (F1.(map_ob) X);
+      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor  := map_hom F2) (Cat.fmap (isCovariantFunctor := map_hom F1) f) |};
+    |}
+  .
+
+  Definition idFunktor {C} : Funktor C C :=
+    {|
+      map_ob := fun X => X;
+      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |}
+    |}
+  .
+
+  Section INSTANCES_OF_CATEGORY.
+
+  Local Polymorphic Instance OppositeCategory (cat : Category) : Category :=
+    { ob := cat.(ob)
+    ; hom B A := cat.(hom) A B
+    ; compose {A} {B} {C} f2 f1 := cat.(compose) f1 f2
+    ; id {A} := cat.(id)
+    }
+  .
+
+  Local Polymorphic Instance CategoryOfCategories : Category :=
+    { ob := Category
+    ; hom := Funktor
+    ; compose {C} {C'} {C''} := composeFunktor (C := C) (C' := C') (C'' := C'')
+    ; id {C} := idFunktor (C := C)
+    }
+  .
+
+  Local Polymorphic Instance CategoryOfFunctors {src : Category} {tgt : Category} : Category :=
+    { ob := Funktor src tgt
+    ; hom F F' := F.(map_ob) =====> F'.(map_ob)
     ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
     ; id {F} := fun X => id
     }
   .
 
-  Local Instance HaskEndo : isCategory := CategoryOfFunctors (src := Hask.cat) (tgt := Hask.cat).
-
   End INSTANCES_OF_CATEGORY.
 
   Section CATEGORICAL_SUM.
 
-  Polymorphic Class hasCoproduct (cat : isCategory) : Type :=
+  Polymorphic Class hasCoproduct (cat : Category) : Type :=
     { Sum (obj_l : cat.(ob)) (obj_r : cat.(ob)) : cat.(ob)
     ; Inl {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
     ; Inr {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
@@ -39,7 +72,7 @@ Module Categories.
     }
   .
 
-  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : cat} {obj1' : cat} {obj2 : cat} {obj2' : cat} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
+  Polymorphic Definition coproduct_bimap {cat : Category} {coproduct : hasCoproduct cat} {obj1 : cat} {obj1' : cat} {obj2 : cat} {obj2' : cat} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
     Case (compose Inl arr1) (compose Inr arr2)
   .
 
@@ -51,19 +84,11 @@ Module Categories.
     }
   .
 
-  Local Instance HaskEndo_hasCoproduct : hasCoproduct HaskEndo :=
-    { Sum := sum1
-    ; Inl {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inl1 (FL := FL) (FR := FR) (X := X)
-    ; Inr {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inr1 (FL := FL) (FR := FR) (X := X)
-    ; Case {FL : Type -> Type} {FR : Type -> Type} {F : Type -> Type} (fl : FL ~~> F) (fr : FR ~~> F) := fun X : Type => @sum1_rect _ _ _ (fun _ : sum1 FL FR X => F X) (fl X) (fr X)
-    }
-  .
-
   End CATEGORICAL_SUM.
 
   Section INITIAL_OBJECT.
 
-  Polymorphic Class hasInitial (cat : isCategory) : Type :=
+  Polymorphic Class hasInitial (cat : Category) : Type :=
     { Void : cat.(ob)
     ; ExFalso {obj : cat.(ob)} : cat.(hom) Void obj
     }
@@ -72,12 +97,6 @@ Module Categories.
   Local Instance Hask_hasInitial : hasInitial Hask.cat :=
     { Void := Empty_set
     ; ExFalso {A : Type} := @Empty_set_rect (fun _ : Empty_set => A)
-    }
-  .
-
-  Local Instance HaskEndo_hasInitial : hasInitial HaskEndo :=
-    { Void := void1
-    ; ExFalso {F : Type -> Type} := fun X : Type => @void1_rect X (fun _ : void1 X => F X)
     }
   .
 
