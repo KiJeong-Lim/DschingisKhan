@@ -32,7 +32,7 @@ Module Categories.
   Section CATEGORICAL_SUM.
 
   Polymorphic Class hasCoproduct (cat : isCategory) : Type :=
-    { Sum (obj_l : cat) (obj_r : cat.(ob)) : cat.(ob)
+    { Sum (obj_l : cat.(ob)) (obj_r : cat.(ob)) : cat.(ob)
     ; Inl {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
     ; Inr {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
     ; Case {obj_l : cat.(ob)} {obj_r : cat.(ob)} {obj : cat.(ob)} (fl : cat.(hom) (obj_l) obj) (fr : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
