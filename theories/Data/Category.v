@@ -11,7 +11,7 @@ Module Categories.
 
   Polymorphic Record Funktor (D : Category) (C : Category) : Type :=
     { map_ob : D -----> C
-    ; map_hom : isCovariantFunctor (src := D) (tgt := C) map_ob
+    ; map_hom : @isCovariantFunctor D C map_ob
     }
   .
 
@@ -20,18 +20,22 @@ Module Categories.
   Global Arguments map_ob {D} {C}.
   Global Arguments map_hom {D} {C}.
 
-  Polymorphic Definition NaturalTransformation {D} {C} (F : Funktor D C) (F' : Funktor D C) : Type :=
+  Global Infix " ---> " := Funktor (at level 100, no associativity) : type_scope.
+
+  Polymorphic Definition NaturalTransformation {D} {C} (F : D ---> C) (F' : D ---> C) : Type :=
     @isNaturalTransformation D C F.(map_ob) F'.(map_ob)
   .
 
-  Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : Funktor C' C'') (F1 : Funktor C C') : Funktor C C'' :=
+  Global Infix " ===> " := NaturalTransformation (at level 100, no associativity) : type_scope.
+
+  Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
     {|
       map_ob := fun X => F2.(map_ob) (F1.(map_ob) X);
       map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor := map_hom F2) (Cat.fmap (isCovariantFunctor := map_hom F1) f) |};
     |}
   .
 
-  Polymorphic Definition idFunktor {C} : Funktor C C :=
+  Polymorphic Definition idFunktor {C} : C ---> C :=
     {|
       map_ob := fun X => X;
       map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |};
@@ -43,14 +47,14 @@ Module Categories.
   Local Polymorphic Instance OppositeCategory (cat : Category) : Category :=
     { ob := cat.(ob)
     ; hom B A := cat.(hom) A B
-    ; compose {A} {B} {C} f2 f1 := cat.(compose) f1 f2
-    ; id {A} := cat.(id)
+    ; compose {A : cat} {B : cat} {C : cat} f2 f1 := cat.(compose) f1 f2
+    ; id {A : cat} := cat.(id)
     }
   .
 
   Local Polymorphic Instance CategoryOfCategories : Category :=
     { ob := Category
-    ; hom := Funktor
+    ; hom D C := D ---> C
     ; compose {C} {C'} {C''} := composeFunktor (C := C) (C' := C') (C'' := C'')
     ; id {C} := idFunktor (C := C)
     }
@@ -58,7 +62,7 @@ Module Categories.
 
   Local Polymorphic Instance CategoryOfFunktors {D : Category} {C : Category} : Category :=
     { ob := Funktor D C
-    ; hom := NaturalTransformation (D := D) (C := C)
+    ; hom F F' := F ===> F'
     ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
     ; id {F} := fun X => id
     }
