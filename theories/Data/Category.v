@@ -7,7 +7,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
-  Section InstancesOfCategory.
+  Section INSTANCES_OF_CATEGORY.
 
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
     { objs := isCategory
@@ -27,7 +27,7 @@ Module Categories.
 
   Local Instance HaskEndo : isCategory := CategoryOfFunctors Hask.cat Hask.cat.
 
-  End InstancesOfCategory.
+  End INSTANCES_OF_CATEGORY.
 
   Section CATEGORICAL_SUM.
 
@@ -55,7 +55,7 @@ Module Categories.
     }
   .
 
-  Local Instance functorCat_hasCoproduct : hasCoproduct HaskEndo :=
+  Local Instance HaskEndo_hasCoproduct : hasCoproduct HaskEndo :=
     { Sum := sum1
     ; Inl {FL : Type -> Type} {FR : Type -> Type} (X : Type) := inl1 (FL := FL) (FR := FR) (X := X)
     ; Inr {FL : Type -> Type} {FR : Type -> Type} (X : Type) := inr1 (FL := FL) (FR := FR) (X := X)
@@ -79,7 +79,7 @@ Module Categories.
     }
   .
 
-  Local Instance functorCat_hasInitial : hasInitial HaskEndo :=
+  Local Instance HaskEndo_hasInitial : hasInitial HaskEndo :=
     { Void := void1
     ; ExFalso (F : Type -> Type) (X : Type) := @void1_rect X (fun _ : void1 X => F X)
     }
