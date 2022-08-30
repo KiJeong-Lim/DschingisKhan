@@ -20,6 +20,10 @@ Module Categories.
   Global Arguments map_ob {D} {C}.
   Global Arguments map_hom {D} {C}.
 
+  Polymorphic Definition NaturalTransformation {D} {C} (F : Funktor D C) (F' : Funktor D C) : Type :=
+    @isNaturalTransformation D C F.(map_ob) F'.(map_ob)
+  .
+
   Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : Funktor C' C'') (F1 : Funktor C C') : Funktor C C'' :=
     {|
       map_ob := fun X => F2.(map_ob) (F1.(map_ob) X);
@@ -52,9 +56,9 @@ Module Categories.
     }
   .
 
-  Local Polymorphic Instance CategoryOfFunktors {src : Category} {tgt : Category} : Category :=
-    { ob := Funktor src tgt
-    ; hom F F' := F.(map_ob) =====> F'.(map_ob)
+  Local Polymorphic Instance CategoryOfFunktors {D : Category} {C : Category} : Category :=
+    { ob := Funktor D C
+    ; hom := NaturalTransformation (D := D) (C := C)
     ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
     ; id {F} := fun X => id
     }
