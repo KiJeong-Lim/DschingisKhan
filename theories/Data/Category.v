@@ -10,7 +10,7 @@ Module Categories.
   Section INSTANCES_OF_CATEGORY.
 
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
-    { objs := isCategory
+    { Ob := isCategory
     ; hom D C := D -----> C
     ; compose {C} {C'} {C''} f2 f1 := fun X => f2 (f1 X)
     ; id {C} := fun X => X
@@ -18,7 +18,7 @@ Module Categories.
   .
 
   Local Polymorphic Instance CategoryOfFunctors {src : isCategory} {tgt : isCategory} : isCategory :=
-    { objs := src -----> tgt
+    { Ob := src -----> tgt
     ; hom F F' := F =====> F'
     ; compose {F} {F'} {F''} f2 f1 := fun X => compose (f2 X) (f1 X)
     ; id {F} := fun X => id
@@ -32,14 +32,14 @@ Module Categories.
   Section CATEGORICAL_SUM.
 
   Polymorphic Class hasCoproduct (cat : isCategory) : Type :=
-    { Sum (obj_l : cat.(objs)) (obj_r : cat.(objs)) : cat.(objs)
-    ; Inl {obj_l : cat.(objs)} {obj_r : cat.(objs)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
-    ; Inr {obj_l : cat.(objs)} {obj_r : cat.(objs)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
-    ; Case {obj_l : cat.(objs)} {obj_r : cat.(objs)} {obj : cat.(objs)} (left : cat.(hom) (obj_l) obj) (right : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
+    { Sum (obj_l : cat.(Ob)) (obj_r : cat.(Ob)) : cat.(Ob)
+    ; Inl {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
+    ; Inr {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
+    ; Case {obj_l : cat.(Ob)} {obj_r : cat.(Ob)} {obj : cat.(Ob)} (left : cat.(hom) (obj_l) obj) (right : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
     }
   .
 
-  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : objs} {obj1' : objs} {obj2 : objs} {obj2' : objs} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
+  Polymorphic Definition coproduct_bimap {cat : isCategory} {coproduct : hasCoproduct cat} {obj1 : Ob} {obj1' : Ob} {obj2 : Ob} {obj2' : Ob} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
     Case (compose Inl arr1) (compose Inr arr2)
   .
 
@@ -68,8 +68,8 @@ Module Categories.
   Section INITIAL_OBJECT.
 
   Polymorphic Class hasInitial (cat : isCategory) : Type :=
-    { Void : cat.(objs)
-    ; ExFalso {obj : cat.(objs)} : cat.(hom) Void obj
+    { Void : cat.(Ob)
+    ; ExFalso {obj : cat.(Ob)} : cat.(hom) Void obj
     }
   .
 

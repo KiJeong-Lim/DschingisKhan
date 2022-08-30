@@ -636,7 +636,7 @@ Module MathNotations.
     (in custom math_term_scope at level 0, no associativity).
   Global Notation " 'ℍ𝕒𝕤𝕜' " := (Hask.cat)
     (in custom math_term_scope at level 0, no associativity).
-  Global Notation " s '----->' t " := (Cat.Functor_t s t)
+  Global Notation " s '----->' t " := (Cat.FunctorOb s t)
     (in custom math_term_scope at level 10, no associativity).
   Global Notation " s '=====>' t " := (Cat.isNaturalTransformation s t)
     (in custom math_term_scope at level 10, no associativity).
