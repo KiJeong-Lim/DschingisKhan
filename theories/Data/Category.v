@@ -30,7 +30,7 @@ Module Categories.
 
   Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
     {|
-      map_ob := fun X => F2.(map_ob) (F1.(map_ob) X);
+      map_ob := fun X => map_ob F2 (map_ob F1 X);
       map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor := map_hom F2) (Cat.fmap (isCovariantFunctor := map_hom F1) f) |};
     |}
   .
