@@ -20,17 +20,17 @@ Module Categories.
   Global Arguments map_ob {D} {C}.
   Global Arguments map_hom {D} {C}.
 
-  Definition composeFunktor {C} {C'} {C''} (F2 : Funktor C' C'') (F1 : Funktor C C') : Funktor C C'' :=
+  Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : Funktor C' C'') (F1 : Funktor C C') : Funktor C C'' :=
     {|
       map_ob := fun X => F2.(map_ob) (F1.(map_ob) X);
-      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor  := map_hom F2) (Cat.fmap (isCovariantFunctor := map_hom F1) f) |};
+      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor := map_hom F2) (Cat.fmap (isCovariantFunctor := map_hom F1) f) |};
     |}
   .
 
-  Definition idFunktor {C} : Funktor C C :=
+  Polymorphic Definition idFunktor {C} : Funktor C C :=
     {|
       map_ob := fun X => X;
-      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |}
+      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |};
     |}
   .
 
