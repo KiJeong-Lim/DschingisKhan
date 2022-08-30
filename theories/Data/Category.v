@@ -22,20 +22,20 @@ Module Categories.
 
   Global Infix " ---> " := Funktor (at level 100, no associativity) : type_scope.
 
-  Polymorphic Definition NaturalTransformation {D} {C} (F : D ---> C) (F' : D ---> C) : Type :=
+  Polymorphic Definition NaturalTransformation {D : Category} {C : Category} (F : D ---> C) (F' : D ---> C) : Type :=
     @isNaturalTransformation D C F.(map_ob) F'.(map_ob)
   .
 
   Global Infix " ===> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
-  Polymorphic Definition composeFunktor {C} {C'} {C''} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
+  Polymorphic Definition composeFunktor {C : Category} {C' : Category} {C'' : Category} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
     {|
       map_ob (X : C.(ob)) := map_ob F2 (map_ob F1 X);
       map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor := F2.(map_hom)) (Cat.fmap (isCovariantFunctor := F1.(map_hom)) f) |};
     |}
   .
 
-  Polymorphic Definition idFunktor {C} : C ---> C :=
+  Polymorphic Definition idFunktor {C : Category} : C ---> C :=
     {|
       map_ob (X : C.(ob)) := X;
       map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |};
