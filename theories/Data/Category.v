@@ -52,7 +52,7 @@ Module Categories.
     }
   .
 
-  Local Polymorphic Instance CategoryOfFunctors {src : Category} {tgt : Category} : Category :=
+  Local Polymorphic Instance CategoryOfFunktors {src : Category} {tgt : Category} : Category :=
     { ob := Funktor src tgt
     ; hom F F' := F.(map_ob) =====> F'.(map_ob)
     ; compose {F} {F'} {F''} eta2 eta1 := fun X => compose (eta2 X) (eta1 X)
