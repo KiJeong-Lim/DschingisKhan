@@ -11,7 +11,7 @@ Module Categories.
 
   Local Polymorphic Instance CategoryOfCategories : isCategory :=
     { objs := isCategory
-    ; hom src tgt := src -----> tgt
+    ; hom D C := D -----> C
     ; compose {C} {C'} {C''} f2 f1 := fun X => f2 (f1 X)
     ; id {C} := fun X => X
     }
