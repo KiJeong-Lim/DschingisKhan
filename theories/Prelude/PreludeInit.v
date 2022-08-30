@@ -134,27 +134,27 @@ Module Cat.
 
   Global Infix " -----> " := Functor_t (at level 100, no associativity) : type_scope.
 
-  Global Coercion ob : isCategory >-> Sortclass.
-
   Section BasicConceptsOfCategoryTheory.
 
-  Context {src : isCategory} {tgt : isCategory}.
+  Polymorphic Context {src : isCategory} {tgt : isCategory}.
 
-  Class isCovariantFunctor (F : src -----> tgt) : Type :=
+  Polymorphic Class isCovariantFunctor (F : src -----> tgt) : Type :=
     { fmap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
   .
 
-  Class isContravariantFunctor (F : src -----> tgt) : Type :=
+  Polymorphic Class isContravariantFunctor (F : src -----> tgt) : Type :=
     { contramap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod) }
   .
 
-  Class isNaturalTransformation (F_from : src -----> tgt) (F_to : src -----> tgt) : Type :=
+  Polymorphic Class isNaturalTransformation (F_from : src -----> tgt) (F_to : src -----> tgt) : Type :=
     component (obj : src.(ob)) : tgt.(hom) (F_from obj) (F_to obj)
   .
 
   End BasicConceptsOfCategoryTheory.
 
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
+
+  Global Coercion ob : isCategory >-> Sortclass.
 
 End Cat.
 
