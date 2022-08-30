@@ -111,3 +111,34 @@ Module Categories.
   End INITIAL_OBJECT.
 
 End Categories.
+
+Module CategoryTheory.
+
+  Import Categories.
+
+  Class CategoryWithLaws (cat : Category) : Type :=
+    { hom_isSetoid (A : cat) (B : cat) :> isSetoid (cat.(hom) A B)
+    ; compose_assoc {A : cat} {B : cat} {C : cat} {D : cat} (f : cat.(hom) A B) (g : cat.(hom) B C) (h : cat.(hom) C D)
+      : compose h (compose g f) == compose (compose h g) f
+    ; compose_id_l {A : cat} {B : cat} (f : cat.(hom) A B)
+      : compose id f == f
+    ; compose_id_r {A : cat} {B : cat} (f : cat.(hom) A B)
+      : compose f id == f
+    }
+  .
+
+  Class FunktorWithLaws {D : Category} {C : Category} {C_withLaws : CategoryWithLaws C} (F : D ---> C) : Type :=
+    { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
+      : Cat.fmap (isCovariantFunctor := F.(map_hom)) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap (isCovariantFunctor := F.(map_hom)) g) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f)
+    ; fmap_preserves_id {X : D}
+      : Cat.fmap (isCovariantFunctor := F.(map_hom)) D.(id) == @id C (F.(map_ob) X)
+    }
+  .
+
+  Class NaturalTransformationWithLaws {D : Category} {C : Category} {C_withLaws : CategoryWithLaws C} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Type :=
+    { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
+      : compose (eta Y) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f) == compose (Cat.fmap (isCovariantFunctor := G.(map_hom)) f) (eta X)
+    }
+  .
+
+End CategoryTheory.
