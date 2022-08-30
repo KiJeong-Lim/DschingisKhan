@@ -45,21 +45,17 @@ Module Categories.
 
   Local Instance Hask_hasCoproduct : hasCoproduct Hask.cat :=
     { Sum := sum
-    ; Inl {A : Type} {B : Type} (x : A) := inl x
-    ; Inr {A : Type} {B : Type} (y : B) := inr y
-    ; Case {A : Type} {B : Type} {C : Type} (f : A -> C) (g : B -> C) (e : A + B) :=
-      match e with
-      | inl l => f l
-      | inr r => g r
-      end
+    ; Inl {A : Type} {B : Type} := @inl A B
+    ; Inr {A : Type} {B : Type} := @inr A B
+    ; Case {A : Type} {B : Type} {C : Type} := @sum_rect _ _ (fun _ : A + B => C)
     }
   .
 
   Local Instance HaskEndo_hasCoproduct : hasCoproduct HaskEndo :=
     { Sum := sum1
-    ; Inl {FL : Type -> Type} {FR : Type -> Type} (X : Type) := inl1 (FL := FL) (FR := FR) (X := X)
-    ; Inr {FL : Type -> Type} {FR : Type -> Type} (X : Type) := inr1 (FL := FL) (FR := FR) (X := X)
-    ; Case {FL : Type -> Type} {FR : Type -> Type} {F : Type -> Type} (left : FL ~~> F) (right : FR ~~> F) (X : Type) := @sum1_rect _ _ _ (fun _ : sum1 FL FR X => F X) (left X) (right X)
+    ; Inl {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inl1 (FL := FL) (FR := FR) (X := X)
+    ; Inr {FL : Type -> Type} {FR : Type -> Type} := fun X : Type => inr1 (FL := FL) (FR := FR) (X := X)
+    ; Case {FL : Type -> Type} {FR : Type -> Type} {F : Type -> Type} (f1 : FL ~~> F) (f2 : FR ~~> F) := fun X : Type => @sum1_rect _ _ _ (fun _ : sum1 FL FR X => F X) (f1 X) (f2 X)
     }
   .
 
@@ -75,13 +71,13 @@ Module Categories.
 
   Local Instance Hask_hasInitial : hasInitial Hask.cat :=
     { Void := Empty_set
-    ; ExFalso (A : Type) := @Empty_set_rect (fun _ : Empty_set => A)
+    ; ExFalso {A : Type} := @Empty_set_rect (fun _ : Empty_set => A)
     }
   .
 
   Local Instance HaskEndo_hasInitial : hasInitial HaskEndo :=
     { Void := void1
-    ; ExFalso (F : Type -> Type) (X : Type) := @void1_rect X (fun _ : void1 X => F X)
+    ; ExFalso {F : Type -> Type} := fun X : Type => @void1_rect X (fun _ : void1 X => F X)
     }
   .
 
