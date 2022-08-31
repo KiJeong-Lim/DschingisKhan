@@ -124,7 +124,7 @@ Module CategoryTheory.
 
   Global Coercion CategoryWithEquality_hasCategory_asSelf : CategoryWithEquality >-> Category.
 
-  Class CategoryWithLaws (cat : CategoryWithEquality) : Type :=
+  Class LawsOfCategory (cat : CategoryWithEquality) : Prop :=
     { compose_assoc {A : cat} {B : cat} {C : cat} {D : cat} (f : cat.(hom) A B) (g : cat.(hom) B C) (h : cat.(hom) C D)
       : compose h (compose g f) == compose (compose h g) f
     ; compose_id_l {A : cat} {B : cat} (f : cat.(hom) A B)
@@ -134,7 +134,7 @@ Module CategoryTheory.
     }
   .
 
-  Class FunktorWithLaws {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Type :=
+  Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
       : Cat.fmap (isCovariantFunctor := F.(map_hom)) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap (isCovariantFunctor := F.(map_hom)) g) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f)
     ; fmap_preserves_id {X : D}
@@ -142,7 +142,7 @@ Module CategoryTheory.
     }
   .
 
-  Class NaturalTransformationWithLaws {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Type :=
+  Class LawsOfNaturalTransformation {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
     { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
       : compose (eta Y) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f) == compose (Cat.fmap (isCovariantFunctor := G.(map_hom)) f) (eta X)
     }
