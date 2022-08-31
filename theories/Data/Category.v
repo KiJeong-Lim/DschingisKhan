@@ -148,4 +148,14 @@ Module CategoryTheory.
     }
   .
 
+  Local Instance HaskWithEquality : CategoryWithEquality :=
+    { CategoryWithEquality_hasCategory_asSelf := Hask.cat
+    ; hom_isSetoid (dom : Type) (cod : Type) := arrow_isSetoid dom cod (cod_isSetoid := theFinestSetoidOf cod)
+    }
+  .
+
+  Local Instance HaskWithEquality_obeyLaws
+    : LawsOfCategory HaskWithEquality.
+  Proof. split; cbv; ii; congruence. Qed.
+
 End CategoryTheory.
