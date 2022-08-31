@@ -30,8 +30,8 @@ Module Categories.
 
   Polymorphic Definition composeFunktor {C : Category} {C' : Category} {C'' : Category} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
     {|
-      map_ob (X : C.(ob)) := map_ob F2 (map_ob F1 X);
-      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := Cat.fmap (isCovariantFunctor := F2.(map_hom)) (Cat.fmap (isCovariantFunctor := F1.(map_hom)) f) |};
+      map_ob (X : C.(ob)) := F2.(map_ob) (F1.(map_ob) X);
+      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := F2.(map_hom).(Cat.fmap) (F1.(map_hom).(Cat.fmap) f) |};
     |}
   .
 
@@ -124,6 +124,8 @@ Module CategoryTheory.
 
   Global Coercion CategoryWithEquality_hasCategory_asSelf : CategoryWithEquality >-> Category.
 
+(** "Categorical Concepts" *)
+
   Class LawsOfCategory (cat : CategoryWithEquality) : Prop :=
     { compose_assoc {A : cat} {B : cat} {C : cat} {D : cat} (f : cat.(hom) A B) (g : cat.(hom) B C) (h : cat.(hom) C D)
       : compose h (compose g f) == compose (compose h g) f
@@ -136,17 +138,27 @@ Module CategoryTheory.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
-      : Cat.fmap (isCovariantFunctor := F.(map_hom)) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap (isCovariantFunctor := F.(map_hom)) g) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f)
+      : F.(map_hom).(Cat.fmap) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (F.(map_hom).(Cat.fmap) g) (F.(map_hom).(Cat.fmap) f)
     ; fmap_preserves_id {X : D}
-      : Cat.fmap (isCovariantFunctor := F.(map_hom)) D.(id) == @id C (F.(map_ob) X)
+      : F.(map_hom).(Cat.fmap) D.(id) == @id C (F.(map_ob) X)
     }
   .
 
   Class LawsOfNaturalTransformation {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
     { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
-      : compose (eta Y) (Cat.fmap (isCovariantFunctor := F.(map_hom)) f) == compose (Cat.fmap (isCovariantFunctor := G.(map_hom)) f) (eta X)
+      : compose (eta Y) (F.(map_hom).(Cat.fmap) f) == compose (G.(map_hom).(Cat.fmap) f) (eta X)
     }
   .
+
+  Definition isIsomorphism {cat : CategoryWithEquality} {X : cat} {Y : cat} (f : cat.(hom) X Y) : Prop :=
+    exists g : cat.(hom) Y X, << LEFT_INV : compose g f == id >> /\ << RIGHT_INV : compose f g == id >>
+  .
+
+  Definition isNaturalIsomorphism {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
+    forall X : D, isIsomorphism (eta X)
+  .
+
+(** "Instances" *)
 
   Section HASK_WITH_EQUALITY.
 
