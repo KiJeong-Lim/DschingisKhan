@@ -77,11 +77,11 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
   Proof.
     change (forall x : AczelSet, forall y : AczelSet, forall z : AczelSet, eqTree x y -> eqTree y z -> eqTree x z).
     induction x as [x_children x_childtrees IH], y as [y_children y_childtrees], z as [z_children z_childtrees]. simpl; unnw. intros [x_sim_y y_sim_x] [y_sim_z z_sim_y]. split.
-    - intros c_x. exploit (x_sim_y c_x) as [c_y y_c_eq_x_c]. exploit (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
-    - intros c_z. exploit (z_sim_y c_z) as [c_y y_c_eq_z_c]. exploit (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
+    - intros c_x. pose proof (x_sim_y c_x) as [c_y y_c_eq_x_c]. pose proof (y_sim_z c_y) as [c_z y_c_eq_z_c]. exists (c_z). eapply IH; [exact (y_c_eq_x_c) | exact (y_c_eq_z_c)].
+    - intros c_z. pose proof (z_sim_y c_z) as [c_y y_c_eq_z_c]. pose proof (y_sim_x c_y) as [c_x x_c_eq_y_c]. exists (c_x). eapply IH; [exact (x_c_eq_y_c) | exact (y_c_eq_z_c)].
   Defined.
 
-  Local Instance eqTree_Equivalence : Equivalence eqTree :=
+  Global Instance eqTree_Equivalence : Equivalence eqTree :=
     { Equivalence_Reflexive := eqTree_Reflexive
     ; Equivalence_Symmetric := eqTree_Symmetric
     ; Equivalence_Transitive := eqTree_Transitive
