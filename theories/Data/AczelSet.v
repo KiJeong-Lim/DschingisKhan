@@ -156,10 +156,10 @@ Module AczelSet. (* THANKS TO "Hanul Jeon" *)
     elem with signature (eqProp ==> eqProp ==> iff)
     as elem_compatWith_eqProp.
   Proof with eauto with *.
+    pose proof (elem_eqProp_elem) as claim1.
+    pose proof (eqProp_elem_elem) as claim2.
     intros x1 y1 hyp_eq1 x2 y2 hyp_eq2.
-    transitivity (x1 `elem` y2).
-    - split; ii; eapply elem_eqProp_elem...
-    - split; eapply eqProp_elem_elem...
+    simpl in *; split; ii; eauto with *.
   Qed.
 
   Local Hint Resolve elem_compatWith_eqProp : khan_hints.
