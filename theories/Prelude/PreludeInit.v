@@ -752,8 +752,9 @@ Module PreludeInit_MAIN.
         m >>= pure . (f . g)
         map (f . g) m
       *)
-      unfold fmap, "∘"; unfold Cat.fmap; unfold Monad_isFunctor. rewrite bind_assoc.
-      eapply bind_compatWith_eqProp_on_2nd_arg. ii. rewrite pure_left_id_bind. reflexivity.
+      change ((x >>= (fun y => pure (arr_l y)) >>= (fun z => pure (arr_r z))) == (x >>= (fun w => pure (arr_r (arr_l w))))).
+      rewrite bind_assoc. eapply bind_compatWith_eqProp_on_2nd_arg.
+      ii. rewrite pure_left_id_bind. reflexivity.
     - ii. eapply pure_right_id_bind.
   Qed.
 
@@ -761,7 +762,7 @@ Module PreludeInit_MAIN.
 
   Definition stateT (ST : Hask.t) (M : Hask.cat -----> Hask.cat) : Hask.cat -----> Hask.cat := fun X : Hask.t => ST -> M (prod X ST).
 
-  Global Arguments stateT (ST)%type (M) (X)%type.
+  Global Arguments stateT (ST)%type (M)%type (X)%type.
 
   Definition StateT {ST : Hask.t} {M : Hask.cat -----> Hask.cat} {X : Hask.t} : Hask.arrow (ST -> M (X * ST)%type) (stateT ST M X) := id.
 
