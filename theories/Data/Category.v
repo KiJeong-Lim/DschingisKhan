@@ -162,6 +162,7 @@ Module CategoryTheory.
 
 (** "Instances" *)
 
+
   Section HASK_WITH_EQUALITY.
 
   Local Instance HaskWithEquality : CategoryWithEquality :=
@@ -175,5 +176,25 @@ Module CategoryTheory.
   Proof. split; cbv; ii; congruence. Qed.
 
   End HASK_WITH_EQUALITY.
+
+  Section OPPOSITE_CATEGORY_WITH_EQUALITY.
+
+  Local Instance OppositeCategoryWithEquality (C : CategoryWithEquality) : CategoryWithEquality :=
+    { CategoryWithEquality_hasCategory_asSelf := OppositeCategory C
+    ; hom_isSetoid cod dom := C.(hom_isSetoid) dom cod
+    }
+  .
+
+  Local Instance OppositeCategoryWithEquality_obeysLaws (C : CategoryWithEquality)
+    (C_obeysLaws : LawsOfCategory C)
+    : LawsOfCategory (OppositeCategoryWithEquality C).
+  Proof.
+    unfold OppositeCategoryWithEquality. split; cbn; ii.
+    - now rewrite compose_assoc.
+    - now rewrite compose_id_r.
+    - now rewrite compose_id_l.
+  Qed.
+
+  End OPPOSITE_CATEGORY_WITH_EQUALITY.
 
 End CategoryTheory.
