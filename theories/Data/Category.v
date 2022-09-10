@@ -20,6 +20,8 @@ Module Categories.
   Global Arguments map_ob {D} {C}.
   Global Arguments map_hom {D} {C}.
 
+  Global Polymorphic Instance proj_map_hom {D : Category} {C : Category} (F : Funktor D C) : isCovariantFunctor F.(map_ob) := F.(map_hom).
+
   Global Infix " ---> " := Funktor (at level 100, no associativity) : type_scope.
 
   Polymorphic Definition NaturalTransformation {D : Category} {C : Category} (F : D ---> C) (F' : D ---> C) : Type :=
@@ -30,15 +32,15 @@ Module Categories.
 
   Polymorphic Definition composeFunktor {C : Category} {C' : Category} {C'' : Category} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
     {|
-      map_ob (X : C.(ob)) := F2.(map_ob) (F1.(map_ob) X);
-      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := F2.(map_hom).(Cat.fmap) (F1.(map_hom).(Cat.fmap) f) |};
+      map_ob := fun X : C.(ob) => F2.(map_ob) (F1.(map_ob) X);
+      map_hom := fun A : C.(ob) => fun B : C.(ob) => fun f : C.(hom) A B => Cat.fmap (isCovariantFunctor := proj_map_hom F2) (Cat.fmap (isCovariantFunctor := proj_map_hom F1) f);
     |}
   .
 
   Polymorphic Definition idFunktor {C : Category} : C ---> C :=
     {|
-      map_ob (X : C.(ob)) := X;
-      map_hom := {| Cat.fmap A B (f : C.(hom) A B) := f |};
+      map_ob := fun X : C.(ob) => X;
+      map_hom := fun A : C.(ob) => fun B : C.(ob) => fun f : C.(hom) A B => f;
     |}
   .
 
@@ -138,15 +140,15 @@ Module CategoryTheory.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
-      : F.(map_hom).(Cat.fmap) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (F.(map_hom).(Cat.fmap) g) (F.(map_hom).(Cat.fmap) f)
+      : Cat.fmap (isCovariantFunctor := proj_map_hom F) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap g) (Cat.fmap f)
     ; fmap_preserves_id {X : D}
-      : F.(map_hom).(Cat.fmap) D.(id) == @id C (F.(map_ob) X)
+      : Cat.fmap (isCovariantFunctor := proj_map_hom F) D.(id) == @id C (F.(map_ob) X)
     }
   .
 
   Class LawsOfNaturalTransformation {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
     { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
-      : compose (eta Y) (F.(map_hom).(Cat.fmap) f) == compose (G.(map_hom).(Cat.fmap) f) (eta X)
+      : compose (eta Y) (Cat.fmap (isCovariantFunctor := proj_map_hom F) f) == compose (Cat.fmap (isCovariantFunctor := proj_map_hom G) f) (eta X)
     }
   .
 

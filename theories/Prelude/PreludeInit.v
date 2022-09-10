@@ -139,11 +139,11 @@ Module Cat.
   Polymorphic Context {src : Category} {tgt : Category}.
 
   Polymorphic Class isCovariantFunctor (F : src -----> tgt) : Type :=
-    { fmap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod) }
+    fmap (dom : src.(ob)) (cod : src.(ob)) (arr : src.(hom) dom cod) : tgt.(hom) (F dom) (F cod)
   .
 
   Polymorphic Class isContravariantFunctor (F : src -----> tgt) : Type :=
-    { contramap {dom : src.(ob)} {cod : src.(ob)} (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod) }
+    contramap (dom : src.(ob)) (cod : src.(ob)) (arr : src.(hom) cod dom) : tgt.(hom) (F dom) (F cod)
   .
 
   Polymorphic Class isNaturalTransformation (F_from : src -----> tgt) (F_to : src -----> tgt) : Type :=
@@ -151,6 +151,9 @@ Module Cat.
   .
 
   End BasicConceptsOfCategoryTheory.
+
+  Global Arguments fmap {src} {tgt} {F} {isCovariantFunctor} {dom} {cod}.
+  Global Arguments contramap {src} {tgt} {F} {isContravariantFunctor} {dom} {cod}.
 
   Global Infix " =====> " := isNaturalTransformation (at level 100, no associativity) : type_scope.
 
@@ -749,9 +752,8 @@ Module PreludeInit_MAIN.
         m >>= pure . (f . g)
         map (f . g) m
       *)
-      cbn. rewrite bind_assoc.
-      eapply bind_compatWith_eqProp_on_2nd_arg.
-      ii. rewrite pure_left_id_bind. reflexivity.
+      unfold fmap, "∘"; unfold Cat.fmap; unfold Monad_isFunctor. rewrite bind_assoc.
+      eapply bind_compatWith_eqProp_on_2nd_arg. ii. rewrite pure_left_id_bind. reflexivity.
     - ii. eapply pure_right_id_bind.
   Qed.
 
