@@ -90,7 +90,7 @@ Module Categories.
     { Sum := sum
     ; Inl {A : Type} {B : Type} := @inl A B
     ; Inr {A : Type} {B : Type} := @inr A B
-    ; Case {A : Type} {B : Type} {C : Type} := @sum_rect _ _ (fun _ : A + B => C)
+    ; Case {A : Type} {B : Type} {C : Type} := @sum_rect A B (fun _ : A + B => C)
     }
   .
 
@@ -162,7 +162,6 @@ Module CategoryTheory.
 
 (** "Instances" *)
 
-
   Section HASK_WITH_EQUALITY.
 
   Local Instance HaskWithEquality : CategoryWithEquality :=
@@ -179,15 +178,15 @@ Module CategoryTheory.
 
   Section OPPOSITE_CATEGORY_WITH_EQUALITY.
 
-  Local Instance OppositeCategoryWithEquality (C : CategoryWithEquality) : CategoryWithEquality :=
-    { CategoryWithEquality_hasCategory_asSelf := OppositeCategory C
-    ; hom_isSetoid cod dom := C.(hom_isSetoid) dom cod
+  Local Instance OppositeCategoryWithEquality (cat : CategoryWithEquality) : CategoryWithEquality :=
+    { CategoryWithEquality_hasCategory_asSelf := OppositeCategory cat
+    ; hom_isSetoid (cod : cat.(ob)) (dom : cat.(ob)) := cat.(hom_isSetoid) dom cod
     }
   .
 
-  Local Instance OppositeCategoryWithEquality_obeysLaws (C : CategoryWithEquality)
-    (C_obeysLaws : LawsOfCategory C)
-    : LawsOfCategory (OppositeCategoryWithEquality C).
+  Local Instance OppositeCategoryWithEquality_obeysLaws (cat : CategoryWithEquality)
+    (cat_obeysLaws : LawsOfCategory cat)
+    : LawsOfCategory (OppositeCategoryWithEquality cat).
   Proof.
     unfold OppositeCategoryWithEquality. split; cbn; ii.
     - now rewrite compose_assoc.
