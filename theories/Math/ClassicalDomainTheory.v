@@ -9,7 +9,7 @@ Require Import DschingisKhan.Logic.ScottTopology.
 
 Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Semantics >> of "H. P. Barendregt" *)
 
-  Import ListNotations MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExclusiveMiddle.
+  Import ListNotations MathProps MathClasses BasicPosetTheory BasicGeneralTopology DomainTheoryHelper ScottTopology ExcludedMiddle.
 
   Definition ScottContinuousMaps (D1 : Type) (D2 : Type) {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} : Type :=
     @sig (Hask.arrow D1 D2) (isContinuousMap (dom_isTopology := TopologyOfDanaScott D1) (cod_isTopology := TopologyOfDanaScott D2))
@@ -117,30 +117,28 @@ Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Sema
     (f_preserves_eqProp : preserves_eqProp1 f)
     (f_preservesSupremum : preservesSupremum f)
     : isMonotonicMap f.
-  Proof.
+  Proof with eauto with *.
     intros x1 x2 x1_le_x2. keep (finite [x1; x2]) as X into (ensemble D1). keep (image f X) as Y into (ensemble D2).
     assert (claim1 : isSupremumOf x2 X).
     { intros z. split; unnw.
       - intros x2_le_z x x_in_X. apply in_finite_iff in x_in_X.
-        destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x.
-        + etransitivity; eauto.
-        + eauto.
+        destruct x_in_X as [x_eq_x1 | [x_eq_x2 | []]]; subst x; rewrite <- x2_le_z...
       - intros z_isUpperBoundOf_X. eapply z_isUpperBoundOf_X.
-        eapply in_finite_iff; right; left; reflexivity.
+        eapply in_finite_iff; right; left...
     }
     assert (X_isDirected : isDirected X).
     { split.
-      - exists (x1). eapply in_finite_iff. left. reflexivity.
+      - exists (x1). eapply in_finite_iff. left...
       - intros z1 ? z2 ?; desnw. apply in_finite_iff in H_IN1, H_IN2.
         destruct H_IN1 as [z1_eq_x1 | [z1_eq_x2 | []]], H_IN2 as [z2_eq_x1 | [z2_eq_x2 | []]]; subst z1 z2.
-        all: exists (x2); split; [eapply in_finite_iff; right; left; reflexivity | split; eauto with *].
+        all: exists (x2); split; [eapply in_finite_iff; right; left | split]...
     }
     pose proof (f_preservesSupremum X X_isDirected) as [sup_X [sup_Y [sup_X_isSupremumOf_X [sup_Y_isSupremumOf_Y f_sup_X_eq_sup_Y]]]].
     assert (it_is_sufficient_to_show : f sup_X == f x2).
-    { eapply f_preserves_eqProp. eapply Supremum_unique; eauto with *. }
-    transitivity (sup_Y).
-    - rewrite <- f_sup_X_eq_sup_Y. eapply sup_Y_isSupremumOf_Y; eauto with *.
-    - rewrite <- f_sup_X_eq_sup_Y. now eapply eqProp_implies_leProp.
+    { eapply f_preserves_eqProp. eapply Supremum_unique... }
+    transitivity (f sup_X).
+    - eapply sup_Y_isSupremumOf_Y...
+    - eapply eqProp_implies_leProp...
   Qed.
 
   Lemma liftsDirected_if_preservesSupremum {D1 : Type} {D2 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2} (f : D1 -> D2)

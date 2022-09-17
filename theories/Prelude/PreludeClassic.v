@@ -2,7 +2,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module ExclusiveMiddle.
+Module ExcludedMiddle.
 
   Axiom classic : forall P : Prop, P \/ ~ P.
 
@@ -19,4 +19,4 @@ Module ExclusiveMiddle.
     : projT2_eq_STMT A B x.
   Proof. eapply eq_rect_eq_iff_projT2_eq, pirrel_iff_eq_rect_eq, proof_irrelevance. Qed.
 
-End ExclusiveMiddle.
+End ExcludedMiddle.

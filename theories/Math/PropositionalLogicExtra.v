@@ -9,7 +9,7 @@ Require Import DschingisKhan.Logic.PropositionalLogic.
 
 Module ClassicalMetaTheoryOnPropositonalLogic.
 
-  Import ListNotations ExclusiveMiddle BooleanAlgebra CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOfPL ConstructiveMetaTheoryOnPropositonalLogic.
+  Import ListNotations ExcludedMiddle BooleanAlgebra CountableBooleanAlgebra SyntaxOfPL SemanticsOfPL InferenceRulesOfPL LindenbaumBooleanAlgebraOfPL ConstructiveMetaTheoryOnPropositonalLogic.
 
   Lemma ByAssumption_preserves (Gamma : ensemble formula) (C : formula)
     (ELEM : C \in Gamma)
