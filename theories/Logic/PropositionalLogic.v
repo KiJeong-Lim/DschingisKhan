@@ -365,7 +365,7 @@ Module InferenceRulesOfPL.
 
   Global Notation " Gamma ⊬ C " := (~ Gamma ⊢ C) (at level 70, no associativity) : type_scope.
 
-  Lemma Law_of_Exclusive_Middle (A : formula)
+  Lemma Law_of_Excluded_Middle (A : formula)
     : empty ⊢ \pl[ A \/ ~ A ].
   Proof with exact (eq_refl).
     eapply NegationE, ContradictionI.
@@ -668,7 +668,7 @@ Module LindenbaumBooleanAlgebraOfPL.
     { eapply ContradictionE, ByAssumption... }
     { eapply ImplicationI, ByAssumption. left... }
     { eapply extend_infers.
-      - eapply Law_of_Exclusive_Middle.
+      - eapply Law_of_Excluded_Middle.
       - eapply isSubsetOf_empty_if.
     }
   Qed.
@@ -1147,11 +1147,11 @@ Module ConstructiveMetaTheoryOnPropositonalLogic. (* Reference: << Constructive 
         assert (claim2 : MaximalConsistentSet X ⊢ ConjunctionF b (NegationF b')).
         { eapply DisjunctionE with (A := b) (B := NegationF b).
           - eapply extend_infers with (Gamma := empty).
-            + eapply Law_of_Exclusive_Middle.
+            + eapply Law_of_Excluded_Middle.
             + eapply isSubsetOf_empty_if.
           - eapply DisjunctionE with (A := b') (B := NegationF b').
             + eapply extend_infers with (Gamma := empty).
-              { eapply Law_of_Exclusive_Middle. }
+              { eapply Law_of_Excluded_Middle. }
               { eapply isSubsetOf_empty_if. }
             + eapply ContradictionE.
               eapply Cut_property with (A := ImplicationF b b').
