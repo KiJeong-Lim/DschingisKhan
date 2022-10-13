@@ -435,7 +435,6 @@ Module LindenbaumBooleanAlgebraOfPL.
       all: ii; left...
   Qed.
 
-
   Local Instance LBA_obeysBooleanAlgebra_axiom
     : BooleanAlgebra_axiom formula (requiresSetoid := formula_isSetoid) (requiresBooleanAlgebraMethods := formula_hasBooleanAlgebraMethods).
   Proof with reflexivity || eauto with *.

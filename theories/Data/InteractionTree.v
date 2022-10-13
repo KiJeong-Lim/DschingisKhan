@@ -193,46 +193,4 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
 
   End RECURSION.
 
-  Section BISIMULATION.
-
-  Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
-
-  Variant itreeBisimF {bisim : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
-  | EqRetF (r1 : R) (r2 : R)
-    (REL : r1 == r2)
-    : itreeBisimF (RetF r1) (RetF r2)
-  | EqTauF (t1 : itree E R) (t2 : itree E R)
-    (REL : bisim t1 t2)
-    : itreeBisimF (TauF t1) (TauF t2)
-  | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
-    (REL : forall x : X, bisim (k1 x) (k2 x))
-    : itreeBisimF (VisF X e k1) (VisF X e k2)
-  .
-
-  Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
-    uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (bisim := curry BISIM) (observe lhs) (observe rhs))
-  .
-
-  Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
-    fun '(lhs, rhs) =>
-    fun lhs_REL_rhs : itreeBisimF (observe lhs) (observe rhs) =>
-    match lhs_REL_rhs in itreeBisimF LHS RHS return itreeBisimF LHS RHS with
-    | EqRetF r1 r2 REL => EqRetF r1 r2 REL
-    | EqTauF t1 t2 REL => EqTauF t1 t2 (INCL (t1, t2) REL)
-    | EqVisF X e k1 k2 REL => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (REL x))
-    end
-  .
-
-  Set Primitive Projections.
-
-  CoInductive itreeBisim (lhs : itree E R) (rhs : itree E R) : Prop :=
-    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF (bisim := itreeBisim) (observe lhs) (observe rhs) }
-  .
-
-  Unset Primitive Projections.
-
-  End BISIMULATION.
-
-  Global Arguments itreeBisimF {E} {R} {requiresSetoid} (bisim) (lhs) (rhs).
-
 End InteractionTrees.

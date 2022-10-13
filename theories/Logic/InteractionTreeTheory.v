@@ -14,21 +14,51 @@ Module InteractionTreeTheory.
 
   Import InteractionTrees BasicPosetTheory BasicCoLaTheory ParameterizedCoinduction.
 
-  Section ITREE_EQUIVALENCE_RELATION.
+  Section ITREE_BISIMULATION.
 
   Context {E : Type -> Type} {R : Type} {requiresSetoid : isSetoid R}.
 
-  Definition eqITreeF_isMonotonicMap : isMonotonicMap eqITreeF :=
-    eqITreeF_monotonic (E := E) (R := R) (requiresSetoid := requiresSetoid)
+  Variant itreeBisimF {bisim : itree E R -> itree E R -> Prop} : forall lhs : itreeF E R, forall rhs : itreeF E R, Prop :=
+  | EqRetF (r1 : R) (r2 : R)
+    (REL : r1 == r2)
+    : itreeBisimF (RetF r1) (RetF r2)
+  | EqTauF (t1 : itree E R) (t2 : itree E R)
+    (REL : bisim t1 t2)
+    : itreeBisimF (TauF t1) (TauF t2)
+  | EqVisF (X : Type) (e : E X) (k1 : X -> itree E R) (k2 : X -> itree E R)
+    (REL : forall x : X, bisim (k1 x) (k2 x))
+    : itreeBisimF (VisF X e k1) (VisF X e k2)
   .
+
+  Definition eqITreeF (BISIM : ensemble (itree E R * itree E R)) : ensemble (itree E R * itree E R) :=
+    uncurry (fun lhs : itree E R => fun rhs : itree E R => itreeBisimF (bisim := curry BISIM) (observe lhs) (observe rhs))
+  .
+
+  Definition eqITreeF_monotonic (BISIM : ensemble (itree E R * itree E R)) (BISIM' : ensemble (itree E R * itree E R)) (INCL : isSubsetOf BISIM BISIM') : isSubsetOf (eqITreeF BISIM) (eqITreeF BISIM') :=
+    fun '(lhs, rhs) =>
+    fun lhs_REL_rhs : itreeBisimF (observe lhs) (observe rhs) =>
+    match lhs_REL_rhs in itreeBisimF lhs' rhs' return itreeBisimF lhs' rhs' with
+    | EqRetF r1 r2 REL => EqRetF r1 r2 REL
+    | EqTauF t1 t2 REL => EqTauF t1 t2 (INCL (t1, t2) REL)
+    | EqVisF X e k1 k2 REL => EqVisF X e k1 k2 (fun x : X => INCL (k1 x, k2 x) (REL x))
+    end
+  .
+
+  Definition eqITreeF_isMonotonicMap : isMonotonicMap eqITreeF := eqITreeF_monotonic.
 
   Definition eqITreeF' : ensemble (itree E R * itree E R) -> ensemble (itree E R * itree E R) := paco eqITreeF.
 
-  Definition eqITree (lhs : itree E R) (rhs : itree E R) : Prop :=
-    member (lhs, rhs) (eqITreeF' cola_empty)
-  .
+  Definition eqITree (lhs : itree E R) (rhs : itree E R) : Prop := member (lhs, rhs) (eqITreeF' cola_empty).
 
   Local Hint Resolve eqITreeF_isMonotonicMap : core.
+
+  Set Primitive Projections.
+
+  CoInductive itreeBisim (lhs : itree E R) (rhs : itree E R) : Prop :=
+    Fold_itreeBisim { unfold_itreeBisim : itreeBisimF (bisim := itreeBisim) (observe lhs) (observe rhs) }
+  .
+
+  Unset Primitive Projections.
 
   Theorem eqITree_iff_itreeBisim (lhs : itree E R) (rhs : itree E R)
     : eqITree lhs rhs <-> itreeBisim lhs rhs.
@@ -176,7 +206,9 @@ Module InteractionTreeTheory.
       intros x; rewrite <- eqITree_iff_itreeBisim; exact (H_EQ x).
   Qed.
 
-  End ITREE_EQUIVALENCE_RELATION.
+  End ITREE_BISIMULATION.
+
+  Global Arguments itreeBisimF {E} {R} {requiresSetoid} (bisim) (lhs) (rhs).
 
   Local Existing Instances freeSetoidFromSetoid1.
 
