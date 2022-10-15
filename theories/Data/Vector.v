@@ -201,4 +201,19 @@ Module MyVec.
       eapply Nat.add_succ_comm.
   Qed.
 
+  Fixpoint vecFromSeq {A : Type} {n : nat} {struct n} : (Fin n -> A) -> vector A n :=
+    match n with
+    | O => fun f : Fin O -> A => []
+    | S n' => fun f : Fin (S n') -> A => f (@FZ n') :: vecFromSeq (fun i : Fin n' => f (@FS n' i))
+    end
+  .
+
+  Lemma vecFromSeq_indexing {A : Type} {n : nat} (f : Fin n -> A)
+    : forall i : Fin n, vecFromSeq f !! i = f i.
+  Proof.
+    induction n as [ | n IH]; [introFin0 | introFinS i'].
+    - reflexivity.
+    - simpl. rewrite IH. reflexivity.
+  Qed.
+
 End MyVec.
