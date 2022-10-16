@@ -8,14 +8,6 @@ Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module MyFin.
 
-  Lemma Fin_eta {n : nat} (i : Fin n) :
-    i =
-    match n as m return Fin m -> Fin m with
-    | zero => Fin_case0
-    | suc n' => Fin_caseS (@FZ n') (@FS n')
-    end i.
-  Proof. destruct i; reflexivity. Defined.
-
   Definition evalFin {n : nat} (i : Fin n) : nat := proj1_sig (runFin i).
 
   Lemma evalFin_unfold {n : nat} (i : Fin n) :
@@ -201,19 +193,23 @@ Module MyVec.
       eapply Nat.add_succ_comm.
   Qed.
 
-  Fixpoint vecFromSeq {A : Type} {n : nat} {struct n} : (Fin n -> A) -> vector A n :=
+  Fixpoint vectorFromSeq {A : Type} {n : nat} {struct n} : forall f : Fin n -> A, vector A n :=
     match n with
     | O => fun f : Fin O -> A => []
-    | S n' => fun f : Fin (S n') -> A => f (@FZ n') :: vecFromSeq (fun i : Fin n' => f (@FS n' i))
+    | S n' => fun f : Fin (S n') -> A => f (@FZ n') :: vectorFromSeq (A := A) (n := n') (fun i' : Fin n' => f (@FS n' i'))
     end
   .
 
-  Lemma vecFromSeq_indexing {A : Type} {n : nat} (f : Fin n -> A)
-    : forall i : Fin n, vecFromSeq f !! i = f i.
+  Lemma vectorFromSeq_indexing {A : Type} {n : nat} (f : Fin n -> A)
+    : forall i : Fin n, f i = vectorFromSeq f !! i.
   Proof.
-    induction n as [ | n IH]; [introFin0 | introFinS i'].
+    induction n as [ | n IH]; [introFin0 | introFinS i].
     - reflexivity.
-    - simpl. rewrite IH. reflexivity.
+    - simpl. rewrite <- IH. reflexivity.
   Qed.
+
+  Corollary indexing_vectorFromSeq {A : Type} {n : nat} (xs : vector A n)
+    : vectorFromSeq (fun i : Fin n => xs !! i) = xs.
+  Proof. eapply vector_extensional_equality. unnw. intros i. rewrite <- vectorFromSeq_indexing. reflexivity. Qed.
 
 End MyVec.
