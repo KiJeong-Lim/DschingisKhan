@@ -30,25 +30,21 @@ Module BasicNumbers.
     assert (lemma4 : 0 <> 1) by lia.
     assert (claim1 : forall p : nat, forall q : nat, p * p = 2 * q * q -> p mod 2 = 0).
     { intros p q pp_eq_2qq.
-      assert (H1 : p mod 2 <> 1).
-      { intros H_contradiction. pose proof (proj1 (lemma1 p) H_contradiction) as [k H2].
-        assert (pp_mod_2_eq_1 : (p * p) mod 2 = 1).
-        { eapply lemma1. eexists (2 * k * k + 2 * k). lia. }
-        rewrite pp_eq_2qq in pp_mod_2_eq_1.
-        eapply lemma4. rewrite <- pp_mod_2_eq_1. symmetry.
-        eapply lemma2. eexists. rewrite Nat.mul_assoc. reflexivity.
-      }
-      pose proof (lemma3 p) as H2. lia.
+      enough (to_show : p mod 2 <> 1) by now pose proof (lemma3 p) as H2; lia.
+      intros H_contradiction. pose proof (proj1 (lemma1 p) H_contradiction) as [k H2].
+      assert (pp_mod_2_eq_1 : (p * p) mod 2 = 1).
+      { eapply lemma1. eexists (2 * k * k + 2 * k). lia. }
+      rewrite pp_eq_2qq in pp_mod_2_eq_1.
+      eapply lemma4. rewrite <- pp_mod_2_eq_1. symmetry.
+      eapply lemma2. eexists. rewrite Nat.mul_assoc. reflexivity.
     }
-    intros p q. split; try lia. intros pp_eq_2qq.
-    enough (p_eq_0 : p = 0) by lia.
-    revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind.
-    unnw. ii.
+    intros p q. split; try lia. intros pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
+    revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind. unnw. ii.
     pose proof (proj1 (lemma2 p) (claim1 p q pp_eq_2qq)) as [p' p_eq_2p'].
     pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [H_le | H_lt]; try lia.
     assert (p_gt_p' : p' < p) by lia.
     assert (H1 : 2 * (2 * p' * p') = 2 * q * q) by lia.
-    assert (H2 : 2 * p' * p' = q * q) by lia. symmetry in H2.
+    assert (H2 : q * q = 2 * p' * p') by lia.
     pose proof (proj1 (lemma2 q) (claim1 q p' H2)) as [q' p_eq_2q'].
     assert (H3 : p' * p' = 2 * q' * q') by lia.
     pose proof (IH p' p_gt_p' q' H3) as H4. lia.
