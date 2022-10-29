@@ -41,7 +41,7 @@ Module BasicTheoryOfNat.
     intros p q pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
     revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind. unnw. ii.
     pose proof (proj1 (lemma2 p) (claim1 p q pp_eq_2qq)) as [p' p_eq_2p'].
-    pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [H_le | H_lt]; try lia.
+    pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [p_le_0 | p_gt_0]; try lia.
     assert (p_gt_p' : p' < p) by lia.
     assert (H1 : q * q = 2 * p' * p') by lia.
     pose proof (proj1 (lemma2 q) (claim1 q p' H1)) as [q' p_eq_2q'].
