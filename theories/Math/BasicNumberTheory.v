@@ -4,7 +4,7 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module BasicTheoryOfNat.
+Module BasicNumberTheoryOfNat.
 
   Theorem sqrt2irrat (p : nat) (q : nat)
     : (p = 0 /\ q = 0) <-> (p * p = 2 * q * q).
@@ -38,15 +38,14 @@ Module BasicTheoryOfNat.
       eapply lemma4. rewrite <- pp_mod_2_eq_1. symmetry.
       eapply lemma2. eexists. rewrite Nat.mul_assoc. reflexivity.
     }
-    intros p q pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
-    revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind. unnw. ii.
-    pose proof (proj1 (lemma2 p) (claim1 p q pp_eq_2qq)) as [p' p_eq_2p'].
-    pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [p_le_0 | p_gt_0]; try lia.
-    assert (p_gt_p' : p' < p) by lia.
-    assert (H1 : q * q = 2 * p' * p') by lia.
-    pose proof (proj1 (lemma2 q) (claim1 q p' H1)) as [q' p_eq_2q'].
-    assert (H2 : p' * p' = 2 * q' * q') by lia.
-    now pose proof (IH p' p_gt_p' q' H2) as H3; lia.
+    { intros p q pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
+      revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind. unnw. ii.
+      pose proof (proj1 (lemma2 p) (claim1 p q pp_eq_2qq)) as [p' p_eq_2p'].
+      pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [p_le_0 | p_gt_0]; try lia.
+      assert (p_gt_p' : p' < p) by lia. assert (H1 : q * q = 2 * p' * p') by lia.
+      pose proof (proj1 (lemma2 q) (claim1 q p' H1)) as [q' p_eq_2q'].
+      assert (H2 : p' * p' = 2 * q' * q') by lia. assert (therefore : p' = 0) by exact (IH p' p_gt_p' q' H2). lia.
+    }
   Qed.
 
-End BasicTheoryOfNat.
+End BasicNumberTheoryOfNat.
