@@ -4,10 +4,10 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeMath.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 
-Module BasicNumbers.
+Module BasicTheoryOfNat.
 
   Theorem sqrt2irrat (p : nat) (q : nat)
-    : (p = 0 /\ q = 0)%nat <-> (p * p = 2 * q * q)%nat.
+    : (p = 0 /\ q = 0) <-> (p * p = 2 * q * q).
   Proof. (* Thanks to Junyoung Jang *)
     split; [lia | revert p q].
     assert (lemma1 : forall n : nat, n mod 2 = 1 <-> (exists k : nat, n = 2 * k + 1)).
@@ -33,8 +33,7 @@ Module BasicNumbers.
     { intros p q pp_eq_2qq.
       enough (to_show : p mod 2 <> 1) by now pose proof (lemma3 p) as H2; lia.
       intros H_contradiction. pose proof (proj1 (lemma1 p) H_contradiction) as [k H2].
-      assert (pp_mod_2_eq_1 : (p * p) mod 2 = 1).
-      { eapply lemma1. eexists (2 * k * k + 2 * k). lia. }
+      assert (pp_mod_2_eq_1 : (p * p) mod 2 = 1) by lia.
       rewrite pp_eq_2qq in pp_mod_2_eq_1.
       eapply lemma4. rewrite <- pp_mod_2_eq_1. symmetry.
       eapply lemma2. eexists. rewrite Nat.mul_assoc. reflexivity.
@@ -50,4 +49,4 @@ Module BasicNumbers.
     now pose proof (IH p' p_gt_p' q' H2) as H3; lia.
   Qed.
 
-End BasicNumbers.
+End BasicTheoryOfNat.
