@@ -5,6 +5,7 @@ Require Import DschingisKhan.Data.InteractionTree.
 Require Import DschingisKhan.Data.Regex.
 Require Import DschingisKhan.Data.Vector.
 Require Import DschingisKhan.Math.BasicGeneralTopology.
+Require Import DschingisKhan.Math.BasicNumberTheory.
 Require Import DschingisKhan.Math.BasicPosetTheory.
 Require Import DschingisKhan.Math.BooleanAlgebra.
 Require Import DschingisKhan.Math.ClassicalDomainTheory.
