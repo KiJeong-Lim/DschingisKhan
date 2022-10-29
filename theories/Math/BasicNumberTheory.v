@@ -6,9 +6,10 @@ Require Import DschingisKhan.Prelude.PreludeUtil.
 
 Module BasicNumbers.
 
-  Theorem sqrt2irrat
-    : forall p : nat, forall q : nat, (p = 0 /\ q = 0) <-> (p * p = 2 * q * q).
-  Proof.
+  Theorem sqrt2irrat (p : nat) (q : nat)
+    : (p = 0 /\ q = 0)%nat <-> (p * p = 2 * q * q)%nat.
+  Proof. (* Thanks to Junyoung Jang *)
+    split; [lia | revert p q].
     assert (lemma1 : forall n : nat, n mod 2 = 1 <-> (exists k : nat, n = 2 * k + 1)).
     { intros n. split.
       - pose proof (Nat.div_mod n 2) as H1. intros H2.
@@ -38,16 +39,15 @@ Module BasicNumbers.
       eapply lemma4. rewrite <- pp_mod_2_eq_1. symmetry.
       eapply lemma2. eexists. rewrite Nat.mul_assoc. reflexivity.
     }
-    intros p q. split; try lia. intros pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
+    intros p q pp_eq_2qq. enough (p_eq_0 : p = 0) by lia.
     revert p q pp_eq_2qq. induction p as [p IH] using @lt_strong_ind. unnw. ii.
     pose proof (proj1 (lemma2 p) (claim1 p q pp_eq_2qq)) as [p' p_eq_2p'].
     pose proof (n_le_m_or_m_lt_n_holds_for_any_n_and_any_m p 0) as [H_le | H_lt]; try lia.
     assert (p_gt_p' : p' < p) by lia.
-    assert (H1 : 2 * (2 * p' * p') = 2 * q * q) by lia.
-    assert (H2 : q * q = 2 * p' * p') by lia.
-    pose proof (proj1 (lemma2 q) (claim1 q p' H2)) as [q' p_eq_2q'].
-    assert (H3 : p' * p' = 2 * q' * q') by lia.
-    pose proof (IH p' p_gt_p' q' H3) as H4. lia.
+    assert (H1 : q * q = 2 * p' * p') by lia.
+    pose proof (proj1 (lemma2 q) (claim1 q p' H1)) as [q' p_eq_2q'].
+    assert (H2 : p' * p' = 2 * q' * q') by lia.
+    now pose proof (IH p' p_gt_p' q' H2) as H3; lia.
   Qed.
 
 End BasicNumbers.
