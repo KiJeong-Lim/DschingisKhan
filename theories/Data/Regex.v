@@ -161,22 +161,8 @@ Module RegularExpressions.
 
   Global Instance regex_has_unity : Has_unity regex := ReUnit.
 
-  Global Instance regex_isSemigroup : isSemigroup regex :=
-    { Semigroup_has_add := regex_has_add
-    ; Semigroup_add_congru := RePlus_preserves_eqProp
-    ; Semigroup_add_assoc := RePlus_assoc
-    }
-  .
-
-  Global Instance regex_isMonoid : isMonoid regex :=
-    { Monoid_hasSemigroup := regex_isSemigroup
-    ; Monoid_has_zero := regex_has_zero
-    ; Monoid_zero_id_add := ReZero_id_RePlus
-    }
-  .
-
   Global Instance regex_isRig : isRig regex :=
-    { Rig_hasAdditiveMonoid := regex_isMonoid
+    { Rig_hasAdditiveMonoid := {| Monoid_hasSemigroup := {| Semigroup_has_add := regex_has_add; Semigroup_add_congru := RePlus_preserves_eqProp; Semigroup_add_assoc := RePlus_assoc |}; Monoid_has_zero := regex_has_zero; Monoid_zero_id_add := ReZero_id_RePlus |}
     ; Rig_has_mul := regex_has_mul
     ; Rig_has_unity := regex_has_unity
     ; Rig_add_comm := RePlus_comm
