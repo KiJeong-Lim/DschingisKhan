@@ -96,18 +96,18 @@ Module BNat.
   .
 
   Example norm_bnat_example1
-    : norm_bnat (bO (bO (bO (b0)))) (* = 0b000 *)
-    = (b0).                         (* = 0b    *)
+    : norm_bnat (bI (bO (bO (b0)))) (* = 0b001 *)
+    = (bI (b0)).                    (* = 0b1   *)
   Proof. reflexivity. Qed.
 
   Example norm_bnat_example2
-    : norm_bnat (bO (bO (bI (b0)))) (* = 0b100 *)
-    = (bO (bO (bI (b0)))).          (* = 0b100 *)
+    : norm_bnat (bO (bI (bO (b0)))) (* = 0b010 *)
+    = (bO (bI (b0))).               (* = 0b10  *)
   Proof. reflexivity. Qed.
 
   Example norm_bnat_example3
-    : norm_bnat (bO (bI (bO (b0)))) (* = 0b010 *)
-    = (bO (bI (b0))).               (* = 0b10  *)
+    : norm_bnat (bO (bO (bI (b0)))) (* = 0b100 *)
+    = (bO (bO (bI (b0)))).          (* = 0b100 *)
   Proof. reflexivity. Qed.
 
   Lemma to_nat_eq_0_implies_norm_eq_0 (b : bnat)
