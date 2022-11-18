@@ -38,16 +38,16 @@ Module BNat.
     - pose proof (IH b') as [H_EQ | H_NE]...
   Defined.
 
-  Fixpoint incr_bnat (b : bnat) {struct b} : bnat :=
+  Fixpoint succ_bnat (b : bnat) {struct b} : bnat :=
     match b with
     | b0 => bI b0
     | bO b' => bI b'
-    | bI b' => bO (incr_bnat b')
+    | bI b' => bO (succ_bnat b')
     end
   .
 
-  Lemma to_nat_incr_comm (b : bnat)
-    : to_nat (incr_bnat b) = to_nat b + 1.
+  Lemma to_nat_succ_comm (b : bnat)
+    : to_nat (succ_bnat b) = to_nat b + 1.
   Proof.
     induction b as [ | b IH | b IH].
     - reflexivity.
@@ -58,7 +58,7 @@ Module BNat.
   Fixpoint of_nat (n : nat) {struct n} : bnat :=
     match n with
     | O => b0
-    | S n' => incr_bnat (of_nat n')
+    | S n' => succ_bnat (of_nat n')
     end
   .
 
@@ -67,7 +67,7 @@ Module BNat.
   Proof.
     induction n as [ | n IH].
     - reflexivity.
-    - simpl. rewrite to_nat_incr_comm. rewrite IH. lia.
+    - simpl. rewrite to_nat_succ_comm. rewrite IH. lia.
   Qed.
 
   Lemma of_nat_twice (n : nat)
