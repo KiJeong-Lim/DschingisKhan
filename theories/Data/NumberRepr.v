@@ -70,7 +70,7 @@ Module BNat.
     - simpl. rewrite to_nat_incr_comm. rewrite IH. lia.
   Qed.
 
-  Lemma of_nat_double (n : nat)
+  Lemma of_nat_twice (n : nat)
     (n_ne_0 : n <> 0)
     : of_nat (n * 2) = bO (of_nat n).
   Proof.
@@ -95,7 +95,22 @@ Module BNat.
     end
   .
 
-  Lemma to_nat_eq_0_implies_norm_bnat_eq_0 (b : bnat)
+  Example norm_bnat_example1
+    : norm_bnat (bO (bO (bO (b0))))
+    = (b0).
+  Proof. reflexivity. Qed.
+
+  Example norm_bnat_example2
+    : norm_bnat (bO (bO (bI (b0))))
+    = (bO (bO (bI (b0)))).
+  Proof. reflexivity. Qed.
+
+  Example norm_bnat_example3
+    : norm_bnat (bO (bI (bO (b0))))
+    = (bO (bI (b0))).
+  Proof. reflexivity. Qed.
+
+  Lemma to_nat_eq_0_implies_norm_eq_0 (b : bnat)
     (to_nat_returns_0 : to_nat b = 0)
     : norm_bnat b = b0.
   Proof.
@@ -117,18 +132,18 @@ Module BNat.
     - intros H_EQ; subst n. reflexivity.
   Qed.
 
-  Lemma of_nat_to_nat_double (b : bnat)
+  Lemma of_nat_to_nat_twice (b : bnat)
     (b_ne_0 : norm_bnat b <> b0)
     : of_nat (to_nat b * 2) = bO (of_nat (to_nat b)).
   Proof.
     induction b as [ | b IH | b IH].
     - contradiction.
-    - enough (H_NE : to_nat (bO b) <> 0) by now rewrite of_nat_double.
+    - enough (H_NE : to_nat (bO b) <> 0) by now rewrite of_nat_twice.
       destruct b as [ | b' | b'].
       + contradiction.
-      + intros H_false. contradiction b_ne_0. eapply to_nat_eq_0_implies_norm_bnat_eq_0. eassumption.
-      + intros H_false. contradiction b_ne_0. eapply to_nat_eq_0_implies_norm_bnat_eq_0. eassumption.
-    - enough (H_NE : to_nat (bI b) <> 0) by now rewrite of_nat_double.
+      + intros H_false. contradiction b_ne_0. eapply to_nat_eq_0_implies_norm_eq_0. eassumption.
+      + intros H_false. contradiction b_ne_0. eapply to_nat_eq_0_implies_norm_eq_0. eassumption.
+    - enough (H_NE : to_nat (bI b) <> 0) by now rewrite of_nat_twice.
       simpl. lia.
   Qed.
 
@@ -137,7 +152,7 @@ Module BNat.
   Proof with reflexivity || discriminate || trivial.
     induction b as [ | b IH | b IH]...
     - simpl.
-      pose proof (claim := of_nat_to_nat_double b).
+      pose proof (claim := of_nat_to_nat_twice b).
       destruct (norm_bnat b) as [ | nb' | nb'] eqn: H_obs.
       + destruct b as [ | b' | b']...
         now replace (to_nat (bO b')) with (0) by now eapply of_nat_returns_0_iff.
@@ -147,7 +162,7 @@ Module BNat.
         now rewrite IH.
     - simpl. replace (to_nat b * 2 + 1) with (S (to_nat b * 2)) by lia.
       simpl.
-      pose proof (claim := of_nat_to_nat_double b).
+      pose proof (claim := of_nat_to_nat_twice b).
       destruct (norm_bnat b) as [ | nb' | nb'] eqn: H_obs.
       + destruct b as [ | b' | b']...
         now replace (to_nat (bO b')) with (0) by now eapply of_nat_returns_0_iff.
@@ -163,7 +178,7 @@ Module BNat.
     split; intros H_EQ.
     - rewrite <- of_nat_to_nat_norm with (b := lhs).
       rewrite <- of_nat_to_nat_norm with (b := rhs).
-      eapply eq_congruence. exact (H_EQ).
+      eapply eq_congruence with (f := of_nat). exact (H_EQ).
     - rewrite <- of_nat_to_nat_norm with (b := lhs) in H_EQ.
       rewrite <- of_nat_to_nat_norm with (b := rhs) in H_EQ.
       apply eq_congruence with (f := to_nat) in H_EQ.
