@@ -1,4 +1,4 @@
--Q ./theories DschingisKhan #
+-Q theories DschingisKhan #
 #
 theories/Prelude/PreludeInit.v #
 theories/Prelude/PreludeMath.v #
@@ -11,6 +11,7 @@ theories/Data/InteractionTree.v #
 theories/Data/BinTree.v #
 theories/Data/Regex.v #
 theories/Data/Category.v #
+theories/Data/NumberRepr.v #
 #
 theories/Math/BasicPosetTheory.v #
 theories/Math/BooleanAlgebra.v #
