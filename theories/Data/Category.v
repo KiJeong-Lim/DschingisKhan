@@ -7,20 +7,15 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
-  Set Primitive Projections.
-
-  Polymorphic Record Funktor (D : Category) (C : Category) : Type :=
+  Polymorphic Class Funktor (D : Category) (C : Category) : Type :=
     { map_ob : D -----> C
-    ; map_hom : @isCovariantFunctor D C map_ob
+    ; map_hom :> @isCovariantFunctor D C map_ob
     }
   .
 
-  Unset Primitive Projections.
+  Global Arguments map_ob {D} {C} {Funktor}.
 
-  Global Arguments map_ob {D} {C}.
-  Global Arguments map_hom {D} {C}.
-
-  Global Polymorphic Instance proj_map_hom {D : Category} {C : Category} (F : Funktor D C) : isCovariantFunctor F.(map_ob) := F.(map_hom).
+  Global Arguments map_hom {D} {C} {Funktor} {dom} {cod}.
 
   Global Infix " ---> " := Funktor (at level 100, no associativity) : type_scope.
 
@@ -30,18 +25,16 @@ Module Categories.
 
   Global Infix " ===> " := NaturalTransformation (at level 100, no associativity) : type_scope.
 
-  Polymorphic Definition composeFunktor {C : Category} {C' : Category} {C'' : Category} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
-    {|
-      map_ob := fun X : C.(ob) => F2.(map_ob) (F1.(map_ob) X);
-      map_hom := fun A : C.(ob) => fun B : C.(ob) => fun f : C.(hom) A B => Cat.fmap (isCovariantFunctor := proj_map_hom F2) (Cat.fmap (isCovariantFunctor := proj_map_hom F1) f);
-    |}
+  Local Polymorphic Instance composeFunktor {C : Category} {C' : Category} {C'' : Category} (F2 : C' ---> C'') (F1 : C ---> C') : C ---> C'' :=
+    { map_ob := fun X : C.(ob) => F2.(map_ob) (F1.(map_ob) X)
+    ; map_hom (dom : C.(ob)) (cod : C.(ob)) (f : C.(hom) dom cod) := F2.(map_hom) (F1.(map_hom) f)
+    }
   .
 
-  Polymorphic Definition idFunktor {C : Category} : C ---> C :=
-    {|
-      map_ob := fun X : C.(ob) => X;
-      map_hom := fun A : C.(ob) => fun B : C.(ob) => fun f : C.(hom) A B => f;
-    |}
+  Local Polymorphic Instance idFunktor {C : Category} : C ---> C :=
+    { map_ob := fun X : C.(ob) => X
+    ; map_hom (dom : C.(ob)) (cod : C.(ob)) := fun f : C.(hom) dom cod => f
+    }
   .
 
   Section INSTANCES_OF_CATEGORY.
@@ -75,15 +68,15 @@ Module Categories.
   Section CATEGORICAL_SUM.
 
   Polymorphic Class hasCoproduct (cat : Category) : Type :=
-    { Sum (obj_l : cat.(ob)) (obj_r : cat.(ob)) : cat.(ob)
-    ; Inl {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_l) (Sum obj_l obj_r)
-    ; Inr {obj_l : cat.(ob)} {obj_r : cat.(ob)} : cat.(hom) (obj_r) (Sum obj_l obj_r)
-    ; Case {obj_l : cat.(ob)} {obj_r : cat.(ob)} {obj : cat.(ob)} (fl : cat.(hom) (obj_l) obj) (fr : cat.(hom) (obj_r) obj) : cat.(hom) (Sum obj_l obj_r) obj
+    { Sum (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
+    ; Inl {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) A (Sum A B)
+    ; Inr {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) B (Sum A B)
+    ; Case {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) A C) (g : cat.(hom) B C) : cat.(hom) (Sum A B) C
     }
   .
 
-  Polymorphic Definition coproduct_bimap {cat : Category} {coproduct : hasCoproduct cat} {obj1 : cat} {obj1' : cat} {obj2 : cat} {obj2' : cat} (arr1 : hom obj1 obj1') (arr2 : hom obj2 obj2') : hom (Sum obj1 obj2) (Sum obj1' obj2') :=
-    Case (compose Inl arr1) (compose Inr arr2)
+  Polymorphic Definition coproduct_bimap {cat : Category} {coproduct : hasCoproduct cat} {A : cat} {A' : cat} {B : cat} {B' : cat} (f : hom A A') (g : hom B B') : hom (Sum A B) (Sum A' B') :=
+    Case (compose Inl f) (compose Inr g)
   .
 
   Local Instance Hask_hasCoproduct : hasCoproduct Hask.cat :=
@@ -100,7 +93,7 @@ Module Categories.
 
   Polymorphic Class hasInitial (cat : Category) : Type :=
     { Void : cat.(ob)
-    ; ExFalso {obj : cat.(ob)} : cat.(hom) Void obj
+    ; ExFalso {A : cat.(ob)} : cat.(hom) Void A
     }
   .
 
@@ -111,6 +104,18 @@ Module Categories.
   .
 
   End INITIAL_OBJECT.
+
+  Section CATEGORICAL_PRODUCT.
+
+  Polymorphic Class hasProduct (cat : Category) : Type :=
+    { Prod (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
+    ; Fst {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (Prod A B) A
+    ; Snd {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (Prod A B) B
+    ; Pair {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) C A) (g : cat.(hom) C B) : cat.(hom) C (Prod A B)
+    }
+  .
+
+  End CATEGORICAL_PRODUCT.
 
 End Categories.
 
