@@ -153,6 +153,16 @@ Module Categories.
 
   End TERMINAL_OBJECT.
 
+  Section JourneyToMonad.
+
+  Polymorphic Class isMonoidalCategory (cat : Category) : Type :=
+    { tensor_product : ProductCategory cat cat ---> cat
+    ; tensor_unit : cat.(ob)
+    }
+  .
+
+  End JourneyToMonad.
+
 End Categories.
 
 Module CategoryTheory.
@@ -188,7 +198,7 @@ Module CategoryTheory.
   .
 
   Class LawsOfNaturalTransformation {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
-    { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
+    { diagramOfNaturalTransformation_commutes {X : D} {Y : D} (f : D.(hom) X Y)
       : compose (eta Y) (Cat.fmap f) == compose (Cat.fmap f) (eta X)
     }
   .
