@@ -7,6 +7,10 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 
 Module Categories.
 
+  Global Declare Scope cat_scope.
+
+  Global Bind Scope cat_scope with Category.
+
   Polymorphic Class Funktor (D : Category) (C : Category) : Type :=
     { map_ob : D -----> C
     ; map_hom :> @isCovariantFunctor D C map_ob
@@ -63,27 +67,35 @@ Module Categories.
     }
   .
 
+  Local Program Instance ProductCategory (D : Category) (C : Category) : Category :=
+    { ob := D.(ob) * C.(ob)
+    ; hom f g := (D.(hom) (fst f) (fst g) * C.(hom) (snd f) (snd g))%type
+    ; compose {f} {g} {h} eta2 eta1 := (compose (fst eta2) (fst eta1), compose (snd eta2) (snd eta1))
+    ; id {f} := (id, id)
+    }
+  .
+
   End INSTANCES_OF_CATEGORY.
 
   Section CATEGORICAL_SUM.
 
   Polymorphic Class hasCoproduct (cat : Category) : Type :=
-    { Sum (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
-    ; Inl {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) A (Sum A B)
-    ; Inr {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) B (Sum A B)
-    ; Case {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) A C) (g : cat.(hom) B C) : cat.(hom) (Sum A B) C
+    { sum (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
+    ; inl {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) A (sum A B)
+    ; inr {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) B (sum A B)
+    ; case {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) A C) (g : cat.(hom) B C) : cat.(hom) (sum A B) C
     }
   .
 
-  Polymorphic Definition coproduct_bimap {cat : Category} {coproduct : hasCoproduct cat} {A : cat} {A' : cat} {B : cat} {B' : cat} (f : hom A A') (g : hom B B') : hom (Sum A B) (Sum A' B') :=
-    Case (compose Inl f) (compose Inr g)
+  Polymorphic Definition coproduct_bimap {cat : Category} {coproduct : hasCoproduct cat} {A : cat} {A' : cat} {B : cat} {B' : cat} (f : cat.(hom) A A') (g : cat.(hom) B B') : cat.(hom) (sum A B) (sum A' B') :=
+    case (compose inl f) (compose inr g)
   .
 
   Local Instance Hask_hasCoproduct : hasCoproduct Hask.cat :=
-    { Sum := sum
-    ; Inl {A : Type} {B : Type} := @inl A B
-    ; Inr {A : Type} {B : Type} := @inr A B
-    ; Case {A : Type} {B : Type} {C : Type} := @sum_rect A B (fun _ : A + B => C)
+    { sum := @Datatypes.sum
+    ; inl {A : Type} {B : Type} := (@Datatypes.inl A B)%function
+    ; inr {A : Type} {B : Type} := (@Datatypes.inr A B)%function
+    ; case {A : Type} {B : Type} {C : Type} := @Datatypes.sum_rect A B (fun _ : A + B => C)
     }
   .
 
@@ -108,14 +120,24 @@ Module Categories.
   Section CATEGORICAL_PRODUCT.
 
   Polymorphic Class hasProduct (cat : Category) : Type :=
-    { Prod (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
-    ; Fst {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (Prod A B) A
-    ; Snd {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (Prod A B) B
-    ; Pair {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) C A) (g : cat.(hom) C B) : cat.(hom) C (Prod A B)
+    { prod (A : cat.(ob)) (B : cat.(ob)) : cat.(ob)
+    ; fst {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (prod A B) A
+    ; snd {A : cat.(ob)} {B : cat.(ob)} : cat.(hom) (prod A B) B
+    ; pair {A : cat.(ob)} {B : cat.(ob)} {C : cat.(ob)} (f : cat.(hom) C A) (g : cat.(hom) C B) : cat.(hom) C (prod A B)
     }
   .
 
   End CATEGORICAL_PRODUCT.
+
+  Section TERMINAL_OBJECT.
+
+  Polymorphic Class hasFinal (cat : Category) : Type :=
+    { unit : cat.(ob)
+    ; tt {A : cat.(ob)} : cat.(hom) A unit
+    }
+  .
+
+  End TERMINAL_OBJECT.
 
 End Categories.
 
