@@ -127,6 +127,14 @@ Module Categories.
     }
   .
 
+  Local Instance Hask_hasProduct : hasProduct Hask.cat :=
+    { prod := @Datatypes.prod
+    ; fst {A : Type} {B : Type} := (@Datatypes.fst A B)%function
+    ; snd {A : Type} {B : Type} := (@Datatypes.snd A B)%function
+    ; pair {A : Type} {B : Type} {C : Type} (f : C -> A) (g : C -> B) := fun x : C => (f x, g x)
+    }
+  .
+
   End CATEGORICAL_PRODUCT.
 
   Section TERMINAL_OBJECT.
@@ -134,6 +142,12 @@ Module Categories.
   Polymorphic Class hasFinal (cat : Category) : Type :=
     { unit : cat.(ob)
     ; tt {A : cat.(ob)} : cat.(hom) A unit
+    }
+  .
+
+  Local Instance Hask_hasFinal : hasFinal Hask.cat :=
+    { unit := Datatypes.unit
+    ; tt {A} := fun _ : A => Datatypes.tt
     }
   .
 
@@ -167,15 +181,15 @@ Module CategoryTheory.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
-      : Cat.fmap (isCovariantFunctor := proj_map_hom F) (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap g) (Cat.fmap f)
+      : Cat.fmap (D.(compose) g f) == @compose C (F.(map_ob) X) (F.(map_ob) Y) (F.(map_ob) Z) (Cat.fmap g) (Cat.fmap f)
     ; fmap_preserves_id {X : D}
-      : Cat.fmap (isCovariantFunctor := proj_map_hom F) D.(id) == @id C (F.(map_ob) X)
+      : Cat.fmap D.(id) == @id C (F.(map_ob) X)
     }
   .
 
   Class LawsOfNaturalTransformation {D : Category} {C : CategoryWithEquality} {F : D ---> C} {G : D ---> C} (eta : F ===> G) : Prop :=
     { diagramOfNaturalTransformation {X : D} {Y : D} (f : D.(hom) X Y)
-      : compose (eta Y) (Cat.fmap (isCovariantFunctor := proj_map_hom F) f) == compose (Cat.fmap (isCovariantFunctor := proj_map_hom G) f) (eta X)
+      : compose (eta Y) (Cat.fmap f) == compose (Cat.fmap f) (eta X)
     }
   .
 
