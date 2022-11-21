@@ -186,8 +186,21 @@ Module CategoryTheory.
       : compose id f == f
     ; compose_id_r {A : cat} {B : cat} (f : cat.(hom) A B)
       : compose f id == f
+    ; compose_compatWith_eqProp {A : cat} {B : cat} {C : cat} (f1 : cat.(hom) B C) (f2 : cat.(hom) B C) (g1 : cat.(hom) A B) (g2 : cat.(hom) A B)
+      (f1_eq_f2 : f1 == f2)
+      (g1_eq_g2 : g1 == g2)
+      : compose f1 g1 == compose f2 g2
     }
   .
+
+  Local Add Parametric Morphism {cat : CategoryWithEquality} {cat_obeysLaws : LawsOfCategory cat} {A : cat} {B : cat} {C : cat}
+    : (@compose cat A B C) with signature (eqProp ==> eqProp ==> eqProp) as compose_lifts_eqProp.
+  Proof.
+    intros f1 f2 f1_eq_f2 g1 g2 g1_eq_g2.
+    eapply compose_compatWith_eqProp.
+    - exact (f1_eq_f2).
+    - exact (g1_eq_g2).
+  Qed.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
@@ -243,6 +256,7 @@ Module CategoryTheory.
     - now rewrite compose_assoc.
     - now rewrite compose_id_r.
     - now rewrite compose_id_l.
+    - rewrite g1_eq_g2. rewrite f1_eq_f2. reflexivity.
   Qed.
 
   End OPPOSITE_CATEGORY_WITH_EQUALITY.
