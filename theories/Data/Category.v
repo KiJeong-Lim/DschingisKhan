@@ -129,8 +129,8 @@ Module Categories.
 
   Local Instance Hask_hasProduct : hasProduct Hask.cat :=
     { prod := @Datatypes.prod
-    ; fst {A : Type} {B : Type} := (@Datatypes.fst A B)%function
-    ; snd {A : Type} {B : Type} := (@Datatypes.snd A B)%function
+    ; fst {A : Type} {B : Type} := @Datatypes.fst A B
+    ; snd {A : Type} {B : Type} := @Datatypes.snd A B
     ; pair {A : Type} {B : Type} {C : Type} (f : C -> A) (g : C -> B) := fun x : C => (f x, g x)
     }
   .
@@ -195,12 +195,7 @@ Module CategoryTheory.
 
   Local Add Parametric Morphism {cat : CategoryWithEquality} {cat_obeysLaws : LawsOfCategory cat} {A : cat} {B : cat} {C : cat}
     : (@compose cat A B C) with signature (eqProp ==> eqProp ==> eqProp) as compose_lifts_eqProp.
-  Proof.
-    intros f1 f2 f1_eq_f2 g1 g2 g1_eq_g2.
-    eapply compose_compatWith_eqProp.
-    - exact (f1_eq_f2).
-    - exact (g1_eq_g2).
-  Qed.
+  Proof. ii; eapply compose_compatWith_eqProp; eassumption. Qed.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
     { fmap_preserves_compose {X : D} {Y : D} {Z : D} (f : D.(hom) X Y) (g : D.(hom) Y Z)
@@ -256,7 +251,7 @@ Module CategoryTheory.
     - now rewrite compose_assoc.
     - now rewrite compose_id_r.
     - now rewrite compose_id_l.
-    - rewrite g1_eq_g2. rewrite f1_eq_f2. reflexivity.
+    - now rewrite f1_eq_f2, g1_eq_g2.
   Qed.
 
   End OPPOSITE_CATEGORY_WITH_EQUALITY.
