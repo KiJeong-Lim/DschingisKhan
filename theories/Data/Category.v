@@ -194,7 +194,8 @@ Module CategoryTheory.
   .
 
   Local Add Parametric Morphism {cat : CategoryWithEquality} {cat_obeysLaws : LawsOfCategory cat} {A : cat} {B : cat} {C : cat}
-    : (@compose cat A B C) with signature (eqProp ==> eqProp ==> eqProp) as compose_lifts_eqProp.
+    : (@compose cat A B C) with signature (eqProp ==> eqProp ==> eqProp)
+    as compose_lifts_eqProp.
   Proof. ii; eapply compose_compatWith_eqProp; eassumption. Qed.
 
   Class LawsOfFunktor {D : Category} {C : CategoryWithEquality} (F : D ---> C) : Prop :=
