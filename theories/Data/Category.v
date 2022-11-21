@@ -67,10 +67,10 @@ Module Categories.
     }
   .
 
-  Local Polymorphic Instance ProductCategory (D : Category) (C : Category) : Category :=
+  Local Polymorphic Instance ProductCategory (D : Category) (C : Category) : Category := (* Thanks to Moonsoon Won *)
     { ob := D.(ob) * C.(ob)
-    ; hom d c := (D.(hom) (fst d) (fst c) * C.(hom) (snd d) (snd c))%type
-    ; compose {A} {B} {C} f g := (compose (fst f) (fst g), compose (snd f) (snd g))
+    ; hom X Y := (D.(hom) (fst X) (fst Y) * C.(hom) (snd X) (snd Y))%type
+    ; compose {A} {B} {C} '(f, g) '(f', g') := (compose f f', compose g g')
     ; id {A} := (id, id)
     }
   .
