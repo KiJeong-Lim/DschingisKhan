@@ -93,8 +93,8 @@ Module Categories.
 
   Local Instance Hask_hasCoproduct : hasCoproduct Hask.cat :=
     { sum := @Datatypes.sum
-    ; inl {A : Type} {B : Type} := (@Datatypes.inl A B)%function
-    ; inr {A : Type} {B : Type} := (@Datatypes.inr A B)%function
+    ; inl {A : Type} {B : Type} := @Datatypes.inl A B
+    ; inr {A : Type} {B : Type} := @Datatypes.inr A B
     ; case {A : Type} {B : Type} {C : Type} := @Datatypes.sum_rect A B (fun _ : A + B => C)
     }
   .
