@@ -67,7 +67,7 @@ Module Categories.
     }
   .
 
-  Local Program Instance ProductCategory (D : Category) (C : Category) : Category :=
+  Local Polymorphic Instance ProductCategory (D : Category) (C : Category) : Category :=
     { ob := D.(ob) * C.(ob)
     ; hom f g := (D.(hom) (fst f) (fst g) * C.(hom) (snd f) (snd g))%type
     ; compose {f} {g} {h} eta2 eta1 := (compose (fst eta2) (fst eta1), compose (snd eta2) (snd eta1))
