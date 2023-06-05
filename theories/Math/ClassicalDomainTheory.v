@@ -688,6 +688,18 @@ Module BasicCpoTheory. (* Reference: << The Lambda Calculus: Its Syntax and Sema
     - intros ?; split; [intros x1; eapply f1_cont_if_f_cont | intros x2; eapply f2_cont_if_f_cont]...
   Qed.
 
+(*
+  Lemma lemma1 {D : Type} {D_isPoset : isPoset D} {D_isCPO : isCPO D} (X1 : ensemble D) (X2 : ensemble D) (X1_isDirected : isDirected X1) (X2_isDirected : isDirected X2)
+    (H_upper : forall x : D, x \in X1 -> exists x' : D, x' \in X2 /\ x =< x')
+    : getSupremumOf_inCPO X1 X1_isDirected =< getSupremumOf_inCPO X2 X2_isDirected.
+  Proof.
+    eapply getSupremumOf_inCPO_isSupremum. intros x x_in_X1. unnw.
+    pose proof (H_upper x x_in_X1) as [x' [x'_in_X2 x_le_x']].
+    rewrite x_le_x'. eapply getSupremumOf_inCPO_isSupremum with (X := X2) (X_isDirected := X2_isDirected); unnw; eauto with *.
+  Qed.
+
+*)
+
   Section SCOTT_APP.
 
   Context {D1 : Type} {D2 : Type} {D1_isPoset : isPoset D1} {D2_isPoset : isPoset D2} {D1_isCPO : isCPO D1} {D2_isCPO : isCPO D2}.

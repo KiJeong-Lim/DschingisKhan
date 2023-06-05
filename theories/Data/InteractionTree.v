@@ -5,6 +5,8 @@ Require Import DschingisKhan.Prelude.PreludeInit.
 Require Import DschingisKhan.Prelude.PreludeUtil.
 Require Import DschingisKhan.Data.Category.
 
+(*
+
 Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
 
   Import Categories.
@@ -79,9 +81,9 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     ; bind {R1 : Type} {R2 : Type} (m : itree E R1) (k : R1 -> itree E R2) := itree_bind (E := E) (R1 := R1) (R2 := R2) m k
     }
   .
-
+(**
   Definition itree_tick {E : Type -> Type} : itree E unit := Tau (Ret tt).
-
+*)
   Definition itree_trigger {E : Type -> Type} : E ~~> itree E := fun R : Type => fun e : E R => Vis R e (fun x : R => Ret x).
 
   Definition itree_iter {E : Type -> Type} {I : Type} {R : Type} (step : I -> itree E (I + R)) : I -> itree E R :=
@@ -103,18 +105,19 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
     @callE_rect I R (fun X : Type => fun _ : callE I R X => itree E X) callee
   .
 
+(**
   Inductive stateE (ST : Type) : Type -> Type :=
   | GetS : stateE ST ST
   | PutS : ST -> stateE ST unit
   .
-
   Global Arguments GetS {ST}.
   Global Arguments PutS {ST}.
-
   Definition stateE_handler {ST : Type} {E : Type -> Type} : stateE ST ~~> stateT ST (itree E) :=
     @stateE_rect ST (fun X : Type => fun _ : stateE ST X => stateT ST (itree E) X) getS putS
   .
 
+
+*)
   Section HANDLER.
 
   Definition itree_interpret {E : Type -> Type} {M : Type -> Type} {M_isMonad : isMonad M} {M_isMonadIter : isMonadIter M} (handle : E ~~> M) : itree E ~~> M :=
@@ -194,3 +197,5 @@ Module InteractionTrees. (* Reference: "https://arxiv.org/pdf/1906.00046.pdf" *)
   End RECURSION.
 
 End InteractionTrees.
+
+*)

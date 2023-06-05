@@ -1230,7 +1230,7 @@ Module FUN_FACTS.
     - now do 2 (match goal with [ pf : x = x |- _ ] => pattern pf; revert pf; eapply AXIOM_K end).
   Qed.
 
-  Polymorphic Lemma eq_rect_eq_iff_projT2_eq (A : Type) (B : A -> Type) (x : A)
+  Lemma eq_rect_eq_iff_projT2_eq (A : Type) (B : A -> Type) (x : A)
     : ⟪ EQ_RECT_EQ : eq_rect_eq_STMT A B x ⟫ <-> ⟪ projT2_eq : projT2_eq_STMT A B x ⟫.
   Proof.
     iis; ii; desnw.

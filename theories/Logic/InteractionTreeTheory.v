@@ -10,6 +10,8 @@ Require Import DschingisKhan.Data.InteractionTree.
 Require Import DschingisKhan.Math.BasicPosetTheory.
 Require Import DschingisKhan.Logic.ConstructiveDomainTheory.
 
+(**
+
 Module InteractionTreeTheory.
 
   Import InteractionTrees BasicPosetTheory BasicCoLaTheory ParameterizedCoinduction.
@@ -396,3 +398,5 @@ Module InteractionTreeTheory.
   Qed.
 
 End InteractionTreeTheory.
+
+*)
