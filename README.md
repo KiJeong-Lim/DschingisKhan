@@ -4,8 +4,8 @@
 
 - This repository is the proof-pool of mine.
 
-- [x] The Soundness Theorem of the Propositional Logic: [https://github.com/KiJeong-Lim/DschingisKhan/blob/master/theories/Math/PropositionalLogicExtra.v#L193]
-- [x] The Completeness Theorem of the Propositional Logic: [https://github.com/KiJeong-Lim/DschingisKhan/blob/master/theories/Math/PropositionalLogicExtra.v#L376]
+- [x] The Soundness Theorem of the Propositional Logic: [Here](https://github.com/KiJeong-Lim/DschingisKhan/blob/master/theories/Math/PropositionalLogicExtra.v#L193)
+- [x] The Completeness Theorem of the Propositional Logic: [Here](https://github.com/KiJeong-Lim/DschingisKhan/blob/master/theories/Math/PropositionalLogicExtra.v#L376)
 
 ## QUICK START
 
